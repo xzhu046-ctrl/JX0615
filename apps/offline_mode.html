@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-03T05:36:00Z"></script>
-<script src="../chatStorage.js?v=2026-05-03T05:36:00Z"></script>
-<script src="../metadataStore.js?v=2026-05-03T05:36:00Z"></script>
-<script src="../promptManager.js?v=2026-05-03T05:36:00Z"></script>
-<script src="../accountManager.js?v=2026-05-03T05:36:00Z"></script>
-<script src="../scheduleShared.js?v=2026-05-03T05:36:00Z"></script>
-<script src="../presenceShared.js?v=2026-05-03T05:36:00Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-03T05:36:00Z"></script>
+<script src="../assetStore.js?v=2026-05-03T19:42:12Z"></script>
+<script src="../chatStorage.js?v=2026-05-03T19:42:12Z"></script>
+<script src="../metadataStore.js?v=2026-05-03T19:42:12Z"></script>
+<script src="../promptManager.js?v=2026-05-03T19:42:12Z"></script>
+<script src="../accountManager.js?v=2026-05-03T19:42:12Z"></script>
+<script src="../scheduleShared.js?v=2026-05-03T19:42:12Z"></script>
+<script src="../presenceShared.js?v=2026-05-03T19:42:12Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-03T19:42:12Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -1124,6 +1124,7 @@ var offlineStageSummaryQueue = {};
 var offlineSharedMemorySummaryQueue = {};
 var offlineSharedMemoryCheckTimer = 0;
 var offlineSharedMemoryLastQueuedCount = 0;
+var offlineSharedMemoryPendingCount = 0;
 var offlineDrawerBound = false;
 var offlineDrawerDraft = null;
 var offlineDrawerPageBgPendingAsset = '';
@@ -4698,11 +4699,20 @@ async function appendOfflineSharedMemorySummaries(options){
   return store;
 }
 
+function getOfflineSharedMemoryEntryCount(){
+  return getOfflineStoryEntries().filter(function(entry){
+    return entry && (entry.role === 'user' || entry.role === 'assistant') && String(entry.text || '').trim();
+  }).length;
+}
 function queueOfflineSharedMemorySummaryGeneration(){
   if(!session || !character || !character.id) return;
   var key = String(character.id || '') + '::' + String(session.id || session.startedAt || '');
+  var currentCount = getOfflineSharedMemoryEntryCount();
+  offlineSharedMemoryPendingCount = Math.max(offlineSharedMemoryPendingCount, currentCount);
   if(offlineSharedMemorySummaryQueue[key]) return;
   offlineSharedMemorySummaryQueue[key] = true;
+  var queuedCount = offlineSharedMemoryPendingCount;
+  offlineSharedMemoryPendingCount = 0;
   Promise.resolve().then(function(){
     return appendOfflineSharedMemorySummaries();
   }).catch(function(err){
@@ -4714,14 +4724,16 @@ function queueOfflineSharedMemorySummaryGeneration(){
     pushOfflineBackendLog('warn', 'offline.memory_summary.call', '线下自动总结失败', err);
   }).finally(function(){
     delete offlineSharedMemorySummaryQueue[key];
+    var latestCount = getOfflineSharedMemoryEntryCount();
+    if(offlineSharedMemoryPendingCount > 0 || latestCount > queuedCount){
+      setTimeout(queueOfflineSharedMemorySummaryGeneration, 0);
+    }
   });
 }
 
 function queueOfflineSharedMemorySummaryCheck(){
   if(!session || !character || !character.id) return;
-  var count = getOfflineStoryEntries().filter(function(entry){
-    return entry && (entry.role === 'user' || entry.role === 'assistant') && String(entry.text || '').trim();
-  }).length;
+  var count = getOfflineSharedMemoryEntryCount();
   if(!count || count === offlineSharedMemoryLastQueuedCount) return;
   offlineSharedMemoryLastQueuedCount = count;
   clearTimeout(offlineSharedMemoryCheckTimer);
@@ -6575,6 +6587,7 @@ function bindOfflineDrawerControls(){
       }
       getOfflineDrawerDraft().summaryEvery = normalizeOfflineStageSummaryEvery(summaryEvery.value);
       persistOfflineDrawerSettings({ silent:true });
+      queueOfflineSharedMemorySummaryCheck();
       queueOfflineStageSummaryGeneration();
     });
   }
@@ -6584,6 +6597,7 @@ function bindOfflineDrawerControls(){
       draft.summaryAuto = !draft.summaryAuto;
       persistOfflineDrawerSettings({ silent:true });
       if(draft.summaryAuto){
+        queueOfflineSharedMemorySummaryCheck();
         queueOfflineStageSummaryGeneration();
       }
       syncOfflineDrawerControls();
