@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-03T20:56:36Z"></script>
-<script src="../chatStorage.js?v=2026-05-03T20:56:36Z"></script>
-<script src="../metadataStore.js?v=2026-05-03T20:56:36Z"></script>
-<script src="../promptManager.js?v=2026-05-03T20:56:36Z"></script>
-<script src="../accountManager.js?v=2026-05-03T20:56:36Z"></script>
-<script src="../scheduleShared.js?v=2026-05-03T20:56:36Z"></script>
-<script src="../presenceShared.js?v=2026-05-03T20:56:36Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-03T20:56:36Z"></script>
+<script src="../assetStore.js?v=2026-05-03T21:04:32Z"></script>
+<script src="../chatStorage.js?v=2026-05-03T21:04:32Z"></script>
+<script src="../metadataStore.js?v=2026-05-03T21:04:32Z"></script>
+<script src="../promptManager.js?v=2026-05-03T21:04:32Z"></script>
+<script src="../accountManager.js?v=2026-05-03T21:04:32Z"></script>
+<script src="../scheduleShared.js?v=2026-05-03T21:04:32Z"></script>
+<script src="../presenceShared.js?v=2026-05-03T21:04:32Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-03T21:04:32Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -7465,6 +7465,7 @@ var stableOfflineAppHeight = 0;
 var parentOfflineKeyboardInset = 0;
 var lastKnownOfflineKeyboardInset = 0;
 var appliedOfflineKeyboardInset = 0;
+var lockedOfflineKeyboardInset = 0;
 var offlineKeyboardFocusStartedAt = 0;
 var offlineKeyboardStableCandidate = 0;
 var offlineKeyboardStableCandidateAt = 0;
@@ -7523,30 +7524,44 @@ function resolveStableOfflineKeyboardInset(rawInset, inputFocused){
   if(!inputFocused){
     offlineKeyboardStableCandidate = 0;
     offlineKeyboardStableCandidateAt = 0;
+    lockedOfflineKeyboardInset = 0;
     return 0;
   }
   var next = clampOfflineKeyboardInset(rawInset);
   if(next <= 120){
     offlineKeyboardStableCandidate = 0;
     offlineKeyboardStableCandidateAt = 0;
+    lockedOfflineKeyboardInset = 0;
     return 0;
   }
   var focusAge = offlineKeyboardFocusStartedAt ? (Date.now() - offlineKeyboardFocusStartedAt) : 9999;
   var mobileRuntime = isIOSOfflineRuntime() || /Android/i.test(String(navigator && navigator.userAgent || ''));
+  if(mobileRuntime && focusAge < 680){
+    var earlyLimit = lastKnownOfflineKeyboardInset > 120
+      ? Math.min(430, lastKnownOfflineKeyboardInset + 24)
+      : Math.min(340, estimateOfflineKeyboardInset());
+    if(next > earlyLimit) next = earlyLimit;
+  }
   if(!mobileRuntime || focusAge > 560){
     offlineKeyboardStableCandidate = next;
     offlineKeyboardStableCandidateAt = Date.now();
+    lockedOfflineKeyboardInset = next;
     return next;
   }
   if(focusAge < 42){
     return appliedOfflineKeyboardInset > 120 ? appliedOfflineKeyboardInset : 0;
   }
+  if(lockedOfflineKeyboardInset > 120 && Math.abs(next - lockedOfflineKeyboardInset) < 88){
+    return lockedOfflineKeyboardInset;
+  }
   if(!offlineKeyboardStableCandidate || Math.abs(next - offlineKeyboardStableCandidate) > 38){
     offlineKeyboardStableCandidate = next;
     offlineKeyboardStableCandidateAt = Date.now();
+    lockedOfflineKeyboardInset = next;
     return next;
   }
   offlineKeyboardStableCandidate = Math.round((offlineKeyboardStableCandidate + next) / 2);
+  lockedOfflineKeyboardInset = offlineKeyboardStableCandidate;
   return offlineKeyboardStableCandidate;
 }
 function scheduleOfflineViewportSync(){
@@ -15168,6 +15183,7 @@ window.addEventListener('orientationchange', syncOfflineViewport);
 window.addEventListener('focusin', function(e){
   if(e.target && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')){
     offlineKeyboardFocusStartedAt = Date.now();
+    lockedOfflineKeyboardInset = 0;
     keepOfflineComposerVisible();
     scheduleOfflineViewportSync();
   }
@@ -15181,6 +15197,7 @@ window.addEventListener('focusout', function(e){
       offlineKeyboardFocusStartedAt = 0;
       parentOfflineKeyboardInset = 0;
       appliedOfflineKeyboardInset = 0;
+      lockedOfflineKeyboardInset = 0;
       offlineKeyboardStableCandidate = 0;
       offlineKeyboardStableCandidateAt = 0;
       document.documentElement.style.setProperty('--offline-keyboard-inset', '0px');
@@ -15216,7 +15233,11 @@ if(window.visualViewport){
     syncOfflineViewport();
     keepOfflineComposerVisible();
   });
-  window.visualViewport.addEventListener('scroll', syncOfflineViewport);
+  window.visualViewport.addEventListener('scroll', function(){
+    var activeEl = document.activeElement;
+    var inputFocused = !!(activeEl && (activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'INPUT'));
+    if(!inputFocused) syncOfflineViewport();
+  });
 }
 window.addEventListener('error', function(evt){
   var err = evt && evt.error ? evt.error : (evt && evt.message) || '未知错误';

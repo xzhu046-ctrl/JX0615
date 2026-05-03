@@ -159,6 +159,15 @@ function stripOfflineInviteWeekdayLabel(value){
     .trim();
 }
 
+function normalizeOfflineInviteLocation(value){
+  var text = String(value || '').replace(/\s+/g, ' ').trim();
+  var compact = text.replace(/\s+/g, '');
+  if(!compact) return '';
+  if(/^(地点)?(待定|待办|代办|未定|未填写|暂无|无|空|todo)$/i.test(compact)) return '';
+  if(/^地点[:：-]?(待定|待办|代办|未定|未填写|暂无|无|空|todo)$/i.test(compact)) return '';
+  return text;
+}
+
 function getOfflineInviteThreadCharId(){
   var routeCharId = '';
   try{
@@ -244,7 +253,7 @@ function buildOfflineInvitePayload(sourceRole, overrides){
   data.charName = String(data.charName || (threadCharacter && (threadCharacter.nickname || threadCharacter.name)) || '').trim();
   data.mood = String(data.mood || '').trim() || '(｡･ω･｡)';
   data.weather = normalizeOfflineWeatherIcon(data.weather);
-  data.location = String(data.location || '').trim() || '地点待定';
+  data.location = normalizeOfflineInviteLocation(data.location) || '地点待定';
   data.timeLabel = String(data.timeLabel || labels.timeLabel);
   data.dateLabel = String(data.dateLabel || labels.dateLabel);
   data.status = String(data.status || 'pending');
@@ -654,7 +663,7 @@ function sanitizeOfflineInvitePayloadForModel(payload){
   delete src.timeLabel;
   delete src.dateLabel;
   delete src.content;
-  if(src.location != null) src.location = String(src.location || '').trim();
+  if(src.location != null) src.location = normalizeOfflineInviteLocation(src.location);
   return src;
 }
 

@@ -2011,16 +2011,6 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   pointer-events: none;
   z-index: 0;
 }
-.home-pager-dragging .bond-widget-inner::before {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  background: rgba(255,255,255,0.16);
-}
-.home-pager-dragging .app-grid-dock::before,
-.home-pager-dragging .home-page-indicator {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
 .bond-widget-inner > * {
   position: relative;
   z-index: 1;
