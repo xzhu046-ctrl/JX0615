@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>QQ</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Cormorant+Garamond:wght@600;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../chatStorage.js?v=2026-05-03T17:52:52Z"></script>
-<script src="../assetStore.js?v=2026-05-03T17:52:52Z"></script>
-<script src="../accountManager.js?v=2026-05-03T17:52:52Z"></script>
-<script src="../metadataStore.js?v=2026-05-03T17:52:52Z"></script>
-<script src="../sunnySupport.js?v=2026-05-03T17:52:52Z"></script>
+<script src="../chatStorage.js?v=2026-05-03T18:06:42Z"></script>
+<script src="../assetStore.js?v=2026-05-03T18:06:42Z"></script>
+<script src="../accountManager.js?v=2026-05-03T18:06:42Z"></script>
+<script src="../metadataStore.js?v=2026-05-03T18:06:42Z"></script>
+<script src="../sunnySupport.js?v=2026-05-03T18:06:42Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -1438,7 +1438,7 @@ body{
   <input id="contactsImportInput" class="native-file-input-hidden" type="file" accept=".png,.json,application/json,image/png" multiple onchange="handleContactsImportFiles(this.files)">
   <input id="contactsCreateAvatarInput" type="file" accept="image/*" style="display:none" onchange="handleContactsCreateAvatarFile(this.files[0])">
   <input id="qqHeroPhotoInput" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg" style="display:none" onchange="handleQqHeroPhotoFile(this.files[0])">
-  <iframe id="contactsHelperFrame" class="contacts-helper-frame" src="characters.html?helper=1&__appBuild=2026-05-03T17:52:52Z" tabindex="-1" aria-hidden="true"></iframe>
+  <iframe id="contactsHelperFrame" class="contacts-helper-frame" src="characters.html?helper=1&__appBuild=2026-05-03T18:06:42Z" tabindex="-1" aria-hidden="true"></iframe>
   <div class="toast" id="toast"></div>
 
 <script>
@@ -1504,6 +1504,46 @@ function fileToDataUrl(file){
       reader.readAsDataURL(file);
     }catch(err){ reject(err); }
   });
+}
+function fileToArrayBuffer(file){
+  if(file && typeof file.arrayBuffer === 'function'){
+    return file.arrayBuffer();
+  }
+  return new Promise(function(resolve, reject){
+    try{
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(reader.result); };
+      reader.onerror = function(){ reject(reader.error || new Error('read failed')); };
+      reader.readAsArrayBuffer(file);
+    }catch(err){ reject(err); }
+  });
+}
+function fileToText(file){
+  if(file && typeof file.text === 'function'){
+    return file.text();
+  }
+  return new Promise(function(resolve, reject){
+    try{
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(String(reader.result || '')); };
+      reader.onerror = function(){ reject(reader.error || new Error('read failed')); };
+      reader.readAsText(file);
+    }catch(err){ reject(err); }
+  });
+}
+async function prepareContactsImportFile(file){
+  var name = String(file && file.name || '角色卡');
+  var type = String(file && file.type || '');
+  var buffer = await fileToArrayBuffer(file);
+  var prepared = { name:name, type:type, buffer:buffer };
+  if(name.toLowerCase().endsWith('.json') || /json/i.test(type)){
+    prepared.text = await fileToText(file).catch(function(){
+      try{ return new TextDecoder('utf-8').decode(buffer); }catch(err){ return ''; }
+    });
+  }else{
+    prepared.imgDataUrl = await fileToDataUrl(file).catch(function(){ return ''; });
+  }
+  return prepared;
 }
 function shrinkDataUrl(dataUrl, maxDim){
   return new Promise(function(resolve){
@@ -3342,16 +3382,16 @@ function getContactsFrameWindow(){
 function getQqPageBuildId(){
   try{
     var build = String(new URL(window.location.href).searchParams.get('__appBuild') || '').trim();
-    return build || '2026-05-03T17:52:52Z';
+    return build || '2026-05-03T18:06:42Z';
   }catch(err){
-    return '2026-05-03T17:52:52Z';
+    return '2026-05-03T18:06:42Z';
   }
 }
 function buildContactsHelperSrc(cacheBust){
   var build = getQqPageBuildId();
   var url = new URL('characters.html', window.location.href);
   url.searchParams.set('helper', '1');
-  url.searchParams.set('__appBuild', build || '2026-05-03T17:52:52Z');
+  url.searchParams.set('__appBuild', build || '2026-05-03T18:06:42Z');
   if(cacheBust) url.searchParams.set('__ts', String(Date.now()));
   return url.toString();
 }
@@ -3730,13 +3770,28 @@ function handleContactsImportFiles(files, options){
     return;
   }
   syncContactsHelperFrame(false);
-  waitContactsImportHelper(3000).then(function(cw){
-    if(!cw || typeof cw.onFiles !== 'function'){
+  Promise.all(importFiles.map(function(file){
+    return prepareContactsImportFile(file).catch(function(err){
+      console.warn('prepare contacts import file failed', err);
+      showToast('无法读取：' + String(file && file.name || '角色卡'));
+      return null;
+    });
+  })).then(function(preparedFiles){
+    preparedFiles = preparedFiles.filter(Boolean);
+    if(!preparedFiles.length) throw new Error('no readable files');
+    return waitContactsImportHelper(3000).then(function(cw){
+      return { cw:cw, preparedFiles:preparedFiles };
+    });
+  }).then(function(result){
+    var cw = result && result.cw;
+    var preparedFiles = result && result.preparedFiles || [];
+    if(!cw || (typeof cw.onPreparedFiles !== 'function' && typeof cw.onFiles !== 'function')){
       showToast('导入器还没准备好，等一秒再试');
       return null;
     }
-    showToast(importFiles.length > 1 ? ('正在导入 ' + importFiles.length + ' 张角色卡') : '正在导入角色卡');
+    showToast(preparedFiles.length > 1 ? ('正在导入 ' + preparedFiles.length + ' 张角色卡') : '正在导入角色卡');
     return seedContactsImportHelperSession(cw).then(function(){
+      if(typeof cw.onPreparedFiles === 'function') return cw.onPreparedFiles(preparedFiles, {});
       return cw.onFiles(importFiles, {});
     });
   }).then(function(){
