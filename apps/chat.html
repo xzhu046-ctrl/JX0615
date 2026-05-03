@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-03T20:48:23Z"></script>
-<script src="../chatStorage.js?v=2026-05-03T20:48:23Z"></script>
-<script src="../assetStore.js?v=2026-05-03T20:48:23Z"></script>
-<script src="../accountManager.js?v=2026-05-03T20:48:23Z"></script>
-<script src="../metadataStore.js?v=2026-05-03T20:48:23Z"></script>
-<script src="../scheduleShared.js?v=2026-05-03T20:48:23Z"></script>
-<script src="../presenceShared.js?v=2026-05-03T20:48:23Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-03T20:48:23Z"></script>
-<script src="../sunnySupport.js?v=2026-05-03T20:48:23Z"></script>
-<script src="offlineInvite.js?v=2026-05-03T20:48:23Z"></script>
+<script src="../promptManager.js?v=2026-05-03T20:56:36Z"></script>
+<script src="../chatStorage.js?v=2026-05-03T20:56:36Z"></script>
+<script src="../assetStore.js?v=2026-05-03T20:56:36Z"></script>
+<script src="../accountManager.js?v=2026-05-03T20:56:36Z"></script>
+<script src="../metadataStore.js?v=2026-05-03T20:56:36Z"></script>
+<script src="../scheduleShared.js?v=2026-05-03T20:56:36Z"></script>
+<script src="../presenceShared.js?v=2026-05-03T20:56:36Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-03T20:56:36Z"></script>
+<script src="../sunnySupport.js?v=2026-05-03T20:56:36Z"></script>
+<script src="offlineInvite.js?v=2026-05-03T20:56:36Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -27052,6 +27052,7 @@ function clearChatKeyboardInset(){
   parentKeyboardUpdatedAt = 0;
   chatKeyboardStableCandidate = 0;
   chatKeyboardStableCandidateAt = 0;
+  lockedChatKeyboardInset = 0;
   appliedKeyboardInset = 0;
   document.documentElement.style.setProperty('--keyboard-inset', '0px');
   document.documentElement.style.setProperty('--composer-shift', '0px');
@@ -27114,10 +27115,12 @@ function syncChatViewport(){
 
 var chatKeyboardStableCandidate = 0;
 var chatKeyboardStableCandidateAt = 0;
+var lockedChatKeyboardInset = 0;
 function resolveStableChatKeyboardInset(rawInset, textInputFocused){
   if(!textInputFocused){
     chatKeyboardStableCandidate = 0;
     chatKeyboardStableCandidateAt = 0;
+    lockedChatKeyboardInset = 0;
     return 0;
   }
   var next = clampChatKeyboardInset(rawInset);
@@ -27127,23 +27130,28 @@ function resolveStableChatKeyboardInset(rawInset, textInputFocused){
     return 0;
   }
   var focusAge = chatKeyboardFocusStartedAt ? (Date.now() - chatKeyboardFocusStartedAt) : 9999;
+  if(lockedChatKeyboardInset > 120 && focusAge > 160){
+    if(Math.abs(next - lockedChatKeyboardInset) < 92) return lockedChatKeyboardInset;
+    lockedChatKeyboardInset = next;
+    return next;
+  }
   if(!isIOSChatRuntime() || focusAge > 460){
     chatKeyboardStableCandidate = next;
     chatKeyboardStableCandidateAt = Date.now();
+    lockedChatKeyboardInset = next;
     return next;
   }
-  if(focusAge < 80){
+  if(focusAge < 36){
     return appliedKeyboardInset > 120 ? appliedKeyboardInset : 0;
   }
   if(!chatKeyboardStableCandidate || Math.abs(next - chatKeyboardStableCandidate) > 34){
     chatKeyboardStableCandidate = next;
     chatKeyboardStableCandidateAt = Date.now();
-    return appliedKeyboardInset > 120 ? appliedKeyboardInset : 0;
-  }
-  if(Date.now() - chatKeyboardStableCandidateAt < 80){
-    return appliedKeyboardInset > 120 ? appliedKeyboardInset : 0;
+    lockedChatKeyboardInset = next;
+    return next;
   }
   chatKeyboardStableCandidate = Math.round((chatKeyboardStableCandidate + next) / 2);
+  lockedChatKeyboardInset = chatKeyboardStableCandidate;
   return chatKeyboardStableCandidate;
 }
 
@@ -35021,8 +35029,9 @@ if(window.visualViewport){
     keepComposerVisible();
   });
   window.visualViewport.addEventListener('scroll', function(){
-    syncChatViewport();
-    keepComposerVisible();
+    if(!isChatTextInputActive()){
+      syncChatViewport();
+    }
   });
 }
 window.addEventListener('beforeunload', restoreParentTopbarForSettings);

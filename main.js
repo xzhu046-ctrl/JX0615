@@ -52,10 +52,10 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-03T20:48:23Z';
+const APP_BUILD_ID = '2026-05-03T20:56:36Z';
 const APP_UPDATE_NOTES = [
-  '优化主屏幕左右滑动',
-  '修正输入框首次聚焦高度',
+  '恢复主屏幕第二页显示',
+  '稳定聊天输入框键盘位置',
   '同步更新私有版缓存'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
