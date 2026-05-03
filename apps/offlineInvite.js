@@ -165,6 +165,7 @@ function normalizeOfflineInviteLocation(value){
   if(!compact) return '';
   if(/^(地点)?(待定|待办|代办|未定|未填写|暂无|无|空|todo)$/i.test(compact)) return '';
   if(/^地点[:：-]?(待定|待办|代办|未定|未填写|暂无|无|空|todo)$/i.test(compact)) return '';
+  if(/^(老地方|附近|楼下|学校|公司|咖啡店|餐厅|公园|家里|宿舍|教室|图书馆)$/i.test(compact)) return '';
   return text;
 }
 

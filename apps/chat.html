@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-03T21:04:32Z"></script>
-<script src="../chatStorage.js?v=2026-05-03T21:04:32Z"></script>
-<script src="../assetStore.js?v=2026-05-03T21:04:32Z"></script>
-<script src="../accountManager.js?v=2026-05-03T21:04:32Z"></script>
-<script src="../metadataStore.js?v=2026-05-03T21:04:32Z"></script>
-<script src="../scheduleShared.js?v=2026-05-03T21:04:32Z"></script>
-<script src="../presenceShared.js?v=2026-05-03T21:04:32Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-03T21:04:32Z"></script>
-<script src="../sunnySupport.js?v=2026-05-03T21:04:32Z"></script>
-<script src="offlineInvite.js?v=2026-05-03T21:04:32Z"></script>
+<script src="../promptManager.js?v=2026-05-03T21:14:09Z"></script>
+<script src="../chatStorage.js?v=2026-05-03T21:14:09Z"></script>
+<script src="../assetStore.js?v=2026-05-03T21:14:09Z"></script>
+<script src="../accountManager.js?v=2026-05-03T21:14:09Z"></script>
+<script src="../metadataStore.js?v=2026-05-03T21:14:09Z"></script>
+<script src="../scheduleShared.js?v=2026-05-03T21:14:09Z"></script>
+<script src="../presenceShared.js?v=2026-05-03T21:14:09Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-03T21:14:09Z"></script>
+<script src="../sunnySupport.js?v=2026-05-03T21:14:09Z"></script>
+<script src="offlineInvite.js?v=2026-05-03T21:14:09Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -20446,11 +20446,11 @@ function buildSystemPrompt() {
 	parts.push([
 	  '【聊天顶栏状态】',
 	  '当前顶栏给你显示的状态词是：' + getStoredCharHeaderStatus(character && character.id),
-	  '状态词只能由你自己判断后给出，不要套系统模板。',
-	  '如果你觉得结合当前上下文需要悄悄改掉这个状态词，可以在整段回复最前或最后附上 [[状态:xx]]。',
-	  '如果本轮必须返回 JSON 数组，只有在已经写出真正正文后，才可以额外放一个 {"type":"status","content":"xx"} 状态对象；它只用于更新顶栏，不是聊天正文。',
-	  'xx 必须是两个字以内，必须贴合你此刻的人设、心情和动作，不要固定使用“困困/在忙/想你”这类模板词。',
-	  '这只是隐藏状态指令，不是给用户看的正文；除非你真的想改状态，否则不要输出它。',
+	  '本轮必须悄悄给出一个新的状态词，由你自己判断后给出，不要套系统模板。',
+	  '如果直接输出文字，可以在整段回复最前或最后附上 [[状态:xx]]。',
+	  '如果本轮返回 JSON 数组，必须在已经写出真正正文后，额外放一个 {"type":"status","content":"xx"} 状态对象；它只用于更新顶栏，不是聊天正文。',
+	  'xx 必须是两个字以内，必须贴合你此刻的人设、心情和动作，不要固定使用“困困/在忙/想你”这类模板词，不要连续多轮不变。',
+	  '这只是隐藏状态指令，不是给用户看的正文；本轮要输出，但不要让用户在气泡里看见。',
 	  '不要解释这个状态指令，也不要单独提醒用户你改了状态。'
 	].join('\n'));
   parts.push([
@@ -20506,7 +20506,7 @@ function buildSystemPrompt() {
       ? '旁白模式开启时，本轮必须同时有 1 条 narrator 和至少 1 条 text 正文；narrator 不能替代 text。'
       : '旁白模式关闭时，不要输出 narrator。',
     'inner_voice、thought_chain、status、reaction、recall、rename_profile、change_avatar、change_user_avatar 都不算正文。',
-    '如果你想改状态，必须先写完 text 正文，再附加 [[状态:xx]] 或 status 对象；禁止只输出状态。',
+    '本轮必须更新隐藏顶栏状态。必须先写完 text 正文，再附加 [[状态:xx]] 或 status 对象；禁止只输出状态。',
     '如果你正在犹豫格式，优先输出 [{"type":"text","content":"一句角色会发出的短消息"}]。'
   ].join('\n');
 
@@ -21401,10 +21401,11 @@ function buildChatExtendedFormatPrompt(){
   var paceMax = Math.max(paceMin, Number(character && character.msgMax) || Math.max(paceMin, 3));
   var lines = [
     '【扩展消息类型】',
-    '你除了普通 text / voice_message / image_message / money_packet，还可以使用 offline_invite / narrator / rich_html / recall / rename_profile / change_avatar / change_user_avatar。',
+    '你除了普通 text / voice_message / image_message / money_packet，还可以使用 offline_invite / narrator / rich_html / recall / rename_profile / change_avatar / change_user_avatar / status。',
     'narrator：用于动作、环境、声音、镜头感、心理余波，是旁白，不是说出口的话。格式：{"type":"narrator","content":"..."}',
     'narrator 里禁止写“用户”“USER”“user”“角色”“CHAR”“char”这种偷懒指代。涉及双方时，只能直接写名字、昵称，或者自然的第三人称代称。',
-    'offline_invite：用于主动约对方见面/出门/赴约。格式只能是 JSON：{"type":"offline_invite","location":"具体地点","mood":"表情/气氛","weather":"天气符号或描述","scheduledDate":"YYYY-MM-DD，可选","scheduledTime":"HH:MM，可选"}。location 必须是能真的找到人的具体落点，不要只写“老地方/楼下/附近/学校/公司/咖啡店”这种大类；要写成“宿舍楼下东门自动贩卖机旁”“图书馆三楼靠窗自习区”“街角便利店门口那盏白色灯牌下”这种细一点的位置。历史里的 [offline_invite ...] 只是不可见记录，绝对不要照抄成台词。',
+    'status：隐藏顶栏状态，不是聊天正文。每轮都要根据自己此刻心情/动作/关系状态给一个 1-2 个字的 status，必须贴当前上下文，不能固定模板，不能解释。',
+    'offline_invite：用于主动约对方见面/出门/赴约。格式只能是 JSON：{"type":"offline_invite","location":"具体地点","mood":"表情/气氛","weather":"天气符号或描述","scheduledDate":"YYYY-MM-DD，可选","scheduledTime":"HH:MM，可选"}。location 必须是能真的找到人的具体落点，不要只写“老地方/楼下/附近/学校/公司/咖啡店”这种大类；更禁止写“地点待定/地点待办/地点代办/待定地点/暂无/无/空/todo”这种占位词。要写成“宿舍楼下东门自动贩卖机旁”“图书馆三楼靠窗自习区”“街角便利店门口那盏白色灯牌下”这种细一点的位置。如果当前上下文没有足够信息让你确定具体地点，就先发 text 问清楚或自然提议一个具体落点，不要输出 offline_invite。历史里的 [offline_invite ...] 只是不可见记录，绝对不要照抄成台词。',
     'offline_invite 对你来说只是正常约对方见面。只要聊天开始脱离纯手机消息，朝现实接触、出门、碰面、赴约、到场、来你这/去她那、面对面相处这些方向走，就鼓励你直接发，让对方自己决定接受还是拒绝；像“门没锁，来不来我卧室”“下来见我”“出来一下”“我去找你”这种，也优先用 offline_invite。主动约人时默认不要自己乱设具体时间，除非对方刚刚就在和你对时间；大多数时候把它当成现在、当下、马上见就够了。语气要像真人，不要模板腔，不要像系统通知，也不要提卡片、按钮或“邀请”这种系统词。',
     'rich_html：用于真正可渲染的小卡片、小网页、小票据、情书、信件、截图、海报、小物件，也包括聊天记录、搜索记录、歌单、日记、涂鸦、菜谱、书单、电影单、游戏时长、游戏页面、书评、贺卡、认错书、检讨、小作文、歌词摘抄、文学摘抄、外卖订单、设计图纸、合同、学生证、身份证、护照、笔记、数学题、物理题、草稿纸、试卷、结婚证件、机票、作业、论文、邮件、邮箱主页、邮箱收件箱、邮件草稿、银行账户总览、银行账户余额、银行账户明细、影评、药品单、医院开的单子、知乎帖子、小说简介、伪小红书帖子、直播间、抖音样式页、社交媒体主页、社交媒体帖子、社交媒体评论、测评、repo、银行账单、银行流水、法院传票、学签、旅游签、工签、银行卡、PPT页、文档页、名片、便签、周易/八卦、中式算卦、抽签、月老签、简历、说明书、调查问卷、MBTI 测试、MBTI 结果、测试结果、quiz/test/exam、番外页、番外侧页、番外卡片这类页面或卡片。输出格式必须是机器可解析 JSON：{"type":"rich_html","summary":"一句概括","html":"完整HTML","css":"完整CSS","js":"可选JS，没有就空字符串","text":"提取出来的正文","translation":"卡片全部可见文字的完整简中译文，可选"}；如果是发一个真的网页链接，也可以用 {"type":"rich_html","summary":"一句概括","url":"https://...","title":"网页标题","text":"可提取正文","translation":"整张卡片所有可见文字的完整简中译文，可选"}',
     'recall：用于撤回你刚刚发出去的一条消息。格式：{"type":"recall","content":"可选补充"}',
