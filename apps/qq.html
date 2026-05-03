@@ -1,0 +1,3855 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>QQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Cormorant+Garamond:wght@600;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+<script src="../chatStorage.js?v=2026-05-02T05:28:00Z"></script>
+<script src="../assetStore.js?v=2026-05-02T05:28:00Z"></script>
+<script src="../accountManager.js?v=2026-05-02T05:28:00Z"></script>
+<script src="../metadataStore.js?v=2026-05-02T05:28:00Z"></script>
+<script src="../sunnySupport.js?v=2026-05-02T05:28:00Z"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --b:#0f0f10;
+  --w:#ffffff;
+  --off:#f5f5f6;
+  --off-2:#fcfcfc;
+  --g:#8c8c8f;
+  --g-2:#cfcfd2;
+  --line:rgba(15,15,16,.12);
+  --line-strong:rgba(15,15,16,.2);
+  --soft-shadow:0 16px 34px rgba(15,15,16,.06),0 4px 10px rgba(15,15,16,.04);
+  --card-shadow:0 22px 44px rgba(15,15,16,.08),0 2px 8px rgba(15,15,16,.05);
+  --font:'Quicksand',sans-serif;
+  --fontd:'Nunito',sans-serif;
+  --fontcute:'ZCOOL KuaiLe',cursive;
+  --serif:'Cormorant Garamond',serif;
+  --safe-top:max(env(safe-area-inset-top),0px);
+  --qq-header-art:url('assets/%E6%A8%B1%E8%8A%B1%E5%9C%A8%E6%B0%B4%E9%87%8C.jpg');
+}
+html,body{height:100%}
+body{
+  font-family:var(--font);
+  background:
+    radial-gradient(circle at top left, rgba(244,244,245,.92) 0%, rgba(244,244,245,0) 26%),
+    linear-gradient(180deg,#ffffff 0%,#f1f2f4 100%);
+  color:var(--b);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.qq-shell{flex:1;min-height:0;display:flex;flex-direction:column}
+.qq-shell,.qq-shell button,.qq-shell input,.qq-shell textarea,.qq-shell .name,.qq-shell .snip,.qq-shell .time,.qq-shell .pin-chip,.qq-shell .contacts-drawer-title,.qq-shell .contacts-drawer-name,.qq-shell .contacts-drawer-note,.qq-shell .nav-label{font-family:var(--fontcute)!important}
+.view{flex:1;overflow:hidden;display:none;min-height:0}
+.view.active{display:flex;flex-direction:column;min-height:0}
+.qq-chat-page{
+  flex:1;
+  min-height:0;
+  height:100%;
+  max-height:100%;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+  touch-action:pan-y;
+  padding:calc(10px + var(--safe-top)) 14px calc(156px + env(safe-area-inset-bottom));
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  scrollbar-width:none;
+}
+.qq-chat-page::-webkit-scrollbar{display:none}
+.hero-row{display:flex;justify-content:flex-end;min-height:42px}
+.sky-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 16px;
+  border-radius:999px;
+  background:rgba(255,255,255,.82);
+  border:1px solid rgba(15,15,16,.05);
+  box-shadow:var(--soft-shadow);
+  font-size:12px;
+  font-weight:700;
+  color:#767679;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.sky-dot{
+  width:12px;
+  height:12px;
+  border-radius:999px;
+  background:var(--b);
+  box-shadow:0 0 0 5px rgba(15,15,16,.08);
+  flex-shrink:0;
+}
+.memory-card{
+  position:relative;
+  padding-top:22px;
+}
+.memory-card::before,
+.memory-card::after{
+  content:'';
+  position:absolute;
+  top:0;
+  left:18px;
+  width:56px;
+  height:46px;
+  border-radius:18px;
+  background:linear-gradient(180deg,#f2f2f2 0%,#d8d8d8 100%);
+  box-shadow:0 10px 18px rgba(15,15,16,.12);
+  transform:rotate(-8deg);
+  opacity:.74;
+}
+.memory-card::after{
+  left:48px;
+  top:-2px;
+  width:60px;
+  height:50px;
+  background:
+    radial-gradient(circle at 68% 28%, rgba(15,15,16,.9) 0 9px, transparent 10px),
+    radial-gradient(circle at 32% 58%, rgba(15,15,16,.14) 0 3px, transparent 4px),
+    linear-gradient(180deg,#fafafa 0%,#e5e5e5 100%);
+  transform:rotate(6deg);
+}
+.memory-card-inner{
+  position:relative;
+  z-index:1;
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(15,15,16,.08);
+  border-radius:32px;
+  padding:18px 18px 18px;
+  box-shadow:var(--card-shadow);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.memory-head{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.memory-chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:9px 14px;
+  border-radius:999px;
+  background:#efefef;
+  color:#2c2c2d;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+  box-shadow:inset 0 -1px 0 rgba(255,255,255,.8);
+}
+.memory-title{
+  flex:1;
+  font-family:var(--serif);
+  font-size:31px;
+  line-height:1.06;
+  font-weight:700;
+  letter-spacing:-.01em;
+}
+.memory-tools{
+  display:grid;
+  grid-template-columns:44px 1fr 44px;
+  align-items:center;
+  gap:14px;
+  margin-top:18px;
+}
+.memory-tool{
+  width:44px;
+  height:44px;
+  border:none;
+  border-radius:16px;
+  background:rgba(255,255,255,.88);
+  box-shadow:0 10px 18px rgba(15,15,16,.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--b);
+  cursor:pointer;
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.memory-tool:active{transform:translateY(1px);box-shadow:0 6px 12px rgba(15,15,16,.08)}
+.memory-tool svg{width:24px;height:24px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.memory-strip{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  overflow:auto;
+  padding:2px 2px 8px;
+  scrollbar-width:none;
+}
+.memory-strip::-webkit-scrollbar{display:none}
+.memory-strip .quick-face{
+  width:58px;
+  height:58px;
+  border:none;
+  border-radius:20px;
+  background:#fff;
+  box-shadow:0 10px 20px rgba(15,15,16,.12);
+  overflow:hidden;
+  position:relative;
+  cursor:pointer;
+  flex:0 0 auto;
+}
+.memory-strip .quick-face img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(112%)}
+.memory-strip .quick-face-fallback{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+}
+.memory-strip .quick-face::after{
+  content:'';
+  position:absolute;
+  right:-2px;
+  bottom:-2px;
+  width:14px;
+  height:14px;
+  border-radius:999px;
+  background:#fff;
+  box-shadow:0 0 0 3px rgba(15,15,16,.12);
+}
+.filter-card{
+  background:rgba(255,255,255,.9);
+  border:1px solid rgba(15,15,16,.08);
+  border-radius:34px;
+  padding:18px 18px 16px;
+  box-shadow:var(--soft-shadow);
+}
+.filter-tabs{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;
+}
+.filter-tab{
+  border:none;
+  background:transparent;
+  border-radius:999px;
+  padding:10px 6px;
+  color:#171718;
+  font-family:var(--serif);
+  font-size:26px;
+  font-style:italic;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .14s ease,color .14s ease,transform .14s ease,box-shadow .14s ease;
+}
+.filter-tab.active{
+  background:#0f0f10;
+  color:#fff;
+  box-shadow:0 14px 22px rgba(15,15,16,.18);
+}
+.filter-tab:active{transform:translateY(1px)}
+.filter-note{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-top:18px;
+  padding:12px 4px 0;
+  border-top:1px solid rgba(15,15,16,.08);
+}
+.filter-note-star{
+  font-size:26px;
+  line-height:1;
+}
+.filter-note-text{
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:.02em;
+  color:#454547;
+}
+.list{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  min-height:0;
+  flex:1;
+  padding:0 0 18px;
+}
+.empty-card{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:160px;
+  padding:18px;
+  border-radius:34px;
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(15,15,16,.08);
+  box-shadow:var(--soft-shadow);
+  color:#7a7a7e;
+  font-weight:700;
+}
+.chat-section{
+  background:rgba(255,255,255,.94);
+  border:1px solid rgba(15,15,16,.08);
+  border-radius:34px;
+  box-shadow:var(--card-shadow);
+  padding:8px 18px;
+}
+.item{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:18px 0;
+  cursor:pointer;
+  position:relative;
+  transition:transform .12s ease,opacity .12s ease;
+}
+.item:active{transform:translateY(1px)}
+.item + .item{border-top:1px solid rgba(15,15,16,.08)}
+.item.pinned .name{font-style:italic}
+.pin-chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:3px 9px;
+  border-radius:999px;
+  background:#121213;
+  color:#fff;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.12em;
+  line-height:1;
+  flex-shrink:0;
+  margin-left:8px;
+}
+.av{
+  width:66px;
+  height:66px;
+  border-radius:22px;
+  background:linear-gradient(180deg,#ffffff 0%,#efefef 100%);
+  border:1px solid rgba(15,15,16,.09);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  overflow:hidden;
+  box-shadow:0 12px 20px rgba(15,15,16,.11);
+  flex-shrink:0;
+}
+.av img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(112%)}
+.meta{flex:1;min-width:0}
+.name{
+  font-family:var(--serif);
+  font-size:28px;
+  line-height:1;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.snip{
+  margin-top:10px;
+  font-size:14px;
+  line-height:1.35;
+  font-weight:700;
+  color:#9a9a9f;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.item-side{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  justify-content:flex-start;
+  gap:10px;
+  min-width:58px;
+  padding-top:2px;
+}
+.time{
+  font-size:12px;
+  font-weight:700;
+  color:#c2c2c6;
+  white-space:nowrap;
+}
+.badge{font-size:10px;font-weight:900;padding:4px 9px;border-radius:999px}
+.badge.unread{
+  min-width:23px;
+  height:23px;
+  padding:0 7px;
+  border-radius:999px;
+  background:#121213;
+  color:#fff;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--fontd);
+  box-shadow:0 8px 14px rgba(15,15,16,.18);
+}
+.badge.status-dot{
+  width:22px;
+  height:22px;
+  padding:0;
+  border-radius:999px;
+  border:1.5px solid rgba(15,15,16,.22);
+  background:linear-gradient(180deg,#ffffff 0%,#f3f3f3 100%);
+  box-shadow:0 8px 14px rgba(15,15,16,.08);
+}
+.qq-chat-page{
+  flex:1;
+  min-height:0;
+  height:100%;
+  max-height:100%;
+  display:flex;
+  flex-direction:column;
+  padding:calc(8px + var(--safe-top)) 12px 0;
+  overflow:hidden;
+  gap:8px;
+}
+.qq-chat-page::after{
+  display:none;
+}
+.qq-stage{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-height:0;
+  height:100%;
+  padding-bottom:0;
+}
+.header-ribbon{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  padding:calc(8px + var(--safe-top)) 0 6px;
+  margin:calc(-10px - var(--safe-top)) -14px 0;
+  flex:0 0 auto;
+  isolation:isolate;
+}
+.header-ribbon::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.04) 16%, rgba(255,255,255,0) 34%),
+    linear-gradient(180deg, rgba(245,245,246,0) 40%, rgba(245,245,246,.12) 56%, rgba(245,245,246,.42) 76%, rgba(245,245,246,.82) 92%, #f5f5f6 100%),
+    var(--qq-header-art);
+  background-position:center top, center top, center top;
+  background-repeat:no-repeat;
+  background-size:100% 100%, 100% 100%, cover;
+  opacity:1;
+  z-index:0;
+}
+.header-ribbon::after{
+  content:'';
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:44px;
+  background:linear-gradient(180deg, rgba(245,245,246,0) 0%, rgba(245,245,246,.18) 36%, rgba(245,245,246,.68) 78%, #f5f5f6 100%);
+  z-index:0;
+}
+.header-ribbon > *{
+  position:relative;
+  z-index:1;
+}
+.header-ribbon-main{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 14px;
+}
+.love-exit{
+  width:34px;
+  height:34px;
+  border:2px solid #0f0f10;
+  border-radius:8px;
+  background:#fff;
+  box-shadow:2px 2px 0 #0f0f10;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  line-height:1;
+  color:#0f0f10;
+  flex-shrink:0;
+}
+.love-exit:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #0f0f10}
+.love-exit .heart-glyph{
+  display:block;
+  font-family:var(--fontd);
+  font-size:19px;
+  font-weight:900;
+  line-height:1;
+}
+.contact-launch{
+  width:34px;
+  height:34px;
+  border:2px solid #0f0f10;
+  border-radius:8px;
+  background:#fff;
+  box-shadow:2px 2px 0 #0f0f10;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex-shrink:0;
+}
+.contact-launch:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #0f0f10}
+.contact-launch img{
+  width:18px;
+  height:18px;
+  display:block;
+  object-fit:contain;
+}
+.header-tools{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:6px;
+  min-width:0;
+  padding:0 14px;
+  margin-top:-10px;
+}
+.header-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-shrink:0;
+}
+.header-mini-btn{
+  width:34px;
+  height:34px;
+  border:2px solid #0f0f10;
+  border-radius:8px;
+  background:#fff;
+  box-shadow:2px 2px 0 #0f0f10;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  padding:0;
+}
+.header-mini-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #0f0f10}
+.header-mini-btn img{
+  width:18px;
+  height:18px;
+  object-fit:contain;
+  display:block;
+}
+.day-link{
+  border:none;
+  background:transparent;
+  padding:0;
+  text-align:left;
+  cursor:pointer;
+  color:#0f0f10;
+  font-family:"Helvetica Neue","Avenir Next","Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif!important;
+  font-size:36px;
+  font-weight:800;
+  letter-spacing:.01em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  line-height:1;
+  font-style:normal;
+  text-shadow:0 1px 0 rgba(255,255,255,.36);
+}
+.polaroid-stack{
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  gap:8px;
+  min-height:228px;
+  padding:8px 12px 0;
+}
+.quick-face{
+  position:relative;
+  flex:0 0 126px;
+  border:2px solid #111;
+  border-radius:0;
+  background:#fff;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  align-items:stretch;
+  padding:8px 8px 22px;
+  box-shadow:4px 4px 0 rgba(0,0,0,.82);
+  transition:transform .14s ease,box-shadow .14s ease;
+  overflow:hidden;
+  min-height:150px;
+}
+.quick-face::before{
+  content:'';
+  position:absolute;
+  top:9px;
+  left:50%;
+  width:14px;
+  height:14px;
+  border-radius:999px;
+  transform:translateX(-50%);
+  background:
+    radial-gradient(circle at 35% 32%, rgba(255,255,255,.38) 0 18%, transparent 19%),
+    radial-gradient(circle at 50% 50%, #2a2a2a 0 42%, #050505 68%, #000 100%);
+  box-shadow:0 1px 0 rgba(255,255,255,.12) inset, 0 2px 4px rgba(0,0,0,.24);
+  z-index:3;
+  pointer-events:none;
+}
+.quick-face:nth-child(1){transform:translateX(9px) rotate(-6deg) translateY(9px)}
+.quick-face:nth-child(2){transform:rotate(3deg) translateY(0)}
+.quick-face:nth-child(3){transform:translateX(-15px) rotate(-4deg) translateY(11px)}
+.quick-face:active{transform:translate(1px,1px);box-shadow:2px 2px 0 rgba(0,0,0,.82)}
+.quick-face::after{display:none}
+.quick-face-photo{
+  width:100%;
+  aspect-ratio:1/1;
+  border:2px solid #111;
+  border-radius:0;
+  background:#efefef;
+  overflow:hidden;
+}
+.quick-face img,
+.quick-face-fallback{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#e9e9eb;
+  font-family:var(--fontcute, var(--fontd));
+  font-size:22px;
+  filter:none !important;
+}
+.quick-face-meta{
+  position:absolute;
+  left:7px;
+  right:7px;
+  bottom:5px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+  font-size:10px;
+  font-weight:700;
+  color:#111;
+}
+.quick-face-meta span:last-child{
+  flex:1;
+  min-width:0;
+  text-align:right;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:visible;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:auto;
+  touch-action:pan-y;
+  padding:0 4px calc(28px + env(safe-area-inset-bottom)) 0;
+  scrollbar-width:none;
+}
+.list::-webkit-scrollbar{display:none}
+.list::after{content:'';display:block;width:100%;height:10px;flex:0 0 10px}
+.chat-section{
+  padding:12px 12px 10px;
+  border:2px solid #0f0f10;
+  border-radius:6px;
+  background:#fff;
+  box-shadow:3px 3px 0 #0f0f10;
+  margin-right:4px;
+}
+.chat-section.pinned-section{
+  position:relative;
+  border-width:2px;
+  background:#fff;
+  box-shadow:3px 3px 0 #0f0f10;
+  padding-top:18px;
+  margin-top:12px;
+}
+.chat-section.pinned-section::before{
+  content:'PINNED';
+  position:absolute;
+  top:0;
+  left:12px;
+  padding:2px 8px;
+  border:2px solid #0f0f10;
+  background:#fff;
+  box-shadow:2px 2px 0 #0f0f10;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.14em;
+  transform:translateY(-58%);
+}
+.item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:2px 0;
+  cursor:pointer;
+}
+.item + .item{margin-top:10px;padding-top:10px;border-top:2px dashed rgba(15,15,16,.16)}
+.av{
+  width:52px;
+  height:52px;
+  border:2px solid #0f0f10;
+  border-radius:6px;
+  background:#efeff0;
+  box-shadow:2px 2px 0 #0f0f10;
+}
+.av img{width:100%;height:100%;object-fit:cover;display:block;filter:none !important}
+.meta{flex:1;min-width:0}
+.name{
+  font-size:16px;
+  line-height:1.1;
+  font-weight:900;
+  font-style:normal;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.item.pinned .name{font-size:17px}
+.pin-chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:2px 7px;
+  border-radius:999px;
+  background:#0f0f10;
+  color:#fff;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.12em;
+  line-height:1;
+  margin-left:6px;
+}
+.snip{
+  margin-top:5px;
+  font-size:11px;
+  line-height:1.35;
+  font-weight:800;
+  color:#818186;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.item-side{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  justify-content:flex-start;
+  gap:6px;
+  min-width:46px;
+}
+.time{
+  font-size:10px;
+  font-weight:900;
+  color:#b6b6bb;
+  white-space:nowrap;
+}
+.badge.unread{
+  min-width:20px;
+  height:20px;
+  padding:0 6px;
+  border-radius:999px;
+  background:#0f0f10;
+  color:#fff;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--fontd);
+  font-size:9px;
+  font-weight:900;
+  box-shadow:2px 2px 0 #0f0f10;
+}
+.badge.status-dot{display:none}
+.qq-bottom-nav{
+  position:fixed;
+  left:12px;
+  right:12px;
+  bottom:calc(10px + env(safe-area-inset-bottom));
+  z-index:95;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+}
+.qq-bottom-btn{
+  border:none;
+  background:transparent;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  color:#7a7a80;
+  font-family:var(--fontd);
+  font-size:10px;
+  font-weight:900;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.qq-bottom-btn .nav-icon{
+  width:46px;
+  height:46px;
+  border:2px solid #111;
+  border-radius:999px;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 10px 20px rgba(0,0,0,.12);
+}
+.qq-bottom-btn.active .nav-icon{
+  background:#111;
+}
+.qq-bottom-btn.active .nav-icon img,
+.qq-bottom-btn.active .nav-icon svg{
+  filter:brightness(0) invert(1);
+}
+.nav-icon svg,
+.nav-icon img{
+  width:28px;
+  height:28px;
+}
+.empty-card{
+  min-height:110px;
+  border:2px solid #0f0f10;
+  border-radius:6px;
+  background:#fff;
+  box-shadow:3px 3px 0 #0f0f10;
+  color:#7a7a80;
+}
+.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);display:none;align-items:center;justify-content:center;z-index:260;padding:20px;touch-action:manipulation}
+.pin-overlay.open{display:flex}
+.pin-card{width:min(280px,100%);background:var(--b);color:var(--w);border:2px solid var(--w);border-radius:18px;box-shadow:0 14px 30px rgba(0,0,0,.3), 4px 4px 0 #000;padding:16px 14px;display:flex;flex-direction:column;gap:14px;text-align:center;pointer-events:auto}
+.pin-title{font-family:var(--fontd);font-size:16px;font-weight:900;line-height:1.4}
+.pin-actions{display:flex;gap:10px}
+.pin-btn{flex:1;padding:10px 0;border:2px solid var(--b);border-radius:12px;background:var(--w);color:var(--b);font-family:var(--fontd);font-size:12px;font-weight:900;cursor:pointer;box-shadow:2px 2px 0 #000;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.pin-btn:active{transform:translate(2px,2px);box-shadow:0 0 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(12px);background:var(--b);color:var(--w);padding:9px 16px;border-radius:999px;font-size:12px;font-weight:800;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;z-index:70}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.iframe-wrap{height:100%;border:none;width:100%;display:block;flex:1;min-height:0}
+.qq-bottom-btn{
+  border:none;
+  background:transparent;
+  padding:0;
+}
+.qq-bottom-btn:active{transform:translateY(1px)}
+.qq-bottom-btn.active{color:var(--b)}
+.nav-icon{
+  width:46px;
+  height:46px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+.nav-icon svg,
+.nav-icon img{
+  width:28px;
+  height:28px;
+  display:block;
+  stroke:currentColor;
+  fill:none;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  filter:brightness(0);
+}
+.nav-label{display:none}
+.qq-btn-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.qq-nav-badge{position:absolute;top:-7px;right:-11px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#d22;color:#fff;border:1.5px solid #7e0000;display:none;align-items:center;justify-content:center;font-family:var(--fontd);font-size:9px;font-weight:900;line-height:1;box-shadow:1px 1px 0 rgba(0,0,0,.35)}
+.qq-nav-badge.show{display:inline-flex}
+@media (max-width:430px){
+  .day-link{font-size:31px}
+  .name{font-size:15px}
+  .polaroid-stack{min-height:210px}
+  .quick-face{flex-basis:116px}
+}
+.contacts-drawer{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:stretch;
+  justify-content:flex-end;
+  background:rgba(245,245,246,.18);
+  z-index:140;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .24s ease;
+  overscroll-behavior:contain;
+  backdrop-filter:blur(16px) saturate(128%);
+  -webkit-backdrop-filter:blur(16px) saturate(128%);
+}
+.contacts-drawer.open{opacity:1;pointer-events:auto}
+.contacts-drawer-panel{
+  width:min(312px,calc(100vw - 18px));
+  height:100%;
+  background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(244,244,244,.58));
+  border-left:2px solid #111;
+  border-right:2px solid #111;
+  border-top:2px solid #111;
+  border-bottom:2px solid #111;
+  box-shadow:-10px 18px 34px rgba(0,0,0,.12);
+  backdrop-filter:blur(22px) saturate(138%);
+  -webkit-backdrop-filter:blur(22px) saturate(138%);
+  padding-top:calc(var(--safe-top) + 8px);
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  overflow:hidden;
+  transform:translateX(calc(100% + 18px)) scale(.985);
+  transform-origin:right center;
+  transition:transform .42s cubic-bezier(.22,1.16,.32,1);
+  will-change:transform;
+}
+.contacts-drawer.open .contacts-drawer-panel{transform:translateX(0) scale(1)}
+.contacts-drawer-head{display:none}
+.contacts-drawer-title{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:24px;
+  padding:0 9px;
+  border-radius:2px;
+  background:#111;
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+  box-shadow:2px 2px 0 rgba(255,255,255,.92);
+}
+.contacts-drawer-close{
+  position:absolute;
+  left:14px;
+  top:14px;
+  width:34px;
+  height:34px;
+  border:2px solid #0f0f10;
+  border-radius:999px;
+  background:#fff;
+  box-shadow:3px 3px 0 rgba(0,0,0,.82);
+  font-size:18px;
+  font-weight:900;
+  cursor:pointer;
+  color:#111;
+  outline:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.contacts-drawer-close:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #0f0f10}
+.contacts-drawer-close:focus{outline:none;box-shadow:3px 3px 0 rgba(0,0,0,.82)}
+.contacts-drawer-list{
+  flex:1;
+  min-height:0;
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding:10px 14px calc(env(safe-area-inset-bottom) + 18px);
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:auto;
+  scroll-behavior:smooth;
+  scrollbar-width:none;
+  touch-action:pan-y;
+  transform:translateZ(0);
+  will-change:scroll-position;
+  scroll-snap-type:y proximity;
+}
+.contacts-drawer-list::-webkit-scrollbar{display:none}
+.contacts-drawer-item{
+  display:grid;
+  grid-template-columns:76px minmax(0,1fr) 42px;
+  align-items:center;
+  gap:12px;
+  border:2px solid #0f0f10;
+  background:#fff;
+  box-shadow:6px 6px 0 rgba(0,0,0,.84);
+  padding:10px;
+  cursor:pointer;
+  color:#111;
+  -webkit-text-fill-color:currentColor;
+  -webkit-tap-highlight-color:transparent;
+  scroll-snap-align:start;
+  touch-action:pan-y;
+}
+.contacts-drawer-item:nth-child(2n){transform:rotate(1.2deg)}
+.contacts-drawer-item:nth-child(2n+1){transform:rotate(-1.8deg)}
+.contacts-drawer-item:active{transform:translate(1px,1px) rotate(0deg);box-shadow:3px 3px 0 rgba(0,0,0,.84)}
+.contacts-drawer-avatar{
+  width:76px;
+  border:2px solid #0f0f10;
+  background:#fff;
+  box-shadow:2px 2px 0 #0f0f10;
+  padding:6px 6px 12px;
+}
+.contacts-drawer-avatar img,
+.contacts-drawer-avatar span{
+  display:block;
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  background:#ececef;
+  border:2px solid #0f0f10;
+}
+.contacts-drawer-avatar span{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+}
+.contacts-drawer-meta{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.contacts-drawer-delete{
+  width:36px;
+  height:36px;
+  border:2px solid #8f0d16;
+  border-radius:12px;
+  background:linear-gradient(180deg,#fff3f4 0%,#ffd9de 100%);
+  box-shadow:2px 2px 0 rgba(143,13,22,.9);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  padding:0;
+  flex-shrink:0;
+}
+.contacts-drawer-delete img{
+  width:18px;
+  height:18px;
+  object-fit:contain;
+  display:block;
+}
+.contacts-drawer-delete:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(143,13,22,.9)}
+.contacts-drawer-name{
+  font-family:var(--fontcute, var(--fontd));
+  font-size:16px;
+  font-weight:900;
+  line-height:1.12;
+  color:#111;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.contacts-drawer-note{
+  font-size:11px;
+  font-weight:800;
+  color:#6a6a6f;
+  line-height:1.3;
+}
+.contacts-helper-frame{
+  position:fixed;
+  right:0;
+  bottom:0;
+  width:1px;
+  height:1px;
+  border:0;
+  opacity:0;
+  pointer-events:none;
+}
+.contacts-create-mask{
+  position:fixed;
+  inset:0;
+  z-index:88;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+  background:rgba(15,15,16,.24);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.contacts-create-mask.open{display:flex}
+.contacts-create-card{
+  width:min(336px,100%);
+  background:linear-gradient(180deg,rgba(255,255,255,.992),rgba(244,244,244,.972));
+  border:2px solid #111;
+  border-radius:18px;
+  box-shadow:10px 12px 0 rgba(0,0,0,.18);
+  padding:18px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.contacts-create-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.contacts-create-title{
+  font-family:var(--fontcute, var(--fontd));
+  font-size:18px;
+  font-weight:900;
+  line-height:1.05;
+  color:#111;
+}
+.contacts-create-sub{
+  margin-top:4px;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.5;
+  color:#6a6a6f;
+}
+.contacts-create-close{
+  width:32px;
+  height:32px;
+  border:2px solid #111;
+  border-radius:999px;
+  background:#fff;
+  box-shadow:2px 2px 0 rgba(0,0,0,.82);
+  font-family:var(--fontcute, var(--fontd));
+  font-size:16px;
+  font-weight:900;
+  color:#111;
+  cursor:pointer;
+}
+.contacts-create-close:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,.82)}
+.delete-confirm-mask{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+  background:rgba(15,15,16,.24);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.delete-confirm-mask.open{display:flex}
+.delete-confirm-card{
+  width:min(332px,100%);
+  background:linear-gradient(180deg,rgba(255,252,252,.995),rgba(248,241,242,.97));
+  border:2px solid #111;
+  border-radius:18px;
+  box-shadow:10px 12px 0 rgba(0,0,0,.18);
+  padding:18px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.delete-confirm-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:24px;
+  padding:0 10px;
+  border:2px solid #8f0d16;
+  border-radius:999px;
+  background:linear-gradient(180deg,#fff3f4 0%,#ffd9de 100%);
+  color:#8f0d16;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.08em;
+  align-self:flex-start;
+  box-shadow:2px 2px 0 rgba(143,13,22,.14);
+}
+.delete-confirm-title{
+  font-family:var(--fontcute, var(--fontd));
+  font-size:18px;
+  font-weight:900;
+  line-height:1.1;
+  color:#111;
+}
+.delete-confirm-sub{
+  font-size:12px;
+  font-weight:800;
+  line-height:1.55;
+  color:#67676d;
+}
+.delete-confirm-name{
+  display:inline-flex;
+  max-width:100%;
+  align-items:center;
+  padding:6px 10px;
+  border:2px solid #111;
+  border-radius:12px;
+  background:#fff;
+  box-shadow:2px 2px 0 rgba(0,0,0,.82);
+  font-family:var(--fontcute, var(--fontd));
+  font-size:14px;
+  font-weight:900;
+  color:#111;
+}
+.delete-confirm-actions{
+  display:flex;
+  gap:10px;
+}
+.delete-confirm-btn{
+  flex:1;
+  min-height:42px;
+  border:2px solid #111;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:3px 3px 0 rgba(0,0,0,.82);
+  font-family:var(--fontcute, var(--fontd));
+  font-size:13px;
+  font-weight:900;
+  color:#111;
+  cursor:pointer;
+}
+.delete-confirm-btn.danger{
+  border-color:#8f0d16;
+  background:linear-gradient(180deg,#fff3f4 0%,#ffd9de 100%);
+  color:#8f0d16;
+  box-shadow:3px 3px 0 rgba(143,13,22,.78);
+}
+.delete-confirm-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,.82)}
+.delete-confirm-btn.danger:active{box-shadow:1px 1px 0 rgba(143,13,22,.78)}
+.contacts-create-avatar{
+  width:104px;
+  height:104px;
+  padding:0;
+  border:2px solid #111;
+  border-radius:999px;
+  background:#fff;
+  box-shadow:4px 4px 0 rgba(0,0,0,.82);
+  cursor:pointer;
+  align-self:center;
+  position:relative;
+  overflow:hidden;
+}
+.contacts-create-avatar-thumb{
+  width:100%;
+  height:100%;
+  border:none;
+  border-radius:999px;
+  background:#ededed;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--fontd);
+  font-size:28px;
+  color:#111;
+}
+.contacts-create-avatar-thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.contacts-create-avatar-name{
+  display:block;
+  margin-top:8px;
+  padding:0 4px;
+  font-family:var(--fontd);
+  font-size:11px;
+  font-weight:800;
+  line-height:1.2;
+  color:#111;
+  text-align:center;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.contacts-create-avatar-tag{
+  display:block;
+  margin-top:2px;
+  padding:0 8px;
+  font-family:var(--fontd);
+  font-size:10px;
+  font-weight:700;
+  line-height:1.42;
+  color:#555;
+  text-align:center;
+}
+.contacts-create-form{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.contacts-create-form label{
+  display:block;
+  margin-bottom:4px;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+  color:#6a6a6f;
+}
+.contacts-create-form input,
+.contacts-create-form textarea{
+  width:100%;
+  border:2px solid #111;
+  border-radius:12px;
+  padding:10px 12px;
+  background:#fff;
+  color:#111;
+  font-family:var(--fontd);
+  font-size:13px;
+  font-weight:700;
+  outline:none;
+  -webkit-text-fill-color:currentColor;
+}
+.contacts-create-form textarea{
+  min-height:92px;
+  resize:none;
+}
+.contacts-create-form input:focus,
+.contacts-create-form textarea:focus{box-shadow:3px 3px 0 rgba(0,0,0,.82)}
+.contacts-create-actions{
+  display:flex;
+  gap:10px;
+}
+.contacts-create-btn{
+  flex:1;
+  border:2px solid #111;
+  border-radius:12px;
+  padding:10px 0;
+  background:#fff;
+  color:#111;
+  box-shadow:4px 4px 0 rgba(0,0,0,.82);
+  font-family:var(--fontcute, var(--fontd));
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+}
+.contacts-create-btn.primary{
+  background:#111;
+  color:#fff;
+}
+.contacts-create-btn:active{transform:translate(1px,1px);box-shadow:2px 2px 0 rgba(0,0,0,.82)}
+.native-file-input-hidden{position:fixed;left:-9999px;top:auto;width:1px;height:1px;opacity:0}
+</style>
+</head>
+<body>
+  <div class="qq-shell">
+    <div class="view active" id="chatlist">
+      <div class="qq-chat-page">
+        <div class="qq-stage">
+          <section class="header-ribbon">
+            <div class="header-ribbon-main">
+              <button class="love-exit" type="button" aria-label="退出QQ" title="退出QQ" onclick="closeQQPage(event)"><span class="heart-glyph">❤︎</span></button>
+              <button class="contact-launch" type="button" aria-label="联系人" title="联系人" onclick="openContactsDrawer(event)"><img src="assets/联系人.png" alt=""></button>
+            </div>
+            <div class="polaroid-stack" id="quickAvatarStrip"></div>
+            <div class="header-tools">
+              <button class="day-link" type="button" id="qqTimelineMonth" onclick="pickQqHeroPhoto(event)">聊天室</button>
+              <div class="header-actions">
+                <button class="header-mini-btn" type="button" aria-label="创建角色" title="创建角色" onclick="openContactsCreate()"><img src="assets/创建.svg" alt=""></button>
+                <button class="header-mini-btn" type="button" aria-label="导入角色" title="导入角色" onclick="openContactsImport()"><img src="assets/导入.svg" alt=""></button>
+              </div>
+            </div>
+          </section>
+          <div class="list" id="chatList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="qq-bottom-nav">
+    <button class="qq-bottom-btn active" type="button" aria-label="聊天" title="聊天" data-view-target="chatlist" onclick="switchTab('chatlist')">
+      <span class="nav-icon"><img src="assets/聊天图标.png" alt=""></span>
+      <span class="nav-label">聊天</span>
+    </button>
+    <button class="qq-bottom-btn" type="button" aria-label="发现" title="发现" onclick="openMomentsPage()">
+      <span class="qq-btn-wrap">
+        <span class="nav-icon"><img src="assets/moments-icon.svg" alt=""></span>
+        <span class="qq-nav-badge" id="momentsBadge">0</span>
+      </span>
+      <span class="nav-label">发现</span>
+    </button>
+    <button class="qq-bottom-btn" type="button" aria-label="档案馆" title="档案馆" onclick="openOfflineArchive()">
+      <span class="nav-icon"><img src="assets/Chat-Bubble-Heart--Streamline-Sharp.png" alt=""></span>
+      <span class="nav-label">档案馆</span>
+    </button>
+    <button class="qq-bottom-btn" type="button" aria-label="自己" title="自己" onclick="openProfileCenter()">
+      <span class="nav-icon"><img src="assets/User-Story--Streamline-Sharp.png" alt=""></span>
+      <span class="nav-label">自己</span>
+    </button>
+  </div>
+
+  <div class="pin-overlay" id="pinOverlay" onclick="handlePinOverlayClick(event)">
+    <div class="pin-card">
+      <div class="pin-title" id="pinTitle">要置顶此聊天吗？</div>
+      <div class="pin-actions">
+        <button class="pin-btn" id="pinCancelBtn" type="button" onclick="return handlePinCancel(event)">取消</button>
+        <button class="pin-btn" id="pinConfirmBtn" type="button" onclick="return handlePinConfirm(event)">确认</button>
+      </div>
+    </div>
+  </div>
+  <div class="contacts-drawer" id="contactsDrawer" onclick="handleContactsDrawerOverlay(event)">
+    <aside class="contacts-drawer-panel">
+      <div class="contacts-drawer-list" id="contactsDrawerList"></div>
+    </aside>
+  </div>
+  <div class="contacts-create-mask" id="contactsCreateMask" onclick="handleContactsCreateOverlay(event)">
+    <div class="contacts-create-card">
+      <div class="contacts-create-head">
+        <div>
+          <div class="contacts-create-title">创建角色</div>
+          <div class="contacts-create-sub">留在 QQ 里新建，不再跳去旧页面。</div>
+        </div>
+        <button class="contacts-create-close" type="button" aria-label="关闭" onclick="closeContactsCreate()">×</button>
+      </div>
+      <button class="contacts-create-avatar" type="button" onclick="pickContactsCreateAvatar()">
+        <span class="contacts-create-avatar-thumb" id="contactsCreateAvatarThumb">+</span>
+        <span class="contacts-create-avatar-name" id="contactsCreateAvatarName">点这里上传头像</span>
+        <span class="contacts-create-avatar-tag">创建时先用圆头像</span>
+      </button>
+      <div class="contacts-create-form">
+        <div>
+          <label for="contactsCreateName">姓名</label>
+          <input id="contactsCreateName" type="text" placeholder="必填">
+        </div>
+        <div>
+          <label for="contactsCreateNick">昵称</label>
+          <input id="contactsCreateNick" type="text" placeholder="可选">
+        </div>
+        <div>
+          <label for="contactsCreateAvatar">头像符号 / Emoji</label>
+          <input id="contactsCreateAvatar" type="text" placeholder="例如 🌸">
+        </div>
+        <div>
+          <label for="contactsCreateDesc">人物介绍</label>
+          <textarea id="contactsCreateDesc" placeholder="角色设定 / 简介"></textarea>
+        </div>
+      </div>
+      <div class="contacts-create-actions">
+        <button class="contacts-create-btn" type="button" onclick="closeContactsCreate()">取消</button>
+        <button class="contacts-create-btn primary" type="button" onclick="submitContactsCreate()">创建</button>
+      </div>
+    </div>
+  </div>
+  <div class="delete-confirm-mask" id="deleteConfirmMask" onclick="handleDeleteConfirmOverlay(event)">
+    <div class="delete-confirm-card">
+      <div class="delete-confirm-badge">删除联系人</div>
+      <div class="delete-confirm-title">确认把这个联系人删掉吗？</div>
+      <div class="delete-confirm-name" id="deleteConfirmName">这个联系人</div>
+      <div class="delete-confirm-sub">会一起删掉这个联系人的世界书、聊天记录和导入表情包，这一步不能撤回。</div>
+      <div class="delete-confirm-actions">
+        <button class="delete-confirm-btn" type="button" onclick="closeDeleteConfirm()">取消</button>
+        <button class="delete-confirm-btn danger" type="button" onclick="confirmDeleteContact()">删除</button>
+      </div>
+    </div>
+  </div>
+  <input id="contactsImportInput" class="native-file-input-hidden" type="file" accept=".png,.json,application/json,image/png" multiple onchange="handleContactsImportFiles(this.files)">
+  <input id="contactsCreateAvatarInput" type="file" accept="image/*" style="display:none" onchange="handleContactsCreateAvatarFile(this.files[0])">
+  <input id="qqHeroPhotoInput" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg" style="display:none" onchange="handleQqHeroPhotoFile(this.files[0])">
+  <iframe id="contactsHelperFrame" class="contacts-helper-frame" src="characters.html?helper=1&__appBuild=2026-05-02T05:28:00Z" tabindex="-1" aria-hidden="true"></iframe>
+  <div class="toast" id="toast"></div>
+
+<script>
+var chars=[];
+var pinConfirmId = '';
+var pinConfirmMode = 'pin';
+var pinActionLockUntil = 0;
+var pinnedChatIdsCache = null;
+var longPressTimer = null;
+var longPressTriggered = false;
+var activePressId = null;
+var toastTimer = null;
+var LONG_PRESS_MS = 420;
+var avatarAssetCache = {};
+var MOMENTS_POSTS_KEY = 'qq_moments_posts';
+var MOMENTS_POSTS_ALT_KEY = 'moments_posts';
+var MOMENTS_LAST_SEEN_KEY = 'qq_moments_last_seen';
+var MOMENTS_BRIDGE_KEY = 'qq_moments_bridge_posts';
+var QQ_HERO_TITLE_KEY = 'qq_list_hero_title';
+var QQ_HERO_SUBTITLE_KEY = 'qq_list_hero_subtitle';
+var QQ_HERO_QUOTE_KEY = 'qq_list_hero_quote';
+var QQ_HERO_WEATHER_KEY = 'qq_list_hero_weather';
+var QQ_HERO_PHOTO_KEY = 'qq_list_hero_photo_asset';
+var qqCreateAvatarUpload = '';
+var contactsDrawerTapSuppressUntil = 0;
+var contactsDrawerPointer = { active:false, startX:0, startY:0 };
+var deleteConfirmId = '';
+var deleteConfirmLabel = '';
+var chatSummaryCache = {};
+var livePreviewCache = {};
+var momentsPostsCache = [];
+var listFilterMode = 'all';
+var LIST_FILTER_NOTES = {
+  all:'今天也把想说的话慢慢收好。',
+  pinned:'最想先看的，都放在最前面。',
+  unread:'还没回的心事，都留在这里。',
+  recent:'刚刚发生过的，还带着一点余温。',
+  chats:'把每一段来回都整整齐齐收进来。'
+};
+function getQqHeroDefaults(){
+  return {
+    title:'',
+    subtitle:'',
+    quote:'',
+    weather:'Weather in London 12°'
+  };
+}
+function getQqHeroState(){
+  var defaults = getQqHeroDefaults();
+  return {
+    title:String(localStorage.getItem(QQ_HERO_TITLE_KEY) || defaults.title).trim() || defaults.title,
+    subtitle:String(localStorage.getItem(QQ_HERO_SUBTITLE_KEY) || defaults.subtitle).trim() || defaults.subtitle,
+    quote:String(localStorage.getItem(QQ_HERO_QUOTE_KEY) || defaults.quote).trim() || defaults.quote,
+    weather:String(localStorage.getItem(QQ_HERO_WEATHER_KEY) || defaults.weather).trim() || defaults.weather
+  };
+}
+function fileToDataUrl(file){
+  return new Promise(function(resolve, reject){
+    try{
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(String(reader.result || '')); };
+      reader.onerror = function(){ reject(reader.error || new Error('read failed')); };
+      reader.readAsDataURL(file);
+    }catch(err){ reject(err); }
+  });
+}
+function shrinkDataUrl(dataUrl, maxDim){
+  return new Promise(function(resolve){
+    var src = String(dataUrl || '').trim();
+    if(!src){ resolve(''); return; }
+    if(src.indexOf('data:image/') !== 0){ resolve(src); return; }
+    var img = new Image();
+    img.onload = function(){
+      try{
+        var longest = Math.max(img.width || 0, img.height || 0);
+        if(!longest || longest <= maxDim){
+          resolve(src);
+          return;
+        }
+        var scale = maxDim / longest;
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round((img.width || maxDim) * scale));
+        canvas.height = Math.max(1, Math.round((img.height || maxDim) * scale));
+        var ctx = canvas.getContext('2d');
+        if(!ctx){
+          resolve(src);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/png', 0.92));
+      }catch(err){
+        resolve(src);
+      }
+    };
+    img.onerror = function(){ resolve(src); };
+    img.src = src;
+  });
+}
+async function saveQqHeroPhoto(dataUrl){
+  if(window.assetStore && typeof window.assetStore.saveOrFallback === 'function'){
+    try{
+      await window.assetStore.saveOrFallback(QQ_HERO_PHOTO_KEY, dataUrl);
+      return;
+    }catch(err){}
+  }
+  try{ localStorage.setItem(QQ_HERO_PHOTO_KEY, dataUrl); }catch(err){}
+}
+async function loadQqHeroPhoto(){
+  if(window.assetStore && typeof window.assetStore.load === 'function'){
+    try{
+      var stored = await window.assetStore.load(QQ_HERO_PHOTO_KEY);
+      if(stored) return String(stored || '');
+    }catch(err){}
+  }
+  try{ return String(localStorage.getItem(QQ_HERO_PHOTO_KEY) || ''); }catch(err){ return ''; }
+}
+function formatHeroClock(now){
+  var hh = String(now.getHours()).padStart(2, '0');
+  var mm = String(now.getMinutes()).padStart(2, '0');
+  return hh + ' : ' + mm;
+}
+function renderQqTimeline(){
+  var monthEl = document.getElementById('qqTimelineMonth');
+  if(monthEl){
+    monthEl.textContent = '聊天室';
+  }
+}
+async function renderQqHeroCard(){
+  var photo = await loadQqHeroPhoto().catch(function(){ return ''; });
+  var ribbon = document.querySelector('.header-ribbon');
+  if(ribbon){
+    var safeSrc = String(photo || '').trim() || 'assets/樱花在水里.jpg';
+    ribbon.style.setProperty('--qq-header-art', 'url("' + safeSrc.replace(/"/g, '\\"') + '")');
+  }
+  renderQqTimeline();
+}
+function editQqHeroText(kind){
+  var heroState = getQqHeroState();
+  var label = kind === 'title' ? '顶栏标题' : (kind === 'subtitle' ? '顶栏副文案' : '小引语');
+  var current = kind === 'title' ? heroState.title : (kind === 'subtitle' ? heroState.subtitle : heroState.quote);
+  var next = window.prompt('修改' + label, current);
+  if(next == null) return;
+  var safe = String(next || '').trim();
+  if(kind === 'title'){
+    if(safe) localStorage.setItem(QQ_HERO_TITLE_KEY, safe);
+    else localStorage.removeItem(QQ_HERO_TITLE_KEY);
+  }else if(kind === 'subtitle'){
+    if(safe) localStorage.setItem(QQ_HERO_SUBTITLE_KEY, safe);
+    else localStorage.removeItem(QQ_HERO_SUBTITLE_KEY);
+  }else{
+    if(safe) localStorage.setItem(QQ_HERO_QUOTE_KEY, safe);
+    else localStorage.removeItem(QQ_HERO_QUOTE_KEY);
+  }
+  renderQqHeroCard().catch(function(){});
+}
+function editQqWeather(evt){
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+}
+function pickQqHeroPhoto(evt){
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  var input = document.getElementById('qqHeroPhotoInput');
+  if(input){
+    input.value = '';
+    input.click();
+  }
+}
+async function handleQqHeroPhotoFile(file){
+  if(!file) return;
+  try{
+    var raw = await fileToDataUrl(file);
+    var safeData = /^data:image\/gif/i.test(raw) ? raw : await shrinkDataUrl(raw, 1440);
+    await saveQqHeroPhoto(safeData);
+    await renderQqHeroCard();
+    toast('顶图已经换好了');
+  }catch(err){
+    toast('图片读取失败');
+  }
+}
+function openScheduleApp(){
+  try{
+    if(window.parent && typeof window.parent.openApp === 'function'){
+      window.parent.openApp('schedule');
+      return;
+    }
+  }catch(err){}
+  forward({ type:'OPEN_APP', payload:'schedule' });
+}
+function closeQQPage(evt){
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  restoreParentTopbar();
+  try{
+    if(window.parent && typeof window.parent.closeApp === 'function'){
+      window.parent.closeApp();
+      return;
+    }
+  }catch(err){}
+  forward({ type:'CLOSE_APP' });
+}
+
+function getStoredCharactersSnapshot(){
+  if(window.MetadataStore && typeof window.MetadataStore.getCharactersSync === 'function'){
+    return window.MetadataStore.getCharactersSync();
+  }
+  try{
+    var list = JSON.parse(localStorage.getItem('characters') || '[]');
+    return Array.isArray(list) ? list : [];
+  }catch(err){
+    return [];
+  }
+}
+function getStoredWorldbooksSnapshot(){
+  if(window.MetadataStore && typeof window.MetadataStore.getWorldbooksSync === 'function'){
+    return window.MetadataStore.getWorldbooksSync();
+  }
+  try{
+    var data = JSON.parse(localStorage.getItem('worldbooks') || '{}');
+    return data && typeof data === 'object' ? data : {};
+  }catch(err){
+    return {};
+  }
+}
+function saveStoredWorldbooksSnapshot(nextWorldbooks){
+  if(window.MetadataStore && typeof window.MetadataStore.saveWorldbooks === 'function'){
+    return window.MetadataStore.saveWorldbooks(nextWorldbooks && typeof nextWorldbooks === 'object' ? nextWorldbooks : {});
+  }
+  return Promise.resolve(nextWorldbooks || {});
+}
+
+function accountScopedKey(base){
+  if(window.AccountManager){
+    window.AccountManager.ensure();
+    return window.AccountManager.scopedKey(base);
+  }
+  return base;
+}
+
+function normalizeStoredChatMessage(entry){
+  if(Array.isArray(entry)){
+    return {
+      id: String(entry[0] || ''),
+      role: String(entry[1] || 'assistant'),
+      type: normalizeChatPreviewType(entry[2] || 'text'),
+      content: typeof entry[3] === 'string' ? entry[3] : String(entry[3] || ''),
+      sentAt: Number(entry[4] || 0) || 0,
+      readAt: Number(entry[5] || 0) || 0,
+      replyToId: entry[6] ? String(entry[6]) : null,
+      hidden: !!entry[7]
+    };
+  }
+  if(entry && typeof entry === 'object'){
+    return {
+      id: String(entry.id || ''),
+      role: String(entry.role || 'assistant'),
+      type: normalizeChatPreviewType(entry.type || 'text'),
+      content: typeof entry.content === 'string' ? entry.content : String(entry.content || ''),
+      sentAt: Number(entry.sentAt || 0) || 0,
+      readAt: Number(entry.readAt || 0) || 0,
+      replyToId: entry.replyToId ? String(entry.replyToId) : null,
+      hidden: !!entry.hidden
+    };
+  }
+  return null;
+}
+
+function normalizeStoredChatHistory(list){
+  return (Array.isArray(list) ? list : []).map(normalizeStoredChatMessage).filter(Boolean);
+}
+
+function loadStoredAsset(key){
+  if(window.assetStore) return window.assetStore.load(key);
+  try{ return Promise.resolve(localStorage.getItem(key) || ''); }catch(e){ return Promise.resolve(''); }
+}
+
+function isRenderableAssetSource(src){
+  var value = String(src || '').trim();
+  return !!(value && value !== '__asset__' && (value.indexOf('data:') === 0 || value.indexOf('blob:') === 0 || value.indexOf('http') === 0 || value.indexOf('/') === 0 || value.indexOf('./') === 0 || value.indexOf('../') === 0 || value.indexOf('assets/') === 0));
+}
+
+async function loadChatSettingsBundleForQq(charId){
+  var safeId = String(charId || '').trim();
+  if(!safeId || !(window.PhoneStorage && typeof window.PhoneStorage.getJson === 'function')) return null;
+  var base = 'chat_settings_bundle_' + safeId;
+  var keys = [accountScopedKey(base), base];
+  var best = null;
+  for(var i = 0; i < keys.length; i += 1){
+    try{
+      var item = await window.PhoneStorage.getJson(keys[i]);
+      if(item && typeof item === 'object'){
+        if(!best || Number(item.updatedAt || 0) >= Number(best.updatedAt || 0)) best = item;
+      }
+    }catch(err){}
+  }
+  return best || null;
+}
+
+function getSunnyPreview(){
+  return window.SunnySupport && typeof window.SunnySupport.getPinnedPreview === 'function'
+    ? window.SunnySupport.getPinnedPreview()
+    : null;
+}
+
+function hydrateAvatarAssets(){
+  chars.forEach(function(c){
+    if(!c || !c.id) return;
+    var keys = [accountScopedKey('char_avatar_' + c.id), 'char_avatar_' + c.id];
+    var chain = loadChatSettingsBundleForQq(c.id).then(function(bundle){
+      var bundleAvatar = String((bundle && bundle.charAvatar) || '').trim();
+      return isRenderableAssetSource(bundleAvatar) ? bundleAvatar : '';
+    }).catch(function(){ return ''; });
+    keys.forEach(function(key){
+      chain = chain.then(function(found){
+        if(found) return found;
+        return loadStoredAsset(key).catch(function(){ return ''; });
+      });
+    });
+    chain.then(function(src){
+      if(src && avatarAssetCache[c.id] !== src){
+        avatarAssetCache[c.id] = src;
+        renderList();
+      }
+    });
+  });
+}
+
+function getAvatarSrc(c){
+  if(!c) return '';
+  var ovr = avatarAssetCache[c.id];
+  if(isRenderableAssetSource(ovr)) return ovr;
+  if(isRenderableAssetSource(c.avatarUrl)) return c.avatarUrl;
+  if(isRenderableAssetSource(c.imageData)) return c.imageData;
+  return '';
+}
+function slimChar(c){
+  if(!c) return null;
+  var imageData = String(c.imageData || '').trim();
+  if(/^data:/i.test(imageData)) imageData = '';
+  function copyList(list){
+    return Array.isArray(list) ? list.map(function(item){
+      if(item && typeof item === 'object'){
+        try{ return JSON.parse(JSON.stringify(item)); }catch(err){ return Object.assign({}, item); }
+      }
+      return item;
+    }) : [];
+  }
+  return {
+    id:c.id, name:c.name, nickname:c.nickname, description:c.description, avatar:c.avatar,
+    imageData:imageData,
+    avatarUrl:String(c.avatarUrl || '').trim(),
+    personality:c.personality, scenario:c.scenario, system_prompt:c.system_prompt,
+    first_mes:c.first_mes, alternate_greetings:c.alternate_greetings,
+    tags:c.tags, character_version:c.character_version, spec:c.spec, creator:c.creator,
+    importedAvatarResources:copyList(c.importedAvatarResources),
+    importedMemeResources:copyList(c.importedMemeResources),
+    importedRuleBlocks:copyList(c.importedRuleBlocks),
+    importedRegexScripts:copyList(c.importedRegexScripts),
+    importedMemeCategory:String(c.importedMemeCategory || ''),
+    authorRulesEnabled:c.authorRulesEnabled !== false,
+    regexRulesEnabled:c.regexRulesEnabled !== false,
+    regexRulesUserTouched:!!c.regexRulesUserTouched,
+    msgMin:c.msgMin, msgMax:c.msgMax,
+    offlineInviteMin:c.offlineInviteMin,
+    offlineInviteMax:c.offlineInviteMax,
+    offlineInvitePerspective:c.offlineInvitePerspective,
+    offlineInviteStyle:c.offlineInviteStyle,
+    offlineSummaryEvery:c.offlineSummaryEvery,
+    offlineSummaryAuto:c.offlineSummaryAuto,
+    offlineMemoryReadCount:c.offlineMemoryReadCount,
+    offlineSideStoryType:c.offlineSideStoryType,
+    contextWindow:c.contextWindow,
+    summaryEvery:c.summaryEvery,
+    manualSummarySize:c.manualSummarySize,
+    memoryMergeThreshold:c.memoryMergeThreshold,
+    autoSummaryEnabled:c.autoSummaryEnabled,
+    translationEnabled:!!c.translationEnabled,
+    replyLanguage:String(c.replyLanguage||c.language||'zh'),
+    translationMode:String(c.translationMode||'ondemand'),
+    chatSignature:String(c.chatSignature||''),
+    userNameProfile:String(c.userNameProfile||''),
+    userPersonaProfile:String(c.userPersonaProfile||''),
+    livePresenceWorldHint:String(c.livePresenceWorldHint||''),
+    livePresence:(c.livePresence && typeof c.livePresence === 'object') ? Object.assign({}, c.livePresence) : null
+  };
+}
+
+async function resolveLatestChar(id, fallback){
+  var targetId = String(id || '').trim();
+  if(!targetId) return fallback || null;
+  if(window.MetadataStore && typeof window.MetadataStore.loadCharacters === 'function'){
+    try{ await window.MetadataStore.loadCharacters(true); }catch(err){}
+  }
+  var list = getStoredCharactersSnapshot();
+  if(!Array.isArray(list)) return fallback || null;
+  var activeAcctId = '';
+  try{
+    if(window.AccountManager){
+      window.AccountManager.ensure();
+      var acct = window.AccountManager.getActive();
+      activeAcctId = String((acct && acct.id) || '').trim();
+    }
+  }catch(err){}
+  var hit = list.find(function(c){
+    if(!c || String(c.id || '') !== targetId) return false;
+    if(!activeAcctId) return true;
+    return String(c.ownerAccountId || '') === activeAcctId;
+  });
+  if(!hit){
+    hit = list.find(function(c){ return c && String(c.id || '') === targetId; }) || null;
+  }
+  return hit || fallback || null;
+}
+
+async function hasChatRecordForChar(charId){
+  if(!charId) return false;
+  var scoped = accountScopedKey('chat_' + charId);
+  if(window.PhoneStorage && typeof window.PhoneStorage.get === 'function'){
+    try{
+      var record = await window.PhoneStorage.get('chats', scoped);
+      var history = record && Array.isArray(record.history) ? record.history : [];
+      if(history.length) return true;
+    }catch(e){}
+  }
+  try{
+    var keys = [scoped, 'chat_' + charId];
+    for(var i = 0; i < localStorage.length; i++){
+      var key = localStorage.key(i) || '';
+      if(key.indexOf('chat_' + charId + '__acct_') === 0) keys.push(key);
+    }
+    for(var j = 0; j < keys.length; j++){
+      var raw = localStorage.getItem(keys[j]);
+      if(!raw) continue;
+      var parsed = JSON.parse(raw);
+      var list = parsed && (parsed.history || parsed.messages);
+      if(Array.isArray(list) && list.length) return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+function getChatStorageKeysForChar(charId){
+  var safeId = String(charId || '').trim();
+  if(!safeId) return [];
+  var keys = [accountScopedKey('chat_' + safeId), 'chat_' + safeId];
+  try{
+    for(var i = 0; i < localStorage.length; i++){
+      var key = localStorage.key(i) || '';
+      if(key.indexOf('chat_' + safeId + '__acct_') === 0) keys.push(key);
+    }
+  }catch(err){}
+  return Array.from(new Set(keys.filter(Boolean)));
+}
+function chatSeenAtKey(charId){
+  var safeId = String(charId || '').trim();
+  return safeId ? accountScopedKey('qq_chat_seen_at_' + safeId) : '';
+}
+function getChatSeenAt(charId){
+  var key = chatSeenAtKey(charId);
+  if(!key) return 0;
+  try{
+    var value = parseInt(localStorage.getItem(key) || '0', 10);
+    return Number.isFinite(value) ? Math.max(0, value) : 0;
+  }catch(e){
+    return 0;
+  }
+}
+function setChatSeenAt(charId, ts){
+  var key = chatSeenAtKey(charId);
+  if(!key) return 0;
+  var safeTs = Math.max(0, Number(ts || Date.now()) || Date.now());
+  try{ localStorage.setItem(key, String(safeTs)); }catch(e){}
+  return safeTs;
+}
+
+function summarizeChatHistoryForQq(list, fallbackChar){
+  var msgs = normalizeStoredChatHistory(Array.isArray(list) ? list : []);
+  var fallbackCharId = String((fallbackChar && fallbackChar.id) || '').trim();
+  var seenAt = getChatSeenAt(fallbackCharId);
+  var last = {content:getCharacterPreviewFallback(fallbackChar), type:'text'};
+  var previewSource = getLastVisiblePreviewMessage(msgs);
+  var lastAt = Number((previewSource && (previewSource.sentAt || previewSource.readAt)) || 0) || 0;
+  if(previewSource) last = normalizePreviewMessage(previewSource);
+  var unread = 0;
+  msgs.forEach(function(m){
+    var ts = Number(m && (m.sentAt || m.updatedAt || m.readAt) || 0) || 0;
+    if(m && m.role === 'assistant' && !m.readAt && ts > seenAt) unread++;
+  });
+  return { last:last, unread:unread, lastAt:lastAt, count:msgs.length, history:msgs };
+}
+function absorbChatSeenTimestamp(current, list){
+  var seenAt = Math.max(0, Number(current || 0) || 0);
+  normalizeStoredChatHistory(Array.isArray(list) ? list : []).forEach(function(m){
+    var ts = Number(m && (m.sentAt || m.updatedAt || m.readAt) || 0) || 0;
+    if(ts >= seenAt) seenAt = ts + 1;
+  });
+  return seenAt;
+}
+
+function chooseBetterChatSummary(current, next){
+  if(!current) return next;
+  if(!next) return current;
+  if(Number(next.lastAt || 0) > Number(current.lastAt || 0)) return next;
+  if(Number(next.lastAt || 0) === Number(current.lastAt || 0) && Number(next.count || 0) > Number(current.count || 0)) return next;
+  return current;
+}
+
+async function refreshChatCaches(){
+  var next = {};
+  var charMap = {};
+  (Array.isArray(chars) ? chars : []).forEach(function(c){
+    if(c && c.id) charMap[String(c.id)] = c;
+  });
+  if(window.PhoneStorage && typeof window.PhoneStorage.list === 'function'){
+    try{
+      var records = await window.PhoneStorage.list('chats');
+      (Array.isArray(records) ? records : []).forEach(function(record){
+        if(!record || typeof record !== 'object') return;
+        var charId = String(record.charId || '').trim();
+        if(!charId){
+          var match = String(record.id || '').match(/^chat_(.+?)(?:__acct_.+)?$/);
+          charId = match ? String(match[1] || '').trim() : '';
+        }
+        if(!charId || !charMap[charId]) return;
+        var summary = summarizeChatHistoryForQq(record.history || [], charMap[charId]);
+        summary.lastAt = Math.max(Number(summary.lastAt || 0) || 0, Number(record.updatedAt || 0) || 0);
+        next[charId] = chooseBetterChatSummary(next[charId], summary);
+      });
+    }catch(e){}
+  }
+  var hasPhoneChatStore = !!(window.PhoneStorage && typeof window.PhoneStorage.list === 'function');
+  (Array.isArray(chars) ? chars : []).forEach(function(c){
+    if(!c || !c.id) return;
+    if(!hasPhoneChatStore){
+      getChatStorageKeysForChar(c.id).forEach(function(key){
+        try{
+          var saved = JSON.parse(localStorage.getItem(key) || 'null');
+          var list = saved && (saved.messages || saved.history);
+          if(!Array.isArray(list) || !list.length) return;
+          next[c.id] = chooseBetterChatSummary(next[c.id], summarizeChatHistoryForQq(list, c));
+        }catch(e){}
+      });
+    }
+    if(!next[c.id]) next[c.id] = summarizeChatHistoryForQq([], c);
+    if(livePreviewCache[c.id]){
+      next[c.id].last = livePreviewCache[c.id];
+    }
+  });
+  chatSummaryCache = next;
+}
+
+function isPreviewGreetingPlaceholder(text){
+  var clean = String(text || '').replace(/\r\n/g, '\n').trim();
+  if(!clean) return true;
+  return /^(?:【\s*开场(?:白)?\s*】|\[\s*开场(?:白)?\s*\]|开场白?|【\s*开场白(?:跳转|预览)\s*】|【\s*user信息填写\s*】)$/i.test(clean)
+    || /【\s*开场白(?:跳转|预览)\s*】|【\s*user信息填写\s*】/i.test(clean);
+}
+
+function looksLikePreviewHtmlTemplate(text){
+  var clean = String(text || '').trim();
+  if(!clean) return false;
+  return /<!DOCTYPE html>|<html\b|<head\b|<style\b|<script\b|emoji-picker-element|phone-container/i.test(clean);
+}
+
+function looksLikePreviewMetaNote(text){
+  var clean = String(text || '').replace(/\r\n/g, '\n').trim();
+  if(!clean) return false;
+  if(/^>\s*原作者/i.test(clean)) return true;
+  if(/请务必留意|游玩相关|免费发布|dc社区|discord|手机格式适配|状态栏二选一|世界书|正则|快捷|快捷指令|作者说明/i.test(clean)){
+    if(/^>/.test(clean) || /(?:^|\n)\s*#{1,4}\s*/.test(clean) || /(?:^|\n)\s*\d+\./.test(clean)) return true;
+  }
+  return false;
+}
+
+function normalizePreviewRegexScript(entry){
+  if(!entry || typeof entry !== 'object') return null;
+  return {
+    scriptName: String(entry.scriptName || entry.name || entry.label || entry.id || '').trim() || '导入脚本',
+    findRegex: String(entry.findRegex || entry.find_regex || '').trim(),
+    replaceString: String(entry.replaceString || entry.replace_string || '').trim(),
+    placement: Array.isArray(entry.placement) ? entry.placement.map(function(item){ return Number(item); }).filter(function(item){ return isFinite(item); }) : [],
+    trimStrings: Array.isArray(entry.trimStrings) ? entry.trimStrings.map(function(item){ return String(item || '').trim(); }).filter(Boolean) : [],
+    disabled: !!entry.disabled,
+    promptOnly: !!entry.promptOnly,
+    substituteRegex: Number(entry.substituteRegex || 0) || 0
+  };
+}
+
+function getPreviewUserName(){
+  try{
+    if(window.AccountManager){
+      var scoped = window.AccountManager.scopedKey('user_name');
+      var named = String(localStorage.getItem(scoped) || '').trim();
+      if(named) return named;
+    }
+  }catch(err){}
+  try{
+    var legacy = String(localStorage.getItem('user_name') || '').trim();
+    if(legacy) return legacy;
+  }catch(err){}
+  return '你';
+}
+
+function escapePreviewRegexMacro(value){
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function substitutePreviewGreetingTemplateParams(text, c){
+  var source = String(text || '');
+  if(!source) return '';
+  var userName = String(getPreviewUserName() || '你').trim() || '你';
+  var charName = String((c && (c.nickname || c.name)) || '对方').trim() || '对方';
+  return source
+    .replace(/\{\{\s*user\s*\}\}/gi, userName)
+    .replace(/\{\{\s*char\s*\}\}/gi, charName)
+    .replace(/<\s*user\s*>/gi, userName)
+    .replace(/<\s*char\s*>/gi, charName);
+}
+
+function buildPreviewGreetingRegexSource(entry, c){
+  var item = normalizePreviewRegexScript(entry);
+  var pattern = String(item && item.findRegex || '').trim();
+  if(!pattern) return '';
+  var mode = Number(item && item.substituteRegex || 0) || 0;
+  if(mode === 1) return substitutePreviewGreetingTemplateParams(pattern, c);
+  if(mode === 2){
+    var userName = String(getPreviewUserName() || '你').trim() || '你';
+    var charName = String((c && (c.nickname || c.name)) || '对方').trim() || '对方';
+    return pattern
+      .replace(/\{\{\s*user\s*\}\}/gi, escapePreviewRegexMacro(userName))
+      .replace(/\{\{\s*char\s*\}\}/gi, escapePreviewRegexMacro(charName))
+      .replace(/<\s*user\s*>/gi, escapePreviewRegexMacro(userName))
+      .replace(/<\s*char\s*>/gi, escapePreviewRegexMacro(charName));
+  }
+  return pattern;
+}
+
+function parsePreviewGreetingRegex(entry, c){
+  var pattern = buildPreviewGreetingRegexSource(entry, c);
+  if(!pattern) return null;
+  var source = pattern;
+  var flags = 'g';
+  var slashMatch = pattern.match(/^\/([\s\S]*)\/([a-z]*)$/i);
+  if(slashMatch){
+    source = String(slashMatch[1] || '');
+    flags = String(slashMatch[2] || '').replace(/[^dgimsuvy]/g, '');
+    if(flags.indexOf('g') === -1) flags += 'g';
+  }
+  try{
+    return new RegExp(source, flags || 'g');
+  }catch(err){
+    try{ return new RegExp(pattern, 'g'); }catch(innerErr){ return null; }
+  }
+}
+
+function runPreviewGreetingRegexScript(entry, rawText, c){
+  var item = normalizePreviewRegexScript(entry);
+  var sourceText = String(rawText || '');
+  if(!(item && !item.disabled && sourceText && String(item.findRegex || '').trim())) return sourceText;
+  var regex = parsePreviewGreetingRegex(item, c);
+  if(!regex) return sourceText;
+  try{
+    return String(sourceText).replace(regex, function(){
+      var args = Array.prototype.slice.call(arguments);
+      var groups = args[args.length - 1];
+      var replacePattern = String(item.replaceString || '').replace(/\{\{\s*match\s*\}\}/gi, '$0');
+      var replaceWithGroups = replacePattern.replace(/\$(\d+)|\$<([^>]+)>/g, function(_, num, groupName){
+        var replacementMatch = '';
+        if(num){
+          replacementMatch = args[Number(num)] || '';
+        }else if(groupName && groups && typeof groups === 'object'){
+          replacementMatch = groups[groupName] || '';
+        }
+        var filteredMatch = String(replacementMatch || '');
+        if(Array.isArray(item.trimStrings) && item.trimStrings.length){
+          item.trimStrings.forEach(function(token){
+            var safe = substitutePreviewGreetingTemplateParams(String(token || ''), c);
+            if(!safe) return;
+            filteredMatch = filteredMatch.split(safe).join('');
+          });
+        }
+        return filteredMatch;
+      });
+      return substitutePreviewGreetingTemplateParams(replaceWithGroups, c);
+    });
+  }catch(err){
+    return sourceText;
+  }
+}
+
+function getEnabledPreviewGreetingRegexScripts(c){
+  if(!(c && Array.isArray(c.importedRegexScripts) && c.importedRegexScripts.length)) return [];
+  if(c.regexRulesEnabled === false) return [];
+  return c.importedRegexScripts
+    .map(normalizePreviewRegexScript)
+    .filter(function(entry){
+      if(!(entry && !entry.disabled && String(entry.findRegex || '').trim())) return false;
+      var placements = Array.isArray(entry.placement) ? entry.placement : [];
+      if(placements.length && placements.indexOf(2) === -1 && placements.indexOf(1) === -1) return false;
+      return !entry.promptOnly;
+    });
+}
+
+function renderPreviewGreetingSource(text, c){
+  var source = substitutePreviewGreetingTemplateParams(text, c);
+  var scripts = getEnabledPreviewGreetingRegexScripts(c);
+  if(!scripts.length) return source;
+  var next = source;
+  scripts.forEach(function(entry){
+    next = runPreviewGreetingRegexScript(entry, next, c);
+  });
+  return substitutePreviewGreetingTemplateParams(next, c);
+}
+
+function sanitizeCharacterPreviewSeed(text){
+  var clean = String(text || '').replace(/\r\n/g, '\n').trim();
+  if(!clean) return '';
+  clean = clean
+    .replace(/<\/?info>/gi, ' ')
+    .replace(/<\/?character>/gi, ' ')
+    .replace(/<\/?writing_rule>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<title>[\s\S]*?<\/title>/gi, ' ')
+    .replace(/<url>[\s\S]*?<\/url>/gi, ' ')
+    .replace(/<lyrics>[\s\S]*?<\/lyrics>/gi, ' ')
+    .replace(/```(?:yaml|html|json)?/gi, ' ')
+    .replace(/\[OOC：[^\]]+\]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if(looksLikePreviewHtmlTemplate(clean) || looksLikePreviewMetaNote(clean)) return '';
+  if(clean.length > 120) clean = clean.slice(0, 120).trim();
+  return clean;
+}
+
+function getCharacterPreviewFallback(c){
+  if(!c) return '';
+  var pool = [];
+  if(String(c.first_mes || '').trim()) pool.push(c.first_mes);
+  if(Array.isArray(c.alternate_greetings)) pool = pool.concat(c.alternate_greetings);
+  for(var i = 0; i < pool.length; i++){
+    var rendered = renderPreviewGreetingSource(pool[i], c);
+    var richSummary = summarizeRichPreview(rendered);
+    if(richSummary && richSummary !== '【SURPRISE】' && !isPreviewGreetingPlaceholder(richSummary)) return richSummary;
+    var candidate = sanitizeCharacterPreviewSeed(rendered);
+    if(candidate && !isPreviewGreetingPlaceholder(candidate)) return candidate;
+  }
+  return sanitizeCharacterPreviewSeed(c.description || '');
+}
+
+async function refreshMomentsCache(){
+  var key = accountScopedKey(MOMENTS_POSTS_KEY);
+  var altKey = accountScopedKey(MOMENTS_POSTS_ALT_KEY);
+  if(window.PhoneStorage && typeof window.PhoneStorage.getJson === 'function'){
+    try{
+      var storeKeys = [key, altKey, MOMENTS_POSTS_KEY, MOMENTS_POSTS_ALT_KEY];
+      var stored = [];
+      for(var sk = 0; sk < storeKeys.length; sk += 1){
+        stored = await window.PhoneStorage.getJson(storeKeys[sk]);
+        if(Array.isArray(stored) && stored.length) break;
+      }
+      if(Array.isArray(stored)){
+        momentsPostsCache = stored;
+        return;
+      }
+    }catch(e){}
+  }
+  try{
+    var readKeys = [key, altKey, MOMENTS_POSTS_KEY, MOMENTS_POSTS_ALT_KEY];
+    for(var lk = 0; lk < readKeys.length; lk += 1){
+      var parsed = JSON.parse(localStorage.getItem(readKeys[lk]) || '[]');
+      if(Array.isArray(parsed) && parsed.length){
+        momentsPostsCache = parsed;
+        return;
+      }
+    }
+    momentsPostsCache = [];
+  }catch(e){
+    momentsPostsCache = [];
+  }
+}
+
+async function loadChars(){
+  if(window.MetadataStore && typeof window.MetadataStore.loadCharacters === 'function'){
+    try{ await window.MetadataStore.loadCharacters(true); }catch(err){}
+  }
+  chars = getStoredCharactersSnapshot();
+  if(!Array.isArray(chars)) chars = [];
+  if(window.AccountManager){
+    if(typeof window.AccountManager.hydrateFromStorage === 'function'){
+      try{ await window.AccountManager.hydrateFromStorage(); }catch(err){}
+    }
+    window.AccountManager.ensure();
+    var acct = window.AccountManager.getActive();
+    var defaultId = window.AccountManager.getDefaultId();
+    var changed = false;
+    chars = chars.map(function(c){
+      if(!c || typeof c !== 'object') return c;
+      if(!c.ownerAccountId){
+        c.ownerAccountId = defaultId || (acct && acct.id) || '';
+        changed = true;
+      }
+      return c;
+    });
+    if(changed){
+      if(window.MetadataStore && typeof window.MetadataStore.saveCharacters === 'function'){
+        window.MetadataStore.saveCharacters(chars).catch(function(){});
+      }
+    }
+    if(acct && !acct.isDefault){
+      var friendSet = new Set(Array.isArray(acct.friends) ? acct.friends : []);
+      var visibility = await Promise.all(chars.map(async function(c){
+        var ownedByActive = !!(c && String(c.ownerAccountId || '') === String(acct.id || ''));
+        return {
+          char: c,
+          keep: ownedByActive || !!(c && friendSet.has(c.id)) || await hasChatRecordForChar(c && c.id)
+        };
+      }));
+      chars = visibility.filter(function(item){ return item.keep; }).map(function(item){ return item.char; });
+    }
+  }
+  hydrateAvatarAssets();
+  await hydratePinnedChatIds();
+  await refreshChatCaches();
+  await refreshMomentsCache();
+  renderList();
+  renderMomentsBadge();
+  syncHomeBadgeCount();
+}
+function pinnedChatIdsKey(){
+  return accountScopedKey('qq_pinned_chat_ids');
+}
+function pinnedChatIdsStorageKeys(){
+  var base = 'qq_pinned_chat_ids';
+  var keys = [];
+  function add(key){
+    key = String(key || '').trim();
+    if(key && keys.indexOf(key) === -1) keys.push(key);
+  }
+  add(pinnedChatIdsKey());
+  add(base);
+  try{
+    if(window.AccountManager){
+      window.AccountManager.ensure();
+      var acct = window.AccountManager.getActive();
+      var defaultId = window.AccountManager.getDefaultId();
+      if(acct && acct.id) add(window.AccountManager.scopedKey(base, acct.id));
+      if(defaultId) add(window.AccountManager.scopedKey(base, defaultId));
+    }
+  }catch(err){}
+  return keys;
+}
+function memeLibraryStorageKey(){
+  return accountScopedKey('chat_meme_library_v1');
+}
+function getPinnedChatIds(){
+  if(Array.isArray(pinnedChatIdsCache)){
+    return pinnedChatIdsCache.slice();
+  }
+  try{
+    var ids = JSON.parse(localStorage.getItem(pinnedChatIdsKey()) || '[]');
+    pinnedChatIdsCache = Array.isArray(ids) ? ids.filter(Boolean) : [];
+    return pinnedChatIdsCache.slice();
+  }catch(e){
+    return [];
+  }
+}
+function setPinnedChatIds(ids){
+  var safeIds = (Array.isArray(ids) ? ids : []).map(function(item){ return String(item || '').trim(); }).filter(Boolean);
+  pinnedChatIdsCache = safeIds.slice();
+  var keys = pinnedChatIdsStorageKeys();
+  if(window.PhoneStorage && typeof window.PhoneStorage.putJson === 'function'){
+    Promise.all(keys.map(function(key){
+      return window.PhoneStorage.putJson(key, safeIds);
+    })).catch(function(err){
+      console.warn('qq pinned indexedDB save failed', err);
+    });
+  }else{
+    try{
+      localStorage.setItem(pinnedChatIdsKey(), JSON.stringify(safeIds));
+    }catch(err){
+      console.warn('qq pinned localStorage fallback save failed', err);
+    }
+  }
+  if(window.PhoneStorage && typeof window.PhoneStorage.putJson === 'function'){
+    keys.forEach(function(key){
+      try{ localStorage.removeItem(key); }catch(err2){}
+    });
+  }
+}
+function hydratePinnedChatIds(){
+  if(!(window.PhoneStorage && typeof window.PhoneStorage.getJson === 'function')) return Promise.resolve(getPinnedChatIds());
+  var keys = pinnedChatIdsStorageKeys();
+  return Promise.all(keys.map(function(key){
+    return window.PhoneStorage.getJson(key).then(function(ids){
+      return { key:key, ids:ids };
+    }).catch(function(){ return null; });
+  })).then(function(items){
+    var found = (items || []).find(function(item){ return item && Array.isArray(item.ids); });
+    if(found){
+      pinnedChatIdsCache = found.ids.map(function(item){ return String(item || '').trim(); }).filter(Boolean);
+      if(found.key !== pinnedChatIdsKey()) setPinnedChatIds(pinnedChatIdsCache);
+    }else{
+      getPinnedChatIds();
+    }
+    return pinnedChatIdsCache || [];
+  }).catch(function(){
+    return getPinnedChatIds();
+  });
+}
+function isChatPinned(id){
+  return getPinnedChatIds().indexOf(id) !== -1;
+}
+function pinChat(id){
+  var ids = getPinnedChatIds();
+  if(ids.indexOf(id) === -1){
+    ids.push(id);
+    setPinnedChatIds(ids);
+  }
+}
+function unpinChat(id){
+  var ids = getPinnedChatIds().filter(function(item){ return item !== id; });
+  setPinnedChatIds(ids);
+}
+function normalizeDeleteMemeCategory(value){
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+async function loadStoredMemeLibrary(){
+  var raw = null;
+  var key = memeLibraryStorageKey();
+  if(window.PhoneStorage && typeof window.PhoneStorage.getJson === 'function'){
+    try{ raw = await window.PhoneStorage.getJson(key); }catch(err){ raw = null; }
+  }
+  if(!raw){
+    try{ raw = JSON.parse(localStorage.getItem(key) || 'null'); }catch(err){ raw = null; }
+  }
+  raw = raw && typeof raw === 'object' ? raw : {};
+  raw.items = Array.isArray(raw.items) ? raw.items : [];
+  raw.categories = Array.isArray(raw.categories) ? raw.categories : [];
+  return raw;
+}
+async function saveStoredMemeLibrary(data){
+  var key = memeLibraryStorageKey();
+  var payload = data && typeof data === 'object' ? data : { items:[], categories:[] };
+  if(window.PhoneStorage && typeof window.PhoneStorage.putJson === 'function'){
+    try{ await window.PhoneStorage.putJson(key, payload); }catch(err){}
+  }
+  try{ localStorage.setItem(key, JSON.stringify(payload)); }catch(err){}
+  return payload;
+}
+async function removeImportedMemesForCharacter(target){
+  if(!target) return 0;
+  var category = normalizeDeleteMemeCategory(target.importedMemeCategory || '');
+  if(!category) return 0;
+  var library = await loadStoredMemeLibrary();
+  var before = Array.isArray(library.items) ? library.items.slice() : [];
+  var next = before.filter(function(item){
+    return normalizeDeleteMemeCategory(item && item.category) !== category;
+  });
+  if(next.length === before.length) return 0;
+  library.items = next;
+  library.categories = Array.from(new Set(next.map(function(item){
+    return normalizeDeleteMemeCategory(item && item.category);
+  }).filter(Boolean)));
+  await saveStoredMemeLibrary(library);
+  return before.length - next.length;
+}
+function getDeleteChatStorageKeys(charId){
+  var safeId = String(charId || '').trim();
+  if(!safeId) return [];
+  var keys = [accountScopedKey('chat_' + safeId), 'chat_' + safeId];
+  try{
+    for(var i = 0; i < localStorage.length; i++){
+      var key = localStorage.key(i) || '';
+      if(key.indexOf('chat_' + safeId + '__acct_') === 0) keys.push(key);
+    }
+  }catch(err){}
+  return Array.from(new Set(keys.filter(Boolean)));
+}
+async function removeChatRecordsForCharacter(charId){
+  var safeId = String(charId || '').trim();
+  if(!safeId) return 0;
+  var removed = 0;
+  var keys = getDeleteChatStorageKeys(safeId);
+  keys.forEach(function(key){
+    try{
+      if(localStorage.getItem(key) != null) removed += 1;
+      localStorage.removeItem(key);
+    }catch(err){}
+  });
+  if(window.PhoneStorage && typeof window.PhoneStorage.list === 'function' && typeof window.PhoneStorage.remove === 'function'){
+    try{
+      var records = await window.PhoneStorage.list('chats');
+      for(var i = 0; i < (Array.isArray(records) ? records.length : 0); i++){
+        var record = records[i];
+        var recordId = String(record && record.id || '');
+        if(keys.indexOf(recordId) === -1 && recordId.indexOf('chat_' + safeId + '__acct_') !== 0) continue;
+        try{
+          await window.PhoneStorage.remove('chats', recordId);
+          removed += 1;
+        }catch(err){}
+      }
+    }catch(err){}
+  }
+  return removed;
+}
+function lastMsgOf(c){
+  if(c && c.isSunnySupport){
+    try{
+      var raw = JSON.parse(localStorage.getItem(accountScopedKey('chat_' + c.id)) || 'null');
+      var history = normalizeStoredChatHistory((raw && (raw.messages || raw.history)) || []);
+      var previewSource = getLastVisiblePreviewMessage(history);
+      if(previewSource) return normalizePreviewMessage(previewSource);
+    }catch(e){}
+    return { content:'汪！ 我是你的小狗客服Sunny，有什么能帮到您么？', type:'text' };
+  }
+  if(c && c.id && livePreviewCache[c.id]) return livePreviewCache[c.id];
+  if(c && c.id && chatSummaryCache[c.id] && chatSummaryCache[c.id].last) return chatSummaryCache[c.id].last;
+  try{
+    var keys = [accountScopedKey('chat_'+c.id), 'chat_' + c.id];
+    for(var i=0;i<localStorage.length;i++){
+      var k = localStorage.key(i) || '';
+      if(k.indexOf('chat_' + c.id + '__acct_') === 0) keys.push(k);
+    }
+    var best = [];
+    keys.forEach(function(k){
+      try{
+        var saved = JSON.parse(localStorage.getItem(k) || 'null');
+        var msgs = normalizeStoredChatHistory((saved && (saved.messages || saved.history)) || []);
+        best = chooseBetterHistoryList(best, msgs);
+      }catch(err){}
+    });
+    var previewSource = getLastVisiblePreviewMessage(best);
+    if(previewSource) return normalizePreviewMessage(previewSource);
+  }catch(e){}
+  return {content:getCharacterPreviewFallback(c), type:'text'};
+}
+
+function unreadCountOf(c){
+  if(c && c.isSunnySupport){
+    return 0;
+  }
+  if(c && c.id && chatSummaryCache[c.id]) return Number(chatSummaryCache[c.id].unread || 0) || 0;
+  if(window.PhoneStorage && typeof window.PhoneStorage.list === 'function') return 0;
+  try{
+    var saved = JSON.parse(localStorage.getItem(accountScopedKey('chat_' + c.id)) || 'null');
+    var msgs = normalizeStoredChatHistory((saved && (saved.messages || saved.history)) || []);
+    if(!Array.isArray(msgs)) return 0;
+    var count = 0;
+    msgs.forEach(function(m){
+      var ts = Number(m && (m.sentAt || m.updatedAt || m.readAt) || 0) || 0;
+      if(m && m.role === 'assistant' && !m.readAt && ts > getChatSeenAt(c.id)) count++;
+    });
+    return count;
+  }catch(e){
+    return 0;
+  }
+}
+
+function formatBadgeCount(n){
+  if(!n || n < 1) return '';
+  return n > 9 ? '9+' : String(n);
+}
+function formatChatTimeLabel(ts){
+  var stamp = Number(ts || 0) || 0;
+  if(!stamp) return '';
+  var now = new Date();
+  var then = new Date(stamp);
+  var sameDay = now.getFullYear() === then.getFullYear() && now.getMonth() === then.getMonth() && now.getDate() === then.getDate();
+  if(sameDay){
+    return then.toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit', hour12:false });
+  }
+  var yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  var isYesterday = yesterday.getFullYear() === then.getFullYear() && yesterday.getMonth() === then.getMonth() && yesterday.getDate() === then.getDate();
+  if(isYesterday) return '昨天';
+  var dayDiff = Math.floor((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - new Date(then.getFullYear(), then.getMonth(), then.getDate())) / 86400000);
+  if(dayDiff >= 0 && dayDiff < 7){
+    return ['周日','周一','周二','周三','周四','周五','周六'][then.getDay()];
+  }
+  return (then.getMonth() + 1) + '/' + then.getDate();
+}
+function lastActivityOf(c){
+  if(!c || !c.id) return 0;
+  if(chatSummaryCache[c.id] && chatSummaryCache[c.id].lastAt){
+    return Number(chatSummaryCache[c.id].lastAt || 0) || 0;
+  }
+  try{
+    var keys = [accountScopedKey('chat_' + c.id), 'chat_' + c.id];
+    var best = [];
+    keys.forEach(function(k){
+      try{
+        var saved = JSON.parse(localStorage.getItem(k) || 'null');
+        var msgs = normalizeStoredChatHistory((saved && (saved.messages || saved.history)) || []);
+        best = chooseBetterHistoryList(best, msgs);
+      }catch(err){}
+    });
+    var previewSource = getLastVisiblePreviewMessage(best);
+    return Number((previewSource && (previewSource.sentAt || previewSource.readAt)) || 0) || 0;
+  }catch(e){
+    return 0;
+  }
+}
+function getTotalChatUnreadCount(){
+  var total = 0;
+  chars.forEach(function(c){
+    if(!c || c.isSunnySupport) return;
+    total += unreadCountOf(c);
+  });
+  return total;
+}
+function syncHomeBadgeCount(){
+  var chatUnread = getTotalChatUnreadCount();
+  var momentsUnread = getMomentsUnreadCount();
+  forward({
+    type:'QQ_BADGE_SYNC',
+    payload:{
+      chatUnread: chatUnread,
+      momentsUnread: momentsUnread,
+      total: chatUnread + momentsUnread
+    }
+  });
+}
+
+async function markChatAsRead(charId){
+  if(!charId) return;
+  var seenAt = Date.now();
+  if(chatSummaryCache[charId]) chatSummaryCache[charId].unread = 0;
+  if(window.PhoneStorage && typeof window.PhoneStorage.list === 'function' && typeof window.PhoneStorage.put === 'function'){
+    try{
+      var records = await window.PhoneStorage.list('chats');
+      for(var r = 0; r < (Array.isArray(records) ? records.length : 0); r += 1){
+        var savedIdb = records[r];
+        var recordId = String(savedIdb && savedIdb.id || '');
+        var recordCharId = String(savedIdb && savedIdb.charId || '').trim();
+        if(!recordCharId){
+          var match = recordId.match(/^chat_(.+?)(?:__acct_.+)?$/);
+          recordCharId = match ? String(match[1] || '').trim() : '';
+        }
+        if(recordCharId !== String(charId || '')) continue;
+        var listIdb = savedIdb && Array.isArray(savedIdb.history) ? savedIdb.history : [];
+        seenAt = absorbChatSeenTimestamp(seenAt, listIdb);
+        if(!Array.isArray(listIdb) || !listIdb.length) continue;
+        var nowIdb = Math.max(Date.now(), seenAt);
+        var changedIdb = false;
+        listIdb = listIdb.map(function(m){
+          if(m && m.role === 'assistant' && !m.readAt){
+            changedIdb = true;
+            var next = Array.isArray(m) ? m.slice() : Object.assign({}, m);
+            if(Array.isArray(next)) next[5] = nowIdb;
+            else next.readAt = nowIdb;
+            return next;
+          }
+          return m;
+        });
+        if(changedIdb){
+          await window.PhoneStorage.put('chats', {
+            id: recordId || accountScopedKey('chat_' + charId),
+            charId: String(charId || ''),
+            updatedAt: Date.now(),
+            history: listIdb
+          });
+        }
+      }
+    }catch(e){}
+  }
+  getChatStorageKeysForChar(charId).forEach(function(key){
+    try{
+      var saved = JSON.parse(localStorage.getItem(key) || 'null');
+      var list = saved && (saved.messages || saved.history);
+      seenAt = absorbChatSeenTimestamp(seenAt, list);
+      if(!Array.isArray(list)) return;
+      var now = Math.max(Date.now(), seenAt);
+      var changed = false;
+      list = list.map(function(m){
+        if(m && m.role === 'assistant' && !m.readAt){
+          changed = true;
+          var next = Array.isArray(m) ? m.slice() : Object.assign({}, m);
+          if(Array.isArray(next)) next[5] = now;
+          else next.readAt = now;
+          return next;
+        }
+        return m;
+      });
+      if(changed && !(window.PhoneStorage && typeof window.PhoneStorage.put === 'function')){
+        localStorage.setItem(key, JSON.stringify({ history:list, messages:list }));
+      }else if(changed){
+        localStorage.removeItem(key);
+      }
+    }catch(e){}
+  });
+  setChatSeenAt(charId, seenAt);
+  if(chatSummaryCache[charId]) chatSummaryCache[charId].unread = 0;
+  renderList();
+  syncHomeBadgeCount();
+}
+
+function getMomentsUnreadCount(){
+  var key = accountScopedKey(MOMENTS_POSTS_KEY);
+  var seenAt = getMomentsSeenAt();
+  var posts = Array.isArray(momentsPostsCache) ? momentsPostsCache : [];
+  var myName = '';
+  try{
+    if(window.AccountManager){
+      var acct = window.AccountManager.getActive();
+      myName = String((acct && acct.name) || '').trim();
+    }
+  }catch(e){}
+  var count = 0;
+  posts.forEach(function(p){
+    if(!p) return;
+    if((p.createdAt || 0) <= seenAt) return;
+    var author = String(p.authorName || '').trim();
+    if(myName && author && author === myName) return;
+    count++;
+  });
+  return count;
+}
+
+function getMomentsSeenAt(){
+  var seenAt = 0;
+  [accountScopedKey(MOMENTS_LAST_SEEN_KEY), MOMENTS_LAST_SEEN_KEY].forEach(function(key){
+    try{
+      var value = parseInt(localStorage.getItem(key) || '0', 10);
+      if(!Number.isNaN(value) && value > seenAt) seenAt = value;
+    }catch(e){}
+  });
+  return seenAt;
+}
+
+function setMomentsSeenAt(seenAt){
+  var safeSeenAt = Math.max(0, Number(seenAt || 0) || 0);
+  try{ localStorage.setItem(accountScopedKey(MOMENTS_LAST_SEEN_KEY), String(safeSeenAt)); }catch(e){}
+  try{ localStorage.setItem(MOMENTS_LAST_SEEN_KEY, String(safeSeenAt)); }catch(e){}
+}
+
+function getMaxMomentsCreatedAt(){
+  var maxAt = 0;
+  (Array.isArray(momentsPostsCache) ? momentsPostsCache : []).forEach(function(post){
+    var createdAt = Number(post && post.createdAt || 0) || 0;
+    if(createdAt > maxAt) maxAt = createdAt;
+  });
+  return maxAt;
+}
+
+function renderMomentsBadge(){
+  var el = document.getElementById('momentsBadge');
+  if(!el) return;
+  var count = getMomentsUnreadCount();
+  if(count > 0){
+    el.textContent = formatBadgeCount(count);
+    el.classList.add('show');
+  }else{
+    el.textContent = '';
+    el.classList.remove('show');
+  }
+}
+
+function normalizeChatPreviewType(type){
+  var safe = String(type || '').trim().toLowerCase();
+  if(safe === 'rich_html' || safe === 'richhtml' || safe === 'html_card') return 'richhtml';
+  if(safe === 'recall_notice' || safe === 'recallnotice' || safe === 'withdraw_notice') return 'recallnotice';
+  if(safe === 'narrator' || safe === 'narrator_message') return 'narrator';
+  if(safe === 'offline_invite' || safe === 'offlineinvite') return 'offlineinvite';
+  if(type === 'voice_message' || type === 'voice') return 'voice';
+  if(type === 'image_message' || type === 'image_card' || type === 'image') return 'image';
+  if(type === 'meme_message' || type === 'meme' || type === 'sticker') return 'meme';
+  if(type === 'family_card' || type === 'familycard') return 'familycard';
+  if(type === 'money_packet' || type === 'moneypacket' || type === 'transfer') return 'moneypacket';
+  if(type === 'schedule_quote' || type === 'schedulequote') return 'schedulequote';
+  if(type === 'sunny_card' || type === 'sunnycard' || type === 'support_card') return 'sunnycard';
+  return 'text';
+}
+
+function moneyPreviewText(raw){
+  try{
+    var parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    var mode = String((parsed && parsed.mode) || 'red_packet');
+    var amount = Number((parsed && parsed.amount) || 0);
+    var label = mode === 'transfer' ? '【转账】' : '【红包】';
+    if(amount > 0) label += amount.toFixed(2) + '元';
+    return label;
+  }catch(e){
+    return '【红包】';
+  }
+}
+
+function summarizeMemePreview(content){
+  var raw = content;
+  try{
+    if(typeof raw === 'string'){
+      raw = JSON.parse(raw);
+    }
+  }catch(e){}
+  var name = '';
+  if(raw && typeof raw === 'object'){
+    name = String(raw.name || raw.content || raw.text || '').trim();
+  }
+  if(!name && /^\[(?:表情包|meme)\s*[:：]\s*([^\]]+)\]$/i.test(String(content || '').trim())){
+    name = String(String(content || '').trim().match(/^\[(?:表情包|meme)\s*[:：]\s*([^\]]+)\]$/i)[1] || '').trim();
+  }
+  return name ? ('【表情包】' + name) : '【表情包】';
+}
+
+function summarizeRichPreview(content){
+  var raw = String(content || '').trim();
+  if(!raw) return '【SURPRISE】';
+  try{
+    var parsed = JSON.parse(raw);
+    var direct = String((parsed && (parsed.summary || parsed.title || parsed.text)) || '').trim();
+    if(direct) return direct;
+  }catch(err){}
+  var fencedHtml = raw.match(/```html\s*([\s\S]*?)```/i);
+  var html = fencedHtml ? String(fencedHtml[1] || '').trim() : raw;
+  var titleMatch = html.match(/<title>([\s\S]*?)<\/title>/i);
+  if(titleMatch && titleMatch[1]) return String(titleMatch[1] || '').trim();
+  var commentTitle = raw.match(/<!--\s*title\s*:\s*([\s\S]*?)\s*-->/i);
+  if(commentTitle && commentTitle[1]) return String(commentTitle[1] || '').trim();
+  return '【SURPRISE】';
+}
+
+function normalizePreviewMessage(msg){
+  var next = msg && typeof msg === 'object' ? msg : { content:'', type:'text' };
+  var kind = normalizeChatPreviewType(next.type || 'text');
+  if(kind === 'sunnycard'){
+    try{
+      var sunnyCard = typeof next.content === 'string' ? JSON.parse(next.content) : next.content;
+      return { content: String((sunnyCard && (sunnyCard.summary || sunnyCard.text || sunnyCard.title)) || 'Sunny 卡片').trim(), type: 'text' };
+    }catch(err){
+      return { content:'Sunny 卡片', type:'text' };
+    }
+  }
+  if(kind === 'text' && /^\[(?:表情包|meme)\s*[:：]\s*[^\]]+\]$/i.test(String(next.content || '').trim())){
+    return { content: summarizeMemePreview(next.content), type: 'text' };
+  }
+  if(kind === 'familycard'){
+    return { content: '【亲属卡】', type: 'text' };
+  }
+  if(kind === 'richhtml'){
+    return { content: summarizeRichPreview(next.content), type: 'text' };
+  }
+  if(kind === 'moneypacket'){
+    return { content: moneyPreviewText(next.content), type: 'text' };
+  }
+  if(kind === 'offlineinvite'){
+    return { content: '【约会邀请】', type: 'text' };
+  }
+  if(kind === 'schedulequote'){
+    try{
+      var scheduleQuote = typeof next.content === 'string' ? JSON.parse(next.content) : next.content;
+      var excerpt = String((scheduleQuote && (scheduleQuote.excerpt || scheduleQuote.reply || scheduleQuote.title)) || '日程引用').trim();
+      return { content: '【日程引用】' + excerpt, type: 'text' };
+    }catch(err){
+      return { content: '【日程引用】', type: 'text' };
+    }
+  }
+  if(kind === 'meme'){
+    return { content: summarizeMemePreview(next.content), type: 'text' };
+  }
+  if(kind === 'recallnotice'){
+    try{
+      var recallPayload = typeof next.content === 'string' ? JSON.parse(next.content) : next.content;
+      var actorName = '';
+      var noticeText = String((recallPayload && recallPayload.notice) || '').trim();
+      var nameMatch = noticeText.match(/^句子已经被(.+?)毁尸灭迹啦\^\^/);
+      if(nameMatch) actorName = String(nameMatch[1] || '').trim();
+      if(!actorName) actorName = String(((recallPayload && recallPayload.actorRole) === 'user') ? '你' : '对方').trim() || '对方';
+      return { content: actorName + '撤回了一条消息', type: 'text' };
+    }catch(err){
+      return { content: '撤回了一条消息', type: 'text' };
+    }
+  }
+  if(kind === 'text' && typeof next.content === 'string' && next.content.trim().startsWith('{')){
+    try{
+      var parsed = JSON.parse(next.content);
+      if(parsed && typeof parsed === 'object'){
+        if((parsed.html || parsed.css || parsed.js) && !parsed.type){
+          return { content: summarizeRichPreview(next.content), type: 'text' };
+        }
+        if(parsed.content){
+          var parsedType = normalizeChatPreviewType(parsed.type || 'text');
+        if(parsedType === 'meme') return { content: summarizeMemePreview(parsed.content), type: 'text' };
+        if(parsedType === 'richhtml') return { content: summarizeRichPreview(parsed.content), type: 'text' };
+        if(parsedType === 'offlineinvite') return { content: '【约会邀请】', type: 'text' };
+        if(parsedType === 'recallnotice'){
+            var parsedRecallPayload = typeof parsed.content === 'string' ? JSON.parse(parsed.content) : parsed.content;
+            var parsedActorName = '';
+            var parsedNoticeText = String((parsedRecallPayload && parsedRecallPayload.notice) || '').trim();
+            var parsedNameMatch = parsedNoticeText.match(/^句子已经被(.+?)毁尸灭迹啦\^\^/);
+            if(parsedNameMatch) parsedActorName = String(parsedNameMatch[1] || '').trim();
+            if(!parsedActorName) parsedActorName = String(((parsedRecallPayload && parsedRecallPayload.actorRole) === 'user') ? '你' : '对方').trim() || '对方';
+            return { content: parsedActorName + '撤回了一条消息', type: 'text' };
+          }
+          return {
+            content: parsedType === 'text'
+              ? (sanitizeCharacterPreviewSeed(parsed.content) || String(parsed.content || '').trim())
+              : parsed.content,
+            type: parsedType
+          };
+        }
+      }
+    }catch(e){}
+  }
+  return {
+    content: kind === 'text'
+      ? (sanitizeCharacterPreviewSeed(next.content) || String(next.content || '').trim())
+      : (next.content || ''),
+    type: kind
+  };
+}
+
+function getLastVisiblePreviewMessage(list){
+  var items = Array.isArray(list) ? list : [];
+  for(var i = items.length - 1; i >= 0; i--){
+    var entry = items[i] || {};
+    if(entry.hidden) continue;
+    return entry;
+  }
+  return items.length ? (items[items.length - 1] || null) : null;
+}
+
+function historyStamp(list){
+  var entries = Array.isArray(list) ? list : [];
+  var lastTs = 0;
+  entries.forEach(function(entry){
+    var ts = Number((entry && (entry.sentAt || entry.readAt)) || 0) || 0;
+    if(ts > lastTs) lastTs = ts;
+  });
+  return { lastTs:lastTs, count:entries.length };
+}
+
+function chooseBetterHistoryList(best, next){
+  if(!Array.isArray(next) || !next.length) return best;
+  if(!Array.isArray(best) || !best.length) return next;
+  var bestStamp = historyStamp(best);
+  var nextStamp = historyStamp(next);
+  if(nextStamp.lastTs > bestStamp.lastTs) return next;
+  if(nextStamp.lastTs === bestStamp.lastTs && nextStamp.count > bestStamp.count) return next;
+  return best;
+}
+function updateSkyPill(){
+  var pill = document.getElementById('skyPill');
+  if(!pill) return;
+  var now = new Date();
+  var hh = String(now.getHours()).padStart(2, '0');
+  var mm = String(now.getMinutes()).padStart(2, '0');
+  var dayLabel = ['周日','周一','周二','周三','周四','周五','周六'][now.getDay()];
+  pill.innerHTML = '<span class="sky-dot"></span><span>' + esc(dayLabel + ' ' + hh + ':' + mm) + '</span>';
+}
+function renderQuickAvatarStrip(renderChars){
+  var strip = document.getElementById('quickAvatarStrip');
+  if(!strip) return;
+  var picks = (Array.isArray(renderChars) ? renderChars : [])
+    .filter(function(c){ return c && !c.isSunnySupport; })
+    .slice()
+    .sort(function(a, b){
+      var bTs = lastActivityOf(b);
+      var aTs = lastActivityOf(a);
+      if(bTs !== aTs) return bTs - aTs;
+      return String(a.nickname || a.name || '').localeCompare(String(b.nickname || b.name || ''), 'zh-Hans-CN');
+    })
+    .slice(0, 3);
+  if(!picks.length){
+    strip.innerHTML = '<div class="quick-face"><div class="quick-face-photo"><div class="quick-face-fallback">✦</div></div><div class="quick-face-meta"><span>聊天</span><span>最近聊天</span></div></div>';
+    return;
+  }
+  strip.innerHTML = picks.map(function(c){
+    var src = getAvatarSrc(c);
+    var inner = src
+      ? '<img src="' + esc(src) + '" alt="">'
+      : '<div class="quick-face-fallback">' + esc(c.avatar || '✦') + '</div>';
+    var name = String(c.nickname || c.name || '未命名');
+    return '<button class="quick-face" type="button" data-chat-id="' + esc(c.id) + '"><span class="quick-face-photo">' + inner + '</span><span class="quick-face-meta"><span>聊天</span><span>' + esc(name.slice(0, 8)) + '</span></span></button>';
+  }).join('');
+  document.querySelectorAll('#quickAvatarStrip .quick-face[data-chat-id]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = btn.getAttribute('data-chat-id') || '';
+      if(id) openChat(id);
+    });
+  });
+}
+function renderContactsDrawer(renderChars){
+  var list = document.getElementById('contactsDrawerList');
+  if(!list) return;
+  var rows = (Array.isArray(renderChars) ? renderChars : [])
+    .filter(function(c){ return c && !c.isSunnySupport; })
+    .slice()
+    .sort(function(a, b){
+      return String(a.name || a.nickname || '').localeCompare(String(b.name || b.nickname || ''), 'zh-Hans-CN');
+    });
+  if(!rows.length){
+    list.innerHTML = '<div class="empty-card">这里还没有联系人，晚点我们一起慢慢放进来。</div>';
+    return;
+  }
+  list.innerHTML = rows.map(function(c){
+    var src = getAvatarSrc(c);
+    var name = String(c.name || c.nickname || '未命名');
+    var sub = String(c.id || '').trim() || 'char_id_missing';
+    var avatar = src
+      ? '<img src="' + esc(src) + '" alt="">'
+      : '<span>' + esc(c.avatar || '✦') + '</span>';
+    return '<div class="contacts-drawer-item" role="button" tabindex="0" data-chat-id="' + esc(c.id) + '">' +
+      '<span class="contacts-drawer-avatar">' + avatar + '</span>' +
+      '<span class="contacts-drawer-meta"><span class="contacts-drawer-name">' + esc(name) + '</span><span class="contacts-drawer-note">' + esc(sub) + '</span></span>' +
+      '<button class="contacts-drawer-delete" type="button" data-chat-delete="' + esc(c.id) + '" aria-label="删除联系人" title="删除联系人"><img src="assets/Recycle-Bin-2--Streamline-Sharp.png" alt=""></button>' +
+    '</div>';
+  }).join('');
+  document.querySelectorAll('#contactsDrawerList .contacts-drawer-item[data-chat-id]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if(isContactsDrawerTapSuppressed()) return;
+      var id = btn.getAttribute('data-chat-id') || '';
+      closeContactsDrawer();
+      if(id) openCharacterContact(id);
+    });
+    btn.addEventListener('keydown', function(evt){
+      if(evt.key !== 'Enter' && evt.key !== ' ') return;
+      evt.preventDefault();
+      if(isContactsDrawerTapSuppressed()) return;
+      var id = btn.getAttribute('data-chat-id') || '';
+      closeContactsDrawer();
+      if(id) openCharacterContact(id);
+    });
+  });
+  document.querySelectorAll('#contactsDrawerList .contacts-drawer-delete[data-chat-delete]').forEach(function(btn){
+    btn.addEventListener('click', function(evt){
+      evt.preventDefault();
+      evt.stopPropagation();
+      var id = btn.getAttribute('data-chat-delete') || '';
+      if(id) deleteContactCharacter(id);
+    });
+  });
+}
+function isContactsDrawerTapSuppressed(){
+  return Date.now() < contactsDrawerTapSuppressUntil;
+}
+function suppressContactsDrawerTap(ms){
+  contactsDrawerTapSuppressUntil = Math.max(contactsDrawerTapSuppressUntil, Date.now() + Math.max(120, Number(ms || 0) || 0));
+}
+function bindContactsDrawerScrollState(){
+  var list = document.getElementById('contactsDrawerList');
+  if(!list || list.dataset.dragBound === '1') return;
+  list.dataset.dragBound = '1';
+  list.addEventListener('pointerdown', function(evt){
+    contactsDrawerPointer.active = true;
+    contactsDrawerPointer.startX = Number(evt.clientX || 0);
+    contactsDrawerPointer.startY = Number(evt.clientY || 0);
+  }, { passive:true });
+  list.addEventListener('pointermove', function(evt){
+    if(!contactsDrawerPointer.active) return;
+    var dx = Math.abs(Number(evt.clientX || 0) - contactsDrawerPointer.startX);
+    var dy = Math.abs(Number(evt.clientY || 0) - contactsDrawerPointer.startY);
+    if(dy > 8 && dy > dx){
+      suppressContactsDrawerTap(260);
+    }
+  }, { passive:true });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(name){
+    list.addEventListener(name, function(){
+      contactsDrawerPointer.active = false;
+    }, { passive:true });
+  });
+  list.addEventListener('scroll', function(){
+    suppressContactsDrawerTap(220);
+  }, { passive:true });
+}
+function setListFilter(mode){
+  listFilterMode = String(mode || 'all');
+  var note = document.getElementById('filterNoteText');
+  if(note) note.textContent = LIST_FILTER_NOTES[listFilterMode] || LIST_FILTER_NOTES.all;
+  document.querySelectorAll('.filter-tab').forEach(function(btn){
+    btn.classList.toggle('active', btn.getAttribute('data-filter') === listFilterMode);
+  });
+  renderList();
+}
+function chunkChats(list, size){
+  var rows = Array.isArray(list) ? list.slice() : [];
+  var out = [];
+  var step = Math.max(1, Number(size || 3) || 3);
+  for(var i = 0; i < rows.length; i += step){
+    out.push(rows.slice(i, i + step));
+  }
+  return out;
+}
+function renderList(){
+  var list=document.getElementById('chatList');
+  var sunny = getSunnyPreview();
+  var renderChars = chars.slice();
+  if(sunny) renderChars.push(sunny);
+  renderContactsDrawer(renderChars);
+  if(!renderChars.length){ list.innerHTML='<div class="empty-card">还没有联系人，点右上角创建或导入吧</div>'; return; }
+  var pinnedIds = getPinnedChatIds();
+  var sortedChars = renderChars.slice().sort(function(a,b){
+    var aPinned = pinnedIds.indexOf(a.id);
+    var bPinned = pinnedIds.indexOf(b.id);
+    if(aPinned !== -1 || bPinned !== -1){
+      if(aPinned === -1) return 1;
+      if(bPinned === -1) return -1;
+      return aPinned - bPinned;
+    }
+    var bTs = lastActivityOf(b);
+    var aTs = lastActivityOf(a);
+    if(bTs !== aTs) return bTs - aTs;
+    return String(a.nickname || a.name || '').localeCompare(String(b.nickname || b.name || ''), 'zh-Hans-CN');
+  });
+  renderQuickAvatarStrip(sortedChars);
+  var filtered = sortedChars.filter(function(c){
+    var unread = unreadCountOf(c);
+    var pinned = pinnedIds.indexOf(c.id) !== -1;
+    if(listFilterMode === 'pinned') return pinned;
+    if(listFilterMode === 'unread') return unread > 0;
+    if(listFilterMode === 'recent') return !pinned;
+    if(listFilterMode === 'chats') return !c.isSunnySupport;
+    return true;
+  });
+  if(!filtered.length){
+    list.innerHTML = '<div class="empty-card">这一栏现在还是空的，晚点我们再往这里放消息。</div>';
+    return;
+  }
+  var pinnedGroup = [];
+  var normalGroup = [];
+  filtered.forEach(function(c){
+    if(pinnedIds.indexOf(c.id) !== -1) pinnedGroup.push(c);
+    else normalGroup.push(c);
+  });
+  var sections = [];
+  if(pinnedGroup.length) sections.push({ items:pinnedGroup, pinned:true });
+  if(normalGroup.length) sections.push({ items:normalGroup, pinned:false });
+  if(!sections.length) sections = [{ items:filtered, pinned:false }];
+  list.innerHTML = sections.map(function(group){
+    return '<section class="chat-section' + (group.pinned ? ' pinned-section' : '') + '">' + group.items.map(function(c){
+    var avSrc = getAvatarSrc(c);
+    var av = avSrc ? '<img src="'+avSrc+'">' : (c.avatar||'🌸');
+    var displayName = c.nickname || c.name || '未命名';
+    var last = lastMsgOf(c);
+    var unread = unreadCountOf(c);
+    var preview = normalizePreviewMessage(last || { content:'', type:'text' });
+    var snip = (preview && preview.content) ? String(preview.content).trim() : '';
+    snip = sanitizeCharacterPreviewSeed(snip) || snip;
+    if(!snip) snip = '暂无消息';
+    var pinned = pinnedIds.indexOf(c.id) !== -1;
+    var timeLabel = formatChatTimeLabel(lastActivityOf(c));
+    return '<div class="item' + (pinned ? ' pinned' : '') + '" data-chat-id="'+esc(c.id)+'">' +
+      '<div class="av">'+av+'</div>' +
+      '<div class="meta"><div class="name">'+esc(displayName)+(pinned ? '<span class="pin-chip">PIN</span>' : '')+'</div><div class="snip">'+esc(snip)+'</div></div>' +
+      '<div class="item-side">' +
+        (timeLabel ? ('<div class="time">' + esc(timeLabel) + '</div>') : '') +
+        (unread > 0 ? ('<div class="badge unread">' + esc(formatBadgeCount(unread)) + '</div>') : '') +
+      '</div>' +
+      '</div>';
+    }).join('') + '</section>';
+  }).join('');
+  bindListInteractions();
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+async function openChat(id){
+  if(window.SunnySupport && id === window.SunnySupport.ID){
+    toast('蕾蕾正在赶工^^');
+    return;
+  }
+  var c = chars.find(function(x){return x.id===id;});
+  c = await resolveLatestChar(id, c);
+  if(!c && window.SunnySupport && id === window.SunnySupport.ID){
+    c = window.SunnySupport.getCharacter();
+  }
+  if(!c) return;
+  await markChatAsRead(id).catch(function(){});
+  var slim = slimChar(c);
+  var isDefault = true;
+  try{
+    if(window.AccountManager){
+      var acct = window.AccountManager.getActive();
+      isDefault = !!(acct && acct.isDefault);
+    }
+  }catch(e){}
+  if(isDefault){
+    try { localStorage.setItem('activeCharacter', JSON.stringify(slim)); } catch(e){}
+  }
+  try{ localStorage.setItem(accountScopedKey('activeCharacter'), JSON.stringify(slim)); }catch(e){}
+  try { localStorage.setItem('pendingChatChar', JSON.stringify(slim)); } catch(e){}
+  try { localStorage.setItem('pendingChatCharId', String((slim && slim.id) || '')); } catch(e){}
+  var host = window.parent || window.top;
+  try {
+    if(host && host.localStorage){
+      if(isDefault) host.localStorage.setItem('activeCharacter', JSON.stringify(slim));
+      host.localStorage.setItem(accountScopedKey('activeCharacter'), JSON.stringify(slim));
+      host.localStorage.setItem('pendingChatChar', JSON.stringify(slim));
+      host.localStorage.setItem('pendingChatCharId', String((slim && slim.id) || ''));
+    }
+  } catch(e){}
+  if(isDefault){
+    try { host?.postMessage({type:'SET_ACTIVE_CHARACTER', payload:slim}, '*'); } catch(e){}
+  }
+  try { host?.postMessage({type:'OPEN_CHAT_WITH', payload:slim}, '*'); } catch(e){}
+  // standalone fallback
+  if(!host || host === window){ window.location.href = 'chat.html'; }
+}
+function bindListInteractions(){
+  document.querySelectorAll('#chatList .item[data-chat-id]').forEach(function(item){
+    item.addEventListener('click', function(){
+      var id = item.dataset.chatId;
+      if(longPressTriggered){
+        longPressTriggered = false;
+        return;
+      }
+      openChat(id);
+    });
+    item.addEventListener('pointerdown', function(evt){
+      if(evt.pointerType === 'mouse' && evt.button !== 0) return;
+      clearLongPress();
+      activePressId = item.dataset.chatId;
+      longPressTimer = setTimeout(function(){
+        longPressTriggered = openPinConfirm(activePressId);
+      }, LONG_PRESS_MS);
+    });
+    ['pointerup','pointerleave','pointercancel'].forEach(function(name){
+      item.addEventListener(name, clearLongPress);
+    });
+  });
+}
+function clearLongPress(){
+  if(longPressTimer){
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+  activePressId = null;
+}
+function stopPinEvent(evt){
+  if(!evt) return;
+  evt.preventDefault();
+  evt.stopPropagation();
+}
+function openPinConfirm(id){
+  if(!id) return false;
+  clearLongPress();
+  bindPinConfirmControls();
+  pinConfirmId = id;
+  pinConfirmMode = isChatPinned(id) ? 'unpin' : 'pin';
+  var title = document.getElementById('pinTitle');
+  if(title) title.textContent = pinConfirmMode === 'unpin' ? '要取消此聊天置顶吗？' : '要置顶此聊天吗？';
+  var overlay = document.getElementById('pinOverlay');
+  if(overlay) overlay.classList.add('open');
+  return true;
+}
+function closePinConfirm(evt){
+  stopPinEvent(evt);
+  pinConfirmId = '';
+  pinConfirmMode = 'pin';
+  var overlay = document.getElementById('pinOverlay');
+  if(overlay) overlay.classList.remove('open');
+}
+function handlePinOverlayClick(evt){
+  if(evt.target === evt.currentTarget) closePinConfirm();
+}
+function confirmPinChat(evt){
+  stopPinEvent(evt);
+  var targetId = String(pinConfirmId || '').trim();
+  if(!targetId) return closePinConfirm();
+  var mode = pinConfirmMode;
+  try{
+    if(mode === 'unpin'){
+      unpinChat(targetId);
+    }else{
+      pinChat(targetId);
+    }
+  }catch(err){
+    console.warn('qq pin action failed', err);
+  }
+  closePinConfirm();
+  renderList();
+  showToast(mode === 'unpin' ? '已取消置顶' : '已置顶到最上面');
+}
+function runPinButtonAction(action, evt){
+  stopPinEvent(evt);
+  var now = Date.now();
+  if(pinActionLockUntil && now < pinActionLockUntil) return false;
+  pinActionLockUntil = now + 260;
+  if(action === 'confirm') confirmPinChat();
+  else closePinConfirm();
+  return false;
+}
+function handlePinCancel(evt){
+  return runPinButtonAction('cancel', evt);
+}
+function handlePinConfirm(evt){
+  return runPinButtonAction('confirm', evt);
+}
+function bindPinConfirmControls(){
+  var overlay = document.getElementById('pinOverlay');
+  var cancel = document.getElementById('pinCancelBtn');
+  var confirm = document.getElementById('pinConfirmBtn');
+  if(overlay && overlay.dataset.pinControlsBound !== '1'){
+    overlay.dataset.pinControlsBound = '1';
+    overlay.addEventListener('pointerdown', function(evt){
+      if(evt.target === overlay) closePinConfirm(evt);
+    });
+  }
+  [
+    [cancel, handlePinCancel],
+    [confirm, handlePinConfirm]
+  ].forEach(function(pair){
+    var btn = pair[0];
+    var handler = pair[1];
+    if(!btn || btn.dataset.pinButtonBound === '1') return;
+    btn.dataset.pinButtonBound = '1';
+    btn.addEventListener('pointerup', handler, true);
+    btn.addEventListener('touchend', handler, true);
+    btn.addEventListener('click', handler, true);
+  });
+}
+function showToast(text){
+  var toast = document.getElementById('toast');
+  if(!toast) return;
+  toast.textContent = text || '';
+  toast.classList.add('show');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){
+    toast.classList.remove('show');
+  }, 1600);
+}
+function switchTab(v){
+  document.querySelectorAll('.view').forEach(function(s){s.classList.toggle('active', s.id===v);});
+  document.querySelectorAll('.qq-bottom-btn[data-view-target]').forEach(function(btn){
+    btn.classList.toggle('active', btn.getAttribute('data-view-target') === v);
+  });
+}
+function openMomentsPage(){
+  try{
+    var seenAt = Math.max(Date.now(), getMaxMomentsCreatedAt() + 1);
+    setMomentsSeenAt(seenAt);
+    var bridgePayload = JSON.stringify(Array.isArray(momentsPostsCache) ? momentsPostsCache : []);
+    localStorage.setItem(accountScopedKey(MOMENTS_BRIDGE_KEY), bridgePayload);
+    localStorage.setItem(MOMENTS_BRIDGE_KEY, bridgePayload);
+    if(window.parent && window.parent !== window){
+      window.parent.postMessage({ type:'MOMENTS_SEEN', payload:{ at: seenAt, maxCreatedAt: getMaxMomentsCreatedAt() } }, '*');
+      window.parent.postMessage({ type:'QQ_BADGE_SYNC', payload:{ chatUnread: getTotalChatUnreadCount(), momentsUnread: 0, total: getTotalChatUnreadCount() } }, '*');
+    }
+  }catch(e){}
+  renderMomentsBadge();
+  window.location.href = 'qq_moments.html';
+}
+
+function hideParentTopbar(){
+  const docs = [];
+  try{
+    if(window.parent && window.parent !== window && window.parent.document) docs.push(window.parent.document);
+  }catch(e){}
+  try{
+    if(window.top && window.top !== window && window.top.document) docs.push(window.top.document);
+  }catch(e){}
+  docs.forEach((doc)=>{
+    try{
+      const bar = doc.querySelector('.app-topbar');
+      if(bar){
+        bar.dataset.prevDisplay = bar.style.display || '';
+        bar.style.display = 'none';
+      }
+      const frame = doc.getElementById('app-iframe');
+      if(frame){
+        frame.dataset.prevMarginTop = frame.style.marginTop || '';
+        frame.style.marginTop = '0';
+      }
+    }catch(err){}
+  });
+}
+function restoreParentTopbar(){
+  const docs = [];
+  try{
+    if(window.parent && window.parent !== window && window.parent.document) docs.push(window.parent.document);
+  }catch(e){}
+  try{
+    if(window.top && window.top !== window && window.top.document) docs.push(window.top.document);
+  }catch(e){}
+  docs.forEach((doc)=>{
+    try{
+      const bar = doc.querySelector('.app-topbar');
+      if(bar) bar.style.display = bar.dataset.prevDisplay || '';
+      const frame = doc.getElementById('app-iframe');
+      if(frame) frame.style.marginTop = frame.dataset.prevMarginTop || '';
+    }catch(err){}
+  });
+}
+function openPlaceholderFeature(name){
+  showToast((name || '该功能') + ' 暂未开放');
+}
+function openContactsDrawer(evt){
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  bindContactsDrawerScrollState();
+  var drawer = document.getElementById('contactsDrawer');
+  if(drawer) drawer.classList.add('open');
+}
+function closeContactsDrawer(){
+  var drawer = document.getElementById('contactsDrawer');
+  if(drawer) drawer.classList.remove('open');
+}
+function handleContactsDrawerOverlay(evt){
+  if(evt.target === evt.currentTarget) closeContactsDrawer();
+}
+function getContactsFrameWindow(){
+  syncContactsHelperFrame(false);
+  var iframe = document.getElementById('contactsHelperFrame');
+  try{
+    return iframe && iframe.contentWindow ? iframe.contentWindow : null;
+  }catch(err){
+    return null;
+  }
+}
+function getQqPageBuildId(){
+  try{
+    var build = String(new URL(window.location.href).searchParams.get('__appBuild') || '').trim();
+    return build || '2026-05-02T05:28:00Z';
+  }catch(err){
+    return '2026-05-02T05:28:00Z';
+  }
+}
+function buildContactsHelperSrc(cacheBust){
+  var build = getQqPageBuildId();
+  var url = new URL('characters.html', window.location.href);
+  url.searchParams.set('helper', '1');
+  url.searchParams.set('__appBuild', build || '2026-05-02T05:28:00Z');
+  if(cacheBust) url.searchParams.set('__ts', String(Date.now()));
+  return url.toString();
+}
+function syncContactsHelperFrame(forceReload){
+  var iframe = document.getElementById('contactsHelperFrame');
+  if(!iframe) return;
+  var targetSrc = buildContactsHelperSrc(forceReload);
+  var currentSrc = '';
+  try{
+    currentSrc = iframe.contentWindow && iframe.contentWindow.location
+      ? String(iframe.contentWindow.location.href || '').trim()
+      : '';
+  }catch(err){
+    currentSrc = '';
+  }
+  if(!currentSrc){
+    try{
+      currentSrc = new URL(String(iframe.getAttribute('src') || ''), window.location.href).toString();
+    }catch(err){
+      currentSrc = String(iframe.getAttribute('src') || '').trim();
+    }
+  }
+  if(forceReload || currentSrc !== targetSrc){
+    iframe.setAttribute('src', targetSrc);
+  }
+}
+function waitContactsImportHelper(timeoutMs){
+  var deadline = Date.now() + (Number(timeoutMs || 0) || 2500);
+  return new Promise(function(resolve){
+    function readyWindow(){
+      var win = getContactsFrameWindow();
+      return win && typeof win.onFiles === 'function' ? win : null;
+    }
+    var immediate = readyWindow();
+    if(immediate){
+      resolve(immediate);
+      return;
+    }
+    var iframe = document.getElementById('contactsHelperFrame');
+    var timer = 0;
+    function cleanup(){
+      if(timer) clearTimeout(timer);
+      if(iframe) iframe.removeEventListener('load', onLoad);
+    }
+    function finish(win){
+      cleanup();
+      resolve(win || null);
+    }
+    function poll(){
+      var win = readyWindow();
+      if(win){
+        finish(win);
+        return;
+      }
+      if(Date.now() >= deadline){
+        finish(null);
+        return;
+      }
+      timer = setTimeout(poll, 120);
+    }
+    function onLoad(){
+      setTimeout(poll, 0);
+    }
+    if(iframe) iframe.addEventListener('load', onLoad);
+    poll();
+  });
+}
+function getContactsPhoneStorage(){
+  try{
+    if(window.PhoneStorage && typeof window.PhoneStorage.get === 'function') return window.PhoneStorage;
+  }catch(err){}
+  try{
+    if(window.parent && window.parent !== window && window.parent.PhoneStorage && typeof window.parent.PhoneStorage.get === 'function'){
+      return window.parent.PhoneStorage;
+    }
+  }catch(err2){}
+  return null;
+}
+function hasLocalContactsTavernSession(){
+  return true;
+}
+function clickContactsImportInput(){
+  var input = document.getElementById('contactsImportInput');
+  if(!input) return false;
+  input.value = '';
+  input.click();
+  return true;
+}
+function contactsImportHelperReady(){
+  syncContactsHelperFrame(false);
+  return waitContactsImportHelper(3500).then(function(cw){
+    if(!cw) throw new Error('导入器还没准备好，等一秒再试');
+    return cw;
+  });
+}
+async function seedContactsImportHelperSession(cw){
+  return null;
+}
+async function hasContactsTavernPermission(){
+  return true;
+}
+function clickContactsImportAfterVerified(){
+  clickContactsImportInput();
+}
+function continueContactsImportAfterTavern(){
+  clickContactsImportInput();
+}
+function openContactsCreate(){
+  closeContactsDrawer();
+  qqCreateAvatarUpload = '';
+  var thumb = document.getElementById('contactsCreateAvatarThumb');
+  var name = document.getElementById('contactsCreateAvatarName');
+  if(thumb) thumb.textContent = '+';
+  if(name) name.textContent = '点这里上传头像';
+  ['contactsCreateName','contactsCreateNick','contactsCreateAvatar','contactsCreateDesc','contactsCreateAvatarInput'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  document.getElementById('contactsCreateMask')?.classList.add('open');
+}
+function openContactsImport(){
+  closeContactsDrawer();
+  syncContactsHelperFrame(false);
+  clickContactsImportInput();
+}
+function openCharacterContact(charId){
+  var targetId = String(charId || '').trim();
+  if(!targetId) return;
+  closeContactsDrawer();
+  openChat(targetId);
+}
+async function deleteContactCharacter(charId){
+  var targetId = String(charId || '').trim();
+  if(!targetId) return;
+  var target = await resolveLatestChar(targetId, chars.find(function(item){ return item && String(item.id || '') === targetId; }));
+  var label = String((target && (target.name || target.nickname)) || '这个联系人').trim() || '这个联系人';
+  deleteConfirmId = targetId;
+  deleteConfirmLabel = label;
+  var nameEl = document.getElementById('deleteConfirmName');
+  if(nameEl) nameEl.textContent = label;
+  document.getElementById('deleteConfirmMask')?.classList.add('open');
+}
+function handleDeleteConfirmOverlay(evt){
+  if(evt.target === evt.currentTarget) closeDeleteConfirm();
+}
+function closeDeleteConfirm(){
+  document.getElementById('deleteConfirmMask')?.classList.remove('open');
+  deleteConfirmId = '';
+  deleteConfirmLabel = '';
+}
+async function confirmDeleteContact(){
+  var targetId = String(deleteConfirmId || '').trim();
+  var label = String(deleteConfirmLabel || '这个联系人').trim() || '这个联系人';
+  closeDeleteConfirm();
+  if(!targetId) return;
+  try{
+    if(window.MetadataStore && typeof window.MetadataStore.loadCharacters === 'function'){
+      await window.MetadataStore.loadCharacters(true);
+    }
+    if(window.MetadataStore && typeof window.MetadataStore.loadWorldbooks === 'function'){
+      await window.MetadataStore.loadWorldbooks(true);
+    }
+    var target = await resolveLatestChar(targetId, chars.find(function(item){ return item && String(item.id || '') === targetId; }));
+    var allChars = getStoredCharactersSnapshot().filter(function(item){
+      return !(item && String(item.id || '') === targetId);
+    });
+    var allWorldbooks = getStoredWorldbooksSnapshot();
+    if(allWorldbooks && typeof allWorldbooks === 'object' && Object.prototype.hasOwnProperty.call(allWorldbooks, targetId)){
+      delete allWorldbooks[targetId];
+    }
+    await removeChatRecordsForCharacter(targetId);
+    await removeImportedMemesForCharacter(target);
+    unpinChat(targetId);
+    try{
+      if(window.AccountManager && typeof window.AccountManager.removeFriend === 'function'){
+        window.AccountManager.removeFriend(targetId);
+      }
+    }catch(err){}
+    if(window.MetadataStore && typeof window.MetadataStore.saveCharacters === 'function'){
+      await window.MetadataStore.saveCharacters(allChars);
+    }
+    await saveStoredWorldbooksSnapshot(allWorldbooks);
+    try{
+      if(window.assetStore && typeof window.assetStore.remove === 'function'){
+        await window.assetStore.remove('char_avatar_' + targetId);
+      }else{
+        localStorage.removeItem('char_avatar_' + targetId);
+      }
+    }catch(err){}
+    try{
+      localStorage.removeItem('wbCharId');
+      localStorage.removeItem('pendingChatCharId');
+      localStorage.removeItem('pendingChatChar');
+      localStorage.removeItem(accountScopedKey('activeCharacter'));
+      localStorage.removeItem(accountScopedKey('activeChatCharacterId'));
+      localStorage.removeItem(accountScopedKey('chat_' + targetId));
+      localStorage.removeItem(accountScopedKey('char_discovered_' + targetId));
+      localStorage.removeItem(accountScopedKey('friend_first_user_turn_' + targetId));
+      localStorage.removeItem(accountScopedKey('user_name_' + targetId));
+      localStorage.removeItem(accountScopedKey('user_persona_' + targetId));
+      localStorage.removeItem(accountScopedKey('user_avatar_' + targetId));
+      localStorage.removeItem('pending_friend_req_intro_' + targetId);
+      localStorage.removeItem('activeCharacter');
+      localStorage.removeItem('activeChatCharacterId');
+    }catch(err){}
+    closeContactsDrawer();
+    await loadChars();
+    renderList();
+    renderMomentsBadge();
+    syncHomeBadgeCount();
+    showToast('已删除：' + label);
+    try{
+      window.parent.postMessage({ type:'WORLDBOOK_UPDATED' }, '*');
+    }catch(err){}
+  }catch(err){
+    console.error('delete contact failed', err);
+    showToast('删除失败，再试一次吧');
+  }
+}
+function handleContactsCreateOverlay(evt){
+  if(evt.target === evt.currentTarget) closeContactsCreate();
+}
+function closeContactsCreate(){
+  document.getElementById('contactsCreateMask')?.classList.remove('open');
+}
+function pickContactsCreateAvatar(){
+  var input = document.getElementById('contactsCreateAvatarInput');
+  if(input){
+    input.value = '';
+    input.click();
+  }
+}
+async function handleContactsCreateAvatarFile(file){
+  if(!file) return;
+  try{
+    var dataUrl = await fileToDataUrl(file);
+    qqCreateAvatarUpload = await shrinkDataUrl(dataUrl, 256);
+    var thumb = document.getElementById('contactsCreateAvatarThumb');
+    var name = document.getElementById('contactsCreateAvatarName');
+    if(thumb) thumb.innerHTML = qqCreateAvatarUpload ? ('<img src="' + esc(qqCreateAvatarUpload) + '" alt="">') : '+';
+    if(name) name.textContent = String(file.name || '已选择头像').replace(/\.[^.]+$/, '') || '已选择头像';
+  }catch(err){
+    showToast('头像读取失败，再试一次吧');
+  }
+}
+async function submitContactsCreate(){
+  var nameInput = document.getElementById('contactsCreateName');
+  var nickInput = document.getElementById('contactsCreateNick');
+  var avatarInput = document.getElementById('contactsCreateAvatar');
+  var descInput = document.getElementById('contactsCreateDesc');
+  var safeName = String(nameInput && nameInput.value || '').trim();
+  if(!safeName){
+    showToast('先写一个名字');
+    nameInput && nameInput.focus && nameInput.focus();
+    return;
+  }
+  try{
+    if(window.MetadataStore && typeof window.MetadataStore.loadCharacters === 'function'){
+      await window.MetadataStore.loadCharacters(true);
+    }
+    var current = getStoredCharactersSnapshot();
+    var nextList = Array.isArray(current) ? current.slice() : [];
+    var accountId = '';
+    try{
+      if(window.AccountManager){
+        window.AccountManager.ensure();
+        var acct = window.AccountManager.getActive();
+        accountId = String((acct && acct.id) || '').trim();
+      }
+    }catch(err){}
+    var charId = 'char_' + Date.now();
+    var nextChar = {
+      id: charId,
+      name: safeName,
+      nickname: String(nickInput && nickInput.value || '').trim(),
+      avatar: String(avatarInput && avatarInput.value || '').trim() || '🌸',
+      description: String(descInput && descInput.value || '').trim(),
+      alternate_greetings: [],
+      first_mes: '',
+      personality: String(descInput && descInput.value || '').trim(),
+      scenario: '',
+      system_prompt: '',
+      msgMin: 1,
+      msgMax: 3,
+      ownerAccountId: accountId
+    };
+    nextList.push(nextChar);
+    if(window.MetadataStore && typeof window.MetadataStore.saveCharacters === 'function'){
+      await window.MetadataStore.saveCharacters(nextList);
+    }
+    try{
+      if(window.AccountManager && typeof window.AccountManager.addFriend === 'function'){
+        window.AccountManager.addFriend(charId);
+      }
+    }catch(friendErr){}
+    if(qqCreateAvatarUpload){
+      if(window.assetStore && typeof window.assetStore.saveOrFallback === 'function'){
+        await window.assetStore.saveOrFallback('char_avatar_' + charId, qqCreateAvatarUpload);
+      }else{
+        localStorage.setItem('char_avatar_' + charId, qqCreateAvatarUpload);
+      }
+      avatarAssetCache[charId] = qqCreateAvatarUpload;
+    }
+    closeContactsCreate();
+    setListFilter('all');
+    await loadChars();
+    renderMomentsBadge();
+    syncHomeBadgeCount();
+    renderList();
+    showToast('已创建：' + safeName);
+    try{
+      window.parent.postMessage({ type:'CHARACTER_IMPORTED', payload:nextChar }, '*');
+    }catch(err){}
+  }catch(err){
+    console.error('create character in qq failed', err);
+    showToast('创建失败，稍后再试试');
+  }
+}
+async function adoptImportedCharacterForActiveAccount(imported){
+  var payload = imported && typeof imported === 'object' ? Object.assign({}, imported) : {};
+  var charId = String(payload.id || '').trim();
+  if(!charId) return false;
+  var accountId = '';
+  try{
+    if(window.AccountManager){
+      if(typeof window.AccountManager.hydrateFromStorage === 'function'){
+        await window.AccountManager.hydrateFromStorage().catch(function(){});
+      }
+      window.AccountManager.ensure();
+      var acct = window.AccountManager.getActive();
+      accountId = String((acct && acct.id) || '').trim();
+      if(typeof window.AccountManager.addFriend === 'function') window.AccountManager.addFriend(charId);
+    }
+  }catch(err){}
+  if(!accountId) return false;
+  if(window.MetadataStore && typeof window.MetadataStore.loadCharacters === 'function'){
+    try{ await window.MetadataStore.loadCharacters(true); }catch(err2){}
+  }
+  var all = getStoredCharactersSnapshot();
+  if(!Array.isArray(all)) all = [];
+  var changed = false;
+  var found = false;
+  all = all.map(function(item){
+    if(!item || String(item.id || '') !== charId) return item;
+    found = true;
+    if(String(item.ownerAccountId || '') === accountId) return item;
+    changed = true;
+    return Object.assign({}, item, { ownerAccountId: accountId });
+  });
+  if(!found){
+    payload.ownerAccountId = accountId;
+    all.push(payload);
+    changed = true;
+  }
+  if(changed && window.MetadataStore && typeof window.MetadataStore.saveCharacters === 'function'){
+    await window.MetadataStore.saveCharacters(all).catch(function(){});
+  }
+  var currentIdx = (Array.isArray(chars) ? chars : []).findIndex(function(item){
+    return item && String(item.id || '') === charId;
+  });
+  var visiblePayload = Object.assign({}, payload, { ownerAccountId: accountId });
+  if(currentIdx >= 0){
+    chars[currentIdx] = Object.assign({}, chars[currentIdx], visiblePayload);
+  }else{
+    chars.push(visiblePayload);
+  }
+  setListFilter('all');
+  renderList();
+  return true;
+}
+function handleContactsImportFiles(files, options){
+  var input = document.getElementById('contactsImportInput');
+  var importFiles = Array.from(files || []);
+  if(!importFiles.length){
+    if(input) input.value = '';
+    return;
+  }
+  syncContactsHelperFrame(false);
+  waitContactsImportHelper(3000).then(function(cw){
+    if(!cw || typeof cw.onFiles !== 'function'){
+      showToast('导入器还没准备好，等一秒再试');
+      return null;
+    }
+    showToast(importFiles.length > 1 ? ('正在导入 ' + importFiles.length + ' 张角色卡') : '正在导入角色卡');
+    return seedContactsImportHelperSession(cw).then(function(){
+      return cw.onFiles(importFiles, {});
+    });
+  }).then(function(){
+    return loadChars();
+  }).catch(function(err){
+    console.error('contacts import failed', err);
+    showToast('导入失败，再试一次吧');
+  }).finally(function(){
+    if(input) input.value = '';
+  });
+}
+function openOfflineArchive(){
+  showToast('蕾蕾在赶工^^');
+}
+function openProfileCenter(){
+  window.location.href = 'qq_profile.html?__ts=' + encodeURIComponent(String(Date.now()));
+}
+function bindQqHeroInput(){}
+window.addEventListener('load', function(){
+  syncContactsHelperFrame(false);
+});
+if(window.MetadataStore && typeof window.MetadataStore.subscribe === 'function'){
+  window.MetadataStore.subscribe(function(topic){
+    if(topic !== 'characters') return;
+    loadChars().then(function(){
+      renderMomentsBadge();
+      syncHomeBadgeCount();
+    }).catch(function(){});
+  });
+}
+window.addEventListener('message', async function(e){
+  var d=e.data||{};
+  if(d.type==='SHELL_METADATA_DIRTY'){
+    var topic = String((d.payload && d.payload.topic) || 'characters').trim();
+    if(!topic || topic === 'characters'){
+      await loadChars();
+      renderMomentsBadge();
+      syncHomeBadgeCount();
+    }
+  }
+  if(d.type==='CHARACTER_IMPORTED'){
+    await adoptImportedCharacterForActiveAccount(d.payload || {}).catch(function(err){ console.warn('adopt imported character failed', err); });
+    await loadChars();
+    renderMomentsBadge();
+    syncHomeBadgeCount();
+    forward(d);
+  }
+  if(d.type==='SET_ACTIVE_CHARACTER'){
+    var payload = d.payload || {};
+    var payloadId = String((payload && payload.id) || '').trim();
+    if(payloadId){
+      var next = await resolveLatestChar(payloadId, null);
+      var replaced = false;
+      chars = (Array.isArray(chars) ? chars : []).map(function(item){
+        if(item && String(item.id || '') === payloadId){
+          if(next){
+            replaced = true;
+            return Object.assign({}, item, next);
+          }
+          return item;
+        }
+        return item;
+      });
+      if(!replaced && next) chars.push(next);
+      renderList();
+    }
+    forward(d);
+    return;
+  }
+  if(d.type==='CHAT_UPDATED'){
+    var payload = d.payload || {};
+    if(payload.id){
+      livePreviewCache[payload.id] = normalizePreviewMessage({ content: payload.last || '', type: payload.lastType || 'text' });
+      var current = chatSummaryCache[payload.id] || { last:{ content:'', type:'text' }, unread:0 };
+      var lastAt = Number(payload.lastAt || payload.ts || Date.now()) || Date.now();
+      chatSummaryCache[payload.id] = {
+        last: livePreviewCache[payload.id],
+        unread: Number(current.unread || 0) || 0,
+        lastAt: lastAt
+      };
+      renderList();
+    }
+    await loadChars();
+    renderMomentsBadge();
+    syncHomeBadgeCount();
+    forward(d);
+  }
+  if(d.type==='OPEN_CHAT_WITH' || d.type==='OPEN_APP_WITH'){ forward(d); }
+});
+function forward(msg){
+  try{ if(window.top && window.top!==window) window.top.postMessage(msg,'*'); }catch(e){}
+}
+bindPinConfirmControls();
+Promise.resolve(window.MetadataStore && typeof window.MetadataStore.init === 'function' ? window.MetadataStore.init() : null)
+  .catch(function(){ return null; })
+  .then(function(){
+    bindQqHeroInput();
+    return renderQqHeroCard()
+      .catch(function(){})
+      .then(function(){
+        return loadChars().catch(function(err){ console.error('qq load chars failed', err); });
+      });
+  });
+setInterval(function(){
+  loadChars().catch(function(){});
+  renderMomentsBadge();
+  syncHomeBadgeCount();
+  renderQqHeroCard().catch(function(){});
+}, 3000);
+hideParentTopbar();
+window.addEventListener('pageshow', hideParentTopbar);
+window.addEventListener('beforeunload', restoreParentTopbar);
+window.addEventListener('pagehide', restoreParentTopbar);
+</script>
+</body>
+</html>

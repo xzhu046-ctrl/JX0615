@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover">
+<title>档案馆</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<script src="../chatStorage.js?v=2026-05-01T18:22:00Z"></script>
+<script src="../accountManager.js?v=2026-05-01T18:22:00Z"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--b:#0a0a0a;--w:#fff;--off:#f6f6f3;--g:#6b6b6b;--bd:2px solid #0a0a0a;--sh:2px 2px 0 #0a0a0a;--font:'Quicksand',sans-serif;--fontd:'Nunito',sans-serif;--safe-top:max(env(safe-area-inset-top),0px);--safe-bottom:max(env(safe-area-inset-bottom),0px)}
+html,body{width:100%;height:100%;overflow:hidden}
+body{font-family:var(--font);background:
+  linear-gradient(180deg,rgba(255,255,255,.94),rgba(245,245,242,.98)),
+  repeating-linear-gradient(0deg,transparent 0 29px,rgba(10,10,10,.035) 29px 30px);
+  color:var(--b)}
+button{-webkit-appearance:none;appearance:none;color:var(--b);-webkit-text-fill-color:currentColor}
+.shell{height:100%;display:flex;flex-direction:column;min-height:0}
+.hero{padding:calc(14px + var(--safe-top)) 14px 10px;display:flex;align-items:flex-start;gap:10px}
+.hero-icon{width:48px;height:48px;border:var(--bd);border-radius:14px;background:#fff;box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hero-icon img{width:28px;height:28px;object-fit:contain;filter:grayscale(1) contrast(1.18)}
+.hero-copy{min-width:0}
+.hero-title{font-family:var(--fontd);font-size:18px;font-weight:900}
+.hero-sub{margin-top:4px;font-size:12px;line-height:1.55;color:var(--g)}
+.folder-list{flex:1;min-height:0;overflow:auto;padding:2px 14px calc(100px + var(--safe-bottom));display:flex;flex-direction:column;gap:14px}
+.folder-card{position:relative;width:100%;padding:0;border:none;background:transparent;text-align:left;cursor:pointer;color:var(--b)}
+.folder-card.select-mode{max-width:100%;cursor:pointer}
+.folder-card.selected .folder-check{background:#0a0a0a;color:#fff}
+.folder-tab{position:absolute;left:14px;top:0;min-width:92px;max-width:52%;padding:7px 12px 6px;border:var(--bd);border-bottom:none;border-radius:14px 14px 0 0;background:#fff;font-family:var(--fontd);font-size:11px;font-weight:900;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:var(--sh);color:#0a0a0a;-webkit-text-fill-color:#0a0a0a}
+.folder-body{position:relative;margin-top:22px;border:var(--bd);border-radius:18px;background:linear-gradient(180deg,#fff 0%,#f2f2ef 100%);box-shadow:4px 4px 0 #0a0a0a;padding:16px 16px 14px;min-height:112px}
+.folder-body::before{content:'';position:absolute;left:12px;right:12px;top:12px;bottom:12px;border:1.5px dashed rgba(10,10,10,.18);border-radius:12px;pointer-events:none}
+.folder-check{display:none;position:absolute;right:12px;top:16px;width:24px;height:24px;border-radius:999px;border:var(--bd);background:#fff;color:transparent;font-family:var(--fontd);font-size:12px;font-weight:900;align-items:center;justify-content:center;box-shadow:var(--sh);z-index:2}
+.folder-card.select-mode .folder-check{display:flex}
+.folder-head{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.folder-name{font-family:var(--fontd);font-size:15px;font-weight:900;line-height:1.2;color:#0a0a0a;-webkit-text-fill-color:#0a0a0a}
+.folder-time{font-size:11px;font-weight:700;color:var(--g);flex-shrink:0}
+.folder-preview{position:relative;font-size:12px;line-height:1.65;color:#242424;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;padding-right:8px;min-height:40px}
+.folder-meta{position:relative;margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.folder-count{font-size:11px;font-weight:800;color:var(--g)}
+.status-chip{display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border:var(--bd);border-radius:999px;background:#fff;font-family:var(--fontd);font-size:10px;font-weight:900;letter-spacing:.04em}
+.status-chip.pending{background:#0a0a0a;color:#fff}
+.empty{margin-top:18px;border:var(--bd);border-radius:22px;background:#fff;box-shadow:var(--sh);padding:26px 18px;text-align:center}
+.empty h3{font-family:var(--fontd);font-size:17px;font-weight:900}
+.empty p{margin-top:6px;font-size:12px;line-height:1.7;color:var(--g)}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(255,255,255,.34);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:20}
+.modal.open{display:flex}
+.modal-backdrop{position:absolute;inset:0}
+.modal-card{position:relative;width:min(100%,380px);max-height:min(88vh,760px);border:var(--bd);border-radius:24px;background:#fff;box-shadow:4px 4px 0 #0a0a0a;display:flex;flex-direction:column;overflow:hidden}
+.modal-head{padding:16px 16px 12px;border-bottom:var(--bd);background:linear-gradient(180deg,#fff 0%,#f4f4f1 100%)}
+.modal-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.modal-title{font-family:var(--fontd);font-size:16px;font-weight:900;line-height:1.25}
+.close-btn{width:34px;height:34px;border:var(--bd);border-radius:999px;background:#fff;box-shadow:var(--sh);font-family:var(--fontd);font-size:18px;font-weight:900;cursor:pointer;color:#0a0a0a;-webkit-text-fill-color:#0a0a0a}
+.modal-sub{margin-top:8px;font-size:12px;line-height:1.6;color:var(--g)}
+.modal-body{flex:1;min-height:0;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:12px;background:repeating-linear-gradient(0deg,#fafaf8 0 30px,#f2f2ef 30px 31px)}
+.entry-card{border:var(--bd);border-radius:18px;background:#fff;box-shadow:var(--sh);padding:12px 12px 10px}
+.entry-role{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border:var(--bd);border-radius:999px;background:#fff;font-family:var(--fontd);font-size:10px;font-weight:900;letter-spacing:.05em}
+.entry-role.user{background:#0a0a0a;color:#fff}
+.entry-text{margin-top:10px;font-size:13px;line-height:1.8;white-space:pre-wrap;word-break:break-word}
+.entry-meta{margin-top:8px;font-size:11px;font-weight:700;color:var(--g)}
+.modal-actions{padding:14px;border-top:var(--bd);display:flex;gap:10px;background:#fff}
+.action-btn{flex:1;padding:12px 14px;border:var(--bd);border-radius:16px;background:#fff;color:#0a0a0a;-webkit-text-fill-color:#0a0a0a;box-shadow:var(--sh);font-family:var(--fontd);font-size:13px;font-weight:900;cursor:pointer}
+.action-btn:active,.close-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #0a0a0a}
+.action-btn.primary{background:#fff;color:#0a0a0a;-webkit-text-fill-color:#0a0a0a}
+.multi-cancel-btn,.multi-trash-btn{position:fixed;z-index:40;display:none;width:44px;height:44px;border-radius:999px;border:var(--bd);background:#fff;color:#0a0a0a;-webkit-text-fill-color:#0a0a0a;box-shadow:var(--sh);font-family:var(--fontd);font-size:20px;font-weight:900;align-items:center;justify-content:center;cursor:pointer}
+.multi-cancel-btn.show,.multi-trash-btn.show{display:flex}
+.multi-cancel-btn{left:18px;top:calc(env(safe-area-inset-top) + 14px)}
+.multi-trash-btn{right:18px;top:calc(env(safe-area-inset-top) + 14px);padding:0}
+.multi-trash-btn img{width:20px;height:20px;display:block;object-fit:contain;filter:brightness(0) saturate(100%) invert(15%) sepia(98%) saturate(4019%) hue-rotate(350deg) brightness(92%) contrast(107%)}
+.delete-confirm-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.36);z-index:50}
+.delete-confirm-overlay.open{display:flex}
+.delete-confirm-card{width:min(300px,100%);background:#111;color:#fff;border:2px solid #fff;border-radius:18px;box-shadow:0 16px 34px rgba(0,0,0,.28),4px 4px 0 #000;padding:16px;display:flex;flex-direction:column;gap:12px}
+.delete-confirm-title{font-family:var(--fontd);font-size:16px;font-weight:900}
+.delete-confirm-desc{font-size:12px;line-height:1.65;color:rgba(255,255,255,.88)}
+.delete-confirm-actions{display:flex;gap:8px}
+.delete-confirm-btn{flex:1;padding:11px 12px;border:var(--bd);border-radius:12px;background:#fff;color:#0a0a0a;-webkit-text-fill-color:#0a0a0a;box-shadow:var(--sh);font-family:var(--fontd);font-size:12px;font-weight:900;cursor:pointer}
+.delete-confirm-btn.primary{background:#fff;color:#0a0a0a}
+.qq-bottom-nav{position:fixed;left:12px;right:12px;bottom:calc(10px + var(--safe-bottom));z-index:90;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.qq-bottom-btn > span:not(.nav-icon){display:none}
+.qq-bottom-btn{gap:0;font-size:0}
+.qq-bottom-btn{border:none;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#7a7a80;font-family:var(--fontd);font-size:10px;font-weight:900;cursor:pointer}
+.qq-bottom-btn:active{transform:translateY(1px)}
+.qq-bottom-btn .nav-icon{width:46px;height:46px;border:2px solid #111;border-radius:999px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 20px rgba(0,0,0,.12)}
+.qq-bottom-btn .nav-icon img{width:28px;height:28px;object-fit:contain;display:block;filter:brightness(0)}
+.qq-bottom-btn.active{color:#111}
+.qq-bottom-btn.active .nav-icon{background:#111}
+.qq-bottom-btn.active .nav-icon img{filter:brightness(0) invert(1)}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="hero">
+    <div class="hero-icon"><img src="assets/Chat-Bubble-Heart--Streamline-Sharp.png" alt=""></div>
+    <div class="hero-copy">
+      <div class="hero-title">线下档案馆</div>
+      <div class="hero-sub">每次约会收进这里。说完再见就存好，没说完就先待续。</div>
+    </div>
+  </div>
+  <div class="folder-list" id="folderList"></div>
+</div>
+
+<button class="multi-cancel-btn" id="archiveMultiCancelBtn" type="button" onclick="exitArchiveSelectMode()">×</button>
+<button class="multi-trash-btn" id="archiveMultiTrashBtn" type="button" onclick="openArchiveDeleteConfirm()" aria-label="删除所选档案" title="删除所选档案"><img src="assets/Recycle-Bin-2--Streamline-Sharp.png" alt=""></button>
+
+<div class="modal" id="archiveModal">
+  <div class="modal-backdrop" onclick="closeArchiveModal()"></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="modal-top">
+        <div class="modal-title" id="modalTitle">约会档案</div>
+        <button class="close-btn" type="button" onclick="closeArchiveModal()">×</button>
+      </div>
+      <div class="modal-sub" id="modalSub"></div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<div class="delete-confirm-overlay" id="archiveDeleteConfirm">
+  <div class="delete-confirm-card">
+    <div class="delete-confirm-title">删除档案？</div>
+    <div class="delete-confirm-desc" id="archiveDeleteText">确定删除这些档案吗？</div>
+    <div class="delete-confirm-actions">
+      <button class="delete-confirm-btn" type="button" onclick="closeArchiveDeleteConfirm()">取消</button>
+      <button class="delete-confirm-btn primary" type="button" onclick="confirmArchiveDelete()">确认</button>
+    </div>
+  </div>
+</div>
+
+<div class="qq-bottom-nav">
+  <button class="qq-bottom-btn" type="button" aria-label="聊天" title="聊天" onclick="openChatHub()">
+    <span class="nav-icon"><img src="assets/聊天图标.png" alt=""></span>
+    <span>聊天</span>
+  </button>
+  <button class="qq-bottom-btn" type="button" aria-label="发现" title="发现" onclick="openMomentsPage()">
+    <span class="nav-icon"><img src="assets/moments-icon.svg" alt=""></span>
+    <span>发现</span>
+  </button>
+  <button class="qq-bottom-btn active" type="button" aria-label="档案馆" title="档案馆">
+    <span class="nav-icon"><img src="assets/Chat-Bubble-Heart--Streamline-Sharp.png" alt=""></span>
+    <span>档案馆</span>
+  </button>
+  <button class="qq-bottom-btn" type="button" aria-label="自己" title="自己" onclick="openProfileCenter()">
+    <span class="nav-icon"><img src="assets/User-Story--Streamline-Sharp.png" alt=""></span>
+    <span>自己</span>
+  </button>
+</div>
+
+<script>
+var archives = [];
+var activeArchiveId = '';
+var archiveSelectMode = false;
+var selectedArchiveIds = [];
+var archiveLongPressTimer = null;
+
+function openChatHub(){ window.location.href = 'qq.html'; }
+function openMomentsPage(){ window.location.href = 'qq_moments.html'; }
+function openProfileCenter(){ window.location.href = 'qq_profile.html'; }
+
+function activeAccountId(){
+  try{
+    var localId = window.AccountManager && window.AccountManager.getActive ? ((window.AccountManager.getActive() || {}).id || '') : '';
+    if(localId) return String(localId);
+  }catch(e){}
+  try{
+    if(window.parent && window.parent !== window && window.parent.AccountManager && window.parent.AccountManager.getActive){
+      return String((window.parent.AccountManager.getActive() || {}).id || '');
+    }
+  }catch(e){}
+  return '';
+}
+function scopedKey(base){
+  var accountId = activeAccountId();
+  return accountId ? (base + '__acct_' + accountId) : base;
+}
+function archiveStorageApi(){
+  try{
+    if(window.parent && window.parent !== window && window.parent.PhoneStorage && typeof window.parent.PhoneStorage.getJson === 'function'){
+      return window.parent.PhoneStorage;
+    }
+  }catch(e){}
+  try{
+    if(window.PhoneStorage && typeof window.PhoneStorage.getJson === 'function'){
+      return window.PhoneStorage;
+    }
+  }catch(e){}
+  return null;
+}
+function loadArchiveJsonFromStorage(key){
+  var safeKey = String(key || '').trim();
+  var api = archiveStorageApi();
+  if(!safeKey || !api || typeof api.getJson !== 'function') return Promise.resolve(null);
+  return api.getJson(safeKey).catch(function(){ return null; });
+}
+function saveArchiveJsonToStorage(key, data){
+  var safeKey = String(key || '').trim();
+  var api = archiveStorageApi();
+  if(!safeKey || !api || typeof api.putJson !== 'function') return Promise.resolve(false);
+  return api.putJson(safeKey, data).then(function(){ return true; }).catch(function(){ return false; });
+}
+function removeArchiveJsonFromStorage(key){
+  var safeKey = String(key || '').trim();
+  var api = archiveStorageApi();
+  if(!safeKey || !api || typeof api.removeJson !== 'function') return Promise.resolve(false);
+  return api.removeJson(safeKey).then(function(){ return true; }).catch(function(){ return false; });
+}
+function activeCharacterKey(){
+  return scopedKey('activeCharacter');
+}
+function offlineSessionKey(charId){
+  return scopedKey('offline_meet_session_' + String(charId || ''));
+}
+function activeOfflineCharacterKey(){
+  return scopedKey('activeOfflineCharacterId');
+}
+function pendingOfflineMemoryKey(charId){
+  return scopedKey('offline_memory_pending_' + String(charId || ''));
+}
+function pendingOfflineNoticeKey(charId){
+  return scopedKey('offline_notice_pending_' + String(charId || ''));
+}
+function pendingOfflineBootstrapKey(charId){
+  return scopedKey('offline_bootstrap_' + String(charId || ''));
+}
+function pendingOfflineLaunchKey(charId){
+  return scopedKey('offline_launch_' + String(charId || ''));
+}
+function pendingOfflineResumeKey(charId){
+  return scopedKey('offline_resume_' + String(charId || ''));
+}
+function loadPendingResumeSnapshotForChar(charId){
+  var safeId = String(charId || '').trim();
+  if(!safeId) return null;
+  var keys = [pendingOfflineResumeKey(safeId), 'offline_resume_' + safeId];
+  for(var i = 0; i < keys.length; i += 1){
+    try{
+      var raw = localStorage.getItem(keys[i]) || '';
+      if(!raw) continue;
+      var parsed = JSON.parse(raw);
+      if(parsed && parsed.session && typeof parsed.session === 'object'){
+        return parsed.session;
+      }
+    }catch(e){}
+  }
+  return null;
+}
+function latestOfflineLaunchKey(){
+  return scopedKey('offline_launch_latest');
+}
+function offlineLaunchTokenKey(token){
+  return scopedKey('offline_launch_token_' + String(token || '').trim());
+}
+function offlineArchiveListKey(){
+  return scopedKey('offline_meet_archives');
+}
+function offlineArchiveLegacyListKey(){
+  return 'offline_meet_archives';
+}
+function offlineArchiveRecordKey(archiveId){
+  return scopedKey('offline_meet_archive_record_' + String(archiveId || '').trim());
+}
+function offlineArchiveLegacyRecordKey(archiveId){
+  return 'offline_meet_archive_record_' + String(archiveId || '').trim();
+}
+function loadArchiveIndexEntries(){
+  var scopedRaw = '';
+  var legacyRaw = '';
+  try{ scopedRaw = localStorage.getItem(offlineArchiveListKey()) || ''; }catch(e){}
+  try{ legacyRaw = localStorage.getItem(offlineArchiveLegacyListKey()) || ''; }catch(e){}
+  try{
+    var parsedScoped = JSON.parse(scopedRaw || '[]');
+    if(Array.isArray(parsedScoped) && parsedScoped.length) return parsedScoped;
+  }catch(e){}
+  try{
+    var parsedLegacy = JSON.parse(legacyRaw || '[]');
+    return Array.isArray(parsedLegacy) ? parsedLegacy : [];
+  }catch(e){}
+  return [];
+}
+async function loadArchiveRecord(archiveId){
+  var safeId = String(archiveId || '').trim();
+  if(!safeId) return null;
+  var candidates = [offlineArchiveRecordKey(safeId), offlineArchiveLegacyRecordKey(safeId)];
+  for(var i = 0; i < candidates.length; i += 1){
+    try{
+      var raw = localStorage.getItem(candidates[i]) || '';
+      if(!raw) continue;
+      var parsed = JSON.parse(raw);
+      if(parsed && typeof parsed === 'object') return parsed;
+    }catch(e){}
+  }
+  for(var j = 0; j < candidates.length; j += 1){
+    var stored = await loadArchiveJsonFromStorage(candidates[j]);
+    if(stored && typeof stored === 'object') return stored;
+  }
+  return null;
+}
+function buildArchiveListEntry(entry){
+  var source = entry && typeof entry === 'object' ? entry : {};
+  return {
+    id: String(source.id || '').trim(),
+    charId: String(source.charId || '').trim(),
+    charName: String(source.charName || '').trim(),
+    charAvatar: String(source.charAvatar || '').trim(),
+    userName: String(source.userName || '').trim(),
+    status: String(source.status || 'pending').trim() || 'pending',
+    statusLabel: String(source.statusLabel || '').trim(),
+    reason: String(source.reason || '').trim(),
+    createdAt: Number(source.createdAt || 0) || 0,
+    updatedAt: Number(source.updatedAt || 0) || 0,
+    preview: String(source.preview || '').trim(),
+    entryCount: Number(source.entryCount || 0) || 0,
+    endedAt: Number(source.endedAt || 0) || 0,
+    characterSnapshot: source.characterSnapshot && typeof source.characterSnapshot === 'object' ? Object.assign({}, source.characterSnapshot) : null
+  };
+}
+function buildArchiveCharacterSnapshot(snapshot){
+  if(!(snapshot && typeof snapshot === 'object')) return null;
+  var safeId = String(snapshot.id || '').trim();
+  if(!safeId) return null;
+  return {
+    id: safeId,
+    name: String(snapshot.name || snapshot.charName || '').trim(),
+    nickname: String(snapshot.nickname || snapshot.charName || '').trim(),
+    avatar: String(snapshot.avatar || '').trim() || '🌸',
+    imageData: '',
+    description: String(snapshot.description || '').trim(),
+    personality: String(snapshot.personality || '').trim(),
+    scenario: String(snapshot.scenario || '').trim(),
+    system_prompt: String(snapshot.system_prompt || '').trim(),
+    first_mes: String(snapshot.first_mes || '').trim(),
+    offlineInviteMin: Number(snapshot.offlineInviteMin || 300),
+    offlineInviteMax: Number(snapshot.offlineInviteMax || 360),
+    offlineInvitePerspective: String(snapshot.offlineInvitePerspective || 'first'),
+    offlineInviteStyle: String(snapshot.offlineInviteStyle || '').trim(),
+    offlineSummaryEvery: Number(snapshot.offlineSummaryEvery || 5),
+    offlineSummaryAuto: snapshot.offlineSummaryAuto != null ? !!snapshot.offlineSummaryAuto : true,
+    offlineSideStoryType: String(snapshot.offlineSideStoryType || 'future'),
+    translationEnabled: !!snapshot.translationEnabled,
+    replyLanguage: String(snapshot.replyLanguage || snapshot.language || 'zh').trim() || 'zh',
+    translationMode: String(snapshot.translationMode || 'ondemand').trim() || 'ondemand'
+  };
+}
+function buildArchiveSessionSnapshot(snapshot){
+  var source = snapshot && typeof snapshot === 'object' ? JSON.parse(JSON.stringify(snapshot)) : null;
+  if(!source || typeof source !== 'object') return { active:false, entries:[] };
+  if(source.charSnapshot && typeof source.charSnapshot === 'object'){
+    source.charSnapshot = buildArchiveCharacterSnapshot(source.charSnapshot) || source.charSnapshot;
+  }
+  if(source.invite && typeof source.invite === 'object' && source.invite.charSnapshot && typeof source.invite.charSnapshot === 'object'){
+    source.invite.charSnapshot = buildArchiveCharacterSnapshot(source.invite.charSnapshot) || source.invite.charSnapshot;
+  }
+  if(typeof source.chatHistory === 'string' && source.chatHistory.length > 1800){
+    source.chatHistory = source.chatHistory.slice(-1800);
+  }
+  source.entries = Array.isArray(source.entries) ? source.entries.map(function(entry){
+    if(!(entry && typeof entry === 'object')) return entry;
+    var nextEntry = Object.assign({}, entry);
+    delete nextEntry.translation;
+    delete nextEntry.inlineTranslations;
+    if(nextEntry.statusCard && typeof nextEntry.statusCard === 'object'){
+      nextEntry.statusCard = Object.assign({}, nextEntry.statusCard);
+      delete nextEntry.statusCard.translation;
+    }
+    return nextEntry;
+  }) : [];
+  return source;
+}
+function esc(text){
+  return String(text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatTime(ts){
+  var value = Number(ts || 0) || 0;
+  if(!value) return '时间未知';
+  var d = new Date(value);
+  return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0') + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+async function loadArchives(){
+  var parsed = loadArchiveIndexEntries();
+  if(!parsed.length){
+    var storedParsed = await loadArchiveJsonFromStorage(offlineArchiveListKey());
+    if(Array.isArray(storedParsed) && storedParsed.length){
+      parsed = storedParsed;
+    }else{
+      var legacyParsed = await loadArchiveJsonFromStorage(offlineArchiveLegacyListKey());
+      if(Array.isArray(legacyParsed) && legacyParsed.length) parsed = legacyParsed;
+    }
+  }
+  var nextArchives = [];
+  for(var i = 0; i < parsed.length; i += 1){
+    var item = parsed[i];
+    if(!(item && typeof item === 'object')) continue;
+    var safeId = String(item.id || '').trim();
+    if(!safeId) continue;
+    var record = await loadArchiveRecord(safeId);
+    if(record && typeof record === 'object'){
+      nextArchives.push(Object.assign({}, item, record, { id: safeId }));
+    }else{
+      nextArchives.push(item);
+    }
+  }
+  archives = nextArchives.filter(Boolean);
+}
+async function saveArchives(){
+  var nextList = Array.isArray(archives) ? archives.filter(Boolean) : [];
+  var previous = loadArchiveIndexEntries();
+  var previousIds = previous.map(function(item){ return String(item && item.id || '').trim(); }).filter(Boolean);
+  var nextIds = nextList.map(function(item){ return String(item && item.id || '').trim(); }).filter(Boolean);
+  var safeIndexList = nextList.map(buildArchiveListEntry);
+  var localSucceeded = false;
+  try{
+    localStorage.setItem(offlineArchiveListKey(), JSON.stringify(safeIndexList));
+    localSucceeded = true;
+  }catch(e){}
+  var safeRecords = [];
+  nextList.forEach(function(entry){
+    var safeId = String(entry && entry.id || '').trim();
+    if(!safeId) return;
+    var safeEntry = Object.assign({}, entry);
+    safeEntry.characterSnapshot = buildArchiveCharacterSnapshot(safeEntry.characterSnapshot || {}) || safeEntry.characterSnapshot || null;
+    safeEntry.snapshot = buildArchiveSessionSnapshot(safeEntry.snapshot);
+    safeRecords.push({ id:safeId, entry:safeEntry, serialized:JSON.stringify(safeEntry) });
+    try{
+      localStorage.setItem(offlineArchiveRecordKey(safeId), safeRecords[safeRecords.length - 1].serialized);
+      localSucceeded = true;
+    }catch(e){}
+  });
+  previousIds.forEach(function(id){
+    if(nextIds.indexOf(id) !== -1) return;
+    try{ localStorage.removeItem(offlineArchiveRecordKey(id)); }catch(e){}
+    try{ localStorage.removeItem(offlineArchiveLegacyRecordKey(id)); }catch(e){}
+  });
+  var remoteSucceeded = false;
+  if(await saveArchiveJsonToStorage(offlineArchiveListKey(), safeIndexList)){
+    remoteSucceeded = true;
+  }
+  for(var i = 0; i < safeRecords.length; i += 1){
+    var record = safeRecords[i];
+    if(await saveArchiveJsonToStorage(offlineArchiveRecordKey(record.id), record.entry)){
+      remoteSucceeded = true;
+    }
+  }
+  for(var j = 0; j < previousIds.length; j += 1){
+    var prevId = previousIds[j];
+    if(nextIds.indexOf(prevId) !== -1) continue;
+    await removeArchiveJsonFromStorage(offlineArchiveRecordKey(prevId));
+    await removeArchiveJsonFromStorage(offlineArchiveLegacyRecordKey(prevId));
+  }
+  return localSucceeded || remoteSucceeded;
+}
+function summarizeOfflineMemoryLocally(snapshot){
+  var list = Array.isArray(snapshot && snapshot.entries) ? snapshot.entries : [];
+  if(!list.length) return '';
+  var lastUser = '';
+  var lastAssistant = '';
+  for(var i = list.length - 1; i >= 0; i -= 1){
+    var entry = list[i];
+    if(!entry) continue;
+    var text = String(entry.text || '').replace(/\s+/g, ' ').trim();
+    if(!text) continue;
+    if(!lastAssistant && entry.role === 'assistant') lastAssistant = text;
+    if(!lastUser && entry.role === 'user') lastUser = text;
+    if(lastUser && lastAssistant) break;
+  }
+  var parts = ['这次线下见面已经结束，两人的关系在这次见面里继续推进。'];
+  if(lastUser) parts.push('用户最后表达了：' + lastUser.slice(0, 60) + '。');
+  if(lastAssistant) parts.push('角色最后回应了：' + lastAssistant.slice(0, 60) + '。');
+  return parts.join('');
+}
+function getArchiveById(id){
+  return archives.find(function(item){ return item && item.id === id; }) || null;
+}
+function updateSelectionUi(){
+  var cancel = document.getElementById('archiveMultiCancelBtn');
+  var trash = document.getElementById('archiveMultiTrashBtn');
+  if(cancel) cancel.classList.toggle('show', archiveSelectMode);
+  if(trash) trash.classList.toggle('show', archiveSelectMode);
+}
+function renderFolders(){
+  var list = document.getElementById('folderList');
+  if(!list) return;
+  if(!archives.length){
+    list.innerHTML = '<div class="empty"><h3>这里还空空的</h3><p>等你们攒下一次线下约会，它就会乖乖躺进来。</p></div>';
+    updateSelectionUi();
+    return;
+  }
+  list.innerHTML = archives.map(function(item, idx){
+    var statusClass = item.status === 'pending' ? 'status-chip pending' : 'status-chip';
+    var statusText = item.status === 'pending' ? '待续' : '已归档';
+    var tab = item.status === 'pending' ? '未完待续' : ('第' + String(archives.length - idx) + '份');
+    var selected = selectedArchiveIds.indexOf(item.id) >= 0;
+    return (
+      '<button class="folder-card' + (archiveSelectMode ? ' select-mode' : '') + (selected ? ' selected' : '') + '" type="button" data-archive-id="' + esc(item.id) + '" onclick="' + (archiveSelectMode ? ('toggleArchiveSelection(\'' + esc(item.id) + '\')') : ('openArchive(\'' + esc(item.id) + '\')')) + '">' +
+        '<div class="folder-tab">' + esc(tab) + '</div>' +
+        '<div class="folder-body">' +
+          '<div class="folder-check">✓</div>' +
+          '<div class="folder-head">' +
+            '<div class="folder-name">' + esc(item.charName || '未命名角色') + '</div>' +
+            '<div class="folder-time">' + esc(formatTime(item.updatedAt || item.createdAt)) + '</div>' +
+          '</div>' +
+          '<div class="folder-preview">' + esc(item.preview || '这次约会还没有写下太多内容。') + '</div>' +
+          '<div class="folder-meta">' +
+            '<div class="folder-count">' + esc(String(Number(item.entryCount || 0) || 0)) + ' 条线下记录</div>' +
+            '<div class="' + statusClass + '">' + esc(statusText) + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</button>'
+    );
+  }).join('');
+  Array.prototype.forEach.call(list.querySelectorAll('.folder-card[data-archive-id]'), bindFolderLongPress);
+  updateSelectionUi();
+}
+function renderArchiveBody(entry){
+  var body = document.getElementById('modalBody');
+  if(!body) return;
+  var items = Array.isArray(entry && entry.snapshot && entry.snapshot.entries) ? entry.snapshot.entries : [];
+  if(!items.length){
+    body.innerHTML = '<div class="entry-card"><div class="entry-text">这次约会还没来得及留下太多内容。</div></div>';
+    return;
+  }
+  body.innerHTML = items.map(function(item){
+    var role = item && item.role === 'user' ? '我' : (entry.charName || '角色');
+    var cls = item && item.role === 'user' ? 'entry-role user' : 'entry-role';
+    return (
+      '<div class="entry-card">' +
+        '<div class="' + cls + '">' + esc(role) + '</div>' +
+        '<div class="entry-text">' + esc(String(item && item.text || '').trim()) + '</div>' +
+        '<div class="entry-meta">' + esc(String(item && item.timeLabel || item && item.meta || '')) + '</div>' +
+      '</div>'
+    );
+  }).join('');
+}
+function renderArchiveActions(entry){
+  var actions = document.getElementById('modalActions');
+  if(!actions) return;
+  if(entry && entry.status === 'pending'){
+    actions.innerHTML =
+      '<button class="action-btn" type="button" onclick="endArchiveDate()">结束约会</button>' +
+      '<button class="action-btn primary" type="button" onclick="continueArchiveDate()">继续约会</button>';
+  }else{
+    actions.innerHTML = '<button class="action-btn primary" type="button" onclick="closeArchiveModal()">收好啦</button>';
+  }
+}
+function openArchive(id){
+  var entry = getArchiveById(id);
+  if(!entry) return;
+  activeArchiveId = id;
+  document.getElementById('modalTitle').textContent = (entry.charName || '未命名角色') + ' 的约会档案';
+  document.getElementById('modalSub').textContent = (entry.status === 'pending' ? '这次还没说完再见，你可以继续，也可以在这里好好收尾。' : '这次约会已经收好了，想翻就翻。') + '  ·  ' + formatTime(entry.updatedAt || entry.createdAt);
+  renderArchiveBody(entry);
+  renderArchiveActions(entry);
+  document.getElementById('archiveModal').classList.add('open');
+}
+function closeArchiveModal(){
+  activeArchiveId = '';
+  document.getElementById('archiveModal').classList.remove('open');
+}
+function bindFolderLongPress(el){
+  if(!el) return;
+  var id = el.getAttribute('data-archive-id') || '';
+  var clearTimer = function(){
+    if(archiveLongPressTimer){
+      clearTimeout(archiveLongPressTimer);
+      archiveLongPressTimer = null;
+    }
+  };
+  var start = function(){
+    clearTimer();
+    archiveLongPressTimer = setTimeout(function(){
+      enterArchiveSelectMode(id);
+    }, 420);
+  };
+  el.addEventListener('touchstart', start, { passive:true });
+  el.addEventListener('mousedown', start);
+  ['touchend','touchcancel','mouseleave','mouseup'].forEach(function(type){
+    el.addEventListener(type, clearTimer, { passive:true });
+  });
+}
+function enterArchiveSelectMode(id){
+  archiveSelectMode = true;
+  selectedArchiveIds = id ? [String(id)] : [];
+  closeArchiveModal();
+  renderFolders();
+}
+function exitArchiveSelectMode(){
+  archiveSelectMode = false;
+  selectedArchiveIds = [];
+  closeArchiveDeleteConfirm();
+  renderFolders();
+}
+function toggleArchiveSelection(id){
+  if(!archiveSelectMode) return;
+  var safeId = String(id || '');
+  var idx = selectedArchiveIds.indexOf(safeId);
+  if(idx >= 0) selectedArchiveIds.splice(idx, 1);
+  else selectedArchiveIds.push(safeId);
+  renderFolders();
+}
+function openArchiveDeleteConfirm(){
+  if(!selectedArchiveIds.length) return;
+  var text = document.getElementById('archiveDeleteText');
+  if(text) text.textContent = '确定删除 ' + selectedArchiveIds.length + ' 份档案吗？';
+  document.getElementById('archiveDeleteConfirm').classList.add('open');
+}
+function closeArchiveDeleteConfirm(){
+  document.getElementById('archiveDeleteConfirm').classList.remove('open');
+}
+function confirmArchiveDelete(){
+  if(!selectedArchiveIds.length) return;
+  var removeSet = new Set(selectedArchiveIds.slice());
+  archives = archives.filter(function(item){ return item && !removeSet.has(String(item.id || '')); });
+  saveArchives().catch(function(){});
+  selectedArchiveIds = [];
+  archiveSelectMode = false;
+  closeArchiveDeleteConfirm();
+  closeArchiveModal();
+  renderFolders();
+}
+async function markArchiveEnded(entry){
+  if(!entry || !entry.charId) return;
+  try{
+    localStorage.setItem(pendingOfflineNoticeKey(entry.charId), JSON.stringify({
+      text: '[系统提示：这次线下见面结束了，你们回到了线上聊天。]',
+      createdAt: Date.now()
+    }));
+  }catch(e){}
+  try{
+    var memoryText = summarizeOfflineMemoryLocally(entry.snapshot || {});
+    if(memoryText){
+      localStorage.setItem(pendingOfflineMemoryKey(entry.charId), JSON.stringify({
+        text: memoryText,
+        createdAt: Date.now()
+      }));
+    }
+  }catch(e){}
+  try{ localStorage.removeItem(offlineSessionKey(entry.charId)); }catch(e){}
+  entry.status = 'ended';
+  entry.statusLabel = '已结束';
+  entry.reason = 'goodbye';
+  entry.updatedAt = Date.now();
+  entry.endedAt = entry.updatedAt;
+  if(entry.snapshot){
+    entry.snapshot.active = false;
+    entry.snapshot.minimized = false;
+    entry.snapshot.archiveId = entry.id;
+  }
+  await saveArchives();
+}
+function continueArchiveDate(){
+  var entry = getArchiveById(activeArchiveId);
+  if(!entry || entry.status !== 'pending' || !entry.charId) return;
+  var charSnapshot = Object.assign({}, entry.characterSnapshot || {}, { id: entry.charId });
+  var sessionSnapshot = entry.snapshot ? JSON.parse(JSON.stringify(entry.snapshot)) : null;
+  if(!sessionSnapshot){
+    var resumeSnapshot = loadPendingResumeSnapshotForChar(entry.charId);
+    sessionSnapshot = resumeSnapshot ? JSON.parse(JSON.stringify(resumeSnapshot)) : null;
+  }
+  if(!sessionSnapshot) return;
+  sessionSnapshot.charId = String(entry.charId || '').trim();
+  sessionSnapshot.charSnapshot = Object.assign({}, charSnapshot);
+  sessionSnapshot.active = true;
+  sessionSnapshot.minimized = false;
+  sessionSnapshot.archiveId = entry.id;
+  if(Array.isArray(sessionSnapshot.entries) && sessionSnapshot.entries.length){
+    sessionSnapshot.pendingOpening = false;
+    sessionSnapshot.pendingAnimation = false;
+  }
+  sessionSnapshot.updatedAt = Date.now();
+  try{ localStorage.setItem(activeCharacterKey(), JSON.stringify(charSnapshot)); }catch(e){}
+  try{ localStorage.setItem('activeCharacter', JSON.stringify(charSnapshot)); }catch(e){}
+  try{ localStorage.setItem(activeOfflineCharacterKey(), String(entry.charId)); }catch(e){}
+  try{ localStorage.setItem('activeOfflineCharacterId', String(entry.charId)); }catch(e){}
+  try{ localStorage.setItem(offlineSessionKey(entry.charId), JSON.stringify(sessionSnapshot)); }catch(e){}
+  try{ localStorage.setItem('offline_meet_session_' + String(entry.charId), JSON.stringify(sessionSnapshot)); }catch(e){}
+  try{ localStorage.setItem(pendingOfflineBootstrapKey(entry.charId), JSON.stringify({ charId:String(entry.charId), session:sessionSnapshot })); }catch(e){}
+  try{ localStorage.setItem('offline_bootstrap_' + String(entry.charId), JSON.stringify({ charId:String(entry.charId), session:sessionSnapshot })); }catch(e){}
+  try{ localStorage.setItem(pendingOfflineResumeKey(entry.charId), JSON.stringify({ charId:String(entry.charId), session:sessionSnapshot })); }catch(e){}
+  try{ localStorage.setItem('offline_resume_' + String(entry.charId), JSON.stringify({ charId:String(entry.charId), session:sessionSnapshot })); }catch(e){}
+  try{ localStorage.removeItem(pendingOfflineLaunchKey(entry.charId)); }catch(e){}
+  try{ localStorage.removeItem('offline_launch_' + String(entry.charId)); }catch(e){}
+  try{ localStorage.removeItem(latestOfflineLaunchKey()); }catch(e){}
+  try{ localStorage.removeItem('offline_launch_latest'); }catch(e){}
+  var launchToken = 'olr_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+  var launchRecord = {
+    mode: 'resume',
+    launchToken: launchToken,
+    charId: String(entry.charId || ''),
+    charSnapshot: charSnapshot,
+    session: sessionSnapshot,
+    createdAt: Date.now()
+  };
+  saveArchiveJsonToStorage(offlineLaunchTokenKey(launchToken), launchRecord).catch(function(){});
+  saveArchiveJsonToStorage('offline_launch_token_' + launchToken, launchRecord).catch(function(){});
+  entry.updatedAt = Date.now();
+  entry.snapshot = sessionSnapshot;
+  saveArchives().catch(function(){});
+  try{ window.parent.postMessage({ type:'SET_ACTIVE_CHARACTER', payload: charSnapshot }, '*'); }catch(e){}
+  try{ window.parent.postMessage({ type:'OPEN_APP_WITH', payload:{ app:'offline', charId:String(entry.charId), launchMode:'resume', launchToken: launchToken, offlineLaunchRecord: launchRecord } }, '*'); }catch(e){}
+}
+async function endArchiveDate(){
+  var entry = getArchiveById(activeArchiveId);
+  if(!entry) return;
+  await markArchiveEnded(entry);
+  closeArchiveModal();
+  renderFolders();
+  try{ window.parent.postMessage({ type:'OPEN_APP_REPLACE', payload:'chat' }, '*'); }catch(e){}
+}
+async function refreshArchivesView(closeModal){
+  await loadArchives();
+  renderFolders();
+  if(closeModal) closeArchiveModal();
+}
+window.addEventListener('message', function(e){
+  var data = e.data || {};
+  if(data.type === 'ACCOUNT_CHANGED' || data.type === 'CHARACTER_IMPORTED'){
+    refreshArchivesView(true).catch(function(){});
+  }
+});
+window.addEventListener('pageshow', function(){
+  refreshArchivesView(false).catch(function(){});
+});
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden) return;
+  refreshArchivesView(false).catch(function(){});
+});
+document.addEventListener('click', function(e){
+  if(archiveSelectMode){
+    var card = e.target && e.target.closest ? e.target.closest('.folder-card') : null;
+    var controls = e.target && e.target.closest ? e.target.closest('.multi-cancel-btn,.multi-trash-btn,.delete-confirm-card') : null;
+    if(!card && !controls && e.target !== document.getElementById('archiveDeleteConfirm')){
+      exitArchiveSelectMode();
+    }
+  }
+});
+refreshArchivesView(false).catch(function(){});
+</script>
+</body>
+</html>

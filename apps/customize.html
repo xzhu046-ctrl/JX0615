@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>外观</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--b:#0a0a0a;--w:#fff;--off:#f7f7f7;--g:#666;--bd:2px solid #0a0a0a;--sh:2px 2px 0 #0a0a0a;--font:'Quicksand',sans-serif;--fontd:'Nunito',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+button{-webkit-appearance:none;appearance:none;-webkit-touch-callout:none;color:inherit;-webkit-text-fill-color:currentColor}
+body{font-family:var(--font);background:var(--off);color:var(--b);padding:12px;display:flex;justify-content:center;min-height:100vh}
+.container{max-width:360px;width:100%;display:flex;flex-direction:column;gap:12px}
+.card{border:var(--bd);border-radius:18px;padding:14px;box-shadow:3px 4px 0 #0a0a0a;background:var(--w)}
+.title,.icon-title{display:flex;align-items:center;gap:8px;font-family:var(--fontd);font-size:16px;font-weight:900;color:#2c2924;margin-bottom:12px}
+.title::before,.icon-title::before{content:'';width:10px;height:10px;border-radius:50%;background:var(--b);box-shadow:16px 0 0 rgba(10,10,10,0.12)}
+.panel{display:flex;gap:12px;align-items:flex-start;flex-wrap:nowrap}
+.preview{flex:1;min-width:180px;height:240px;border:var(--bd);border-radius:16px;background:
+linear-gradient(180deg, #f1f1f1 0%, #e6e6e6 100%);
+display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#444;overflow:hidden;box-shadow:3px 4px 0 #0a0a0a;position:relative}
+.preview::after{content:'壁纸';position:absolute;left:10px;top:10px;padding:3px 9px;border-radius:999px;border:1.5px solid rgba(10,10,10,0.15);background:rgba(255,255,255,0.74);font-size:10px;font-weight:900;letter-spacing:.06em}
+.preview img{width:100%;height:100%;object-fit:cover}
+.controls{width:112px;display:flex;flex-direction:column;gap:10px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.toggle-copy{flex:1;min-width:0}
+.toggle-copy strong{display:block;font-family:var(--fontd);font-size:15px;line-height:1.2}
+.toggle-copy span{display:block;margin-top:4px;font-size:12px;line-height:1.5;color:var(--g)}
+.switch{position:relative;display:inline-flex;align-items:center;justify-content:flex-start;width:66px;height:38px;border:var(--bd);border-radius:999px;background:#d8d8d8;box-shadow:var(--sh);cursor:pointer;flex:0 0 auto;padding:0 4px;transition:background .2s ease,transform .1s ease,box-shadow .1s ease}
+.switch:active{transform:translate(2px,2px);box-shadow:none}
+.switch-track{position:absolute;inset:0;border-radius:999px}
+.switch-thumb{position:relative;z-index:1;width:24px;height:24px;border:var(--bd);border-radius:50%;background:var(--w);box-shadow:1px 1px 0 #0a0a0a;transition:transform .22s ease,background .22s ease}
+.switch.on{background:#0a0a0a}
+.switch.on .switch-thumb{transform:translateX(28px);background:#fff}
+.switch.off{background:#d8d8d8}
+.switch-label{font-size:12px;font-weight:900;color:var(--g);min-width:22px;text-align:right}
+.switch-wrap{display:flex;align-items:center;gap:10px}
+.btn, input[type="text"], input[type="file"]{padding:10px 8px;border-radius:12px;border:var(--bd);background:var(--w);font-family:var(--fontd);font-weight:900;font-size:15px;box-shadow:var(--sh);cursor:pointer;transition:transform .1s,box-shadow .1s;text-align:center;color:var(--b);-webkit-text-fill-color:currentColor}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+input[type="text"], input[type="file"]{cursor:text;font-weight:800;font-size:14px;font-family:var(--font);font-variant-emoji:text;background:var(--w)}
+input[type="text"]:focus{box-shadow:3px 4px 0 #0a0a0a}
+.hint{font-size:11px;color:var(--g);line-height:1.6;margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--off);border:1.5px dashed #cfcfcf}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--b);color:var(--w);padding:9px 18px;border-radius:12px;font-size:12px;font-weight:700;opacity:0;transition:all .25s;z-index:99}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.icon-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.icon-item{display:flex;flex-direction:column;align-items:center;gap:6px}
+.icon-cell{border:var(--bd);border-radius:12px;background:linear-gradient(180deg, #f1f1f1 0%, #e6e6e6 100%);aspect-ratio:1/1;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;box-shadow:var(--sh);position:relative}
+.icon-cell img{width:100%;height:100%;object-fit:cover}
+.icon-label{text-align:center;font-size:12px;font-weight:800;color:var(--g);width:100%}
+.icon-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.danmaku-list{display:flex;flex-direction:column;gap:12px}
+.danmaku-group{border:var(--bd);border-radius:14px;background:linear-gradient(180deg, #fafafa 0%, #efefef 100%);padding:11px;display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden}
+.danmaku-group::after{content:'';position:absolute;right:-18px;bottom:-18px;width:54px;height:54px;border-radius:50%;background:rgba(10,10,10,0.05)}
+.danmaku-group-title{position:relative;font-family:var(--fontd);font-size:13px;font-weight:900;color:var(--b)}
+.danmaku-input{width:100%;padding:10px 12px;border-radius:10px;border:var(--bd);background:var(--w);font-family:var(--font);font-size:13px;font-weight:700;color:var(--b);outline:none;box-shadow:var(--sh);position:relative}
+.danmaku-input:focus{box-shadow:var(--sh)}
+.btn-white{background:var(--w);color:var(--b)}
+.music-float-preview{width:100%;height:94px;border:var(--bd);border-radius:16px;background:linear-gradient(180deg,#f5f5f5 0%,#e9e9e9 100%);box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;transition:filter .2s ease,opacity .2s ease}
+.music-float-preview img{width:calc(62px * var(--music-float-preview-scale,1));height:calc(62px * var(--music-float-preview-scale,1));object-fit:contain;display:block;transition:width .2s cubic-bezier(.22,1,.36,1),height .2s cubic-bezier(.22,1,.36,1)}
+.music-float-preview-default{width:calc(62px * var(--music-float-preview-scale,1));height:calc(62px * var(--music-float-preview-scale,1));border:var(--bd);border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(236,236,236,.94));box-shadow:0 0 0 1.5px rgba(255,255,255,.96),3px 4px 0 #0a0a0a,0 8px 14px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;font-size:calc(24px * var(--music-float-preview-scale,1));font-weight:900;transition:width .2s cubic-bezier(.22,1,.36,1),height .2s cubic-bezier(.22,1,.36,1),font-size .2s cubic-bezier(.22,1,.36,1)}
+.music-float-size-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+.music-float-size-label{font-family:var(--fontd);font-size:12px;font-weight:900;min-width:38px}
+.music-float-size-value{min-width:42px;text-align:right;font-family:var(--fontd);font-size:12px;font-weight:900;color:var(--g)}
+.temp-slider{flex:1;-webkit-appearance:none;appearance:none;height:22px;background:transparent;border:none;outline:none;cursor:pointer}
+.temp-slider::-webkit-slider-runnable-track{height:2px;background:var(--b);border:none;border-radius:999px}
+.temp-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--w);border:2px solid var(--b);box-shadow:2px 2px 0 var(--b);margin-top:-7px}
+.temp-slider::-moz-range-track{height:2px;background:var(--b);border:none;border-radius:999px}
+.temp-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--w);border:2px solid var(--b);box-shadow:2px 2px 0 var(--b)}
+.music-float-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.music-float-card.is-disabled .music-float-preview,
+.music-float-card.is-disabled .music-float-size-row,
+.music-float-card.is-disabled .music-float-actions,
+.music-float-card.is-disabled .icon-actions{filter:grayscale(1);opacity:.5}
+.music-float-card.is-disabled .music-float-preview,
+.music-float-card.is-disabled .music-float-size-row,
+.music-float-card.is-disabled .music-float-actions .btn,
+.music-float-card.is-disabled .icon-actions .btn{pointer-events:none}
+@media (max-width: 360px){
+  .panel{flex-direction:column}
+  .controls{width:100%}
+  .preview{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card music-float-card" id="musicFloatCard">
+    <div class="title">壁纸预览</div>
+    <div class="panel">
+      <div class="preview" id="preview">预览</div>
+      <div class="controls">
+        <input id="file-input" type="file" accept="image/*" onchange="onFile(this.files[0])" aria-label="本地上传">
+        <input type="text" id="url-input" placeholder="输入 url" aria-label="输入url">
+        <button class="btn" onclick="resetWallpaper()">重置</button>
+        <button class="btn" onclick="saveAndExit()">保存</button>
+      </div>
+    </div>
+    <div class="hint">支持本地图片或网络图片链接。保存后即刻生效。</div>
+  </div>
+
+  <div class="card">
+    <div class="title">手机边框</div>
+    <div class="toggle-row">
+      <div class="toggle-copy">
+        <strong id="frame-title">显示手机边框</strong>
+        <span id="frame-desc">电脑预览建议打开；手机实机建议关闭。</span>
+      </div>
+      <div class="switch-wrap">
+        <button class="switch on" id="frame-toggle-btn" type="button" role="switch" aria-checked="true" aria-label="切换手机边框显示" onclick="togglePhoneFrame()">
+          <span class="switch-track" aria-hidden="true"></span>
+          <span class="switch-thumb" aria-hidden="true"></span>
+        </button>
+        <span class="switch-label" id="frame-toggle-label">开</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="title">首页弹幕</div>
+    <div class="toggle-row" style="margin-bottom:12px">
+      <div class="toggle-copy">
+        <strong>弹幕开关</strong>
+        <span id="danmaku-toggle-desc">主页长方形照片会显示弹幕。</span>
+      </div>
+      <div class="switch-wrap">
+        <button class="switch on" id="danmaku-toggle-btn" type="button" role="switch" aria-checked="true" aria-label="切换弹幕显示" onclick="toggleLiveDanmakuEnabled()">
+          <span class="switch-track" aria-hidden="true"></span>
+          <span class="switch-thumb" aria-hidden="true"></span>
+        </button>
+        <span class="switch-label" id="danmaku-toggle-label">开</span>
+      </div>
+    </div>
+    <div class="danmaku-list">
+      <div class="danmaku-group">
+        <div class="danmaku-group-title">长方形 1</div>
+        <input class="danmaku-input" id="danmaku-1-1" type="text" maxlength="18" placeholder="弹幕 1">
+        <input class="danmaku-input" id="danmaku-1-2" type="text" maxlength="18" placeholder="弹幕 2">
+        <input class="danmaku-input" id="danmaku-1-3" type="text" maxlength="18" placeholder="弹幕 3">
+      </div>
+      <div class="danmaku-group">
+        <div class="danmaku-group-title">长方形 2</div>
+        <input class="danmaku-input" id="danmaku-2-1" type="text" maxlength="18" placeholder="弹幕 1">
+        <input class="danmaku-input" id="danmaku-2-2" type="text" maxlength="18" placeholder="弹幕 2">
+        <input class="danmaku-input" id="danmaku-2-3" type="text" maxlength="18" placeholder="弹幕 3">
+      </div>
+      <div class="danmaku-group">
+        <div class="danmaku-group-title">长方形 3</div>
+        <input class="danmaku-input" id="danmaku-3-1" type="text" maxlength="18" placeholder="弹幕 1">
+        <input class="danmaku-input" id="danmaku-3-2" type="text" maxlength="18" placeholder="弹幕 2">
+        <input class="danmaku-input" id="danmaku-3-3" type="text" maxlength="18" placeholder="弹幕 3">
+      </div>
+    </div>
+    <div class="icon-actions">
+      <button class="btn" onclick="resetLiveDanmaku()">重置</button>
+      <button class="btn btn-white" onclick="saveLiveDanmaku()">保存</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="title">音乐悬浮球</div>
+    <div class="toggle-row" style="margin-bottom:12px">
+      <div class="toggle-copy">
+        <strong>悬浮球开关</strong>
+        <span id="music-float-toggle-desc">关闭后首页不显示音乐悬浮球。</span>
+      </div>
+      <div class="switch-wrap">
+        <button class="switch on" id="music-float-toggle-btn" type="button" role="switch" aria-checked="true" aria-label="切换音乐悬浮球显示" onclick="toggleMusicFloatingEnabled()">
+          <span class="switch-track" aria-hidden="true"></span>
+          <span class="switch-thumb" aria-hidden="true"></span>
+        </button>
+        <span class="switch-label" id="music-float-toggle-label">开</span>
+      </div>
+    </div>
+    <div class="music-float-preview" id="music-float-preview" role="button" tabindex="0" aria-label="点击更换悬浮球图案" onclick="pickMusicFloatingIcon()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();pickMusicFloatingIcon();}"></div>
+    <div class="music-float-size-row">
+      <span class="music-float-size-label">大小</span>
+      <input class="temp-slider" id="music-float-size" type="range" min="0.75" max="1.6" step="0.01" value="1" oninput="updateMusicFloatingSize(this.value)">
+      <span class="music-float-size-value" id="music-float-size-value">100%</span>
+    </div>
+    <div class="music-float-actions">
+      <button class="btn btn-white" onclick="resetMusicFloatingIcon()">重置</button>
+      <button class="btn btn-white" id="musicFloatSaveBtn" onclick="saveMusicFloatingSettings()">保存悬浮球</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="icon-title">自定义图标</div>
+    <div class="icon-grid">
+      <div class="icon-item"><div class="icon-cell" data-app="qq" onclick="pickIcon(this)"><span>QQ</span></div><div class="icon-label">QQ</div></div>
+      <div class="icon-item"><div class="icon-cell" data-app="worldbook" onclick="pickIcon(this)"><span>档案</span></div><div class="icon-label">档案</div></div>
+      <div class="icon-item"><div class="icon-cell" data-app="settings" onclick="pickIcon(this)"><span>设置</span></div><div class="icon-label">设置</div></div>
+      <div class="icon-item"><div class="icon-cell" data-app="customize" onclick="pickIcon(this)"><span>外观</span></div><div class="icon-label">外观</div></div>
+      <div class="icon-item"><div class="icon-cell" data-app="offline" onclick="pickIcon(this)"><span>约会</span></div><div class="icon-label">约会</div></div>
+      <div class="icon-item"><div class="icon-cell" data-app="map6" onclick="pickIcon(this)"><span>地图</span></div><div class="icon-label">地图</div></div>
+      <div class="icon-item"><div class="icon-cell" data-app="schedule" onclick="pickIcon(this)"><span>日程</span></div><div class="icon-label">日程</div></div>
+      <div class="icon-item"><div class="icon-cell" data-app="backend" onclick="pickIcon(this)"><span>后台</span></div><div class="icon-label">后台</div></div>
+      <div class="icon-item"><div class="icon-cell" data-app="char" onclick="pickIcon(this)"><span>CHAR</span></div><div class="icon-label">CHAR</div></div>
+      <div class="icon-item"><div class="icon-cell" data-app="user" onclick="pickIcon(this)"><span>USER</span></div><div class="icon-label">USER</div></div>
+    </div>
+    <div class="icon-actions">
+      <button class="btn" onclick="resetIcons()">重置图标</button>
+      <button class="btn btn-white" onclick="saveIcons()">保存</button>
+    </div>
+    <div class="hint">点击对应格子即可更换首页 app 图标，保存后立刻生效。</div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="../assetStore.js?v=2026-05-01T18:22:00Z"></script>
+<script>
+let chosenData = '';
+const ICON_APPS = ['qq','worldbook','settings','customize','offline','map6','schedule','backend','char','user'];
+const ICON_LABELS = { qq:'QQ', worldbook:'档案', settings:'设置', customize:'外观', offline:'约会', map6:'地图', schedule:'日程', backend:'后台', char:'CHAR', user:'USER' };
+const PHONE_FRAME_STORAGE_KEY = 'phone_frame_visible';
+const LIVE_DANMAKU_DEFAULTS = {
+  '1': ['啊啊啊太可爱了','宝宝上线了','今天状态好好'],
+  '2': ['蹲到你了','这张也太甜','晚安打卡'],
+  '3': ['今日份心动','镜头感满分','路过被可爱到']
+};
+const LIVE_DANMAKU_ENABLED_KEY = 'home_live_danmaku_enabled';
+const HOME_MUSIC_FLOATING_ENABLED_KEY = 'home_music_floating_enabled_v1';
+const HOME_MUSIC_FLOATING_ICON_KEY = 'home_music_floating_icon_v1';
+const HOME_MUSIC_FLOATING_SIZE_KEY = 'home_music_floating_size_v1';
+let stagedIcons = {};
+let frameVisible = true;
+let liveDanmakuEnabled = true;
+let musicFloatingEnabled = true;
+let musicFloatingIconDraft = '';
+let musicFloatingSizeDraft = 1;
+let musicFloatingSaving = false;
+
+function getDefaultPhoneFrameVisibility(){
+  return false;
+}
+
+function getPhoneFrameVisibility(){
+  const saved = localStorage.getItem(PHONE_FRAME_STORAGE_KEY);
+  if(saved === '0') return false;
+  if(saved === '1') return true;
+  return getDefaultPhoneFrameVisibility();
+}
+
+function renderPhoneFrameToggle(){
+  const btn = document.getElementById('frame-toggle-btn');
+  const title = document.getElementById('frame-title');
+  const desc = document.getElementById('frame-desc');
+  const label = document.getElementById('frame-toggle-label');
+  if(!btn || !title || !desc || !label) return;
+  btn.classList.toggle('on', frameVisible);
+  btn.classList.toggle('off', !frameVisible);
+  btn.setAttribute('aria-checked', frameVisible ? 'true' : 'false');
+  btn.setAttribute('title', frameVisible ? '当前为开启' : '当前为关闭');
+  label.textContent = frameVisible ? '开' : '关';
+  title.textContent = frameVisible ? '显示手机边框' : '隐藏手机边框';
+  desc.textContent = frameVisible
+    ? '会显示手机外沿、灵动岛、时间和电池区域。'
+    : '会去掉手机外沿、灵动岛、时间和电池区域。';
+}
+
+function togglePhoneFrame(){
+  frameVisible = !frameVisible;
+  localStorage.setItem(PHONE_FRAME_STORAGE_KEY, frameVisible ? '1' : '0');
+  renderPhoneFrameToggle();
+  try{
+    window.parent.postMessage({type:'SET_PHONE_FRAME', payload: frameVisible}, '*');
+  }catch(e){}
+  toast(frameVisible ? '已显示手机边框' : '已隐藏手机边框');
+}
+
+function getLiveDanmakuStorageKey(slotId){
+  return 'home_live_danmaku_' + slotId;
+}
+
+function getLiveDanmakuEnabled(){
+  const saved = localStorage.getItem(LIVE_DANMAKU_ENABLED_KEY);
+  if(saved === '0') return false;
+  if(saved === '1') return true;
+  return true;
+}
+
+function renderLiveDanmakuToggle(){
+  const btn = document.getElementById('danmaku-toggle-btn');
+  const label = document.getElementById('danmaku-toggle-label');
+  const desc = document.getElementById('danmaku-toggle-desc');
+  if(!btn || !label || !desc) return;
+  btn.classList.toggle('on', liveDanmakuEnabled);
+  btn.classList.toggle('off', !liveDanmakuEnabled);
+  btn.setAttribute('aria-checked', liveDanmakuEnabled ? 'true' : 'false');
+  label.textContent = liveDanmakuEnabled ? '开' : '关';
+  desc.textContent = liveDanmakuEnabled ? '主页长方形照片会显示弹幕。' : '主页长方形照片不会显示弹幕。';
+}
+
+function toggleLiveDanmakuEnabled(){
+  liveDanmakuEnabled = !liveDanmakuEnabled;
+  localStorage.setItem(LIVE_DANMAKU_ENABLED_KEY, liveDanmakuEnabled ? '1' : '0');
+  renderLiveDanmakuToggle();
+  try{
+    window.parent.postMessage({type:'SET_LIVE_DANMAKU_ENABLED', payload: liveDanmakuEnabled}, '*');
+  }catch(e){}
+  toast(liveDanmakuEnabled ? '弹幕已开启' : '弹幕已关闭');
+}
+
+function getLiveDanmakuTexts(slotId){
+  const defaults = LIVE_DANMAKU_DEFAULTS[String(slotId)] || ['直播开始','好喜欢','来了来了'];
+  try{
+    const saved = JSON.parse(localStorage.getItem(getLiveDanmakuStorageKey(slotId)) || 'null');
+    if(Array.isArray(saved)){
+      return defaults.map(function(text, idx){
+        const value = typeof saved[idx] === 'string' ? saved[idx].trim() : '';
+        return value || text;
+      });
+    }
+  }catch(e){}
+  return defaults.slice();
+}
+
+function renderLiveDanmakuInputs(){
+  ['1','2','3'].forEach(function(slotId){
+    const texts = getLiveDanmakuTexts(slotId);
+    texts.forEach(function(text, idx){
+      const input = document.getElementById('danmaku-' + slotId + '-' + (idx + 1));
+      if(input) input.value = text;
+    });
+  });
+}
+
+function collectLiveDanmakuTexts(){
+  const result = {};
+  ['1','2','3'].forEach(function(slotId){
+    result[slotId] = [1,2,3].map(function(idx){
+      const input = document.getElementById('danmaku-' + slotId + '-' + idx);
+      const fallback = (LIVE_DANMAKU_DEFAULTS[slotId] || [])[idx - 1] || '';
+      const value = input ? input.value.trim() : '';
+      return value || fallback;
+    });
+  });
+  return result;
+}
+
+function saveLiveDanmaku(){
+  const textMap = collectLiveDanmakuTexts();
+  ['1','2','3'].forEach(function(slotId){
+    localStorage.setItem(getLiveDanmakuStorageKey(slotId), JSON.stringify(textMap[slotId]));
+  });
+  try{
+    window.parent.postMessage({type:'SET_LIVE_DANMAKU', payload: textMap}, '*');
+  }catch(e){}
+  toast('弹幕已保存');
+}
+
+function resetLiveDanmaku(){
+  ['1','2','3'].forEach(function(slotId){
+    localStorage.removeItem(getLiveDanmakuStorageKey(slotId));
+  });
+  renderLiveDanmakuInputs();
+  toast('已恢复默认弹幕，记得保存');
+}
+
+function getMusicFloatingEnabled(){
+  const saved = localStorage.getItem(HOME_MUSIC_FLOATING_ENABLED_KEY);
+  if(saved === '0') return false;
+  return true;
+}
+
+function normalizeMusicFloatingSize(value){
+  const num = Number(value);
+  if(!isFinite(num)) return 1;
+  return Math.max(0.75, Math.min(1.6, Math.round(num * 100) / 100));
+}
+
+function getMusicFloatingSize(){
+  return normalizeMusicFloatingSize(localStorage.getItem(HOME_MUSIC_FLOATING_SIZE_KEY) || '1');
+}
+
+function renderMusicFloatingToggle(){
+  const btn = document.getElementById('music-float-toggle-btn');
+  const label = document.getElementById('music-float-toggle-label');
+  const desc = document.getElementById('music-float-toggle-desc');
+  if(!btn || !label || !desc) return;
+  btn.classList.toggle('on', musicFloatingEnabled);
+  btn.classList.toggle('off', !musicFloatingEnabled);
+  btn.setAttribute('aria-checked', musicFloatingEnabled ? 'true' : 'false');
+  label.textContent = musicFloatingEnabled ? '开' : '关';
+  desc.textContent = musicFloatingEnabled ? '关闭后首页不显示音乐悬浮球。' : '当前已关闭，首页不会显示音乐悬浮球。';
+  renderMusicFloatingSectionState();
+}
+
+function renderMusicFloatingSectionState(){
+  const card = document.getElementById('musicFloatCard');
+  const preview = document.getElementById('music-float-preview');
+  const sizeRow = document.querySelector('.music-float-size-row');
+  if(card) card.classList.toggle('is-disabled', !musicFloatingEnabled);
+  if(preview){
+    preview.setAttribute('aria-disabled', musicFloatingEnabled ? 'false' : 'true');
+    preview.title = musicFloatingEnabled ? '点击更换悬浮球图案' : '请先打开悬浮球开关';
+  }
+  if(sizeRow) sizeRow.setAttribute('aria-disabled', musicFloatingEnabled ? 'false' : 'true');
+}
+
+function renderMusicFloatingPreview(){
+  const box = document.getElementById('music-float-preview');
+  if(!box) return;
+  box.style.setProperty('--music-float-preview-scale', String(normalizeMusicFloatingSize(musicFloatingSizeDraft)));
+  box.innerHTML = '';
+  if(musicFloatingIconDraft){
+    const img = document.createElement('img');
+    img.src = musicFloatingIconDraft;
+    img.alt = '音乐悬浮球预览';
+    box.appendChild(img);
+    return;
+  }
+  const fallback = document.createElement('div');
+  fallback.className = 'music-float-preview-default';
+  fallback.textContent = '♪';
+  box.appendChild(fallback);
+}
+
+function renderMusicFloatingSize(){
+  const input = document.getElementById('music-float-size');
+  const value = document.getElementById('music-float-size-value');
+  musicFloatingSizeDraft = normalizeMusicFloatingSize(musicFloatingSizeDraft);
+  if(input) input.value = String(musicFloatingSizeDraft);
+  if(value) value.textContent = Math.round(musicFloatingSizeDraft * 100) + '%';
+  renderMusicFloatingPreview();
+}
+
+function updateMusicFloatingSize(nextValue){
+  musicFloatingSizeDraft = normalizeMusicFloatingSize(nextValue);
+  renderMusicFloatingSize();
+}
+
+function toggleMusicFloatingEnabled(){
+  musicFloatingEnabled = !musicFloatingEnabled;
+  renderMusicFloatingToggle();
+  try{
+    window.parent.postMessage({
+      type: 'SET_HOME_MUSIC_FLOATING',
+      payload: {
+        enabled: musicFloatingEnabled
+      }
+    }, '*');
+  }catch(err){}
+  toast(musicFloatingEnabled ? '悬浮球已开启，记得保存' : '悬浮球已关闭，记得保存');
+}
+
+function pickMusicFloatingIcon(){
+  if(!musicFloatingEnabled){
+    toast('请先打开悬浮球开关');
+    return;
+  }
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.style.position = 'fixed';
+  input.style.left = '-9999px';
+  input.style.opacity = '0';
+  document.body.appendChild(input);
+  input.onchange = function(e){
+    const file = e && e.target && e.target.files ? e.target.files[0] : null;
+    if(!file){
+      input.remove();
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      const data = ev && ev.target ? String(ev.target.result || '') : '';
+      musicFloatingIconDraft = data;
+      renderMusicFloatingPreview();
+      toast('已更新悬浮球预览，记得保存');
+      input.remove();
+    };
+    reader.onerror = function(){
+      toast('图片读取失败');
+      input.remove();
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function resetMusicFloatingIcon(){
+  musicFloatingIconDraft = '';
+  musicFloatingSizeDraft = 1;
+  renderMusicFloatingSize();
+  toast('已恢复默认悬浮球，记得保存');
+}
+
+async function saveMusicFloatingSettings(){
+  if(musicFloatingSaving) return;
+  musicFloatingSaving = true;
+  const saveBtn = document.getElementById('musicFloatSaveBtn');
+  if(saveBtn) saveBtn.textContent = '保存中...';
+  let failed = false;
+  try{
+    localStorage.setItem(HOME_MUSIC_FLOATING_ENABLED_KEY, musicFloatingEnabled ? '1' : '0');
+    localStorage.setItem(HOME_MUSIC_FLOATING_SIZE_KEY, String(normalizeMusicFloatingSize(musicFloatingSizeDraft)));
+    if(window.assetStore){
+      if(musicFloatingIconDraft){
+        const ok = await window.assetStore.saveOrFallback(HOME_MUSIC_FLOATING_ICON_KEY, musicFloatingIconDraft);
+        if(!ok) failed = true;
+      }else{
+        try{ await window.assetStore.remove(HOME_MUSIC_FLOATING_ICON_KEY); }catch(err){ failed = true; }
+      }
+    }else{
+      if(musicFloatingIconDraft) localStorage.setItem(HOME_MUSIC_FLOATING_ICON_KEY, musicFloatingIconDraft);
+      else localStorage.removeItem(HOME_MUSIC_FLOATING_ICON_KEY);
+    }
+  }catch(err){
+    failed = true;
+  }
+  try{
+    window.parent.postMessage({
+      type: 'SET_HOME_MUSIC_FLOATING',
+      payload: {
+        enabled: musicFloatingEnabled,
+        icon: musicFloatingIconDraft || null,
+        size: normalizeMusicFloatingSize(musicFloatingSizeDraft)
+      }
+    }, '*');
+  }catch(err){}
+  toast(failed ? '保存部分失败，请重试' : '音乐悬浮球已保存');
+  if(saveBtn) saveBtn.textContent = '保存悬浮球';
+  musicFloatingSaving = false;
+}
+
+function normalizeHeartText(value){
+  return typeof value === 'string' ? value.replace(/\u2665(\uFE0E|\uFE0F)?/g, '\u2665\uFE0E') : value;
+}
+
+function bindTextNormalization(){
+  document.addEventListener('input', function(evt){
+    var target = evt.target;
+    if(!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) return;
+    if(!('value' in target)) return;
+    var next = normalizeHeartText(target.value);
+    if(next === target.value) return;
+    var start = target.selectionStart;
+    var end = target.selectionEnd;
+    target.value = next;
+    try{ target.setSelectionRange(start, end); }catch(err){}
+  }, true);
+}
+
+function setPreview(src){
+  const p=document.getElementById('preview');
+  if(src){ p.innerHTML='<img src="'+src+'" alt="preview">'; }
+  else { p.textContent='预览'; }
+}
+
+function onFile(file){
+  if(!file) return;
+  const r=new FileReader();
+  r.onload=e=>{ chosenData=e.target.result; setPreview(chosenData); };
+  r.readAsDataURL(file);
+}
+
+function applyWallpaper(){
+  if(!chosenData){ toast('请先选择图片或输入 URL'); return false; }
+  window.parent.postMessage({type:'SET_WALLPAPER', payload: chosenData}, '*');
+  localStorage.setItem('wallpaper','custom');
+  if(window.assetStore) window.assetStore.saveOrFallback('wallpaper_custom', chosenData);
+  else localStorage.setItem('wallpaper_custom', chosenData);
+  return true;
+}
+
+function resetWallpaper(){
+  chosenData='';
+  setPreview('');
+  window.parent.postMessage({type:'SET_WALLPAPER', payload:'default'}, '*');
+  localStorage.setItem('wallpaper','default');
+  if(window.assetStore) window.assetStore.remove('wallpaper_custom');
+  else localStorage.removeItem('wallpaper_custom');
+  toast('已恢复默认壁纸');
+}
+
+function saveAndExit(){
+  const urlVal=document.getElementById('url-input').value.trim();
+  if(urlVal) { chosenData=urlVal; setPreview(chosenData); }
+  const ok = applyWallpaper();
+  if(!ok) return;
+  try{
+    if(typeof window.parent.closeApp==='function') window.parent.closeApp();
+    else window.parent.postMessage({type:'CLOSE_APP'}, '*');
+  }catch(e){}
+  toast('已保存');
+}
+
+// Icon picker
+function renderIconCell(app){
+  const cell = document.querySelector('.icon-cell[data-app="'+app+'"]');
+  if(!cell) return;
+  const data = stagedIcons[app];
+  if(data){
+    cell.innerHTML = '<img src="'+data+'" alt="'+ICON_LABELS[app]+'">';
+    return;
+  }
+  cell.innerHTML = '<span>'+ ICON_LABELS[app] +'</span>';
+}
+
+function pickIcon(cell){
+  const app = cell.dataset.app;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.style.position = 'fixed';
+  input.style.left = '-9999px';
+  input.style.opacity = '0';
+  document.body.appendChild(input);
+  input.onchange = function(e){
+    const file = e && e.target && e.target.files ? e.target.files[0] : null;
+    if(!file){
+      input.remove();
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      const data = ev && ev.target ? ev.target.result : '';
+      stagedIcons[app] = data || '';
+      renderIconCell(app);
+      toast('已更新预览，记得保存');
+      input.remove();
+    };
+    reader.onerror = function(){
+      toast('图片读取失败');
+      input.remove();
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+async function loadIcons(){
+  for(const app of ICON_APPS){
+    const key = 'icon_' + app;
+    let data = '';
+    if(window.assetStore){
+      try{ data = await window.assetStore.load(key); }catch(err){ data = ''; }
+    }else{
+      try{ data = localStorage.getItem(key) || ''; }catch(err){ data = ''; }
+    }
+    stagedIcons[app] = data || '';
+    renderIconCell(app);
+  }
+}
+loadIcons();
+
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1500);
+}
+
+function resetIcons(){
+  ICON_APPS.forEach(function(app){
+    stagedIcons[app] = '';
+    renderIconCell(app);
+  });
+  toast('已重置预览，记得保存');
+}
+
+async function persistIconData(key, data){
+  if(window.assetStore){
+    if(data) return !!(await window.assetStore.saveOrFallback(key, data));
+    try{
+      await window.assetStore.remove(key);
+      return true;
+    }catch(err){
+      return false;
+    }
+  }
+  try{
+    if(data) localStorage.setItem(key, data);
+    else localStorage.removeItem(key);
+    return true;
+  }catch(err){
+    return false;
+  }
+}
+
+async function saveIcons(){
+  let failed = false;
+  for(const app of ICON_APPS){
+    const data = stagedIcons[app];
+    const key = 'icon_' + app;
+    const ok = await persistIconData(key, data);
+    if(!ok){
+      failed = true;
+      continue;
+    }
+    try{
+      window.parent.postMessage({type:'SET_APP_ICON', payload:{app, icon:data || null}}, '*');
+    }catch(err){}
+  }
+  if(failed){
+    toast('有图片没有保存成功');
+    return;
+  }
+  try{ window.parent.postMessage({type:'SHOW_HOME_TOAST', payload:'图标已保存'}, '*'); }catch(err){}
+  toast('图标已保存');
+}
+
+(function restore(){
+  bindTextNormalization();
+  frameVisible = getPhoneFrameVisibility();
+  liveDanmakuEnabled = getLiveDanmakuEnabled();
+  musicFloatingEnabled = getMusicFloatingEnabled();
+  musicFloatingSizeDraft = getMusicFloatingSize();
+  renderPhoneFrameToggle();
+  renderLiveDanmakuToggle();
+  renderMusicFloatingToggle();
+  renderMusicFloatingSize();
+  renderMusicFloatingPreview();
+  renderLiveDanmakuInputs();
+  const applyFloatingPreview = function(src){
+    musicFloatingIconDraft = String(src || '').trim();
+    renderMusicFloatingPreview();
+  };
+  if(window.assetStore){
+    window.assetStore.load(HOME_MUSIC_FLOATING_ICON_KEY).then(applyFloatingPreview).catch(()=>applyFloatingPreview(''));
+  }else{
+    applyFloatingPreview(localStorage.getItem(HOME_MUSIC_FLOATING_ICON_KEY) || '');
+  }
+  const w=localStorage.getItem('wallpaper');
+  const restoreWallpaper = function(c){
+    if(c){ chosenData=c; setPreview(c); return; }
+    if(w==='custom' && c){ chosenData=c; setPreview(c); return; }
+    setPreview(chosenData);
+  };
+  if(window.assetStore) window.assetStore.load('wallpaper_custom').then(restoreWallpaper);
+  else restoreWallpaper(localStorage.getItem('wallpaper_custom'));
+})();
+</script>
+</body>
+</html>

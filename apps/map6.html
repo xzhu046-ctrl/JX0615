@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>地图</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<script src="../chatStorage.js?v=2026-05-01T18:22:00Z"></script>
+<script src="../accountManager.js?v=2026-05-01T18:22:00Z"></script>
+<script src="../assetStore.js?v=2026-05-01T18:22:00Z"></script>
+<script src="../presenceShared.js?v=2026-05-01T18:22:00Z"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--b:#0a0a0a;--w:#fff;--off:#f7f7f7;--g:#6d6d6d;--bd:2px solid #0a0a0a;--sh:2px 2px 0 #0a0a0a;--font:'Quicksand',sans-serif;--fontd:'Nunito',sans-serif}
+html,body{width:100%;height:100%;overflow:hidden;background:#f4f4f4}
+body{font-family:var(--font);color:var(--b);display:flex;flex-direction:column}
+.map-shell{flex:1;min-height:0;display:flex;flex-direction:column;padding:14px 12px 18px;gap:12px;background:
+  radial-gradient(circle at top left, rgba(255,255,255,.98), rgba(243,243,243,.96) 32%, rgba(236,236,236,.94) 100%)}
+.map-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.map-title-wrap{min-width:0}
+.map-kicker{font-family:var(--fontd);font-size:11px;font-weight:900;letter-spacing:.16em;color:#7f7f7f;text-transform:uppercase}
+.map-title{margin-top:2px;font-family:var(--fontd);font-size:20px;font-weight:900}
+.map-chip{border:var(--bd);border-radius:999px;background:#fff;box-shadow:var(--sh);padding:7px 10px;font-family:var(--fontd);font-size:11px;font-weight:900;white-space:nowrap}
+.map-card{border:var(--bd);border-radius:24px;background:rgba(255,255,255,.96);box-shadow:3px 4px 0 #0a0a0a;position:relative;overflow:hidden}
+.map-status-card{padding:14px 14px 12px}
+.map-status-row{display:flex;align-items:center;gap:10px}
+.map-avatar-stack{display:flex;align-items:center}
+.map-avatar{width:54px;height:54px;border:var(--bd);border-radius:18px;background:#fff;box-shadow:var(--sh);overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:var(--fontd);font-size:14px;font-weight:900}
+.map-avatar + .map-avatar{margin-left:-14px}
+.map-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.map-status-copy{min-width:0;flex:1}
+.map-status-title{font-family:var(--fontd);font-size:16px;font-weight:900;line-height:1.25}
+.map-status-sub{margin-top:3px;font-size:12px;color:#555;font-weight:700;line-height:1.4}
+.map-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.map-badge{border:1.5px solid #0a0a0a;border-radius:999px;background:#fff;padding:5px 9px;font-size:11px;font-weight:800}
+.map-stage{padding:12px}
+.map-world{position:relative;height:300px;border:var(--bd);border-radius:22px;overflow:hidden;touch-action:none;background:
+ linear-gradient(180deg, rgba(255,255,255,.96), rgba(245,245,245,.93)),
+ radial-gradient(circle at 18% 32%, rgba(0,0,0,.06) 0 18%, transparent 19%),
+ radial-gradient(circle at 45% 48%, rgba(0,0,0,.05) 0 22%, transparent 23%),
+ radial-gradient(circle at 74% 36%, rgba(0,0,0,.05) 0 19%, transparent 20%),
+ radial-gradient(circle at 82% 68%, rgba(0,0,0,.045) 0 11%, transparent 12%),
+ linear-gradient(90deg, rgba(0,0,0,.06) 1px, transparent 1px),
+ linear-gradient(rgba(0,0,0,.06) 1px, transparent 1px);
+ background-size:auto,auto,auto,auto,auto,38px 38px,38px 38px;
+ box-shadow:inset 0 0 0 1px rgba(255,255,255,.95)}
+.map-world-inner{position:absolute;inset:0;transform-origin:center center}
+.map-route-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.map-route-line{stroke:#0a0a0a;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:7 8;opacity:.72}
+.map-point{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:5px}
+.map-pin{width:24px;height:24px;border-radius:999px;border:2px solid #0a0a0a;background:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.96),2px 2px 0 #0a0a0a;display:flex;align-items:center;justify-content:center}
+.map-pin img{width:100%;height:100%;object-fit:cover;border-radius:999px}
+.map-label{max-width:118px;border:1.5px solid #0a0a0a;border-radius:999px;background:rgba(255,255,255,.94);padding:4px 8px;font-size:10px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:1px 1px 0 #0a0a0a}
+.map-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.map-mini{padding:12px}
+.map-mini-title{font-family:var(--fontd);font-size:12px;font-weight:900}
+.map-mini-value{margin-top:6px;font-size:15px;font-weight:800;line-height:1.35}
+.map-mini-sub{margin-top:4px;font-size:11px;color:#666;font-weight:700;line-height:1.45}
+.map-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.map-btn{border:var(--bd);border-radius:16px;background:#fff;box-shadow:var(--sh);padding:11px 10px;font-family:var(--fontd);font-size:12px;font-weight:900;cursor:pointer}
+.map-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #0a0a0a}
+.map-empty{padding:18px 14px;text-align:center;font-size:13px;font-weight:700;color:#666}
+.map-select{width:100%;margin-top:8px;border:var(--bd);border-radius:14px;background:#fff;padding:10px 12px;font-size:13px;font-weight:800;outline:none}
+</style>
+</head>
+<body>
+  <div class="map-shell">
+    <div class="map-head">
+      <div class="map-title-wrap">
+        <div class="map-kicker">App 6</div>
+        <div class="map-title">共享位置</div>
+      </div>
+      <button class="map-chip" type="button" onclick="openChatSettingsFromMap()">聊天设置</button>
+    </div>
+
+    <div class="map-card map-status-card" id="mapStatusCard"></div>
+    <div class="map-card map-stage" id="mapStageCard"></div>
+    <div class="map-grid">
+      <div class="map-card map-mini" id="mapTravelCard"></div>
+      <div class="map-card map-mini" id="mapAvailabilityCard"></div>
+    </div>
+    <div class="map-actions">
+      <button class="map-btn" type="button" onclick="useDeviceLocation()">使用真实位置</button>
+      <button class="map-btn" type="button" onclick="openChatSettingsFromMap()">天气城市</button>
+      <button class="map-btn" type="button" onclick="openChatSettingsFromMap()">改角色日程</button>
+    </div>
+  </div>
+
+<script>
+var mapAvatarCache = { user:'', char:'', charId:'' };
+var mapViewState = { scale:1, tx:0, ty:0 };
+var mapGestureState = null;
+
+function getActiveCharacter(){
+  try{
+    if(window.AccountManager){
+      window.AccountManager.ensure();
+      var scoped = window.AccountManager.scopedKey('activeCharacter');
+      var scopedRaw = localStorage.getItem(scoped);
+      if(scopedRaw){
+        var scopedParsed = JSON.parse(scopedRaw);
+        if(scopedParsed && scopedParsed.id) return scopedParsed;
+      }
+    }
+  }catch(err){}
+  try{
+    var raw = localStorage.getItem('activeCharacter');
+    if(!raw) return null;
+    var parsed = JSON.parse(raw);
+    return parsed && parsed.id ? parsed : null;
+  }catch(err){
+    return null;
+  }
+}
+
+function isRenderableAvatarSrc(src){
+  return /^(data:|https?:|blob:)/i.test(String(src || '').trim());
+}
+
+function currentUserAvatar(){
+  var keys = [];
+  var activeChar = getActiveCharacter();
+  try{
+    if(window.AccountManager){
+      window.AccountManager.ensure();
+      if(activeChar && activeChar.id) keys.push(window.AccountManager.scopedKey('user_avatar_' + activeChar.id));
+      keys.push(window.AccountManager.scopedKey('qq_profile_avatar_asset'));
+      keys.push(window.AccountManager.scopedKey('user_avatar'));
+    }
+  }catch(err){}
+  if(activeChar && activeChar.id) keys.push('user_avatar_' + activeChar.id);
+  keys.push('qq_profile_avatar_asset','user_avatar');
+  for(var i = 0; i < keys.length; i++){
+    var src = String(localStorage.getItem(keys[i]) || '').trim();
+    if(isRenderableAvatarSrc(src)) return src;
+  }
+  return '';
+}
+
+function currentCharAvatar(charId){
+  if(!charId) return '';
+  var keys = [];
+  try{
+    if(window.AccountManager){
+      window.AccountManager.ensure();
+      keys.push(window.AccountManager.scopedKey('char_avatar_' + charId));
+    }
+  }catch(err){}
+  keys.push('char_avatar_' + charId);
+  for(var i = 0; i < keys.length; i++){
+    var src = String(localStorage.getItem(keys[i]) || '').trim();
+    if(isRenderableAvatarSrc(src)) return src;
+  }
+  var active = getActiveCharacter();
+  var activeSrc = String(active && active.imageData || '').trim();
+  return isRenderableAvatarSrc(activeSrc) ? activeSrc : '';
+}
+
+function loadFirstAvatarAsset(keys){
+  var list = (keys || []).filter(Boolean);
+  var idx = 0;
+  function next(){
+    if(idx >= list.length) return Promise.resolve('');
+    var key = list[idx++];
+    if(window.assetStore && typeof window.assetStore.load === 'function'){
+      return window.assetStore.load(key).then(function(src){
+        src = String(src || '').trim();
+        if(isRenderableAvatarSrc(src)) return src;
+        return next();
+      }).catch(function(){
+        return next();
+      });
+    }
+    var raw = String(localStorage.getItem(key) || '').trim();
+    if(isRenderableAvatarSrc(raw)) return Promise.resolve(raw);
+    return next();
+  }
+  return next();
+}
+
+function hydrateMapAvatars(charId){
+  if(mapAvatarCache.charId !== String(charId || '')){
+    mapAvatarCache.charId = String(charId || '');
+    mapAvatarCache.char = '';
+  }
+  var userKeys = [];
+  try{
+    if(window.AccountManager){
+      window.AccountManager.ensure();
+      if(charId) userKeys.push(window.AccountManager.scopedKey('user_avatar_' + charId));
+      userKeys.push(window.AccountManager.scopedKey('qq_profile_avatar_asset'));
+      userKeys.push(window.AccountManager.scopedKey('user_avatar'));
+    }
+  }catch(err){}
+  if(charId) userKeys.push('user_avatar_' + charId);
+  userKeys.push('qq_profile_avatar_asset', 'user_avatar');
+  loadFirstAvatarAsset(userKeys).then(function(src){
+    src = String(src || '').trim();
+    if(src && src !== mapAvatarCache.user){
+      mapAvatarCache.user = src;
+      renderMapApp();
+    }
+  }).catch(function(){});
+  if(!charId) return;
+  var charKeys = [];
+  try{
+    if(window.AccountManager){
+      window.AccountManager.ensure();
+      charKeys.push(window.AccountManager.scopedKey('char_avatar_' + charId));
+    }
+  }catch(err){}
+  charKeys.push('char_avatar_' + charId);
+  loadFirstAvatarAsset(charKeys).then(function(src){
+    src = String(src || '').trim();
+    if(src && src !== mapAvatarCache.char){
+      mapAvatarCache.char = src;
+      renderMapApp();
+    }
+  }).catch(function(){});
+}
+
+function escapeHtml(text){
+  return String(text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function setAvatarMarkup(src, fallback){
+  return src ? ('<img src="' + escapeHtml(src) + '" alt="">') : escapeHtml(fallback || '你');
+}
+
+function applyMapTransform(){
+  var inner = document.getElementById('mapWorldInner');
+  if(!inner) return;
+  var scale = Math.max(1, Math.min(2.6, Number(mapViewState.scale) || 1));
+  var tx = Number(mapViewState.tx) || 0;
+  var ty = Number(mapViewState.ty) || 0;
+  inner.style.transform = 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + scale.toFixed(3) + ')';
+}
+
+function touchDistance(a, b){
+  var dx = Number(a.clientX || 0) - Number(b.clientX || 0);
+  var dy = Number(a.clientY || 0) - Number(b.clientY || 0);
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function bindMapGestures(){
+  var world = document.getElementById('mapWorld');
+  if(!world || world.dataset.bound === '1') return;
+  world.dataset.bound = '1';
+  world.addEventListener('touchstart', function(evt){
+    if(evt.touches.length === 2){
+      var dist = touchDistance(evt.touches[0], evt.touches[1]);
+      mapGestureState = {
+        mode: 'pinch',
+        startScale: mapViewState.scale,
+        startDist: dist
+      };
+      return;
+    }
+    if(evt.touches.length === 1){
+      mapGestureState = {
+        mode: 'pan',
+        startTx: mapViewState.tx,
+        startTy: mapViewState.ty,
+        startX: evt.touches[0].clientX,
+        startY: evt.touches[0].clientY
+      };
+    }
+  }, { passive:false });
+  world.addEventListener('touchmove', function(evt){
+    if(!mapGestureState) return;
+    if(mapGestureState.mode === 'pinch' && evt.touches.length === 2){
+      evt.preventDefault();
+      var dist = touchDistance(evt.touches[0], evt.touches[1]);
+      mapViewState.scale = Math.max(1, Math.min(2.6, mapGestureState.startScale * (dist / Math.max(1, mapGestureState.startDist))));
+      applyMapTransform();
+      return;
+    }
+    if(mapGestureState.mode === 'pan' && evt.touches.length === 1 && mapViewState.scale > 1){
+      evt.preventDefault();
+      mapViewState.tx = mapGestureState.startTx + (evt.touches[0].clientX - mapGestureState.startX);
+      mapViewState.ty = mapGestureState.startTy + (evt.touches[0].clientY - mapGestureState.startY);
+      applyMapTransform();
+    }
+  }, { passive:false });
+  world.addEventListener('touchend', function(){
+    mapGestureState = null;
+  });
+  world.addEventListener('dblclick', function(){
+    if(mapViewState.scale > 1.02){
+      mapViewState = { scale:1, tx:0, ty:0 };
+    }else{
+      mapViewState.scale = 1.45;
+      mapViewState.tx = 0;
+      mapViewState.ty = 0;
+    }
+    applyMapTransform();
+  });
+}
+
+function renderMapApp(){
+  var char = getActiveCharacter();
+  var statusHost = document.getElementById('mapStatusCard');
+  var stageHost = document.getElementById('mapStageCard');
+  var travelHost = document.getElementById('mapTravelCard');
+  var availabilityHost = document.getElementById('mapAvailabilityCard');
+  if(!statusHost || !stageHost || !travelHost || !availabilityHost) return;
+  if(!char || !window.PresenceShared){
+    statusHost.innerHTML = '<div class="map-empty">先打开一个角色聊天，再来看共享位置。</div>';
+    stageHost.innerHTML = '<div class="map-empty">这里会显示你和 Char 的实时位置。</div>';
+    travelHost.innerHTML = '<div class="map-mini-title">距离</div><div class="map-mini-value">--</div>';
+    availabilityHost.innerHTML = '<div class="map-mini-title">状态</div><div class="map-mini-value">--</div>';
+    return;
+  }
+  var snapshot = window.PresenceShared.getPresenceSnapshot(char, Date.now());
+  if(snapshot.char.shareEnabled === false){
+    statusHost.innerHTML = '<div class="map-empty">这个角色暂时没有开启位置共享。去聊天设置里打开后，这里才会显示实时状态。</div>';
+    stageHost.innerHTML = '<div class="map-empty">打开位置共享后，这里会显示你和 ' + escapeHtml(char.nickname || char.name || 'Char') + ' 的实时位置。</div>';
+    travelHost.innerHTML = '<div class="map-mini-title">距离</div><div class="map-mini-value">未共享</div><div class="map-mini-sub">你可以在聊天设置里为这个角色打开实时位置。</div>';
+    availabilityHost.innerHTML = '<div class="map-mini-title">当前状态</div><div class="map-mini-value">未共享</div><div class="map-mini-sub">开启后会看到他在家、在公司、还是在路上。</div>';
+    return;
+  }
+  hydrateMapAvatars(char.id);
+  var userAvatar = mapAvatarCache.user || currentUserAvatar();
+  var charAvatar = currentCharAvatar(char.id) || mapAvatarCache.char;
+  var charName = (char.nickname || char.name || 'Char');
+  statusHost.innerHTML =
+    '<div class="map-status-row">'
+      + '<div class="map-avatar-stack">'
+        + '<div class="map-avatar">' + setAvatarMarkup(userAvatar, '你') + '</div>'
+        + '<div class="map-avatar">' + setAvatarMarkup(charAvatar, charName.slice(0,1)) + '</div>'
+      + '</div>'
+      + '<div class="map-status-copy">'
+        + '<div class="map-status-title">' + escapeHtml(charName) + ' 现在在' + escapeHtml(snapshot.char.placeLabel) + '</div>'
+        + '<div class="map-status-sub">' + escapeHtml(snapshot.char.activityLabel) + '，当地时间 ' + escapeHtml(snapshot.char.localTimeLabel) + '。' + (snapshot.char.availability === 'busy' || snapshot.char.availability === 'sleep' ? ('预计 ' + escapeHtml(snapshot.char.freeAtLabel) + ' 更有空。') : '现在相对比较能回你。') + '</div>'
+      + '</div>'
+    + '</div>'
+    + '<div class="map-badges">'
+      + '<span class="map-badge">相距 ' + escapeHtml(snapshot.distanceLabel) + '</span>'
+      + '<span class="map-badge">' + escapeHtml(snapshot.travel.text) + '</span>'
+      + '<span class="map-badge">' + escapeHtml(snapshot.char.city.name + ' · ' + snapshot.char.city.country) + '</span>'
+    + '</div>';
+  var worldWidth = 1000;
+  var worldHeight = 540;
+  var userPoint = window.PresenceShared.projectWorldPoint(snapshot.user, worldWidth, worldHeight);
+  var charPoint = window.PresenceShared.projectWorldPoint(snapshot.char.point, worldWidth, worldHeight);
+  stageHost.innerHTML =
+    '<div class="map-world" id="mapWorld">'
+      + '<div class="map-world-inner" id="mapWorldInner">'
+      + '<svg class="map-route-svg" viewBox="0 0 ' + worldWidth + ' ' + worldHeight + '" preserveAspectRatio="none">'
+        + '<line class="map-route-line" x1="' + userPoint.x.toFixed(1) + '" y1="' + userPoint.y.toFixed(1) + '" x2="' + charPoint.x.toFixed(1) + '" y2="' + charPoint.y.toFixed(1) + '"></line>'
+      + '</svg>'
+      + '<div class="map-point" style="left:' + ((userPoint.x / worldWidth) * 100).toFixed(2) + '%;top:' + ((userPoint.y / worldHeight) * 100).toFixed(2) + '%">'
+        + '<div class="map-pin">' + setAvatarMarkup(userAvatar, '你') + '</div>'
+        + '<div class="map-label">' + escapeHtml(snapshot.user.label || '我的位置') + '</div>'
+      + '</div>'
+      + '<div class="map-point" style="left:' + ((charPoint.x / worldWidth) * 100).toFixed(2) + '%;top:' + ((charPoint.y / worldHeight) * 100).toFixed(2) + '%">'
+        + '<div class="map-pin">' + setAvatarMarkup(charAvatar, charName.slice(0,1)) + '</div>'
+        + '<div class="map-label">' + escapeHtml(charName + ' · ' + snapshot.char.placeLabel) + '</div>'
+      + '</div>'
+      + '</div>'
+    + '</div>';
+  bindMapGestures();
+  applyMapTransform();
+  travelHost.innerHTML =
+    '<div class="map-mini-title">现在过去要多久</div>'
+    + '<div class="map-mini-value">' + escapeHtml(snapshot.travel.text) + '</div>'
+    + '<div class="map-mini-sub">这是按真实距离给出的拟真时长。跨洲会自动按飞行节奏算，近距离则按步行 / 开车估算。</div>';
+  availabilityHost.innerHTML =
+    '<div class="map-mini-title">为什么他现在不太回</div>'
+    + '<div class="map-mini-value">' + escapeHtml(snapshot.char.activityLabel) + '</div>'
+    + '<div class="map-mini-sub">' + (snapshot.char.availability === 'busy' || snapshot.char.availability === 'sleep' ? ('大概 ' + escapeHtml(snapshot.char.freeAtLabel) + ' 会松一点。') : '他现在状态比较空，可以正常聊。') + '</div>';
+}
+
+async function useDeviceLocation(){
+  if(!window.PresenceShared) return;
+  try{
+    var next = await window.PresenceShared.requestDeviceLocation();
+    window.PresenceShared.saveUserLocation(next);
+    renderMapApp();
+  }catch(err){
+    alert((err && err.message) || '定位失败');
+  }
+}
+
+function openChatSettingsFromMap(){
+  try{
+    if(window.parent) window.parent.postMessage({ type:'OPEN_CHAT_SETTINGS', payload:getActiveCharacter() || null }, '*');
+  }catch(err){}
+}
+
+renderMapApp();
+setInterval(renderMapApp, 60000);
+</script>
+</body>
+</html>

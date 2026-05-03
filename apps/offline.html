@@ -1,0 +1,2905 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover">
+<title>约会</title>
+<style>
+:root{
+  --safe-top:max(env(safe-area-inset-top), 0px);
+  --safe-bottom:max(env(safe-area-inset-bottom), 0px);
+  --paper:#fafafa;
+  --panel:#ffffff;
+  --ink:#101010;
+  --muted:#5f5f5f;
+  --line:rgba(16,16,16,.18);
+  --shadow:0 12px 30px rgba(0,0,0,.06);
+  --frame-shadow:none;
+  --hard-shadow:2px 2px 0 #0a0a0a;
+  --serif:"Avenir Next","PingFang SC","Hiragino Sans GB",sans-serif;
+  --sans:"Avenir Next","PingFang SC","Hiragino Sans GB",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;
+  width:100%;
+  min-height:100%;
+  background:
+    linear-gradient(180deg,#fff 0%,#f7f7f7 100%);
+  color:var(--ink);
+  font-family:var(--sans);
+}
+body{display:flex;justify-content:center}
+.offline-page{
+  width:100%;
+  max-width:430px;
+  height:100vh;
+  height:100dvh;
+  min-height:100vh;
+  min-height:100dvh;
+  padding:calc(var(--safe-top) + 8px) 12px calc(var(--safe-bottom) + 10px);
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.offline-page::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.03),transparent 32%);
+  opacity:.45;
+}
+.offline-stack{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  z-index:1;
+  flex:1;
+  min-height:0;
+}
+.month-card,
+.filters-card,
+.thread-card{
+  position:relative;
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:8px;
+  background:rgba(255,255,255,.94);
+  box-shadow:0 16px 36px rgba(0,0,0,.08);
+  overflow:hidden;
+}
+.month-card{
+  padding:14px 12px 13px;
+  background:#fff;
+  overflow:visible;
+  box-shadow:0 18px 42px rgba(0,0,0,.13);
+}
+.month-row{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:34px;
+  margin-bottom:10px;
+}
+.month-exit{
+  position:absolute;
+  left:0;
+  top:1px;
+  width:30px;
+  height:30px;
+  padding:0;
+  flex:0 0 auto;
+  margin-top:0;
+  border:1.5px solid #111;
+  border-radius:999px;
+  background:#fff;
+  box-shadow:var(--hard-shadow);
+  color:#111;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:15px;
+  font-weight:900;
+}
+.month-exit:active{
+  transform:translate(2px,2px);
+  box-shadow:0 0 0 #0a0a0a;
+}
+.month-label{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+  width:100%;
+  padding:0 42px;
+  align-items:center;
+  text-align:center;
+}
+.month-title{
+  position:relative;
+  display:inline-block;
+  font-family:var(--serif);
+  font-size:25px;
+  font-weight:900;
+  letter-spacing:.01em;
+  line-height:1.18;
+  text-shadow:none;
+  text-align:center;
+}
+.month-title::after{
+  content:"";
+  position:absolute;
+  left:2px;
+  right:2px;
+  bottom:-4px;
+  border-bottom:3px dashed rgba(17,17,17,.7);
+  border-radius:999px;
+}
+.month-sub{
+  display:none;
+}
+.month-picker{
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr) minmax(0,1fr) 30px;
+  gap:6px;
+  align-items:center;
+  margin:0 0 10px;
+}
+.month-nav,
+.date-field{
+  height:30px;
+  border:1px solid rgba(0,0,0,.14);
+  border-radius:999px;
+  background:#fff;
+  color:#111;
+  box-shadow:none;
+  font-family:var(--sans);
+  font-size:10px;
+  font-weight:900;
+}
+.month-nav{
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  cursor:pointer;
+}
+.date-field{
+  min-width:0;
+  width:100%;
+  padding:0 9px;
+  letter-spacing:.02em;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.date-field:focus,
+.month-nav:focus{
+  outline:none;
+  border-color:#111;
+  box-shadow:0 0 0 2px rgba(0,0,0,.05);
+}
+.weekdays,
+.calendar-strip{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:6px;
+}
+.weekdays{
+  margin-bottom:6px;
+  padding:0 2px;
+  font-size:10px;
+  font-weight:900;
+  color:#7a7a7a;
+  text-align:center;
+}
+.day-chip{
+  min-height:64px;
+  border:1px solid rgba(0,0,0,.1);
+  border-radius:999px;
+  padding:8px 4px 7px;
+  color:#111;
+  font:inherit;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:5px;
+  background:#fff;
+  cursor:pointer;
+}
+.day-chip.is-active{
+  background:#111;
+  color:#fff;
+  border-color:#111;
+  box-shadow:0 10px 22px rgba(0,0,0,.12);
+}
+.day-chip-day{
+  font-size:21px;
+  font-family:var(--serif);
+  font-weight:900;
+  line-height:1;
+}
+.day-chip-meta{
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.04em;
+  color:#8c8c8c;
+}
+.day-chip.is-active .day-chip-meta{color:#111}
+.day-chip.is-active .day-chip-meta{color:rgba(255,255,255,.78)}
+.day-chip-dot{
+  width:5px;
+  height:5px;
+  border-radius:999px;
+  background:#111;
+  border:1.5px solid #111;
+}
+.day-chip.is-active .day-chip-dot{
+  background:#fff;
+  border-color:#fff;
+}
+.day-chip-ghost{
+  width:5px;
+  height:5px;
+}
+.filters-card{
+  padding:0;
+  background:transparent;
+  border:none;
+  box-shadow:none;
+  overflow:visible;
+}
+.filters-tabs{
+  display:flex;
+  gap:8px;
+  overflow:auto;
+  padding-bottom:2px;
+}
+.filter-tab{
+  border:1px solid rgba(0,0,0,.12);
+  border-radius:999px;
+  background:#fff;
+  color:#111;
+  min-height:32px;
+  padding:0 13px;
+  font-family:var(--sans);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  box-shadow:none;
+  white-space:nowrap;
+}
+.filter-tab.is-active{
+  background:#111;
+  color:#fff;
+  border-color:#111;
+  box-shadow:none;
+}
+.thread-list{
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  flex:1;
+  min-height:0;
+  overflow-y:scroll;
+  overflow-x:hidden;
+  padding:8px 2px 22px;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:auto;
+}
+.thread-list::-webkit-scrollbar{display:none}
+.thread-empty{
+  margin:8px 0 0;
+  padding:24px 16px;
+  border:1px solid rgba(0,0,0,.1);
+  border-radius:8px;
+  background:#fff;
+  color:#5f5f5f;
+  font-size:13px;
+  font-weight:900;
+  line-height:1.6;
+  text-align:center;
+}
+.thread-row{
+  position:relative;
+  min-height:146px;
+  overflow:visible;
+  background:transparent;
+  border-bottom:0;
+  padding-bottom:16px;
+}
+.thread-row + .thread-row{margin-top:22px}
+.thread-row + .thread-row::before{
+  display:none;
+}
+.thread-row + .thread-row::after{
+  display:none;
+}
+.thread-delete{
+  position:absolute;
+  z-index:3;
+  top:9px;
+  right:0;
+  bottom:9px;
+  width:72px;
+  border:1.5px solid #111;
+  border-radius:0;
+  background:#111;
+  color:#fff;
+  box-shadow:0 10px 22px rgba(0,0,0,.18);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  font-family:var(--sans);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .16s ease;
+}
+.thread-delete:active{transform:translate(2px,2px)}
+.thread-delete svg{width:16px;height:16px;display:block;fill:currentColor;flex:0 0 auto}
+.thread-row.is-open .thread-delete{
+  opacity:1;
+  pointer-events:auto;
+}
+.thread-item{
+  position:relative;
+  z-index:1;
+  min-height:130px;
+  padding:16px 15px 15px 13px;
+  display:grid;
+  grid-template-columns:88px minmax(0,1fr);
+  gap:15px;
+  align-items:center;
+  border:3px dashed rgba(17,17,17,.82);
+  border-radius:16px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.98),rgba(246,246,246,.94)),
+    #fff;
+  box-shadow:none;
+  will-change:transform;
+  touch-action:pan-y;
+  transition:transform .18s ease;
+  overflow:hidden;
+}
+.thread-row.is-dragging .thread-item{transition:none}
+.thread-row.is-open .thread-item{transform:translateX(-72px)}
+.thread-item.is-selected{transform:translateY(-1px)}
+.thread-row.is-open .thread-item.is-selected{transform:translateX(-72px) translateY(-1px)}
+.thread-polaroid{
+  position:relative;
+  z-index:1;
+  width:82px;
+  padding:7px 7px 19px;
+  border:1.5px solid rgba(17,17,17,.78);
+  background:#fff;
+  box-shadow:2px 2px 0 rgba(17,17,17,.12),0 10px 20px rgba(0,0,0,.12);
+  transform:rotate(-1.5deg);
+}
+.thread-polaroid::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:-7px;
+  width:34px;
+  height:10px;
+  border:1px solid rgba(17,17,17,.12);
+  background:rgba(255,255,255,.72);
+  transform:translateX(-50%) rotate(2deg);
+  box-shadow:0 4px 10px rgba(0,0,0,.08);
+  pointer-events:none;
+}
+.thread-polaroid::after{
+  content:"";
+  display:block;
+  position:absolute;
+  inset:0;
+  border:1px solid rgba(255,255,255,.82);
+  pointer-events:none;
+}
+.thread-avatar{
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  border:1.5px solid rgba(0,0,0,.78);
+  border-radius:0;
+  overflow:hidden;
+  background:#d8d8d5 center/cover no-repeat;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.7);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  font-weight:900;
+}
+.thread-avatar img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:none;
+}
+.thread-avatar.has-image{
+  background:#d8d8d5;
+  filter:grayscale(.45) contrast(1.04);
+}
+.thread-avatar.has-image img{
+  display:block;
+}
+.thread-polaroid-label{
+  display:block;
+  margin-top:7px;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.thread-main{
+  position:relative;
+  z-index:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding-left:2px;
+}
+.thread-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+.thread-name{
+  font-family:var(--sans);
+  font-size:17px;
+  font-weight:900;
+  font-style:normal;
+  line-height:1.15;
+  padding-right:58px;
+}
+.thread-time{
+  font-size:12px;
+  font-weight:900;
+  color:#2d2d2d;
+  white-space:nowrap;
+}
+.thread-highlight{
+  position:absolute;
+  top:-6px;
+  right:7px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:23px;
+  padding:0 8px;
+  background:rgba(255,255,255,.92);
+  color:#9e1010;
+  border:1.5px solid #9e1010;
+  border-radius:2px;
+  box-shadow:0 8px 14px rgba(158,16,16,.1);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  transform:rotate(-6deg);
+  mix-blend-mode:multiply;
+}
+.thread-preview{
+  font-size:12px;
+  line-height:1.55;
+  font-weight:700;
+  color:#313131;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.thread-sub{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:5px;
+  padding:7px 9px 7px 11px;
+  border-left:0;
+  border-radius:0 12px 12px 0;
+  background:
+    linear-gradient(180deg,rgba(247,247,247,.96),rgba(247,247,247,.86)),
+    linear-gradient(180deg,rgba(17,17,17,.14) 0%,rgba(17,17,17,.88) 24%,rgba(17,17,17,.88) 76%,rgba(17,17,17,.14) 100%);
+  background-repeat:no-repeat,no-repeat;
+  background-size:100% 100%,3px 100%;
+  background-position:0 0,0 0;
+  box-shadow:inset 0 0 0 1px rgba(17,17,17,.04);
+}
+.thread-meta{
+  font-size:12px;
+  font-weight:900;
+  color:#6a6a6a;
+  letter-spacing:.03em;
+}
+.thread-stage{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#373737;
+}
+.thread-stage-dot{
+  width:8px;
+  height:8px;
+  border:1px solid var(--ink);
+  border-radius:999px;
+  background:#111;
+}
+.thread-stage.is-pending .thread-stage-dot{background:#b53b3b}
+.thread-stage.is-accepted .thread-stage-dot{background:#fff}
+.thread-stage.is-complete .thread-stage-dot{background:#111}
+.thread-stage.is-continued .thread-stage-dot{background:#fff}
+.thread-stage.is-upcoming .thread-stage-dot{background:#fff}
+.thread-stage.is-ended .thread-stage-dot{background:#fff}
+.delete-confirm{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:rgba(0,0,0,.38);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  z-index:50;
+}
+.delete-confirm.open{display:flex}
+.delete-confirm-sheet{
+  width:min(320px, 100%);
+  border:1.5px solid #111;
+  background:#fff;
+  box-shadow:0 24px 55px rgba(0,0,0,.28);
+  padding:18px 16px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.delete-confirm-title{
+  font-family:var(--serif);
+  font-size:24px;
+  font-weight:900;
+  line-height:1;
+}
+.delete-confirm-copy{
+  font-size:13px;
+  line-height:1.6;
+  font-weight:800;
+  color:#343434;
+}
+.delete-confirm-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
+.delete-confirm-btn{
+  min-height:38px;
+  padding:0 14px;
+  border:1.5px solid #111;
+  border-radius:0;
+  background:#fff;
+  color:#111;
+  box-shadow:none;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.delete-confirm-btn.is-danger{
+  border-color:#111;
+  background:#111;
+  color:#fff;
+  box-shadow:none;
+}
+</style>
+</head>
+<body>
+  <main class="offline-page">
+    <div class="offline-stack">
+      <section class="month-card" id="monthCard"></section>
+      <section class="filters-card">
+        <div class="filters-tabs" id="filterTabs"></div>
+      </section>
+      <section class="thread-list" id="threadList"></section>
+    </div>
+  </main>
+  <div class="delete-confirm" id="deleteConfirm" aria-hidden="true">
+    <div class="delete-confirm-sheet">
+      <div class="delete-confirm-title">删除邀约</div>
+      <div class="delete-confirm-copy" id="deleteConfirmCopy">这条邀约会从约会 app 里移走。</div>
+      <div class="delete-confirm-actions">
+        <button class="delete-confirm-btn" type="button" data-delete-cancel>取消</button>
+        <button class="delete-confirm-btn is-danger" type="button" data-delete-confirm>删除</button>
+      </div>
+    </div>
+  </div>
+<script src="../assetStore.js?v=2026-05-02T05:28:00Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-02T05:28:00Z"></script>
+<script>
+var OFFLINE_APP_BUILD_ID = '2026-05-02T05:28:00Z';
+var currentFilter = 'all';
+var currentSelectedId = '';
+var currentSelectedDateKey = '';
+var avatarAssetCache = {};
+var offlineRenderVersion = 0;
+var latestOfflineRecords = [];
+var offlineSwipeState = null;
+var pendingDeleteRecordId = '';
+var lastConsumedForceCompletePayloads = [];
+var lastConsumedEndRequestPayloads = [];
+var pendingInlineForceCompletePayloads = [];
+function esc(text){
+  return String(text == null ? '' : text)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function getParentCharacters(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.getStoredCharactersSnapshot === 'function'){
+      return window.parent.getStoredCharactersSnapshot();
+    }
+  }catch(err){}
+  return [];
+}
+
+function isRenderableAssetSource(src){
+  var value = String(src || '').trim();
+  return !!(value && value !== '__asset__' && (value.indexOf('data:') === 0 || value.indexOf('blob:') === 0 || value.indexOf('http') === 0 || value.indexOf('/') === 0 || value.indexOf('./') === 0 || value.indexOf('../') === 0 || value.indexOf('assets/') === 0 || value.indexOf('apps/assets/') === 0));
+}
+
+function getOfflineAvatarAssetKeys(charId){
+  var safeId = String(charId || '').trim();
+  if(!safeId) return [];
+  var keys = [];
+  function add(key){
+    key = String(key || '').trim();
+    if(key && keys.indexOf(key) === -1) keys.push(key);
+  }
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.getActiveAccountId === 'function' && typeof window.parent.scopedKeyForAccount === 'function'){
+      var accountId = String(window.parent.getActiveAccountId() || '').trim();
+      if(accountId) add(window.parent.scopedKeyForAccount('char_avatar_' + safeId, accountId));
+    }
+  }catch(err){}
+  add('char_avatar_' + safeId);
+  return keys;
+}
+
+function getParentCharByIdOrName(charId, charName){
+  var safeId = String(charId || '').trim();
+  var safeName = String(charName || '').trim().toLowerCase();
+  var chars = getParentCharacters();
+  if(!Array.isArray(chars)) return null;
+  if(safeId){
+    var byId = chars.find(function(item){ return item && String(item.id || '') === safeId; }) || null;
+    if(byId) return byId;
+  }
+  if(safeName){
+    return chars.find(function(item){
+      if(!item) return false;
+      var nick = String(item.nickname || '').trim().toLowerCase();
+      var name = String(item.name || '').trim().toLowerCase();
+      return !!((nick && nick === safeName) || (name && name === safeName));
+    }) || null;
+  }
+  return null;
+}
+
+function readStoredCharAvatar(charId){
+  var safeId = String(charId || '').trim();
+  if(!safeId) return '';
+  if(avatarAssetCache[safeId]) return avatarAssetCache[safeId];
+  var keys = getOfflineAvatarAssetKeys(safeId);
+  for(var i = 0; i < keys.length; i += 1){
+    try{
+      var direct = String(localStorage.getItem(keys[i]) || '').trim();
+      if(isRenderableAssetSource(direct)){
+        avatarAssetCache[safeId] = direct;
+        return direct;
+      }
+    }catch(err){}
+  }
+  return '';
+}
+
+function requestStoredCharAvatar(charId, recordId){
+  var safeId = String(charId || '').trim();
+  var safeRecordId = String(recordId || '').trim();
+  if(!safeId || avatarAssetCache[safeId]) return;
+  if(!(window.assetStore && typeof window.assetStore.load === 'function')) return;
+  var keys = getOfflineAvatarAssetKeys(safeId);
+  var chain = Promise.resolve('');
+  keys.forEach(function(key){
+    chain = chain.then(function(found){
+      if(isRenderableAssetSource(found)) return found;
+      return window.assetStore.load(key).then(function(src){
+        var clean = String(src || '').trim();
+        return isRenderableAssetSource(clean) ? clean : '';
+      }).catch(function(){ return ''; });
+    });
+  });
+  chain.then(function(clean){
+    if(!isRenderableAssetSource(clean)) return;
+    avatarAssetCache[safeId] = clean;
+    applyThreadAvatarSource(safeRecordId, { type:'image', value: clean });
+  }).catch(function(){});
+}
+
+function getCharAvatarSource(charId, charName){
+  var safeId = String(charId || '').trim();
+  var match = getParentCharByIdOrName(charId, charName);
+  var override = readStoredCharAvatar(safeId);
+  if(override) return { type:'image', value: override };
+  if(match && isRenderableAssetSource(match.imageData)) return { type:'image', value: String(match.imageData || '').trim() };
+  if(match && isRenderableAssetSource(match.avatarUrl)) return { type:'image', value: String(match.avatarUrl || '').trim() };
+  if(match && isRenderableAssetSource(match.avatar)) return { type:'image', value: String(match.avatar || '').trim() };
+  return { type:'text', value: String((charName || (match && (match.nickname || match.name)) || '角')).trim().slice(0, 1) || '角' };
+}
+
+function applyThreadAvatarSource(recordId, source){
+  var root = document.getElementById('threadList');
+  if(!root) return;
+  var safeRecordId = String(recordId || '').trim();
+  if(!safeRecordId) return;
+  var node = findByDataAttr(root, 'data-avatar-id', safeRecordId);
+  var img = findByDataAttr(root, 'data-avatar-img', safeRecordId);
+  if(!node || !img) return;
+  if(source && source.type === 'image' && source.value){
+    var safe = String(source.value || '').trim();
+    img.onerror = function(){
+      img.removeAttribute('src');
+      node.classList.remove('has-image');
+      var brokenFallback = node.childNodes[node.childNodes.length - 1];
+      if(brokenFallback && brokenFallback.nodeType === 3) brokenFallback.textContent = '角';
+    };
+    img.src = safe;
+    node.classList.add('has-image');
+    node.style.backgroundImage = '';
+    var fallbackNode = node.childNodes[node.childNodes.length - 1];
+    if(fallbackNode && fallbackNode.nodeType === 3) fallbackNode.textContent = '';
+    return;
+  }
+  img.removeAttribute('src');
+  node.classList.remove('has-image');
+  var text = String(source && source.value || '角').trim().slice(0, 1) || '角';
+  var fallback = node.childNodes[node.childNodes.length - 1];
+  if(fallback && fallback.nodeType === 3) fallback.textContent = text;
+}
+
+function getScopedFocusKey(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.scopedKeyForAccount === 'function' && typeof window.parent.getActiveAccountId === 'function'){
+      return window.parent.scopedKeyForAccount('offline_invite_focus_id_v1', window.parent.getActiveAccountId());
+    }
+  }catch(err){}
+  return 'offline_invite_focus_id_v1';
+}
+
+function readFocusId(){
+  try{
+    return String(localStorage.getItem(getScopedFocusKey()) || localStorage.getItem('offline_invite_focus_id_v1') || '').trim();
+  }catch(err){
+    return '';
+  }
+}
+
+function clearFocusId(){
+  try{ localStorage.removeItem(getScopedFocusKey()); }catch(err){}
+  try{ localStorage.removeItem('offline_invite_focus_id_v1'); }catch(err){}
+}
+
+function findByDataAttr(root, attr, value){
+  var list = root && root.querySelectorAll ? root.querySelectorAll('[' + attr + ']') : [];
+  for(var i = 0; i < list.length; i += 1){
+    if(String(list[i].getAttribute(attr) || '') === String(value || '')) return list[i];
+  }
+  return null;
+}
+
+function getOfflineRecordsFromStore(){
+  var store = window.OfflineInviteStore;
+  if(!(store && typeof store.listRecords === 'function')) return [];
+  return store.listRecords().filter(function(item){
+    return item && (String(item.charId || '').trim() || String(item.charName || '').trim());
+  });
+}
+
+function getOfflinePhoneStorage(){
+  try{
+    if(window.parent && window.parent !== window && window.parent.PhoneStorage) return window.parent.PhoneStorage;
+  }catch(err){}
+  try{
+    if(window.PhoneStorage) return window.PhoneStorage;
+  }catch(err2){}
+  return null;
+}
+
+function adoptedOfflineInviteRecordsKey(){
+  return getScopedOfflineStorageKey('offline_invite_adopted_records_v1');
+}
+
+async function loadAdoptedOfflineInviteRecords(){
+  var storage = getOfflinePhoneStorage();
+  var state = null;
+  if(storage && typeof storage.getJson === 'function'){
+    try{ state = await storage.getJson(adoptedOfflineInviteRecordsKey()); }catch(err){}
+    if(!state){
+      try{ state = await storage.getJson('offline_invite_adopted_records_v1'); }catch(err2){}
+    }
+  }
+  if(!state){
+    try{ state = JSON.parse(localStorage.getItem(adoptedOfflineInviteRecordsKey()) || localStorage.getItem('offline_invite_adopted_records_v1') || 'null'); }catch(err3){ state = null; }
+  }
+  var records = Array.isArray(state && state.records) ? state.records : (Array.isArray(state) ? state : []);
+  return records.map(function(item){
+    try{
+      return window.OfflineInviteStore && typeof window.OfflineInviteStore.normalizeRecord === 'function'
+        ? window.OfflineInviteStore.normalizeRecord(item)
+        : item;
+    }catch(err4){
+      return item;
+    }
+  }).filter(function(item){
+    return item && String(item.id || '').trim();
+  });
+}
+
+async function saveAdoptedOfflineInviteRecords(records){
+  var list = (Array.isArray(records) ? records : []).filter(function(item){
+    return item && String(item.id || '').trim();
+  });
+  var state = { version:1, records:list };
+  var storage = getOfflinePhoneStorage();
+  var wrote = false;
+  if(storage && typeof storage.putJson === 'function'){
+    try{
+      await storage.putJson(adoptedOfflineInviteRecordsKey(), state);
+      await storage.putJson('offline_invite_adopted_records_v1', state);
+      wrote = true;
+    }catch(err){}
+  }
+  if(!wrote){
+    try{
+      localStorage.setItem(adoptedOfflineInviteRecordsKey(), JSON.stringify(state));
+      localStorage.setItem('offline_invite_adopted_records_v1', JSON.stringify(state));
+      wrote = true;
+    }catch(err2){}
+  }
+  return wrote;
+}
+
+function adoptedOfflineRecordMatchesRemoval(record, aliases){
+  if(!(record && typeof record === 'object')) return false;
+  var set = aliases || {};
+  var values = [
+    record.id,
+    record.threadId,
+    record.inviteMessageId,
+    record.replyMessageId
+  ];
+  return values.some(function(value){
+    var safe = String(value || '').trim();
+    return !!(safe && set[safe]);
+  });
+}
+
+async function removeAdoptedOfflineInviteRecord(record){
+  var aliases = Object.create(null);
+  getOfflineRecordAliasIds(record || {}).forEach(function(id){
+    var safe = String(id || '').trim();
+    if(safe) aliases[safe] = true;
+  });
+  if(!Object.keys(aliases).length) return false;
+  var list = await loadAdoptedOfflineInviteRecords().catch(function(){ return []; });
+  var next = (Array.isArray(list) ? list : []).filter(function(item){
+    return !adoptedOfflineRecordMatchesRemoval(item, aliases);
+  });
+  if(next.length === list.length) return false;
+  await saveAdoptedOfflineInviteRecords(next);
+  return true;
+}
+
+async function adoptChatFallbackRecordsIntoStore(fallbackRecords, storeRecords, adoptedRecords){
+  var store = window.OfflineInviteStore;
+  var adopted = Array.isArray(adoptedRecords) ? adoptedRecords.slice() : [];
+  var attempts = [];
+  var existingIds = Object.create(null);
+  (Array.isArray(storeRecords) ? storeRecords : []).concat(adopted).forEach(function(item){
+    var id = String(item && item.id || '').trim();
+    if(id) existingIds[id] = true;
+  });
+  for(var i = 0; i < (Array.isArray(fallbackRecords) ? fallbackRecords : []).length; i += 1){
+    var item = fallbackRecords[i];
+    if(!(item && typeof item === 'object')) continue;
+    var id = String(item.id || '').trim();
+    if(!id || existingIds[id]) continue;
+    var statusOk = isAcceptedInviteRecord(item) || isOngoingInviteRecord(item) || isContinuedInviteRecord(item) || isCompletedInviteRecord(item);
+    if(!statusOk){
+      attempts.push({ id:id, ok:false, reason:'status_not_adoptable', status:String(item.status || ''), meetState:String(item.meetState || '') });
+      continue;
+    }
+    var record = Object.assign({}, item, {
+      id:id,
+      threadId:String(item.threadId || id).trim() || id,
+      updatedAt:Number(item.updatedAt || item.createdAt || Date.now()) || Date.now()
+    });
+    try{
+      if(store && typeof store.upsertRecord === 'function') store.upsertRecord(record);
+      var verified = true;
+      try{ verified = !!(store && typeof store.getRecord === 'function' && store.getRecord(id)); }catch(verifyErr){ verified = false; }
+      if(!verified && store && typeof store.readStateSync === 'function' && typeof store.saveState === 'function'){
+        var state = store.readStateSync();
+        state.records = Array.isArray(state.records) ? state.records : [];
+        state.records = state.records.filter(function(existing){ return String(existing && existing.id || '').trim() !== id; });
+        state.records.unshift(record);
+        store.saveState(state);
+        try{ verified = !(typeof store.getRecord === 'function') || !!store.getRecord(id); }catch(verifyErr2){ verified = false; }
+      }
+      var adoptedWrite = false;
+      if(!verified){
+        adopted = adopted.filter(function(existing){ return String(existing && existing.id || '').trim() !== id; });
+        adopted.unshift(record);
+        adopted = adopted.slice(0, 240);
+        adoptedWrite = await saveAdoptedOfflineInviteRecords(adopted);
+      }
+      existingIds[id] = true;
+      attempts.push({ id:id, ok:!!(verified || adoptedWrite), method:verified ? 'store' : (adoptedWrite ? 'phoneStorageAdopted' : 'unverified'), charId:String(record.charId || ''), status:String(record.status || ''), meetState:String(record.meetState || '') });
+    }catch(err){
+      attempts.push({ id:id, ok:false, reason:'exception', message:String(err && (err.message || err) || '') });
+    }
+  }
+  return adopted;
+}
+
+function getHiddenOfflineRecordKey(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.scopedKeyForAccount === 'function' && typeof window.parent.getActiveAccountId === 'function'){
+      return window.parent.scopedKeyForAccount('offline_invite_hidden_ids_v1', window.parent.getActiveAccountId());
+    }
+  }catch(err){}
+  return 'offline_invite_hidden_ids_v1';
+}
+
+function readHiddenOfflineRecordIds(){
+  var ids = [];
+  try{
+    ids = JSON.parse(localStorage.getItem(getHiddenOfflineRecordKey()) || localStorage.getItem('offline_invite_hidden_ids_v1') || '[]');
+  }catch(err){
+    ids = [];
+  }
+  if(!Array.isArray(ids)) ids = [];
+  return ids.reduce(function(map, value){
+    var safe = String(value || '').trim();
+    if(safe) map[safe] = true;
+    return map;
+  }, Object.create(null));
+}
+
+function writeHiddenOfflineRecordIds(map){
+  var list = Object.keys(map || {}).filter(Boolean);
+  try{ localStorage.setItem(getHiddenOfflineRecordKey(), JSON.stringify(list)); }catch(err){}
+  try{ localStorage.setItem('offline_invite_hidden_ids_v1', JSON.stringify(list)); }catch(err2){}
+}
+
+function getCompletedOfflineInviteIdsKey(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.scopedKeyForAccount === 'function' && typeof window.parent.getActiveAccountId === 'function'){
+      return window.parent.scopedKeyForAccount('offline_invite_completed_ids_v1', window.parent.getActiveAccountId());
+    }
+  }catch(err){}
+  return 'offline_invite_completed_ids_v1';
+}
+
+function getCompletedOfflineInviteMarkersKey(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.scopedKeyForAccount === 'function' && typeof window.parent.getActiveAccountId === 'function'){
+      return window.parent.scopedKeyForAccount('offline_invite_completed_markers_v1', window.parent.getActiveAccountId());
+    }
+  }catch(err){}
+  return 'offline_invite_completed_markers_v1';
+}
+
+function getCompletedOfflineInviteDetailsKey(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.scopedKeyForAccount === 'function' && typeof window.parent.getActiveAccountId === 'function'){
+      return window.parent.scopedKeyForAccount('offline_invite_completed_details_v1', window.parent.getActiveAccountId());
+    }
+  }catch(err){}
+  return 'offline_invite_completed_details_v1';
+}
+
+function getForceCompleteOfflineInvitePayloadKey(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.scopedKeyForAccount === 'function' && typeof window.parent.getActiveAccountId === 'function'){
+      return window.parent.scopedKeyForAccount('offline_invite_force_complete_payload_v1', window.parent.getActiveAccountId());
+    }
+  }catch(err){}
+  return 'offline_invite_force_complete_payload_v1';
+}
+
+function getExitCompleteOfflineInviteIntentKey(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.scopedKeyForAccount === 'function' && typeof window.parent.getActiveAccountId === 'function'){
+      return window.parent.scopedKeyForAccount('offline_invite_exit_complete_intent_v1', window.parent.getActiveAccountId());
+    }
+  }catch(err){}
+  return 'offline_invite_exit_complete_intent_v1';
+}
+
+function getOfflineInviteEndRequestKey(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.scopedKeyForAccount === 'function' && typeof window.parent.getActiveAccountId === 'function'){
+      return window.parent.scopedKeyForAccount('offline_invite_end_request_v1', window.parent.getActiveAccountId());
+    }
+  }catch(err){}
+  return 'offline_invite_end_request_v1';
+}
+
+function getActiveOfflineLaunchIntentKey(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.scopedKeyForAccount === 'function' && typeof window.parent.getActiveAccountId === 'function'){
+      return window.parent.scopedKeyForAccount('offline_invite_active_launch_v1', window.parent.getActiveAccountId());
+    }
+  }catch(err){}
+  return 'offline_invite_active_launch_v1';
+}
+
+function readCompletedOfflineInviteIds(){
+  var ids = [];
+  try{
+    ids = JSON.parse(localStorage.getItem(getCompletedOfflineInviteIdsKey()) || localStorage.getItem('offline_invite_completed_ids_v1') || '[]');
+  }catch(err){
+    ids = [];
+  }
+  if(!Array.isArray(ids)) ids = [];
+  return ids.reduce(function(map, value){
+    var safe = String(value || '').trim();
+    if(safe) map[safe] = true;
+    return map;
+  }, Object.create(null));
+}
+
+function writeCompletedOfflineInviteIds(map){
+  var list = Object.keys(map || {}).filter(Boolean);
+  try{ localStorage.setItem(getCompletedOfflineInviteIdsKey(), JSON.stringify(list)); }catch(err){}
+  try{ localStorage.setItem('offline_invite_completed_ids_v1', JSON.stringify(list)); }catch(err2){}
+  return list;
+}
+
+function markCompletedOfflineInviteIds(ids){
+  var map = readCompletedOfflineInviteIds();
+  var details = readCompletedOfflineInviteDetails();
+  var now = Date.now();
+  (Array.isArray(ids) ? ids : []).forEach(function(id){
+    var safe = String(id || '').trim();
+    if(safe){
+      map[safe] = true;
+      details[safe] = { at:now, reason:'complete' };
+    }
+  });
+  var out = writeCompletedOfflineInviteIds(map);
+  writeCompletedOfflineInviteDetails(details);
+  return out;
+}
+
+function readCompletedOfflineInviteDetails(){
+  var out = Object.create(null);
+  [getCompletedOfflineInviteDetailsKey(), 'offline_invite_completed_details_v1'].forEach(function(key){
+    try{
+      var parsed = JSON.parse(localStorage.getItem(key) || '{}');
+      if(parsed && typeof parsed === 'object'){
+        Object.keys(parsed).forEach(function(id){
+          var safe = String(id || '').trim();
+          if(safe) out[safe] = parsed[id];
+        });
+      }
+    }catch(err){}
+  });
+  return out;
+}
+
+function writeCompletedOfflineInviteDetails(details){
+  var safe = details && typeof details === 'object' ? details : {};
+  try{ localStorage.setItem(getCompletedOfflineInviteDetailsKey(), JSON.stringify(safe)); }catch(err){}
+  try{ localStorage.setItem('offline_invite_completed_details_v1', JSON.stringify(safe)); }catch(err2){}
+}
+
+function readCompletedOfflineInviteMarkers(){
+  var list = [];
+  try{
+    list = JSON.parse(localStorage.getItem(getCompletedOfflineInviteMarkersKey()) || localStorage.getItem('offline_invite_completed_markers_v1') || '[]');
+  }catch(err){
+    list = [];
+  }
+  if(!Array.isArray(list)) list = [];
+  return list.map(function(item){
+    return {
+      charId: String(item && item.charId || '').trim(),
+      charName: String(item && item.charName || item && item.name || '').trim(),
+      at: Number(item && item.at || 0) || 0
+    };
+  }).filter(function(item){ return item.charId || item.charName; });
+}
+
+function writeCompletedOfflineInviteMarkers(list){
+  var safe = (Array.isArray(list) ? list : []).filter(function(item){
+    return item && (item.charId || item.charName);
+  }).slice(-80);
+  try{ localStorage.setItem(getCompletedOfflineInviteMarkersKey(), JSON.stringify(safe)); }catch(err){}
+  try{ localStorage.setItem('offline_invite_completed_markers_v1', JSON.stringify(safe)); }catch(err2){}
+}
+
+function markCompletedOfflineInviteMarker(charId, charName){
+  var safeCharId = String(charId || '').trim();
+  var safeCharName = String(charName || '').trim();
+  if(!safeCharId && !safeCharName) return;
+  var now = Date.now();
+  var list = readCompletedOfflineInviteMarkers().filter(function(item){
+    var sameId = safeCharId && item.charId === safeCharId;
+    var sameName = safeCharName && item.charName === safeCharName;
+    return !(sameId || sameName);
+  });
+  list.push({ charId:safeCharId, charName:safeCharName, at:now });
+  writeCompletedOfflineInviteMarkers(list);
+}
+
+function getOfflineRecordAliasIds(item){
+  return [
+    item && item.id,
+    item && item.recordId,
+    item && item.inviteRecordId,
+    item && item.threadId,
+    item && item.inviteMessageId,
+    item && item.replyMessageId
+  ].map(function(value){ return String(value || '').trim(); }).filter(function(value, idx, arr){
+    return !!value && arr.indexOf(value) === idx;
+  });
+}
+
+function isActiveOpenInviteRecordForCompletion(item){
+  if(!(item && typeof item === 'object')) return false;
+  var status = String(item.status || '').trim();
+  var meetState = String(item.meetState || '').trim();
+  var active = status === 'accepted' || meetState === 'scheduled' || meetState === 'ongoing' || meetState === 'continued' || meetState === 'accepted';
+  var closed = status === 'completed' || status === 'rejected' || status === 'declined' || meetState === 'complete' || meetState === 'completed';
+  return active && !closed;
+}
+
+function readOfflineLocalJson(key){
+  try{
+    var raw = localStorage.getItem(String(key || '').trim()) || '';
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(err){
+    return null;
+  }
+}
+
+function getOfflineGoodbyeChatKeyCandidates(recordId){
+  var safeId = String(recordId || '').trim();
+  if(!safeId) return [];
+  var raw = 'offline_goodbye_chat_' + safeId;
+  var keys = [getScopedOfflineStorageKey(raw), raw];
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.getActiveAccountId === 'function'){
+      var acctId = String(window.parent.getActiveAccountId() || '').trim();
+      if(acctId) keys.push(raw + '__acct_' + acctId);
+    }
+  }catch(err){}
+  return keys.filter(function(key, idx, arr){
+    return !!key && arr.indexOf(key) === idx;
+  });
+}
+
+function hasStoredOfflineGoodbyeChatForRecord(item){
+  if(!(item && typeof item === 'object')) return false;
+  var direct = item.goodbyeChat || (item.invite && item.invite.goodbyeChat);
+  if(direct && typeof direct === 'object' && (String(direct.text || '').trim() || (Array.isArray(direct.messages) && direct.messages.length))){
+    return true;
+  }
+  var aliases = getOfflineRecordAliasIds(item);
+  for(var i = 0; i < aliases.length; i += 1){
+    var keys = getOfflineGoodbyeChatKeyCandidates(aliases[i]);
+    for(var k = 0; k < keys.length; k += 1){
+      var payload = readOfflineLocalJson(keys[k]);
+      if(!(payload && typeof payload === 'object')) continue;
+      var inviteIds = Array.isArray(payload.inviteIds) ? payload.inviteIds.map(function(id){ return String(id || '').trim(); }) : [];
+      var hasBody = String(payload.text || '').trim() || (Array.isArray(payload.messages) && payload.messages.length) || (Array.isArray(payload.views) && payload.views.length);
+      if(hasBody && (!inviteIds.length || inviteIds.some(function(id){ return aliases.indexOf(id) !== -1; }))) return true;
+    }
+  }
+  return false;
+}
+
+function readOfflineArchiveIndexCandidates(){
+  var keys = [getScopedOfflineStorageKey('offline_meet_archives'), 'offline_meet_archives'].filter(function(key, idx, arr){
+    return !!key && arr.indexOf(key) === idx;
+  });
+  var out = [];
+  keys.forEach(function(key){
+    var parsed = readOfflineLocalJson(key);
+    if(Array.isArray(parsed)) out = out.concat(parsed);
+  });
+  return out;
+}
+
+function hasEndedOfflineArchiveForRecord(item){
+  if(!(item && typeof item === 'object')) return false;
+  var aliases = getOfflineRecordAliasIds(item);
+  if(!aliases.length) return false;
+  return readOfflineArchiveIndexCandidates().some(function(entry){
+    if(!(entry && typeof entry === 'object')) return false;
+    var entryIds = getOfflineRecordAliasIds(entry).concat(normalizeOfflineInviteCompleteIds(entry));
+    var sameInvite = entryIds.some(function(id){ return aliases.indexOf(id) !== -1; });
+    if(!sameInvite) return false;
+    var status = String(entry.status || '').trim();
+    if(status !== 'ended' && status !== 'complete' && status !== 'completed') return false;
+    return true;
+  });
+}
+
+function getOfflineSessionKeyCandidatesForRecord(item){
+  var keys = [];
+  getOfflineRecordAliasIds(item).forEach(function(id){
+    var raw = 'offline_meet_session_record_' + id;
+    keys.push(getScopedOfflineStorageKey(raw));
+    keys.push(raw);
+  });
+  var charId = String(item && item.charId || '').trim();
+  if(charId){
+    var charRaw = 'offline_meet_session_' + charId;
+    keys.push(getScopedOfflineStorageKey(charRaw));
+    keys.push(charRaw);
+  }
+  return keys.filter(function(key, idx, arr){
+    return !!key && arr.indexOf(key) === idx;
+  });
+}
+
+function offlineSessionMatchesRecord(session, item){
+  if(!(session && typeof session === 'object') || !(item && typeof item === 'object')) return false;
+  var itemIds = getOfflineRecordAliasIds(item);
+  var sessionIds = normalizeOfflineInviteCompleteIds(session).concat(normalizeOfflineInviteCompleteIds(session.invite || {}));
+  var sameInvite = sessionIds.some(function(id){ return itemIds.indexOf(id) !== -1; });
+  return sameInvite;
+}
+
+function isEndedOfflineSessionSnapshot(session, item){
+  if(!offlineSessionMatchesRecord(session, item)) return false;
+  var invite = session && session.invite && typeof session.invite === 'object' ? session.invite : {};
+  var status = String(session.status || invite.status || '').trim();
+  var meetState = String(session.meetState || invite.meetState || '').trim();
+  var hasGoodbye = !!(session.goodbyeChat || invite.goodbyeChat);
+  var ended = status === 'completed'
+    || meetState === 'complete'
+    || meetState === 'completed'
+    || !!session.readOnly
+    || !!invite.readOnly
+    || !!session.completedAt
+    || !!invite.completedAt
+    || hasGoodbye;
+  if(!ended) return false;
+  var itemDay = getRecordDateKey(item);
+  var stamp = Number(session.completedAt || invite.completedAt || session.updatedAt || session.createdAt || invite.updatedAt || invite.createdAt || 0) || 0;
+  if(!itemDay || !stamp) return true;
+  return itemDay === toDateKey(new Date(stamp));
+}
+
+function hasEndedOfflineSessionForRecord(item){
+  if(!(item && typeof item === 'object')) return false;
+  var keys = getOfflineSessionKeyCandidatesForRecord(item);
+  for(var i = 0; i < keys.length; i += 1){
+    var payload = readOfflineLocalJson(keys[i]);
+    if(isEndedOfflineSessionSnapshot(payload, item)) return true;
+  }
+  return false;
+}
+
+function isRecordCoveredByCompletionArtifact(item){
+  return hasStoredOfflineGoodbyeChatForRecord(item) || hasEndedOfflineArchiveForRecord(item) || hasEndedOfflineSessionForRecord(item);
+}
+
+function isRecordCoveredByCompletedMarker(item){
+  return false;
+}
+
+function normalizeOfflineInviteCompleteIds(payload){
+  var ids = [];
+  if(payload && Array.isArray(payload.completedInviteIds)) ids = ids.concat(payload.completedInviteIds);
+  if(payload && Array.isArray(payload.ids)) ids = ids.concat(payload.ids);
+  if(payload && payload.inviteId) ids.push(payload.inviteId);
+  if(payload && payload.recordId) ids.push(payload.recordId);
+  if(payload && payload.inviteRecordId) ids.push(payload.inviteRecordId);
+  if(payload && payload.threadId) ids.push(payload.threadId);
+  if(payload && payload.inviteMessageId) ids.push(payload.inviteMessageId);
+  if(payload && payload.replyMessageId) ids.push(payload.replyMessageId);
+  return ids.map(function(id){ return String(id || '').trim(); }).filter(function(id, idx, arr){
+    return !!id && arr.indexOf(id) === idx;
+  });
+}
+
+function isRecordForceCompleted(item){
+  var completed = readCompletedOfflineInviteIds();
+  var details = readCompletedOfflineInviteDetails();
+  var detailHit = false;
+  var idHit = getOfflineRecordAliasIds(item).some(function(value){
+    var safe = String(value || '').trim();
+    if(safe && details[safe]) detailHit = true;
+    return !!(safe && completed[safe]);
+  });
+  var artifactHit = isRecordCoveredByCompletionArtifact(item);
+  if(idHit) return true;
+  return artifactHit;
+}
+
+function normalizeCompletedOfflineRecord(item){
+  if(!(item && isRecordForceCompleted(item))) return item;
+  var now = Date.now();
+  markCompletedOfflineInviteIds(getOfflineRecordAliasIds(item));
+  return Object.assign({}, item, {
+    status:'completed',
+    meetState:'complete',
+    readOnly:true,
+    completedAt:Number(item.completedAt || now) || now,
+    updatedAt:Number(item.updatedAt || item.completedAt || now) || now
+  });
+}
+
+function forceCompleteOfflineRecords(ids, charId, charName){
+  var safeIds = (Array.isArray(ids) ? ids : []).map(function(id){ return String(id || '').trim(); }).filter(Boolean);
+  if(!safeIds.length) return;
+  var safeCharId = String(charId || '').trim();
+  var safeCharName = String(charName || '').trim();
+  if((!safeCharId && !safeCharName) && safeIds.length){
+    try{
+      var candidates = [];
+      if(Array.isArray(latestOfflineRecords)) candidates = candidates.concat(latestOfflineRecords);
+      var store = window.OfflineInviteStore || null;
+      if(store && typeof store.listRecords === 'function') candidates = candidates.concat(store.listRecords());
+      candidates.some(function(record){
+        var aliases = [record && record.id, record && record.recordId, record && record.inviteRecordId, record && record.threadId, record && record.inviteMessageId, record && record.replyMessageId]
+          .map(function(value){ return String(value || '').trim(); })
+          .filter(Boolean);
+        var hit = aliases.some(function(value){ return safeIds.indexOf(value) !== -1; });
+        if(!hit) return false;
+        safeCharId = String(record && record.charId || '').trim();
+        safeCharName = String(record && record.charName || '').trim();
+        return !!(safeCharId || safeCharName);
+      });
+    }catch(resolveErr){}
+  }
+  if(!safeIds.length && !safeCharId && !safeCharName) return;
+  markCompletedOfflineInviteIds(safeIds);
+  markCompletedOfflineInviteMarker(safeCharId, safeCharName);
+  var now = Date.now();
+  var store = window.OfflineInviteStore || null;
+  if(store && typeof store.patchRecord === 'function'){
+    var wanted = safeIds.reduce(function(map, id){ map[id] = true; return map; }, Object.create(null));
+    var targetMap = safeIds.reduce(function(map, id){ map[id] = true; return map; }, Object.create(null));
+    try{
+      if(typeof store.listRecords === 'function'){
+        store.listRecords().forEach(function(record){
+          ['id','threadId','inviteMessageId','replyMessageId'].forEach(function(key){
+            var value = String(record && record[key] || '').trim();
+            if(value && wanted[value]){
+              var recordId = String(record && record.id || '').trim();
+              if(recordId) targetMap[recordId] = true;
+            }
+          });
+        });
+      }
+    }catch(listErr){}
+    var targetIds = Object.keys(targetMap);
+    var existingTargetIds = targetIds.filter(function(id){
+      try{ return !!(typeof store.getRecord === 'function' && store.getRecord(id)); }catch(err){ return false; }
+    });
+    if(existingTargetIds.length) targetIds = existingTargetIds;
+    markCompletedOfflineInviteIds(targetIds);
+    var primaryId = targetIds[0] || safeIds[0] || '';
+    targetIds.forEach(function(id){
+      try{
+        var existing = typeof store.getRecord === 'function' ? store.getRecord(id) : null;
+        if(existing || typeof store.getRecord !== 'function'){
+          store.patchRecord(id, { status:'completed', meetState:'complete', readOnly:true, completedAt:now, updatedAt:now });
+        }else if(id === primaryId && typeof store.upsertRecord === 'function'){
+          store.upsertRecord({ id:id, status:'completed', meetState:'complete', readOnly:true, completedAt:now, updatedAt:now });
+        }
+      }catch(err){
+        try{
+          if(id === primaryId && typeof store.upsertRecord === 'function'){
+            store.upsertRecord({ id:id, status:'completed', meetState:'complete', readOnly:true, completedAt:now, updatedAt:now });
+          }
+        }catch(ignore){}
+      }
+    });
+  }
+}
+
+function consumePendingForceCompleteOfflineRecords(){
+  var payloads = [];
+  [getForceCompleteOfflineInvitePayloadKey(), 'offline_invite_force_complete_payload_v1'].forEach(function(key){
+    try{
+      var raw = localStorage.getItem(key) || '';
+      if(raw) payloads.push({ key:key, value:JSON.parse(raw) });
+    }catch(err){}
+  });
+  payloads.forEach(function(item){
+    var payload = item && item.value && typeof item.value === 'object' ? item.value : {};
+    var ids = normalizeOfflineInviteCompleteIds(payload);
+    if(ids.length) forceCompleteOfflineRecords(ids, payload.charId, payload.charName || payload.name);
+    forceCompleteOfflineRecordsByEndPayload(payload);
+    try{ localStorage.removeItem(item.key); }catch(err){}
+  });
+  lastConsumedForceCompletePayloads = payloads.map(function(item){
+    return item && item.value && typeof item.value === 'object' ? item.value : {};
+  });
+  return lastConsumedForceCompletePayloads.slice();
+}
+
+function consumePendingExitCompleteOfflineIntents(){
+  var payloads = [];
+  [getExitCompleteOfflineInviteIntentKey(), 'offline_invite_exit_complete_intent_v1'].forEach(function(key){
+    try{
+      var raw = localStorage.getItem(key) || '';
+      if(raw) payloads.push({ key:key, value:JSON.parse(raw) });
+    }catch(err){}
+  });
+  payloads.forEach(function(item){
+    var payload = item && item.value && typeof item.value === 'object' ? item.value : {};
+    var ids = normalizeOfflineInviteCompleteIds(payload);
+    if(!ids.length) return;
+    forceCompleteOfflineRecords(ids, payload.charId, payload.charName || payload.name);
+    try{ localStorage.removeItem(item.key); }catch(err){}
+  });
+  return payloads.map(function(item){
+    return item && item.value && typeof item.value === 'object' ? item.value : {};
+  });
+}
+
+function consumePendingOfflineInviteEndRequests(){
+  var payloads = [];
+  [getOfflineInviteEndRequestKey(), 'offline_invite_end_request_v1'].forEach(function(key){
+    try{
+      var raw = localStorage.getItem(key) || '';
+      if(raw) payloads.push({ key:key, value:JSON.parse(raw) });
+    }catch(err){}
+  });
+  payloads.forEach(function(item){
+    var payload = item && item.value && typeof item.value === 'object' ? item.value : {};
+    var ids = normalizeOfflineInviteCompleteIds(payload);
+    if(ids.length) forceCompleteOfflineRecords(ids, payload.charId, payload.charName || payload.name);
+    try{ localStorage.removeItem(item.key); }catch(err){}
+  });
+  return payloads.map(function(item){
+    return item && item.value && typeof item.value === 'object' ? item.value : {};
+  });
+}
+
+function forceCompleteRenderedRecords(records, payloads){
+  var list = Array.isArray(records) ? records : [];
+  var sources = Array.isArray(payloads) ? payloads : [];
+  if(!sources.length) return list;
+  var ids = [];
+  var charIds = [];
+  var charNames = [];
+  sources.forEach(function(payload){
+    normalizeOfflineInviteCompleteIds(payload).forEach(function(id){
+      if(id && ids.indexOf(id) === -1) ids.push(id);
+    });
+    var charId = String(payload && payload.charId || '').trim();
+    if(charId && charIds.indexOf(charId) === -1) charIds.push(charId);
+    var charName = String(payload && (payload.charName || payload.name) || '').trim();
+    if(charName && charNames.indexOf(charName) === -1) charNames.push(charName);
+  });
+  try{
+    var focusId = String(readFocusId() || '').trim();
+    if(focusId && ids.indexOf(focusId) === -1) ids.unshift(focusId);
+  }catch(err){}
+  var targetIds = [];
+  list.forEach(function(record){
+    if(!(record && typeof record === 'object')) return;
+    var aliases = [record.id, record.recordId, record.inviteRecordId, record.threadId, record.inviteMessageId, record.replyMessageId]
+      .map(function(value){ return String(value || '').trim(); })
+      .filter(Boolean);
+    var idHit = aliases.some(function(value){ return ids.indexOf(value) !== -1; });
+    var lifecycleHit = sources.some(function(payload){
+      if(!recordMatchesOfflineEndPayload(record, payload)) return false;
+      if(!isActiveOpenInviteRecordForCompletion(record) && !isCompletedInviteRecord(record)) return false;
+      var payloadAt = Number(payload && (payload.at || payload.completedAt || payload.updatedAt) || 0) || 0;
+      var createdAt = Number(record && (record.createdAt || record.updatedAt) || 0) || 0;
+      return !(payloadAt && createdAt && createdAt > payloadAt + 2 * 60 * 1000);
+    });
+    var charHit = (charIds.length && charIds.indexOf(String(record.charId || '').trim()) !== -1)
+      || (charNames.length && charNames.indexOf(String(record.charName || '').trim()) !== -1);
+    var focusedCharHit = charHit && ids.some(function(id){ return aliases.indexOf(id) !== -1; });
+    if(idHit || lifecycleHit || (focusedCharHit && (isAcceptedInviteRecord(record) || isOngoingInviteRecord(record) || isContinuedInviteRecord(record)))){
+      aliases.forEach(function(value){ if(value && targetIds.indexOf(value) === -1) targetIds.push(value); });
+    }
+  });
+  if(!targetIds.length){
+    return list;
+  }
+  if(targetIds.length){
+    markCompletedOfflineInviteIds(targetIds);
+    forceCompleteOfflineRecords(targetIds, charIds[0] || '', charNames[0] || '');
+    return list.map(function(record){ return normalizeCompletedOfflineRecord(record); });
+  }
+  return list;
+}
+
+function hideOfflineRecordIds(ids){
+  var hidden = readHiddenOfflineRecordIds();
+  (Array.isArray(ids) ? ids : []).forEach(function(id){
+    var safeId = String(id || '').trim();
+    if(safeId) hidden[safeId] = true;
+  });
+  writeHiddenOfflineRecordIds(hidden);
+}
+
+function matchesOfflineInviteEntryForRecord(entry, record){
+  var normalized = normalizeStoredChatEntry(entry);
+  if(!normalized) return false;
+  var type = String(normalized.type || '').trim().toLowerCase();
+  if(type !== 'offline_invite' && type !== 'offlineinvite') return false;
+  var payload = parseOfflineInvitePayloadFromContent(normalized.content);
+  var targets = [
+    record && record.id,
+    record && record.threadId,
+    record && record.inviteMessageId,
+    record && record.replyMessageId,
+    normalized.id
+  ].map(function(value){ return String(value || '').trim(); }).filter(Boolean);
+  var payloadIds = [
+    payload && payload.recordId,
+    payload && payload.inviteRecordId,
+    payload && payload.threadId,
+    payload && payload.inviteMessageId,
+    payload && payload.replyMessageId,
+    payload && payload.id,
+    normalized.id
+  ].map(function(value){ return String(value || '').trim(); }).filter(Boolean);
+  return payloadIds.some(function(id){ return targets.indexOf(id) >= 0; });
+}
+
+async function purgeOfflineRecordFromChatSources(record){
+  var charId = String(record && record.charId || '').trim();
+  var keys = getChatStorageKeyCandidates(charId);
+  try{
+    if(window.parent && window.parent !== window && window.parent.PhoneStorage && typeof window.parent.PhoneStorage.list === 'function' && typeof window.parent.PhoneStorage.put === 'function'){
+      var dbRecords = await window.parent.PhoneStorage.list('chats');
+      for(var i = 0; i < (Array.isArray(dbRecords) ? dbRecords.length : 0); i += 1){
+        var dbRecord = dbRecords[i];
+        if(!dbRecord || typeof dbRecord !== 'object') continue;
+        var dbId = String(dbRecord.id || '').trim();
+        if(keys.indexOf(dbId) < 0) continue;
+        var dbHistory = Array.isArray(dbRecord.history) ? dbRecord.history : [];
+        var nextDbHistory = dbHistory.filter(function(entry){
+          return !matchesOfflineInviteEntryForRecord(entry, record);
+        });
+        if(nextDbHistory.length !== dbHistory.length){
+          await window.parent.PhoneStorage.put('chats', Object.assign({}, dbRecord, {
+            id: dbId,
+            updatedAt: Date.now(),
+            history: nextDbHistory
+          }));
+        }
+      }
+    }
+  }catch(err){}
+  for(var j = 0; j < keys.length; j += 1){
+    var key = String(keys[j] || '').trim();
+    if(!key) continue;
+    try{
+      var raw = localStorage.getItem(key) || '';
+      if(!raw) continue;
+      var parsed = JSON.parse(raw);
+      var history = Array.isArray(parsed && parsed.history) ? parsed.history : (Array.isArray(parsed && parsed.messages) ? parsed.messages : []);
+      if(!history.length) continue;
+      var nextHistory = history.filter(function(entry){
+        return !matchesOfflineInviteEntryForRecord(entry, record);
+      });
+      if(nextHistory.length === history.length) continue;
+      localStorage.setItem(key, JSON.stringify(Object.assign({}, parsed || {}, {
+        history: nextHistory,
+        messages: nextHistory
+      })));
+    }catch(err2){}
+  }
+}
+
+async function removeOfflineRecord(id){
+  var safeId = String(id || '').trim();
+  if(!safeId) return;
+  var target = (Array.isArray(latestOfflineRecords) ? latestOfflineRecords : []).find(function(item){
+    return String(item && item.id || '').trim() === safeId;
+  }) || null;
+  hideOfflineRecordIds([
+    safeId,
+    target && target.threadId,
+    target && target.inviteMessageId,
+    target && target.replyMessageId
+  ]);
+  try{
+    if(window.OfflineInviteStore && typeof window.OfflineInviteStore.removeRecord === 'function'){
+      window.OfflineInviteStore.removeRecord(safeId);
+    }
+  }catch(err){}
+  await removeAdoptedOfflineInviteRecord(target || { id: safeId });
+  await purgeOfflineRecordFromChatSources(target || { id: safeId });
+  latestOfflineRecords = (Array.isArray(latestOfflineRecords) ? latestOfflineRecords : []).filter(function(item){
+    return String(item && item.id || '').trim() !== safeId;
+  });
+  await cleanupOfflineStorageAfterRecordRemoval(target || { id: safeId }, latestOfflineRecords);
+  if(currentSelectedId === safeId) currentSelectedId = '';
+}
+
+function getScopedOfflineStorageKey(raw){
+  var safeRaw = String(raw || '').trim();
+  if(!safeRaw) return '';
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.scopedKeyForAccount === 'function' && typeof window.parent.getActiveAccountId === 'function'){
+      return window.parent.scopedKeyForAccount(safeRaw, window.parent.getActiveAccountId());
+    }
+  }catch(err){}
+  return safeRaw;
+}
+
+async function removeOfflineJsonKeyEverywhere(rawKey){
+  var safeRaw = String(rawKey || '').trim();
+  if(!safeRaw) return;
+  var keys = [getScopedOfflineStorageKey(safeRaw), safeRaw].filter(Boolean);
+  for(var i = 0; i < keys.length; i += 1){
+    var key = keys[i];
+    try{ localStorage.removeItem(key); }catch(err){}
+    try{
+      if(window.parent && window.parent !== window && window.parent.PhoneStorage && typeof window.parent.PhoneStorage.removeJson === 'function'){
+        await window.parent.PhoneStorage.removeJson(key);
+      }
+    }catch(ignoreErr){}
+  }
+}
+
+async function cleanupOfflineArchiveRecordsForChar(charId){
+  var safeCharId = String(charId || '').trim();
+  if(!safeCharId) return;
+  var listKeys = [getScopedOfflineStorageKey('offline_meet_archives'), 'offline_meet_archives'].filter(Boolean);
+  var removedIds = [];
+  for(var i = 0; i < listKeys.length; i += 1){
+    var key = listKeys[i];
+    var parsed = [];
+    try{
+      parsed = JSON.parse(localStorage.getItem(key) || '[]');
+      if(!Array.isArray(parsed)) parsed = [];
+    }catch(err){
+      parsed = [];
+    }
+    parsed.forEach(function(item){
+      if(item && String(item.charId || '').trim() === safeCharId){
+        removedIds.push(String(item.id || '').trim());
+      }
+    });
+    var nextList = parsed.filter(function(item){
+      return !(item && String(item.charId || '').trim() === safeCharId);
+    });
+    try{ localStorage.setItem(key, JSON.stringify(nextList)); }catch(err){}
+    try{
+      if(window.parent && window.parent !== window && window.parent.PhoneStorage && typeof window.parent.PhoneStorage.putJson === 'function'){
+        await window.parent.PhoneStorage.putJson(key, nextList);
+      }
+    }catch(ignoreErr){}
+  }
+  for(var r = 0; r < removedIds.length; r += 1){
+    var archiveId = String(removedIds[r] || '').trim();
+    if(!archiveId) continue;
+    await removeOfflineJsonKeyEverywhere('offline_meet_archive_record_' + archiveId);
+  }
+}
+
+async function cleanupOfflineStorageAfterRecordRemoval(record, remainingRecords){
+  var safeCharId = String(record && record.charId || '').trim();
+  if(!safeCharId) return;
+  var rest = Array.isArray(remainingRecords) ? remainingRecords : [];
+  var stillHasCharRecords = rest.some(function(item){
+    return String(item && item.charId || '').trim() === safeCharId;
+  });
+  if(stillHasCharRecords) return;
+  await cleanupOfflineArchiveRecordsForChar(safeCharId);
+  var baseKeys = [
+    'offline_meet_session_' + safeCharId,
+    'offline_resume_' + safeCharId,
+    'offline_bootstrap_' + safeCharId,
+    'offline_launch_' + safeCharId
+  ];
+  for(var i = 0; i < baseKeys.length; i += 1){
+    await removeOfflineJsonKeyEverywhere(baseKeys[i]);
+  }
+  try{
+    var activeOffline = String(localStorage.getItem(getScopedOfflineStorageKey('activeOfflineCharacterId')) || localStorage.getItem('activeOfflineCharacterId') || '').trim();
+    if(activeOffline === safeCharId){
+      try{ localStorage.removeItem(getScopedOfflineStorageKey('activeOfflineCharacterId')); }catch(err){}
+      try{ localStorage.removeItem('activeOfflineCharacterId'); }catch(err2){}
+    }
+  }catch(err){}
+  try{
+    var latestRaw = localStorage.getItem(getScopedOfflineStorageKey('offline_launch_latest')) || localStorage.getItem('offline_launch_latest') || '';
+    var latest = latestRaw ? JSON.parse(latestRaw) : null;
+    if(latest && String(latest.charId || '').trim() === safeCharId){
+      var launchToken = String(latest.launchToken || '').trim();
+      await removeOfflineJsonKeyEverywhere('offline_launch_latest');
+      if(launchToken) await removeOfflineJsonKeyEverywhere('offline_launch_token_' + launchToken);
+    }
+  }catch(err){}
+}
+
+function openDeleteConfirm(id){
+  var safeId = String(id || '').trim();
+  if(!safeId) return;
+  pendingDeleteRecordId = safeId;
+  var overlay = document.getElementById('deleteConfirm');
+  var copy = document.getElementById('deleteConfirmCopy');
+  var hit = (Array.isArray(latestOfflineRecords) ? latestOfflineRecords : []).find(function(item){
+    return String(item && item.id || '').trim() === safeId;
+  }) || null;
+  if(copy){
+    var name = String(hit && hit.charName || '这条邀约').trim() || '这条邀约';
+    copy.textContent = '要把和 ' + name + ' 的这条邀约删掉吗？';
+  }
+  if(overlay){
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+  }
+}
+
+function closeDeleteConfirm(){
+  pendingDeleteRecordId = '';
+  var overlay = document.getElementById('deleteConfirm');
+  if(overlay){
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+}
+
+function normalizeStoredChatEntry(raw){
+  if(Array.isArray(raw)){
+    return {
+      id: String(raw[0] || '').trim(),
+      role: String(raw[1] || '').trim(),
+      type: String(raw[2] || '').trim(),
+      content: typeof raw[3] === 'string' ? raw[3] : String(raw[3] || ''),
+      sentAt: Number(raw[4] || 0) || 0
+    };
+  }
+  if(raw && typeof raw === 'object'){
+    return {
+      id: String(raw.id || '').trim(),
+      role: String(raw.role || '').trim(),
+      type: String(raw.type || '').trim(),
+      content: typeof raw.content === 'string' ? raw.content : String(raw.content || ''),
+      sentAt: Number(raw.sentAt || 0) || 0
+    };
+  }
+  return null;
+}
+
+function parseOfflineInvitePayloadFromContent(raw){
+  var text = String(raw || '').trim();
+  if(!text) return null;
+  try{
+    var parsed = JSON.parse(text);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  }catch(err){
+    return null;
+  }
+}
+
+function getChatStorageKeyCandidates(charId){
+  var safeId = String(charId || '').trim();
+  if(!safeId) return [];
+  var keys = [];
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.scopedKeyForAccount === 'function' && typeof window.parent.getActiveAccountId === 'function'){
+      keys.push(window.parent.scopedKeyForAccount('chat_' + safeId, window.parent.getActiveAccountId()));
+    }
+  }catch(err){}
+  keys.push('chat_' + safeId);
+  return keys.filter(Boolean);
+}
+
+function extractCharIdFromChatRecord(record){
+  var direct = String(record && record.charId || '').trim();
+  if(direct) return direct;
+  var id = String(record && record.id || '').trim();
+  var match = id.match(/^chat_(.+?)(?:__acct_.+)?$/);
+  return match ? String(match[1] || '').trim() : '';
+}
+
+async function loadStoredChatHistoryByChar(charId){
+  var keys = getChatStorageKeyCandidates(charId);
+  for(var i = 0; i < keys.length; i += 1){
+    var key = String(keys[i] || '').trim();
+    if(!key) continue;
+    try{
+      if(window.parent && window.parent !== window && window.parent.PhoneStorage && typeof window.parent.PhoneStorage.get === 'function'){
+        var record = await window.parent.PhoneStorage.get('chats', key);
+        if(record && Array.isArray(record.history) && record.history.length) return record.history;
+      }
+    }catch(err){}
+    try{
+      var raw = localStorage.getItem(key) || '';
+      if(raw){
+        var parsed = JSON.parse(raw);
+        if(parsed && Array.isArray(parsed.history) && parsed.history.length) return parsed.history;
+      }
+    }catch(err2){}
+  }
+  return [];
+}
+
+async function collectOfflineChatSources(){
+  var map = Object.create(null);
+  try{
+    if(window.parent && window.parent !== window && window.parent.PhoneStorage && typeof window.parent.PhoneStorage.list === 'function'){
+      var records = await window.parent.PhoneStorage.list('chats');
+      (Array.isArray(records) ? records : []).forEach(function(record){
+        if(!(record && typeof record === 'object')) return;
+        var recordId = String(record.id || '').trim();
+        if(recordId.indexOf('chat_') !== 0) return;
+        var charId = extractCharIdFromChatRecord(record);
+        var history = Array.isArray(record.history) ? record.history : [];
+        if(!charId || !history.length) return;
+        var prev = map[charId];
+        if(!prev || history.length >= prev.history.length){
+          map[charId] = { charId: charId, history: history };
+        }
+      });
+    }
+  }catch(err){}
+  try{
+    Object.keys(localStorage).forEach(function(key){
+      if(String(key || '').indexOf('chat_') !== 0) return;
+      var raw = '';
+      try{ raw = localStorage.getItem(key) || ''; }catch(err2){ raw = ''; }
+      if(!raw) return;
+      try{
+        var parsed = JSON.parse(raw);
+        var history = Array.isArray(parsed && parsed.history) ? parsed.history : (Array.isArray(parsed && parsed.messages) ? parsed.messages : []);
+        var charId = extractCharIdFromChatRecord({ id: key, charId: parsed && parsed.charId });
+        if(!charId || !history.length) return;
+        var prev = map[charId];
+        if(!prev || history.length >= prev.history.length){
+          map[charId] = { charId: charId, history: history };
+        }
+      }catch(err3){}
+    });
+  }catch(err4){}
+  return Object.keys(map).map(function(id){ return map[id]; });
+}
+
+function mergeOfflineRecordMaps(target, record){
+  if(!record) return;
+  var safe = normalizeCompletedOfflineRecord(Object.assign({}, record));
+  var id = String(safe.id || '').trim();
+  if(!id) return;
+  var existing = target[id];
+  if(!existing){
+    target[id] = safe;
+    return;
+  }
+  var safeDone = isCompletedInviteRecord(safe);
+  var existingDone = isCompletedInviteRecord(existing);
+  if(safeDone || existingDone){
+    target[id] = Object.assign({}, existing, safe, safeDone ? {} : {
+      status: String(existing.status || 'completed').trim() || 'completed',
+      meetState: String(existing.meetState || 'complete').trim() || 'complete',
+      completedAt: Number(existing.completedAt || safe.completedAt || Date.now()) || Date.now()
+    }, existingDone && !safeDone ? {
+      status: String(existing.status || 'completed').trim() || 'completed',
+      meetState: String(existing.meetState || 'complete').trim() || 'complete',
+      completedAt: Number(existing.completedAt || safe.completedAt || Date.now()) || Date.now()
+    } : {});
+    return;
+  }
+  var safeUpdated = Number(safe.updatedAt || safe.createdAt || 0) || 0;
+  var existingUpdated = Number(existing.updatedAt || existing.createdAt || 0) || 0;
+  target[id] = safeUpdated >= existingUpdated ? Object.assign({}, existing, safe) : Object.assign({}, safe, existing);
+}
+
+function buildFallbackRecordFromChatEntry(entry, charMeta){
+  var normalized = normalizeStoredChatEntry(entry);
+  if(!normalized) return null;
+  var type = String(normalized.type || '').trim().toLowerCase();
+  if(type !== 'offline_invite' && type !== 'offlineinvite') return null;
+  var payload = parseOfflineInvitePayloadFromContent(normalized.content);
+  if(!(payload && typeof payload === 'object')) return null;
+  var recordId = String(payload.recordId || payload.inviteRecordId || payload.id || normalized.id || '').trim();
+  if(!recordId) return null;
+  var charId = String(payload.charId || (charMeta && charMeta.id) || '').trim();
+  var charName = String(payload.charName || (charMeta && (charMeta.nickname || charMeta.name)) || '').trim();
+  return {
+    id: recordId,
+    threadId: String(payload.threadId || recordId).trim() || recordId,
+    charId: charId,
+    charName: charName,
+    sourceRole: String(payload.sourceRole || normalized.role || 'user').trim() || 'user',
+    previewText: String(payload.previewText || payload.location || '').trim(),
+    location: String(payload.location || '').trim(),
+    scheduledDate: String(payload.scheduledDate || '').trim(),
+    scheduledTime: String(payload.scheduledTime || '').trim(),
+    dateLabel: String(payload.dateLabel || '').trim(),
+    timeLabel: String(payload.timeLabel || '').trim(),
+    status: String(payload.status || 'pending').trim() || 'pending',
+    meetState: String(payload.meetState || '').trim(),
+    reminderState: 'pending',
+    arrivalState: 'pending',
+    arrivedAt: 0,
+    inviteMessageId: String(payload.inviteMessageId || normalized.id || '').trim(),
+    replyMessageId: String(payload.replyMessageId || '').trim(),
+    scheduleEntryId: String(payload.scheduleEntryId || '').trim(),
+    createdAt: Number(payload.createdAt || normalized.sentAt || payload.updatedAt || Date.now()) || Date.now(),
+    updatedAt: Number(payload.updatedAt || payload.createdAt || normalized.sentAt || Date.now()) || Date.now()
+  };
+}
+
+async function loadOfflineRecordsFromChatsFallback(){
+  var chars = getParentCharacters();
+  var hasRoster = Array.isArray(chars) && chars.length > 0;
+  var map = Object.create(null);
+  var sources = await collectOfflineChatSources();
+  if(!sources.length){
+    for(var i = 0; i < chars.length; i += 1){
+      var charMeta = chars[i];
+      if(!(charMeta && charMeta.id)) continue;
+      var history = await loadStoredChatHistoryByChar(charMeta.id);
+      if(history.length) sources.push({ charId: String(charMeta.id || '').trim(), history: history });
+    }
+  }
+  for(var s = 0; s < sources.length; s += 1){
+    var source = sources[s];
+    var charId = String(source && source.charId || '').trim();
+    var history = Array.isArray(source && source.history) ? source.history : [];
+    if(!charId || !history.length) continue;
+    var charMeta = getParentCharByIdOrName(charId, '') || { id: charId };
+    if(hasRoster && !(charMeta && getParentCharByIdOrName(charId, ''))) continue;
+    for(var j = 0; j < history.length; j += 1){
+      var record = buildFallbackRecordFromChatEntry(history[j], charMeta);
+      if(record) mergeOfflineRecordMaps(map, record);
+    }
+  }
+  return Object.keys(map).map(function(id){ return map[id]; }).sort(function(a, b){
+    return (Number(b.updatedAt || b.createdAt || 0) || 0) - (Number(a.updatedAt || a.createdAt || 0) || 0);
+  });
+}
+
+function collapseCompletedDuplicateInviteRecords(records){
+  var list = Array.isArray(records) ? records.slice() : [];
+  if(!list.length) return list;
+  return list.map(function(item){
+    if(!(item && typeof item === 'object')) return item;
+    if(isCompletedInviteRecord(item)) return normalizeCompletedOfflineRecord(item);
+    return item;
+  });
+}
+
+function dedupeCompletedInviteRecords(records){
+  var list = Array.isArray(records) ? records.slice() : [];
+  if(!list.length) return list;
+  var chosenByKey = Object.create(null);
+  var duplicateIds = [];
+  function dedupeKey(item){
+    var charKey = String((item && item.charId) || (item && item.charName) || '').trim();
+    if(!charKey) return '';
+    return [
+      charKey,
+      getRecordDateKey(item),
+      String(item && item.location || '').trim(),
+      String((item && item.scheduledTime) || (item && item.timeLabel) || '').trim()
+    ].join('::');
+  }
+  list.forEach(function(item, index){
+    if(!isCompletedInviteRecord(item)) return;
+    var key = dedupeKey(item);
+    if(!key) return;
+    var current = chosenByKey[key];
+    var stamp = Number(item && (item.completedAt || item.updatedAt || item.createdAt) || 0) || 0;
+    if(!current){
+      chosenByKey[key] = { index:index, stamp:stamp };
+      return;
+    }
+    if(stamp >= current.stamp){
+      duplicateIds.push(String(list[current.index] && list[current.index].id || '').trim());
+      chosenByKey[key] = { index:index, stamp:stamp };
+    }else{
+      duplicateIds.push(String(item && item.id || '').trim());
+    }
+  });
+  var hiddenDuplicate = duplicateIds.reduce(function(map, id){
+    if(id) map[id] = true;
+    return map;
+  }, Object.create(null));
+  return list.filter(function(item){
+    return !hiddenDuplicate[String(item && item.id || '').trim()];
+  });
+}
+
+function getOfflineCompletionMergeKey(item){
+  var charKey = String((item && item.charId) || (item && item.charName) || '').trim();
+  var dayKey = getRecordDateKey(item);
+  var location = String(item && item.location || '').trim();
+  var time = String((item && item.scheduledTime) || (item && item.timeLabel) || '').trim();
+  if(!charKey || !dayKey || !(location || time)) return '';
+  return [charKey, dayKey, location, time].join('::');
+}
+
+function promoteActiveDuplicatesFromCompletedRecords(records){
+  return Array.isArray(records) ? records.slice() : [];
+}
+
+function repairSelectedActiveRecordFromCompletedSameDay(records){
+  var list = Array.isArray(records) ? records.slice() : [];
+  var selectedId = String(currentSelectedId || readFocusId() || '').trim();
+  if(!selectedId) return list;
+  var selected = list.find(function(item){ return String(item && item.id || '').trim() === selectedId; }) || null;
+  if(!selected || !isActiveOpenInviteRecordForCompletion(selected)) return list;
+  var launchIntent = null;
+  try{ launchIntent = JSON.parse(localStorage.getItem(getActiveOfflineLaunchIntentKey()) || localStorage.getItem('offline_invite_active_launch_v1') || 'null'); }catch(err){ launchIntent = null; }
+  var launchHit = !!(
+    launchIntent &&
+    String(launchIntent.recordId || launchIntent.id || '').trim() === selectedId &&
+    Number(launchIntent.openedAt || 0) > Date.now() - 24 * 60 * 60 * 1000
+  );
+  if(isRecordCoveredByCompletionArtifact(selected) || isRecordCoveredByCompletedMarker(selected)){
+    forceCompleteOfflineRecords(getOfflineRecordAliasIds(selected), selected.charId, selected.charName);
+    return list.map(function(item){
+      return String(item && item.id || '').trim() === selectedId ? normalizeCompletedOfflineRecord(Object.assign({}, item, {
+        status:'completed',
+        meetState:'complete',
+        readOnly:true,
+        completedAt:Date.now(),
+        updatedAt:Date.now()
+      })) : item;
+    });
+  }
+  if(launchHit){
+    try{ localStorage.removeItem(getActiveOfflineLaunchIntentKey()); }catch(errRemove){}
+    try{ localStorage.removeItem('offline_invite_active_launch_v1'); }catch(errRemove2){}
+  }
+  return list;
+}
+
+async function getOfflineRecords(){
+  var fromStore = getOfflineRecordsFromStore();
+  var map = Object.create(null);
+  var hiddenIds = readHiddenOfflineRecordIds();
+  var fallback = await loadOfflineRecordsFromChatsFallback();
+  var adoptedRecords = await loadAdoptedOfflineInviteRecords();
+  adoptedRecords = await adoptChatFallbackRecordsIntoStore(fallback, fromStore, adoptedRecords) || adoptedRecords;
+  fromStore = getOfflineRecordsFromStore();
+  fromStore.forEach(function(item){ mergeOfflineRecordMaps(map, Object.assign({ source:'store' }, item || {})); });
+  adoptedRecords.forEach(function(item){ mergeOfflineRecordMaps(map, Object.assign({ source:'phoneStorageAdopted' }, item || {})); });
+  var storeIds = fromStore.concat(adoptedRecords).reduce(function(out, item){
+    var id = String(item && item.id || '').trim();
+    if(id) out[id] = true;
+    return out;
+  }, Object.create(null));
+  fallback.forEach(function(item){
+    var fallbackId = String(item && item.id || '').trim();
+    if(fallbackId && storeIds[fallbackId] && !isCompletedInviteRecord(item) && !isOngoingInviteRecord(item) && !isContinuedInviteRecord(item)) return;
+    mergeOfflineRecordMaps(map, Object.assign({ source:'chatFallback' }, item || {}));
+  });
+  var records = Object.keys(map).map(function(id){ return map[id]; }).sort(function(a, b){
+    return (Number(b.updatedAt || b.createdAt || 0) || 0) - (Number(a.updatedAt || a.createdAt || 0) || 0);
+  }).map(function(item){
+    return normalizeCompletedOfflineRecord(item);
+  }).filter(function(item){
+    var safeId = String(item && item.id || '').trim();
+    return !!(item && safeId && !hiddenIds[safeId] && (String(item.charId || '').trim() || String(item.charName || '').trim()));
+  });
+  return dedupeCompletedInviteRecords(collapseCompletedDuplicateInviteRecords(promoteActiveDuplicatesFromCompletedRecords(repairSelectedActiveRecordFromCompletedSameDay(records))));
+}
+
+function isPendingInviteRecord(item){
+  var status = String(item && item.status || 'pending').trim() || 'pending';
+  var meetState = String(item && item.meetState || '').trim();
+  return status === 'pending' && !meetState;
+}
+
+function isCompletedInviteRecord(item){
+  var meetState = String(item && item.meetState || '').trim();
+  var status = String(item && item.status || '').trim();
+  return isRecordForceCompleted(item) || meetState === 'complete' || meetState === 'completed' || meetState === 'ended' || status === 'completed' || status === 'rejected' || status === 'declined' || (!!(item && item.readOnly) && !!(item && item.completedAt));
+}
+
+function isContinuedInviteRecord(item){
+  var meetState = String(item && item.meetState || '').trim();
+  return meetState === 'continued';
+}
+
+function isOngoingInviteRecord(item){
+  var meetState = String(item && item.meetState || '').trim();
+  return meetState === 'ongoing';
+}
+
+function isAcceptedInviteRecord(item){
+  var status = String(item && item.status || '').trim();
+  var meetState = String(item && item.meetState || '').trim();
+  return status === 'accepted' && (!meetState || meetState === 'scheduled' || meetState === 'accepted');
+}
+
+function isUpcomingInviteRecord(item){
+  return isAcceptedInviteRecord(item);
+}
+
+function getRecordStage(item){
+  var status = String(item && item.status || 'pending').trim() || 'pending';
+  if(isCompletedInviteRecord(item)){
+    return { tone:'complete', label:'Complete', note:'complete', badge:'结束' };
+  }
+  if(isPendingInviteRecord(item)){
+    return { tone:'pending', label:'Pending', note:'pending', badge:'待回复' };
+  }
+  if(isContinuedInviteRecord(item)){
+    return { tone:'continued', label:'To Be Continued', note:'to be continued', badge:'待续' };
+  }
+  if(isOngoingInviteRecord(item)){
+    return { tone:'continued', label:'On Date', note:'on date', badge:'赴约中' };
+  }
+  if(isAcceptedInviteRecord(item)){
+    return { tone:'accepted', label:'Accepted', note:'accepted', badge:'同意' };
+  }
+  if(status === 'rejected'){
+    return { tone:'ended', label:'Ended', note:'declined', badge:'结束' };
+  }
+  return { tone:'pending', label:'Pending', note:'pending', badge:'待回复' };
+}
+
+function getRecordPreview(item){
+  var preview = String(item && item.previewText || '').trim();
+  if(preview) return preview;
+  var stage = getRecordStage(item);
+  if(stage.tone === 'pending') return String(item && item.sourceRole || '').trim() === 'assistant'
+    ? '对方发来了一个见面邀请，现在还没有同意或拒绝。'
+    : '邀约已经发出去，现在还没有得到同意或拒绝。';
+  if(stage.tone === 'complete') return '这次见面已经好好收尾，也算认真结束了。';
+  if(stage.tone === 'continued') return '这次见面还没真正结束，只是先暂时离开了一下。';
+  if(stage.tone === 'accepted') return '这次见面已经说定了，点进来就能直接进入线下。';
+  if(stage.tone === 'ended') return '这次先没有约成，之后也许还能再找个更合适的时间。';
+  return '邀约已经发出去，现在就等对方给一个自然的回答。';
+}
+
+function getRecordMeta(item){
+  return [
+    String(item && item.dateLabel || '').trim(),
+    String(item && item.timeLabel || '').trim(),
+    String(item && item.location || '').trim()
+  ].filter(Boolean).join(' · ');
+}
+
+function getOfflineInviteLifecycleKey(item){
+  if(!(item && typeof item === 'object')) return '';
+  var charKey = String(item.charId || item.charName || '').trim();
+  var dateKey = getRecordDateKey(item);
+  if(!charKey || !dateKey) return '';
+  var time = String(item.scheduledTime || item.timeLabel || '').trim();
+  var location = String(item.location || '').trim();
+  var preview = String(getRecordPreview(item) || item.previewText || '').trim().slice(0, 120);
+  return [charKey, dateKey, time, location, preview].join('::');
+}
+
+function recordMatchesOfflineEndPayload(record, payload){
+  if(!(record && typeof record === 'object') || !(payload && typeof payload === 'object')) return false;
+  var ids = normalizeOfflineInviteCompleteIds(payload);
+  var aliases = getOfflineRecordAliasIds(record);
+  return ids.some(function(id){ return aliases.indexOf(id) !== -1; });
+}
+
+function forceCompleteOfflineRecordsByEndPayload(payload){
+  payload = payload && typeof payload === 'object' ? payload : {};
+  var targetIds = [];
+  var sources = [];
+  try{
+    if(Array.isArray(latestOfflineRecords)) sources = sources.concat(latestOfflineRecords);
+    var store = window.OfflineInviteStore || null;
+    if(store && typeof store.listRecords === 'function') sources = sources.concat(store.listRecords());
+  }catch(err){}
+  sources.forEach(function(record){
+    if(!(record && isActiveOpenInviteRecordForCompletion(record))) return;
+    if(!recordMatchesOfflineEndPayload(record, payload)) return;
+    getOfflineRecordAliasIds(record).forEach(function(id){
+      if(id && targetIds.indexOf(id) === -1) targetIds.push(id);
+    });
+  });
+  if(targetIds.length) forceCompleteOfflineRecords(targetIds, payload.charId, payload.charName || payload.name);
+  return targetIds;
+}
+
+function getRecordTimeStamp(item){
+  var updatedAt = Number(item && (item.updatedAt || item.createdAt) || 0) || 0;
+  if(!updatedAt) return '';
+  var date = new Date(updatedAt);
+  var hh = String(date.getHours()).padStart(2, '0');
+  var mm = String(date.getMinutes()).padStart(2, '0');
+  return hh + ':' + mm;
+}
+
+function toDateKeyFromTimestamp(value){
+  var stamp = Number(value || 0) || 0;
+  if(stamp <= 0) return '';
+  return toDateKey(new Date(stamp));
+}
+
+function toDateKey(date){
+  if(!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0')
+  ].join('-');
+}
+
+function getRecordDateObj(item){
+  var raw = getRecordDateKey(item);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return new Date();
+  var parts = raw.split('-');
+  return new Date(Number(parts[0]) || 0, Math.max(0, (Number(parts[1]) || 1) - 1), Number(parts[2]) || 1);
+}
+
+function getMonthKeyFromDateKey(dateKey){
+  var safe = String(dateKey || '').trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(safe) ? safe.slice(0, 7) : toDateKey(new Date()).slice(0, 7);
+}
+
+function daysInMonth(year, monthIndex){
+  return new Date(Number(year) || 1970, Number(monthIndex || 0) + 1, 0).getDate();
+}
+
+function clampDateKeyInMonth(monthKey, day){
+  var safeMonth = String(monthKey || '').trim();
+  if(!/^\d{4}-\d{2}$/.test(safeMonth)) safeMonth = toDateKey(new Date()).slice(0, 7);
+  var parts = safeMonth.split('-');
+  var year = Number(parts[0]) || new Date().getFullYear();
+  var monthIndex = Math.max(0, Math.min(11, (Number(parts[1]) || 1) - 1));
+  var safeDay = Math.max(1, Math.min(daysInMonth(year, monthIndex), Number(day || 1) || 1));
+  return [String(year).padStart(4, '0'), String(monthIndex + 1).padStart(2, '0'), String(safeDay).padStart(2, '0')].join('-');
+}
+
+function findBestDateInMonth(records, monthKey){
+  var safeMonth = String(monthKey || '').trim();
+  if(!/^\d{4}-\d{2}$/.test(safeMonth)) return '';
+  var best = '';
+  var bestStamp = -1;
+  (Array.isArray(records) ? records : []).forEach(function(item){
+    var key = getRecordDateKey(item);
+    if(key.slice(0, 7) !== safeMonth) return;
+    var stamp = Number(item && (item.completedAt || item.updatedAt || item.createdAt) || 0) || 0;
+    if(!best || stamp >= bestStamp){
+      best = key;
+      bestStamp = stamp;
+    }
+  });
+  return best;
+}
+
+function shiftMonthDateKey(dateKey, delta){
+  var source = /^\d{4}-\d{2}-\d{2}$/.test(String(dateKey || '')) ? String(dateKey) : toDateKey(new Date());
+  var parts = source.split('-');
+  var date = new Date(Number(parts[0]) || 1970, Math.max(0, (Number(parts[1]) || 1) - 1), 1);
+  date.setMonth(date.getMonth() + (Number(delta || 0) || 0));
+  return clampDateKeyInMonth(toDateKey(date).slice(0, 7), Number(parts[2]) || 1);
+}
+
+function getRecordDateKey(item){
+  var scheduled = String(item && item.scheduledDate || '').trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(scheduled)) return scheduled;
+  return toDateKeyFromTimestamp(item && (item.createdAt || item.updatedAt)) || toDateKey(new Date());
+}
+
+function formatMonthTitle(date){
+  var safe = date instanceof Date ? date : new Date();
+  return safe.getFullYear() + '年' + (safe.getMonth() + 1) + '月';
+}
+
+function formatDateTitle(date){
+  var safe = date instanceof Date ? date : new Date();
+  return safe.getFullYear() + '年' + (safe.getMonth() + 1) + '月' + safe.getDate() + '日';
+}
+
+function formatWeekRange(date){
+  var safe = date instanceof Date ? new Date(date.getTime()) : new Date();
+  var day = safe.getDay();
+  var offset = day === 0 ? 6 : day - 1;
+  safe.setDate(safe.getDate() - offset);
+  var start = new Date(safe.getTime());
+  var end = new Date(safe.getTime());
+  end.setDate(start.getDate() + 6);
+  function shortDate(value){
+    return (value.getMonth() + 1) + '.' + value.getDate();
+  }
+  return '本周 ' + shortDate(start) + ' ~ ' + shortDate(end);
+}
+
+function formatLunarStub(date){
+  var safe = date instanceof Date ? date : new Date();
+  var day = safe.getDate();
+  if(day === 1) return '初一';
+  if(day < 11) return '初' + day;
+  if(day < 20) return '十' + (day - 10);
+  if(day === 20) return '二十';
+  if(day < 30) return '廿' + (day - 20);
+  return '三十';
+}
+
+function buildWeekDays(date){
+  var safe = date instanceof Date ? new Date(date.getTime()) : new Date();
+  var day = safe.getDay();
+  var offset = day === 0 ? 6 : day - 1;
+  safe.setDate(safe.getDate() - offset);
+  var list = [];
+  for(var i = 0; i < 7; i += 1){
+    var item = new Date(safe.getTime());
+    item.setDate(safe.getDate() + i);
+    list.push(item);
+  }
+  return list;
+}
+
+function refreshThreadListElasticSpace(){
+  var root = document.getElementById('threadList');
+  if(!root) return;
+  var spacer = root.querySelector('.thread-scroll-spacer');
+  if(spacer) spacer.remove();
+}
+
+function closeOpenThreadRows(exceptRow){
+  var root = document.getElementById('threadList');
+  if(!root) return;
+  var rows = root.querySelectorAll('.thread-row.is-open, .thread-row.is-dragging');
+  rows.forEach(function(row){
+    if(exceptRow && row === exceptRow) return;
+    row.classList.remove('is-open');
+    row.classList.remove('is-dragging');
+    var item = row.querySelector('.thread-item');
+    if(item) item.style.transform = '';
+  });
+}
+
+function applySwipeOffset(row, offset){
+  if(!row) return;
+  var item = row.querySelector('.thread-item');
+  if(!item) return;
+  var clamped = Math.max(-72, Math.min(0, Number(offset || 0) || 0));
+  item.style.transform = clamped ? ('translateX(' + clamped + 'px)') : '';
+}
+
+function finalizeThreadSwipe(row, offset){
+  if(!row) return;
+  row.classList.remove('is-dragging');
+  var item = row.querySelector('.thread-item');
+  if(!item) return;
+  item.style.transform = '';
+  if((Number(offset || 0) || 0) <= -38){
+    closeOpenThreadRows(row);
+    row.classList.add('is-open');
+  }else{
+    row.classList.remove('is-open');
+  }
+}
+
+function filterRecords(records){
+  var list = Array.isArray(records) ? records.slice() : [];
+  var selectedDate = String(currentSelectedDateKey || toDateKey(new Date())).trim();
+  if(selectedDate){
+    list = list.filter(function(item){ return getRecordDateKey(item) === selectedDate; });
+  }
+  if(currentFilter === 'complete') return list.filter(isCompletedInviteRecord);
+  if(currentFilter === 'pending') return list.filter(isPendingInviteRecord);
+  if(currentFilter === 'continued') return list.filter(isContinuedInviteRecord);
+  return list;
+}
+
+function pickSelectedRecord(records){
+  var list = filterRecords(records);
+  var focusId = readFocusId();
+  var chosen = null;
+  if(focusId){
+    chosen = list.find(function(item){ return String(item.id || '') === focusId; }) || null;
+  }
+  if(!chosen && currentSelectedId){
+    chosen = list.find(function(item){ return String(item.id || '') === currentSelectedId; }) || null;
+  }
+  if(!chosen){
+    chosen = list.find(isCompletedInviteRecord)
+      || list.find(isOngoingInviteRecord)
+      || list.find(isContinuedInviteRecord)
+      || list.find(isAcceptedInviteRecord)
+      || list.find(isPendingInviteRecord)
+      || list[0]
+      || null;
+  }
+  currentSelectedId = chosen ? String(chosen.id || '').trim() : '';
+  if(focusId) clearFocusId();
+  return chosen;
+}
+
+function collectCalendarDots(records){
+  var marks = Object.create(null);
+  (Array.isArray(records) ? records : []).forEach(function(item){
+    var key = getRecordDateKey(item);
+    if(key) marks[key] = true;
+  });
+  return marks;
+}
+
+function getRecordDisplayDateTime(item){
+  var parts = [
+    String(item && item.dateLabel || '').trim(),
+    String(item && item.timeLabel || '').trim()
+  ].filter(Boolean);
+  if(!parts.length){
+    var dateKey = getRecordDateKey(item);
+    if(dateKey) parts.push(dateKey.replace(/-/g, '.'));
+    var timeStamp = getRecordTimeStamp(item);
+    if(timeStamp) parts.push(timeStamp);
+  }
+  return parts.join(' ');
+}
+
+function getRecordDisplayLocation(item){
+  return String(item && item.location || '').trim() || '地点待定';
+}
+
+function getRecordDisplayPreview(item, locationText){
+  var preview = getRecordPreview(item);
+  var safePreview = String(preview || '').trim();
+  var safeLocation = String(locationText || '').trim();
+  if(!safePreview) return '';
+  if(safeLocation && safePreview === safeLocation) return '';
+  if(safeLocation && safePreview.replace(/\s+/g, '') === safeLocation.replace(/\s+/g, '')) return '';
+  return safePreview;
+}
+
+function renderMonthCard(records, selectedRecord){
+  var root = document.getElementById('monthCard');
+  if(!root) return;
+  if(!currentSelectedDateKey) currentSelectedDateKey = selectedRecord ? getRecordDateKey(selectedRecord) : toDateKey(new Date());
+  var anchor = currentSelectedDateKey ? getRecordDateObj({ scheduledDate: currentSelectedDateKey }) : (selectedRecord ? getRecordDateObj(selectedRecord) : new Date());
+  var week = buildWeekDays(anchor);
+  var marks = collectCalendarDots(records);
+  var selectedDateKey = currentSelectedDateKey || toDateKey(anchor);
+  var monthKey = getMonthKeyFromDateKey(selectedDateKey);
+  root.innerHTML = ''
+    + '<div class="month-row">'
+    +   '<button class="month-exit" type="button" data-offline-exit aria-label="返回">♥</button>'
+    +   '<div class="month-label">'
+    +     '<div class="month-title">' + esc(formatDateTitle(anchor)) + '</div>'
+    +     '<div class="month-sub">' + esc(formatWeekRange(anchor)) + '</div>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="month-picker">'
+    +   '<button class="month-nav" type="button" data-month-shift="-1" aria-label="上个月">‹</button>'
+    +   '<input class="date-field" type="month" data-month-picker value="' + esc(monthKey) + '" aria-label="选择月份">'
+    +   '<input class="date-field" type="date" data-date-picker value="' + esc(selectedDateKey) + '" aria-label="选择日期">'
+    +   '<button class="month-nav" type="button" data-month-shift="1" aria-label="下个月">›</button>'
+    + '</div>'
+    + '<div class="weekdays"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div></div>'
+    + '<div class="calendar-strip">'
+    + week.map(function(item){
+        var key = toDateKey(item);
+        var active = key === selectedDateKey ? ' is-active' : '';
+        var dot = marks[key] ? '<div class="day-chip-dot"></div>' : '<div class="day-chip-ghost"></div>';
+        return '<button class="day-chip' + active + '" type="button" data-date-key="' + esc(key) + '">'
+          + '<div class="day-chip-day">' + esc(item.getDate()) + '</div>'
+          + '<div class="day-chip-meta">' + esc(formatLunarStub(item)) + '</div>'
+          + dot
+          + '</button>';
+      }).join('')
+    + '</div>';
+}
+
+function renderFilterTabs(records){
+  var root = document.getElementById('filterTabs');
+  if(!root) return;
+  var dayRecords = (Array.isArray(records) ? records : []).filter(function(item){
+    return getRecordDateKey(item) === String(currentSelectedDateKey || toDateKey(new Date())).trim();
+  });
+  var counts = {
+    all: dayRecords.length,
+    complete: dayRecords.filter(isCompletedInviteRecord).length,
+    pending: dayRecords.filter(isPendingInviteRecord).length,
+    continued: dayRecords.filter(isContinuedInviteRecord).length
+  };
+  var tabs = [
+    { id:'all', label:'All' },
+    { id:'pending', label:'Pending' },
+    { id:'complete', label:'Complete' },
+    { id:'continued', label:'Continued' }
+  ];
+  root.innerHTML = tabs.map(function(tab){
+    var active = tab.id === currentFilter ? ' is-active' : '';
+    return '<button class="filter-tab' + active + '" type="button" data-filter-id="' + esc(tab.id) + '">' + esc(tab.label) + ' ' + esc(counts[tab.id] || 0) + '</button>';
+  }).join('');
+}
+
+function renderThreadList(records, selectedRecord){
+  var root = document.getElementById('threadList');
+  if(!root) return;
+  var list = filterRecords(records);
+  if(!list.length){
+    root.innerHTML = '<div class="thread-empty">这一天这个分类还没有邀约。</div>';
+    return;
+  }
+  root.innerHTML = list.map(function(item){
+    var stage = getRecordStage(item);
+    var active = selectedRecord && String(selectedRecord.id || '') === String(item.id || '') ? ' is-selected' : '';
+    var fallback = esc(String(item.charName || '角').slice(0, 1) || '角');
+    var dateTimeText = getRecordDisplayDateTime(item) || '时间待定';
+    var locationText = getRecordDisplayLocation(item);
+    var previewText = getRecordDisplayPreview(item, locationText);
+    return '<div class="thread-row" data-thread-row="' + esc(item.id) + '">'
+      + '<button class="thread-delete" type="button" data-delete-record-id="' + esc(item.id) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3.5h6l.8 1.5H20a1 1 0 1 1 0 2h-1l-.9 11a2 2 0 0 1-2 1.82H8a2 2 0 0 1-2-1.82L5 7H4a1 1 0 1 1 0-2h4.2L9 3.5Zm-1.99 3 .9 10.92h8.18L17 6.5H7.01ZM10 9a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0v-5a1 1 0 0 1 1-1Zm4 0a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0v-5a1 1 0 0 1 1-1Z"></path></svg><span>删除</span></button>'
+      + '<article class="thread-item' + active + '" data-record-id="' + esc(item.id) + '">'
+      + '<div class="thread-polaroid">'
+      +   '<button class="thread-avatar" type="button" data-avatar-id="' + esc(item.id) + '"><img alt="' + esc(item.charName || '头像') + '" data-avatar-img="' + esc(item.id) + '">' + fallback + '</button>'
+      +   '<div class="thread-polaroid-label">' + esc(item.charName || '未命名角色') + '</div>'
+      + '</div>'
+      + '<div class="thread-main">'
+      +   '<div class="thread-top"><div class="thread-name">' + esc(item.charName || '未命名角色') + '</div><div class="thread-highlight">' + esc(stage.badge || stage.note) + '</div></div>'
+      +   '<div class="thread-sub">'
+      +     '<div class="thread-time">' + esc(dateTimeText) + '</div>'
+      +     '<div class="thread-meta">' + esc(locationText) + '</div>'
+      +   '</div>'
+      +   (previewText ? '<div class="thread-preview">' + esc(previewText) + '</div>' : '')
+      + '</div>'
+      + '</article>'
+      + '</div>';
+  }).join('');
+  list.forEach(function(item){
+    applyThreadAvatarSource(item.id, getCharAvatarSource(item.charId, item.charName));
+    requestStoredCharAvatar(item.charId, item.id);
+  });
+  requestAnimationFrame(refreshThreadListElasticSpace);
+}
+
+async function renderOfflineApp(){
+  var renderToken = ++offlineRenderVersion;
+  var endPayloads = consumePendingOfflineInviteEndRequests();
+  lastConsumedEndRequestPayloads = endPayloads.slice();
+  var inlinePayloads = pendingInlineForceCompletePayloads.slice();
+  pendingInlineForceCompletePayloads = [];
+  var forcePayloads = consumePendingForceCompleteOfflineRecords().concat(consumePendingExitCompleteOfflineIntents()).concat(endPayloads).concat(inlinePayloads);
+  var records = await getOfflineRecords();
+  records = forceCompleteRenderedRecords(records, forcePayloads);
+  if(renderToken !== offlineRenderVersion) return;
+  latestOfflineRecords = Array.isArray(records) ? records.slice() : [];
+  if(!currentSelectedDateKey) currentSelectedDateKey = toDateKey(new Date());
+  var focusId = readFocusId();
+  if(focusId){
+    var focusRecord = latestOfflineRecords.find(function(item){ return String(item && item.id || '') === focusId; }) || null;
+    if(focusRecord) currentSelectedDateKey = getRecordDateKey(focusRecord);
+  }
+  var selected = pickSelectedRecord(records);
+  var repairedRecords = repairSelectedActiveRecordFromCompletedSameDay(records);
+  if(repairedRecords !== records){
+    records = dedupeCompletedInviteRecords(collapseCompletedDuplicateInviteRecords(repairedRecords));
+    latestOfflineRecords = Array.isArray(records) ? records.slice() : [];
+    selected = pickSelectedRecord(records);
+  }
+  renderMonthCard(records, selected);
+  renderFilterTabs(records);
+  renderThreadList(records, selected);
+}
+
+function canOpenRecordInOfflineMode(item){
+  if(!item) return false;
+  return isAcceptedInviteRecord(item)
+    || isOngoingInviteRecord(item)
+    || isContinuedInviteRecord(item)
+    || isCompletedInviteRecord(item);
+}
+
+function openRecordInOfflineMode(item){
+  if(!item || !canOpenRecordInOfflineMode(item)) return false;
+  var safeId = String(item.id || '').trim();
+  var safeCharId = String(item.charId || '').trim();
+  if(!safeCharId) return false;
+  var openAsFreshInvite = isAcceptedInviteRecord(item) && !isOngoingInviteRecord(item) && !isContinuedInviteRecord(item) && !isCompletedInviteRecord(item);
+  var launchToken = 'offline_record_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+  try{
+    localStorage.setItem(getScopedFocusKey(), safeId);
+  }catch(err){}
+  try{
+    var launchIntent = { recordId:safeId, charId:safeCharId, charName:String(item.charName || '').trim(), openedAt:Date.now() };
+    localStorage.setItem(getActiveOfflineLaunchIntentKey(), JSON.stringify(launchIntent));
+    localStorage.setItem('offline_invite_active_launch_v1', JSON.stringify(launchIntent));
+  }catch(errLaunch){}
+  var readOnly = isCompletedInviteRecord(item);
+  var openPayload = {
+    app:'offline_mode',
+    charId:safeCharId,
+    inviteId:safeId,
+    recordId:safeId,
+    launchMode: openAsFreshInvite ? 'invite' : 'resume',
+    launchToken: launchToken,
+    forceOpen: true,
+    readOnly: readOnly,
+    offlineLaunchRecord:{
+      mode: openAsFreshInvite ? 'invite' : 'resume',
+      launchToken: launchToken,
+      freshStart: openAsFreshInvite,
+      readOnly: readOnly,
+      createdAt: Date.now(),
+      charId:safeCharId,
+      payload:{
+        id:safeId,
+        recordId:safeId,
+        inviteRecordId:safeId,
+        threadId:String(item.threadId || safeId).trim() || safeId,
+        charId:safeCharId,
+        charName:String(item.charName || '').trim(),
+        sourceRole:String(item.sourceRole || '').trim(),
+        status:String(item.status || '').trim(),
+        meetState:String(item.meetState || '').trim(),
+        freshStart: openAsFreshInvite,
+        readOnly: readOnly,
+        lifecycleKey:getOfflineInviteLifecycleKey(item),
+        dateKey:getRecordDateKey(item),
+        location:String(item.location || '').trim(),
+        scheduledDate:String(item.scheduledDate || '').trim(),
+        scheduledTime:String(item.scheduledTime || '').trim(),
+        dateLabel:String(item.dateLabel || '').trim(),
+        timeLabel:String(item.timeLabel || '').trim(),
+        previewText:String(item.previewText || '').trim(),
+        inviteMessageId:String(item.inviteMessageId || '').trim(),
+        replyMessageId:String(item.replyMessageId || '').trim()
+      },
+      createdAt:Date.now()
+    }
+  };
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.forceOpenOfflineMode === 'function'){
+      window.parent.forceOpenOfflineMode(openPayload);
+      return true;
+    }
+  }catch(err){}
+  try{
+    if(window.parent && window.parent !== window){
+      window.parent.postMessage({
+        type:'OPEN_APP_WITH',
+        payload:openPayload
+      }, '*');
+      return true;
+    }
+  }catch(err){}
+  return false;
+}
+
+document.addEventListener('click', async function(event){
+  var deleteBtn = event.target && event.target.closest ? event.target.closest('[data-delete-record-id]') : null;
+  if(deleteBtn){
+    var deleteId = String(deleteBtn.getAttribute('data-delete-record-id') || '').trim();
+    if(deleteId) openDeleteConfirm(deleteId);
+    return;
+  }
+  var deleteCancelBtn = event.target && event.target.closest ? event.target.closest('[data-delete-cancel]') : null;
+  if(deleteCancelBtn){
+    closeDeleteConfirm();
+    return;
+  }
+  var deleteConfirmBtn = event.target && event.target.closest ? event.target.closest('[data-delete-confirm]') : null;
+  if(deleteConfirmBtn){
+    if(pendingDeleteRecordId){
+      await removeOfflineRecord(pendingDeleteRecordId);
+      closeDeleteConfirm();
+      await renderOfflineApp();
+      return;
+    }
+    closeDeleteConfirm();
+    return;
+  }
+  var deleteOverlay = event.target && event.target.closest ? event.target.closest('#deleteConfirm') : null;
+  if(deleteOverlay && event.target === deleteOverlay){
+    closeDeleteConfirm();
+    return;
+  }
+  var exitBtn = event.target && event.target.closest ? event.target.closest('[data-offline-exit]') : null;
+  if(exitBtn){
+    try{
+      if(window.parent && window.parent !== window && typeof window.parent.handleBack === 'function'){
+        window.parent.handleBack();
+        return;
+      }
+    }catch(err){}
+    try{
+      if(window.history.length > 1) window.history.back();
+    }catch(err){}
+    return;
+  }
+  var filterBtn = event.target && event.target.closest ? event.target.closest('[data-filter-id]') : null;
+  if(filterBtn){
+    currentFilter = String(filterBtn.getAttribute('data-filter-id') || 'all');
+    renderOfflineApp();
+    return;
+  }
+  var monthShiftBtn = event.target && event.target.closest ? event.target.closest('[data-month-shift]') : null;
+  if(monthShiftBtn){
+    currentSelectedDateKey = shiftMonthDateKey(currentSelectedDateKey || toDateKey(new Date()), Number(monthShiftBtn.getAttribute('data-month-shift') || 0) || 0);
+    var shiftedMonth = getMonthKeyFromDateKey(currentSelectedDateKey);
+    currentSelectedDateKey = findBestDateInMonth(latestOfflineRecords, shiftedMonth) || currentSelectedDateKey;
+    currentSelectedId = '';
+    renderOfflineApp();
+    return;
+  }
+  var dayBtn = event.target && event.target.closest ? event.target.closest('[data-date-key]') : null;
+  if(dayBtn){
+    currentSelectedDateKey = String(dayBtn.getAttribute('data-date-key') || '').trim() || toDateKey(new Date());
+    currentSelectedId = '';
+    renderOfflineApp();
+    return;
+  }
+  var recordBtn = event.target && event.target.closest ? event.target.closest('[data-record-id]') : null;
+  if(recordBtn){
+    var row = recordBtn.closest ? recordBtn.closest('.thread-row') : null;
+    if(row && row.classList.contains('is-open')){
+      row.classList.remove('is-open');
+      return;
+    }
+    closeOpenThreadRows();
+    currentSelectedId = String(recordBtn.getAttribute('data-record-id') || '').trim();
+    var source = Array.isArray(latestOfflineRecords) ? latestOfflineRecords.slice() : [];
+    var hit = source.find(function(item){
+      return String(item && item.id || '') === currentSelectedId;
+    }) || null;
+    if(hit && canOpenRecordInOfflineMode(hit)){
+      openRecordInOfflineMode(hit);
+      return;
+    }
+    renderOfflineApp();
+  }
+});
+
+document.addEventListener('change', function(event){
+  var monthInput = event.target && event.target.closest ? event.target.closest('[data-month-picker]') : null;
+  if(monthInput){
+    var monthKey = String(monthInput.value || '').trim();
+    if(/^\d{4}-\d{2}$/.test(monthKey)){
+      currentSelectedDateKey = findBestDateInMonth(latestOfflineRecords, monthKey) || clampDateKeyInMonth(monthKey, 1);
+      currentSelectedId = '';
+      renderOfflineApp();
+    }
+    return;
+  }
+  var dateInput = event.target && event.target.closest ? event.target.closest('[data-date-picker]') : null;
+  if(dateInput){
+    var dateKey = String(dateInput.value || '').trim();
+    if(/^\d{4}-\d{2}-\d{2}$/.test(dateKey)){
+      currentSelectedDateKey = dateKey;
+      currentSelectedId = '';
+      renderOfflineApp();
+    }
+  }
+});
+
+document.addEventListener('pointerdown', function(event){
+  var deleteBtn = event.target && event.target.closest ? event.target.closest('[data-delete-record-id]') : null;
+  if(!deleteBtn) return;
+  event.stopPropagation();
+}, true);
+
+document.addEventListener('click', function(event){
+  var deleteBtn = event.target && event.target.closest ? event.target.closest('[data-delete-record-id]') : null;
+  if(!deleteBtn) return;
+  event.preventDefault();
+  event.stopPropagation();
+  if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+  var deleteId = String(deleteBtn.getAttribute('data-delete-record-id') || '').trim();
+  if(deleteId) openDeleteConfirm(deleteId);
+}, true);
+
+document.addEventListener('pointerdown', function(event){
+  if(event.target && event.target.closest && event.target.closest('[data-delete-record-id]')) return;
+  var item = event.target && event.target.closest ? event.target.closest('.thread-item') : null;
+  if(!item) return;
+  var row = item.closest ? item.closest('.thread-row') : null;
+  if(!row) return;
+  closeOpenThreadRows(row);
+  offlineSwipeState = {
+    row: row,
+    pointerId: event.pointerId,
+    startX: Number(event.clientX || 0),
+    startY: Number(event.clientY || 0),
+    startOffset: row.classList.contains('is-open') ? -72 : 0,
+    offset: row.classList.contains('is-open') ? -72 : 0,
+    dragging: false
+  };
+}, { passive:true });
+
+document.addEventListener('pointermove', function(event){
+  if(!offlineSwipeState || event.pointerId !== offlineSwipeState.pointerId) return;
+  var dx = Number(event.clientX || 0) - offlineSwipeState.startX;
+  var dy = Number(event.clientY || 0) - offlineSwipeState.startY;
+  if(!offlineSwipeState.dragging){
+    if(Math.abs(dx) < 8) return;
+    if(Math.abs(dy) > Math.abs(dx)){
+      offlineSwipeState = null;
+      return;
+    }
+    offlineSwipeState.dragging = true;
+    offlineSwipeState.row.classList.add('is-dragging');
+  }
+  offlineSwipeState.offset = Math.max(-72, Math.min(0, offlineSwipeState.startOffset + dx));
+  applySwipeOffset(offlineSwipeState.row, offlineSwipeState.offset);
+  event.preventDefault();
+}, { passive:false });
+
+document.addEventListener('pointerup', function(event){
+  if(!offlineSwipeState || event.pointerId !== offlineSwipeState.pointerId) return;
+  finalizeThreadSwipe(offlineSwipeState.row, offlineSwipeState.offset);
+  offlineSwipeState = null;
+});
+
+document.addEventListener('pointercancel', function(event){
+  if(!offlineSwipeState || event.pointerId !== offlineSwipeState.pointerId) return;
+  finalizeThreadSwipe(offlineSwipeState.row, offlineSwipeState.offset);
+  offlineSwipeState = null;
+});
+
+window.addEventListener('message', function(e){
+  var data = e.data || {};
+  if(data.type === 'OFFLINE_INVITE_FORCE_COMPLETE'){
+    var payload = data.payload || {};
+    pendingInlineForceCompletePayloads.push(payload);
+    var ids = normalizeOfflineInviteCompleteIds(payload);
+    forceCompleteOfflineRecords(ids, payload.charId, payload.charName || payload.name);
+    forceCompleteOfflineRecordsByEndPayload(payload);
+    renderOfflineApp();
+    return;
+  }
+  if(data.type === 'OFFLINE_INVITE_STORE_DIRTY' || data.type === 'OPEN_SHELL_NOTIFICATION'){
+    renderOfflineApp();
+  }
+});
+
+window.addEventListener('storage', function(e){
+  if(e && /offline_invite/i.test(String(e.key || ''))){
+    renderOfflineApp();
+  }
+});
+
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'visible'){
+    renderOfflineApp();
+  }
+});
+
+renderOfflineApp();
+setInterval(function(){
+  renderOfflineApp();
+}, 20000);
+</script>
+</body>
+</html>

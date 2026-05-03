@@ -1,0 +1,3482 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>日程</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Quicksand:wght@400;500;600;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+<script src="../chatStorage.js?v=2026-05-03T03:19:00Z"></script>
+<script src="../accountManager.js?v=2026-05-03T03:19:00Z"></script>
+<script src="../assetStore.js?v=2026-05-03T03:19:00Z"></script>
+<script src="../metadataStore.js?v=2026-05-03T03:19:00Z"></script>
+<script src="../scheduleShared.js?v=2026-05-03T03:19:00Z"></script>
+<script src="../presenceShared.js?v=2026-05-03T03:19:00Z"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --b:#0a0a0a;--w:#fff;--off:#f7f7f7;--ink:#111;--g:#747474;--line:#d6d6d2;
+  --bd:1.5px solid #141414;--sh:0 14px 34px rgba(0,0,0,.08);--safe-top:max(env(safe-area-inset-top),0px);--safe-bottom:max(env(safe-area-inset-bottom),0px);
+  --font:'Quicksand',sans-serif;--fontd:'Nunito',sans-serif;--fontcute:'ZCOOL KuaiLe',cursive;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--off);color:var(--b)}
+body{font-family:var(--font);display:flex;flex-direction:column}
+button,input,textarea,select{font:inherit;color:inherit}
+button{appearance:none;-webkit-appearance:none;background:none;border:none}
+.schedule-shell{
+  flex:1;min-height:0;overflow:auto;padding:calc(10px + var(--safe-top)) 12px calc(18px + var(--safe-bottom));background:
+    linear-gradient(180deg,#f8f9fb 0%,#eef1f5 100%);
+}
+.schedule-frame{
+  min-height:100%;padding:0;display:flex;flex-direction:column;gap:14px;
+}
+.schedule-calendar-main-card,
+.schedule-side-card,.schedule-detail-card,.schedule-panel-card{
+  border:2px solid #111;border-radius:26px;background:linear-gradient(180deg,rgba(255,255,255,.998),rgba(246,246,246,.992));box-shadow:4px 4px 0 rgba(0,0,0,.14);
+}
+.schedule-calendar-main-card{
+  position:relative;overflow:hidden;padding:18px 18px 28px;border-radius:36px;min-height:328px;background:
+    radial-gradient(circle at 1px 1px, rgba(0,0,0,.04) 1.15px, transparent 0) 0 0/20px 20px,
+    linear-gradient(180deg,#fcfcfd 0%,#f4f5f8 100%);box-shadow:8px 8px 0 rgba(0,0,0,.12)
+}
+.schedule-calendar-main-card::before{
+  content:'';position:absolute;left:0;right:0;top:0;height:214px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.02) 0%,rgba(255,255,255,.04) 34%,rgba(255,255,255,.38) 76%,rgba(252,252,253,.95) 100%),
+    url('./assets/樱花在水里.jpg') center/cover no-repeat;
+  z-index:0
+}
+.schedule-calendar-main-card > *{position:relative;z-index:1}
+.schedule-calendar-head{
+  display:grid;grid-template-columns:auto 1fr auto;align-items:flex-start;gap:18px;margin-bottom:6px;
+  padding:4px 0 0;background:transparent
+}
+.schedule-calendar-controls,.schedule-calendar-tools{display:flex;align-items:center;gap:10px;padding-top:0}
+.schedule-calendar-heading{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;justify-self:center;
+  margin-top:8px;padding:5px 16px;transform:translateY(-6px);
+  background:rgba(255,255,255,.2);backdrop-filter:blur(6px);
+  border:none;border-radius:18px;
+}
+.schedule-calendar-title{
+  font-family:'Baskerville','Times New Roman',serif;font-size:clamp(24px,5.8vw,32px);font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#111;text-align:center;line-height:1;white-space:nowrap;
+  transform:translateY(-2px);
+  text-shadow:
+    1px 0 0 rgba(255,255,255,.92), -1px 0 0 rgba(255,255,255,.92),
+    0 1px 0 rgba(255,255,255,.92), 0 -1px 0 rgba(255,255,255,.92),
+    2px 2px 8px rgba(255,255,255,.45)
+}
+.schedule-calendar-action{
+  width:40px;height:40px;border:2px solid #111;border-radius:16px;background:linear-gradient(180deg,#ffffff 0%,#f4f4f4 100%);box-shadow:4px 4px 0 rgba(0,0,0,.18), 0 10px 18px rgba(0,0,0,.05), inset 0 1px 0 rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto
+}
+.schedule-calendar-action.nav-circle{
+  position:absolute;bottom:-12px;width:26px;height:26px;border-radius:999px;background:#111;box-shadow:3px 3px 0 rgba(0,0,0,.18)
+}
+.schedule-calendar-heading .schedule-calendar-action.nav-circle:first-of-type{left:-8px}
+.schedule-calendar-heading .schedule-calendar-action.nav-circle:last-of-type{right:-8px}
+.schedule-calendar-action svg{width:17px;height:17px;display:block;fill:#0a0a0a}
+.schedule-calendar-action-text{font-size:17px;line-height:1;font-weight:900;color:#111}
+.schedule-calendar-action.nav-circle{color:#fff}
+.schedule-calendar-action.nav-circle .schedule-calendar-action-text{color:#fff;font-size:13px}
+.schedule-calendar-corner{position:absolute;right:18px;bottom:18px;z-index:3;display:flex;align-items:flex-end;gap:10px}
+.schedule-char-label{
+  position:absolute;right:44px;top:-12px;max-width:148px;padding:6px 12px;border:2px solid #111;border-radius:999px;background:#fff;box-shadow:3px 3px 0 #0a0a0a;
+  font-family:'ZCOOL KuaiLe','Fredoka','Quicksand',sans-serif;font-size:11px;font-weight:700;line-height:1.2;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:2
+}
+.schedule-current-char{
+  width:68px;height:68px;border:2px dashed #111;border-radius:20px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:5px 5px 0 rgba(0,0,0,.12);overflow:hidden;background-position:center;background-repeat:no-repeat;background-size:cover
+}
+.schedule-current-char-media{display:block;width:100%;height:100%;background-position:center 58%;background-repeat:no-repeat;background-size:cover}
+.schedule-current-char-fallback{font-family:var(--fontd);font-size:12px;font-weight:900;color:#111}
+.schedule-ghost-btn,.schedule-solid-btn,.schedule-icon-btn{
+  border:2px solid #111;background:linear-gradient(180deg,rgba(255,255,255,.998),rgba(246,246,246,.992));box-shadow:4px 4px 0 rgba(0,0,0,.14);cursor:pointer;
+}
+.schedule-solid-btn,.schedule-ghost-btn{border-radius:14px;padding:9px 12px;font-size:12px;font-weight:900}
+.schedule-solid-btn{background:var(--b);color:var(--w)}
+.schedule-icon-btn{width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900}
+.schedule-toolbar{display:none}
+.schedule-toolbar-actions{display:flex;gap:10px;flex-wrap:wrap}
+.schedule-month-nav{display:flex;align-items:center;gap:10px}
+.schedule-month-nav button{width:34px;height:34px;border:2px solid #111;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.99),rgba(244,244,241,.97));box-shadow:4px 4px 0 rgba(0,0,0,.14);font-family:var(--fontd);font-size:17px;font-weight:900;cursor:pointer}
+.schedule-month-name{font-size:13px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.schedule-board{display:block}
+.schedule-side-stack{display:flex;flex-direction:column;gap:8px}
+.schedule-side-card{padding:12px}
+.schedule-day-head{
+  display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;padding:6px 0 10px;margin-bottom:8px;background:transparent
+}
+.schedule-day-head span{
+  width:100%;height:54px;border:none;border-radius:22px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--fontd);font-size:11px;font-weight:900;letter-spacing:.12em;background:rgba(255,255,255,.58);box-shadow:none;
+  color:#111;text-shadow:
+    1px 0 0 rgba(255,255,255,.88), -1px 0 0 rgba(255,255,255,.88),
+    0 1px 0 rgba(255,255,255,.88), 0 -1px 0 rgba(255,255,255,.88)
+}
+.schedule-day-head span.is-today-weekday{background:rgba(17,17,17,.86);color:#fff;text-shadow:none}
+.schedule-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));column-gap:8px;row-gap:4px;margin-top:-4px}
+.schedule-day-cell{min-height:60px;border:none;background:transparent;display:flex;justify-content:center;align-items:flex-start;cursor:pointer}
+.schedule-day-inner{
+  width:100%;aspect-ratio:.72/1;border:2px solid #111;border-radius:28px;background:#fff;display:flex;
+  align-items:flex-start;justify-content:center;padding:12px 6px 16px;position:relative;transition:transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;box-shadow:5px 5px 0 rgba(0,0,0,.11);
+}
+.schedule-day-cell:active .schedule-day-inner{transform:translate(1px,1px)}
+.schedule-day-cell.selected .schedule-day-inner{background:#0d0d0d;color:#fff;border-color:#0d0d0d}
+.schedule-day-cell.today .schedule-day-inner{border-color:#0d0d0d}
+.schedule-day-number{font-family:var(--fontd);font-size:20px;font-weight:900;line-height:1}
+.schedule-day-dots{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:4px}
+.schedule-day-dot{width:5px;height:5px;border-radius:999px}
+.schedule-day-dot.user{background:#b9b9b9}
+.schedule-day-dot.char{background:#0a0a0a}
+.schedule-day-cell.selected .schedule-day-dot.user{background:rgba(255,255,255,.62)}
+.schedule-day-cell.selected .schedule-day-dot.char{background:#fff}
+.schedule-side-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.schedule-section-title{font-family:var(--fontcute);font-size:24px;letter-spacing:.05em}
+.schedule-section-sub{margin-top:4px;font-size:11px;color:#666;font-weight:700;line-height:1.35}
+.schedule-agenda-wrap{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.schedule-agenda-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.schedule-agenda-title{display:flex;flex-direction:column;gap:2px}
+.schedule-agenda-title .schedule-kicker{font-size:10px;font-weight:900;letter-spacing:.16em;color:#888;text-transform:uppercase}
+.schedule-agenda-title .schedule-panel-title{font-family:var(--fontd);font-size:18px;font-weight:900}
+.schedule-badge-list,.schedule-todo-list{display:flex;flex-direction:column;gap:8px}
+.schedule-todo-list{max-height:232px;overflow:auto;padding-right:2px}
+.schedule-badge-list{flex-direction:row;flex-wrap:wrap;gap:7px}
+.schedule-badge-item{
+  border:none;border-radius:999px;padding:8px 12px;background:linear-gradient(180deg,#141414 0%,#242424 100%);box-shadow:3px 3px 0 rgba(0,0,0,.16);color:#fff
+}
+.schedule-badge-item .schedule-badge-title{font-size:11px}
+.schedule-badge-item .schedule-badge-note{margin-top:0;font-size:10px;color:rgba(255,255,255,.78)}
+.schedule-progress-card{border:none;border-radius:18px;background:rgba(255,255,255,.74);box-shadow:none;padding:14px 12px 12px;display:flex;flex-direction:column;gap:14px}
+.schedule-progress-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.schedule-progress-title{font-family:var(--fontd);font-size:15px;font-weight:900;line-height:1.2}
+.schedule-progress-clock{font-size:11px;font-weight:900;color:#64748b;white-space:nowrap}
+.schedule-stepper-box{display:flex;flex-direction:column;gap:0}
+.schedule-stepper-step{display:flex;position:relative;padding-bottom:18px;margin-bottom:14px}
+.schedule-stepper-step:not(:last-child)::after{content:'';position:absolute;left:54px;right:18px;bottom:0;border-bottom:1px dashed rgba(15,23,42,.22)}
+.schedule-stepper-step.is-secret-locked .schedule-stepper-content{cursor:pointer}
+.schedule-stepper-step:last-child{padding-bottom:0;margin-bottom:0}
+.schedule-stepper-owner-user .schedule-stepper-content{background:rgba(241,245,249,.72);border-radius:14px;padding:8px 22px 8px 10px}
+.schedule-stepper-owner-char .schedule-stepper-content{background:rgba(255,255,255,.82);border-radius:14px;padding:8px 22px 8px 10px}
+.schedule-stepper-owner-user .schedule-stepper-circle{background:#f1f5f9}
+.schedule-stepper-owner-user.schedule-stepper-completed .schedule-stepper-circle{background:#64748b;color:#fff}
+.schedule-stepper-owner-user.schedule-stepper-active .schedule-stepper-circle{border-color:#64748b;color:#334155}
+.schedule-stepper-owner-user.schedule-stepper-completed .schedule-stepper-line{background:linear-gradient(180deg,#64748b 0%,rgba(148,163,184,.72) 62%,rgba(226,232,240,.58) 100%)}
+.schedule-stepper-owner-user.schedule-stepper-active .schedule-stepper-line{background:linear-gradient(180deg,#64748b 0%,rgba(148,163,184,.7) 45%,rgba(226,232,240,.72) 100%)}
+.schedule-stepper-line{
+  position:absolute;
+  left:19px;
+  top:40px;
+  bottom:-14px;
+  width:3px;
+  border-radius:999px;
+  background:linear-gradient(180deg,rgba(15,23,42,.88) 0%,rgba(148,163,184,.38) 58%,rgba(226,232,240,0) 100%);
+  z-index:1;
+}
+.schedule-stepper-step:last-child .schedule-stepper-line{display:none}
+.schedule-stepper-circle{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:14px;z-index:2;flex:0 0 auto;font-family:var(--fontd);font-size:13px;font-weight:900;background:#fff}
+.schedule-stepper-completed .schedule-stepper-circle{background:#0f172a;color:#fff}
+.schedule-stepper-active .schedule-stepper-circle{border:2px solid #0f172a;color:#0f172a;background:#fff}
+.schedule-stepper-pending .schedule-stepper-circle{border:2px solid #e2e8f0;color:#94a3b8;background:#fff}
+.schedule-stepper-completed .schedule-stepper-line{background:linear-gradient(180deg,#0f172a 0%,rgba(15,23,42,.72) 62%,rgba(226,232,240,.58) 100%)}
+.schedule-stepper-active .schedule-stepper-line{background:linear-gradient(180deg,#0f172a 0%,rgba(37,99,235,.58) 45%,rgba(226,232,240,.72) 100%)}
+.schedule-stepper-pending .schedule-stepper-line{background:linear-gradient(180deg,#e2e8f0 0%,rgba(226,232,240,.62) 100%)}
+.schedule-stepper-content{flex:1;min-width:0;padding-top:1px;position:relative;padding-right:22px}
+.schedule-stepper-title{font-size:13px;font-weight:900;line-height:1.45;color:#0f172a;word-break:break-word}
+.schedule-stepper-comment-badge{position:absolute;top:0;right:0;z-index:3;min-width:9px;width:9px;height:9px;padding:0;border-radius:999px;background:#ef3d3d;box-shadow:0 0 0 2px rgba(255,255,255,.96);overflow:hidden;text-indent:-999px}
+.schedule-stepper-pending .schedule-stepper-title{color:#94a3b8}
+.schedule-stepper-status{display:inline-flex;align-items:center;min-height:22px;padding:2px 8px;border-radius:999px;margin-top:5px;font-size:11px;font-weight:900}
+.schedule-stepper-completed .schedule-stepper-status{background:#dcfce7;color:#166534}
+.schedule-stepper-active .schedule-stepper-status{background:#dbeafe;color:#1d4ed8}
+.schedule-stepper-pending .schedule-stepper-status{background:#f1f5f9;color:#64748b}
+.schedule-stepper-time{margin-top:5px;font-size:11px;color:#94a3b8;font-weight:800;line-height:1.4}
+.schedule-stepper-note{margin-top:5px;font-size:11px;color:#64748b;font-weight:800;line-height:1.5;word-break:break-word}
+.schedule-stepper-actions{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.schedule-secret-unlock-btn{display:inline-flex;align-items:center;justify-content:center;width:45px;height:45px;padding:0;border:0;background:transparent;cursor:pointer}
+.schedule-secret-unlock-btn:active{transform:scale(.92)}
+.schedule-secret-unlock-btn .schedule-lock-label{width:45px;height:45px;display:flex;align-items:center;justify-content:center;background:#505050;border-radius:15px;transition:all .3s}
+.schedule-secret-unlock-btn .schedule-lock-wrapper{width:fit-content;height:fit-content;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-10deg)}
+.schedule-secret-unlock-btn .schedule-shackle{background:transparent;height:9px;width:14px;border-top-right-radius:10px;border-top-left-radius:10px;border-top:3px solid #fff;border-left:3px solid #fff;border-right:3px solid #fff;transition:all .3s}
+.schedule-secret-unlock-btn .schedule-lock-body{width:15px;display:block}
+.schedule-secret-unlock-btn.is-unlocked .schedule-lock-label{background:#a747f5}
+.schedule-secret-unlock-btn.is-unlocked .schedule-shackle{transform:rotateY(150deg) translateX(3px);transform-origin:right}
+.schedule-secret-lock-text{display:inline-flex;align-items:center;min-height:22px;padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#64748b;font-size:10px;font-weight:900}
+.schedule-live-timeline{position:relative;padding-left:26px;display:flex;flex-direction:column;gap:12px}
+.schedule-live-timeline::before{
+  content:'';position:absolute;left:8px;top:4px;bottom:6px;width:2px;border-radius:999px;background:linear-gradient(180deg,rgba(17,17,17,0) 0%,rgba(17,17,17,.94) 8%,rgba(17,17,17,.94) 92%,rgba(17,17,17,0) 100%);
+}
+.schedule-timeline-item{
+  position:relative;display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:flex-start
+}
+.schedule-timeline-item::before{
+  content:'';position:absolute;left:-22px;top:13px;width:12px;height:12px;border-radius:999px;background:#111;box-shadow:0 0 0 4px rgba(255,255,255,.96)
+}
+.schedule-timeline-item.is-user::before{background:#969696}
+.schedule-time{
+  font-family:var(--fontd);font-size:12px;font-weight:900;letter-spacing:.02em;line-height:1.2;color:#111;padding-top:10px
+}
+.schedule-timeline-main{
+  min-width:0;border:none;border-radius:18px;background:linear-gradient(180deg,#101010 0%,#2a2a2a 100%);box-shadow:5px 5px 0 rgba(0,0,0,.14);padding:11px 13px 12px;color:#fff;position:relative
+}
+.schedule-timeline-item.is-user .schedule-timeline-main{
+  background:linear-gradient(180deg,#efefef 0%,#dcdcdc 100%);color:#111
+}
+.schedule-timeline-item.is-secret .schedule-timeline-main{cursor:pointer}
+.schedule-item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-right:10px}
+.schedule-timeline-kicker{
+  display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:0 9px;border-radius:999px;background:rgba(255,255,255,.14);font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:inherit
+}
+.schedule-timeline-item.is-user .schedule-timeline-kicker{background:rgba(17,17,17,.08)}
+.schedule-timeline-title{margin-top:6px;font-size:13px;font-weight:900;line-height:1.4}
+.schedule-timeline-note{margin-top:4px;font-size:11px;line-height:1.55;font-weight:800;color:inherit;opacity:.78}
+.schedule-item-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.schedule-item-chip{
+  display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:0 10px;border:none;border-radius:999px;background:rgba(255,255,255,.14);font-size:10px;font-weight:900;letter-spacing:.04em;color:inherit;cursor:pointer
+}
+.schedule-timeline-item.is-user .schedule-item-chip{background:rgba(17,17,17,.08)}
+.schedule-comment-badge{
+  position:absolute;top:-8px;right:-8px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#ef3d3d;box-shadow:0 0 0 2px rgba(255,255,255,.95);display:none;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:900;line-height:1
+}
+.schedule-timeline-main.has-comments .schedule-comment-badge{display:flex}
+.schedule-timeline-item.is-user .schedule-comment-badge{box-shadow:0 0 0 2px rgba(247,247,247,.96)}
+.schedule-timeline-item.done .schedule-timeline-main{opacity:.64}
+.schedule-timeline-item.done .schedule-time,
+.schedule-timeline-item.done .schedule-timeline-title,
+.schedule-timeline-item.done .schedule-timeline-note{text-decoration:line-through}
+.schedule-todo-pane{
+  border:none;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(244,244,244,.95));box-shadow:5px 5px 0 rgba(0,0,0,.1);padding:12px 13px
+}
+.schedule-todo-pane .schedule-kicker{font-size:10px;font-weight:900;letter-spacing:.18em;color:#767676;text-transform:uppercase}
+.schedule-todo-pane .schedule-panel-title{margin-top:2px;font-family:var(--fontd);font-size:17px;font-weight:900}
+.schedule-todo-list-wrap{
+  margin-top:10px;border:2px solid #111;border-radius:26px;background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(245,245,245,.96));box-shadow:5px 5px 0 rgba(0,0,0,.12);padding:14px 14px 16px
+}
+.schedule-todo-list-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px
+}
+.schedule-todo-list-title{font-family:var(--fontd);font-size:16px;font-weight:900;color:#6d6d6d}
+.schedule-add-mini-btn{
+  width:36px;height:36px;border:2px solid #111;border-radius:12px;background:#fff;box-shadow:4px 4px 0 rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;cursor:pointer
+}
+.schedule-todo-item{
+  display:flex;gap:10px;align-items:flex-start;border:none;border-radius:16px;background:linear-gradient(180deg,#f2f2f2 0%,#e6e6e6 100%);box-shadow:4px 4px 0 rgba(0,0,0,.1);padding:10px 12px;position:relative
+}
+.schedule-todo-prefix{
+  width:22px;height:22px;border-radius:8px;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0
+}
+.schedule-todo-item.is-user .schedule-todo-prefix{background:#777}
+.schedule-todo-body{min-width:0;flex:1}
+.schedule-todo-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.schedule-todo-toggle{
+  width:22px;height:22px;border:2px solid #111;border-radius:8px;background:#fff;box-shadow:none;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;cursor:pointer
+}
+.schedule-todo-toggle[disabled]{opacity:.42;cursor:not-allowed}
+.schedule-todo-item.done .schedule-todo-main{opacity:.56;text-decoration:line-through}
+.schedule-todo-main{min-width:0;flex:1}
+.schedule-todo-text,.schedule-event-title,.schedule-badge-title{font-size:13px;font-weight:900;line-height:1.5}
+.schedule-todo-meta,.schedule-event-meta,.schedule-badge-note{margin-top:2px;font-size:11px;color:#666;line-height:1.5;font-weight:700}
+.schedule-todo-bell{
+  display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#111;color:#fff;
+  font-size:10px;font-weight:900;box-shadow:3px 3px 0 rgba(0,0,0,.16)
+}
+.schedule-todo-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.schedule-todo-actions .schedule-item-chip{background:rgba(17,17,17,.08);color:#111}
+.schedule-comment-note-count{
+  position:absolute;top:6px;right:6px;z-index:3;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#ef3d3d;box-shadow:0 0 0 2px rgba(247,247,247,.96);display:none;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:900;line-height:1
+}
+.schedule-todo-item.has-comments .schedule-comment-note-count{display:flex}
+.schedule-mini-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.schedule-mini-actions button{
+  border:2px solid #111;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.99),rgba(244,244,241,.97));box-shadow:4px 4px 0 rgba(0,0,0,.14);padding:7px 10px;font-size:11px;font-weight:900;cursor:pointer
+}
+.schedule-detail-card{padding:0;border:none;background:transparent;box-shadow:none;border-radius:0}
+.schedule-detail-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.schedule-detail-date{font-family:var(--fontd);font-size:22px;font-weight:900}
+.schedule-detail-date-sub{margin-top:3px;font-size:11px;color:#666;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.schedule-detail-actions{display:flex;gap:8px;flex-wrap:wrap}
+.schedule-detail-actions button{
+  border:2px solid #111;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.99),rgba(244,244,241,.97));box-shadow:4px 4px 0 rgba(0,0,0,.14);padding:10px 12px;font-size:12px;font-weight:900;cursor:pointer
+}
+.schedule-kicker{font-size:10px;font-weight:900;letter-spacing:.18em;color:#7a7a7a;text-transform:uppercase}
+.schedule-panel-title{margin-top:1px;font-family:var(--fontd);font-size:18px;font-weight:900}
+.schedule-empty{margin-top:12px;border:1.5px dashed #c8c8c4;border-radius:20px;padding:14px;text-align:center;font-size:12px;color:#666;font-weight:800;line-height:1.6;background:rgba(255,255,255,.76)}
+.schedule-settings-drawer{
+  position:fixed;inset:auto 12px calc(12px + var(--safe-bottom)) 12px;z-index:30;border:var(--bd);border-radius:28px;background:rgba(255,255,255,.98);box-shadow:0 18px 36px rgba(0,0,0,.16);
+  padding:16px 16px 18px;display:none;max-height:min(72vh,620px);overflow:auto
+}
+.schedule-settings-drawer.open{display:block}
+.schedule-settings-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.schedule-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.schedule-field{border:var(--bd);border-radius:22px;background:#fff;box-shadow:var(--sh);padding:12px}
+.schedule-field label{display:block;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#666}
+.schedule-field p{margin-top:6px;font-size:12px;font-weight:800;line-height:1.6}
+.schedule-switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.schedule-switch{
+  min-width:58px;padding:6px;border:var(--bd);border-radius:999px;background:#fff;box-shadow:none;display:flex;justify-content:flex-start;cursor:pointer
+}
+.schedule-switch::after{content:'';width:18px;height:18px;border:var(--bd);border-radius:999px;background:#0a0a0a;display:block}
+.schedule-switch.on{background:#111}
+.schedule-switch.on::after{margin-left:auto;background:#fff}
+.schedule-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.24);display:none;align-items:flex-end;justify-content:center;z-index:40;padding:14px 14px calc(14px + var(--safe-bottom))
+}
+.schedule-modal.open{display:flex}
+.schedule-modal-card{
+  width:min(520px,100%);max-height:min(84vh,760px);overflow:auto;border:var(--bd);border-radius:30px;background:#fff;box-shadow:8px 8px 0 rgba(0,0,0,.18),0 18px 36px rgba(0,0,0,.1);padding:18px 18px 20px;display:flex;flex-direction:column;gap:14px
+}
+.schedule-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.schedule-modal-card h3{font-family:var(--fontd);font-size:18px;font-weight:900}
+.schedule-mini-head-btn{
+  min-width:68px;padding:8px 12px;border:2px solid #111;border-radius:14px;background:linear-gradient(180deg,#111 0%,#2a2a2a 100%);box-shadow:4px 4px 0 rgba(0,0,0,.18);color:#fff;font-size:12px;font-weight:900;cursor:pointer;flex-shrink:0
+}
+.schedule-modal-sub{font-size:12px;font-weight:800;line-height:1.55;color:#666}
+.schedule-form-grid{display:grid;grid-template-columns:1fr;gap:10px;min-width:0}
+.schedule-input,.schedule-select,.schedule-textarea{
+  width:100%;min-width:0;border:var(--bd);border-radius:18px;background:#fff;padding:11px 12px;font-size:13px;font-weight:800;outline:none
+}
+.schedule-textarea{min-height:96px;resize:vertical;grid-column:1/-1}
+.schedule-modal-actions{display:flex;gap:10px;justify-content:flex-end}
+.schedule-picker-list{display:flex;flex-direction:column;gap:10px}
+.schedule-picker-btn{
+  display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:2px solid #111;border-radius:18px;background:linear-gradient(180deg,#fff 0%,#f3f3f3 100%);box-shadow:5px 5px 0 rgba(0,0,0,.12);text-align:left
+}
+.schedule-picker-btn img,.schedule-picker-avatar{
+  width:42px;height:42px;border-radius:14px;object-fit:cover;flex-shrink:0;border:2px solid #111;background:#fff
+}
+.schedule-picker-avatar{display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900}
+.schedule-picker-copy strong{display:block;font-size:13px;font-weight:900}
+.schedule-picker-copy span{display:block;margin-top:2px;font-size:11px;font-weight:800;color:#666}
+.schedule-action-sheet{display:flex;justify-content:center;align-items:stretch;gap:12px;flex-wrap:nowrap}
+.schedule-sheet-btn{width:148px;max-width:calc(50% - 6px);flex:1 1 0;border:2px solid #111;border-radius:20px;background:linear-gradient(180deg,#fff 0%,#f3f3f3 100%);box-shadow:6px 6px 0 rgba(0,0,0,.16);padding:14px 10px;text-align:center}
+.schedule-sheet-btn strong{display:block;font-size:13px;font-weight:900;line-height:1.15}
+.schedule-sheet-btn span{display:none}
+.schedule-time-group,.schedule-secret-fields,.schedule-comment-composer{display:flex;flex-direction:column;gap:8px}
+.schedule-time-group label{font-size:11px;font-weight:900;color:#666}
+.schedule-chip-row{display:flex;gap:8px;overflow:auto;padding-bottom:2px;max-width:100%}
+.schedule-chip-row::-webkit-scrollbar{display:none}
+.schedule-time-chip,.schedule-date-chip{flex:0 0 auto;min-width:68px;padding:10px 12px;border:2px solid #111;border-radius:16px;background:#fff;box-shadow:4px 4px 0 rgba(0,0,0,.12);font-size:12px;font-weight:900;cursor:pointer;text-align:center;white-space:nowrap}
+.schedule-time-chip.active,.schedule-date-chip.active{background:#111;color:#fff}
+.schedule-wheel-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start}
+.schedule-time-wheel{
+  height:196px;overflow:auto;padding:8px;border:2px solid #111;border-radius:22px;background:linear-gradient(180deg,#fff 0%,#f3f3f3 100%);
+  box-shadow:5px 5px 0 rgba(0,0,0,.12);display:flex;flex-direction:column;gap:8px;scroll-snap-type:y proximity;
+  mask-image:linear-gradient(180deg,transparent 0%,#000 12%,#000 88%,transparent 100%);
+  -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 12%,#000 88%,transparent 100%);
+  min-width:0;
+}
+.schedule-time-option{
+  border:2px solid #111;border-radius:16px;background:#fff;box-shadow:4px 4px 0 rgba(0,0,0,.1);padding:10px 8px;font-size:12px;font-weight:900;cursor:pointer;scroll-snap-align:center;text-align:center
+}
+.schedule-time-option.active{background:#111;color:#fff}
+.schedule-switch-tile{display:flex;align-items:center;justify-content:space-between;gap:12px;border:2px solid #111;border-radius:20px;background:linear-gradient(180deg,#fff 0%,#f2f2f2 100%);box-shadow:4px 4px 0 rgba(0,0,0,.1);padding:11px 12px}
+.schedule-switch-copy strong{display:block;font-size:12px;font-weight:900}
+.schedule-switch-copy span{display:block;margin-top:4px;font-size:10px;color:#666;font-weight:800;line-height:1.45}
+.schedule-mini-switch{min-width:54px;padding:5px;border:2px solid #111;border-radius:999px;background:#fff;display:flex;justify-content:flex-start}
+.schedule-mini-switch::after{content:'';width:18px;height:18px;border-radius:999px;background:#111;display:block}
+.schedule-mini-switch.on{background:#111}
+.schedule-mini-switch.on::after{margin-left:auto;background:#fff}
+.schedule-sticky-grid{display:flex;flex-direction:column;gap:10px;max-height:44vh;overflow:auto;padding-right:2px}
+.schedule-sticky-note{max-width:84%;padding:11px 12px 12px;border-radius:18px;box-shadow:5px 5px 0 rgba(0,0,0,.12);display:flex;flex-direction:column;gap:5px}
+.schedule-sticky-note.user{margin-left:auto;background:linear-gradient(180deg,#f2f2f2 0%,#dcdcdc 100%);color:#111;border-top-right-radius:8px}
+.schedule-sticky-note.char{margin-right:auto;background:linear-gradient(180deg,#111 0%,#2f2f2f 100%);color:#fff;border-top-left-radius:8px}
+.schedule-sticky-meta{font-size:10px;font-weight:900;letter-spacing:.08em;opacity:.75;text-transform:uppercase}
+.schedule-sticky-text{font-size:12px;font-weight:800;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.schedule-picker-strip{display:flex;gap:10px;overflow:auto;padding:2px 2px 4px}
+.schedule-picker-strip::-webkit-scrollbar{display:none}
+.schedule-picker-strip.is-chat-share{padding:2px 2px 8px}
+.schedule-picker-chip{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px}
+.schedule-picker-chip-btn{width:62px;height:62px;border:2px solid #111;border-radius:18px;background:linear-gradient(180deg,#fff 0%,#f2f2f2 100%);box-shadow:5px 5px 0 rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.schedule-picker-chip-btn img,.schedule-picker-chip-avatar{width:100%;height:100%;object-fit:cover}
+.schedule-picker-chip-avatar{display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;background:#fff}
+.schedule-picker-chip-label{max-width:68px;font-size:10px;font-weight:900;line-height:1.2;text-align:center;word-break:break-word}
+.schedule-chat-peek{
+  position:fixed;left:50%;top:calc(var(--safe-top) + 12px);transform:translateX(-50%) translateY(-8px);width:min(320px,calc(100vw - 28px));
+  border:2px solid #111;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(241,241,241,.95));box-shadow:7px 7px 0 rgba(0,0,0,.12);
+  padding:10px 12px;display:none;align-items:center;gap:10px;z-index:65;cursor:pointer
+}
+.schedule-chat-peek.show{display:flex}
+.schedule-chat-peek-avatar{width:44px;height:44px;border-radius:14px;border:2px solid #111;background:#fff center/cover no-repeat;flex-shrink:0;overflow:hidden}
+.schedule-chat-peek-copy{min-width:0;flex:1}
+.schedule-chat-peek-name{font-size:11px;font-weight:900;line-height:1;color:#666}
+.schedule-chat-peek-text{margin-top:4px;font-size:12px;font-weight:900;line-height:1.45;color:#111;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.schedule-comment-composer textarea{min-height:84px}
+.schedule-secret-lock{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:0 9px;border-radius:999px;background:rgba(255,255,255,.16);font-size:10px;font-weight:900;letter-spacing:.08em}
+.schedule-timeline-item.is-user .schedule-secret-lock{background:rgba(17,17,17,.08)}
+.schedule-pass-result{font-size:12px;font-weight:800;line-height:1.55;color:#666}
+.schedule-secret-input{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;min-height:64px;border:2px solid #111;border-radius:18px;background:linear-gradient(180deg,#fff 0%,#f4f4f4 100%);
+  box-shadow:5px 5px 0 rgba(0,0,0,.16);padding:10px;color:#111
+}
+.schedule-secret-input.is-empty{color:#b7b7b7}
+.schedule-secret-slot{
+  height:40px;border:2px solid #111;border-radius:12px;background:#fff;box-shadow:3px 3px 0 rgba(0,0,0,.12);
+  display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;line-height:1;color:#111
+}
+.schedule-secret-slot.is-empty{color:#d5d5d5}
+.schedule-secret-keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.schedule-secret-key{
+  border:2px solid #111;border-radius:16px;background:linear-gradient(180deg,#fff 0%,#f2f2f2 100%);box-shadow:5px 5px 0 rgba(0,0,0,.16);
+  min-height:48px;font-size:18px;font-weight:900;cursor:pointer
+}
+.schedule-secret-key.wide{grid-column:span 2}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(12px);background:rgba(255,255,255,.96);color:#111;padding:9px 12px;border:1.5px solid #111;border-radius:0;font-size:11px;font-weight:900;line-height:1.45;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;z-index:55;max-width:min(82vw,420px);box-shadow:6px 6px 0 rgba(17,17,17,.18),0 14px 32px rgba(0,0,0,.14);text-align:left}
+.toast::before{content:none}
+.toast.toast-success,.toast.toast-info,.toast.toast-warning,.toast.toast-error{background:rgba(255,255,255,.96);color:#111;border-left-color:#111}
+.toast.sticky{pointer-events:auto;cursor:pointer}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width: 900px){
+  .schedule-detail-grid,.schedule-settings-grid,.schedule-form-grid{grid-template-columns:1fr}
+  .schedule-wheel-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .schedule-char-row{max-width:none;justify-content:flex-start}
+  .schedule-calendar-head{gap:8px;padding:2px 4px 0}
+  .schedule-calendar-controls,.schedule-calendar-tools{gap:8px}
+  .schedule-calendar-heading{margin-top:6px;padding:4px 10px;transform:translateY(-5px)}
+  .schedule-calendar-action{width:38px;height:38px;border-radius:14px}
+  .schedule-calendar-action.nav-circle{width:22px;height:22px;bottom:-10px}
+  .schedule-calendar-title{font-size:25px;transform:translateY(-2px)}
+  .schedule-day-head{gap:8px;padding:12px 10px}
+  .schedule-day-head span{height:46px;border-radius:18px;font-size:10px}
+  .schedule-grid{column-gap:9px;row-gap:4px}
+  .schedule-day-inner{border-radius:24px}
+  .schedule-current-char{width:60px;height:60px}
+  .schedule-char-label{right:36px;top:-10px;max-width:120px;padding:5px 10px;font-size:10px}
+  .schedule-live-timeline{padding-left:22px}
+  .schedule-timeline-item{grid-template-columns:64px 1fr;gap:10px}
+  .schedule-time{font-size:11px;padding-top:9px}
+  .schedule-sticky-grid{grid-template-columns:1fr}
+  .schedule-action-sheet{gap:12px}
+  .schedule-sheet-btn{width:136px;flex-basis:136px;max-width:calc(50% - 6px)}
+}
+</style>
+</head>
+<body>
+  <div class="schedule-shell">
+    <div class="schedule-frame">
+      <div class="schedule-calendar-main-card">
+        <div class="schedule-calendar-head">
+          <div class="schedule-calendar-controls">
+            <button class="schedule-calendar-action" type="button" title="返回" onclick="closeScheduleApp(event)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 4.5 8 12l7.5 7.5-1.9 1.9L4.2 12l9.4-9.4z"/></svg>
+            </button>
+          </div>
+          <div class="schedule-calendar-heading">
+            <button class="schedule-calendar-action nav-circle" type="button" title="上个月" onclick="shiftMonth(-1)">‹</button>
+            <div class="schedule-calendar-title" id="monthName">APRIL</div>
+            <button class="schedule-calendar-action nav-circle" type="button" title="下个月" onclick="shiftMonth(1)">›</button>
+          </div>
+          <div class="schedule-calendar-tools">
+            <button class="schedule-calendar-action" type="button" title="时间感知" onclick="openSettingsDrawer()">
+              <span class="schedule-calendar-action-text">⋯</span>
+            </button>
+          </div>
+        </div>
+        <div class="schedule-day-head">
+          <span data-weekday-index="0">MON</span>
+          <span data-weekday-index="1">TUE</span>
+          <span data-weekday-index="2">WED</span>
+          <span data-weekday-index="3">THU</span>
+          <span data-weekday-index="4">FRI</span>
+          <span data-weekday-index="5">SAT</span>
+          <span data-weekday-index="6">SUN</span>
+        </div>
+        <div class="schedule-grid" id="calendarGrid"></div>
+        <div class="schedule-calendar-corner">
+          <div class="schedule-char-label" id="currentCharLabel">CHAR</div>
+          <button class="schedule-current-char" id="currentCharAvatarBtn" type="button" onclick="showRandomCharMood(event)"><span class="schedule-current-char-fallback">CH</span></button>
+        </div>
+      </div>
+
+      <div class="schedule-detail-card">
+        <div class="schedule-agenda-wrap">
+          <div class="schedule-agenda-head">
+            <div class="schedule-agenda-title">
+              <div class="schedule-kicker">今日安排</div>
+              <div class="schedule-panel-title">时间轴</div>
+            </div>
+            <div class="schedule-detail-actions">
+              <button type="button" onclick="generateSelectedDay()">TA在干什么？</button>
+              <button type="button" onclick="triggerCharPageComment()">TA怎么想的？</button>
+            </div>
+          </div>
+
+          <div class="schedule-badge-list" id="badgeList"></div>
+          <div id="charProgressStepper"></div>
+          <div class="schedule-live-timeline" id="timelineList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="schedule-settings-drawer" id="settingsDrawer">
+    <div class="schedule-settings-head">
+      <div>
+        <div class="schedule-kicker">时间感知</div>
+        <div class="schedule-panel-title">时间感知设置</div>
+      </div>
+      <button class="schedule-icon-btn" type="button" onclick="closeSettingsDrawer()">×</button>
+    </div>
+    <div class="schedule-settings-grid">
+      <div class="schedule-field">
+        <div class="schedule-switch-row">
+          <div>
+            <label>总开关</label>
+            <p>决定整个日程系统要不要严格按日期与时间推进。</p>
+          </div>
+          <button class="schedule-switch" id="globalAwarenessSwitch" type="button" onclick="toggleGlobalAwareness()"></button>
+        </div>
+      </div>
+      <div class="schedule-field">
+        <div class="schedule-switch-row">
+          <div>
+            <label>当前 Char 覆盖</label>
+            <p>这个角色可以单独决定是否遵守严格时间感知。</p>
+          </div>
+          <button class="schedule-switch" id="charAwarenessSwitch" type="button" onclick="toggleCharAwareness()"></button>
+        </div>
+      </div>
+      <div class="schedule-field">
+        <div class="schedule-switch-row">
+          <div>
+            <label>日历留言</label>
+            <p>允许这个角色在日历页面留下带人设感的小留言。</p>
+          </div>
+          <button class="schedule-switch" id="charCommentSwitch" type="button" onclick="toggleCharComments()"></button>
+        </div>
+      </div>
+      <div class="schedule-field">
+        <div class="schedule-switch-row">
+          <div>
+            <label>聊天引用</label>
+            <p>允许他把待办或行程引用成特殊气泡带去聊天。</p>
+          </div>
+          <button class="schedule-switch" id="charQuoteSwitch" type="button" onclick="toggleCharQuotes()"></button>
+        </div>
+      </div>
+      <div class="schedule-field">
+        <div class="schedule-switch-row">
+          <div>
+            <label>清空当天行程</label>
+            <p>会一起清掉这一天里 char 和 user 的行程与待办。</p>
+          </div>
+          <button class="schedule-ghost-btn" type="button" onclick="openClearDayModal()">清空</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="schedule-modal" id="entryModal" onclick="handleModalMask(event)">
+    <div class="schedule-modal-card">
+      <div class="schedule-modal-head">
+        <h3 id="entryModalTitle">添加条目</h3>
+      </div>
+      <div class="schedule-modal-sub" id="entryModalSub"></div>
+      <div class="schedule-form-grid" id="entryFormGrid"></div>
+      <div class="schedule-modal-actions" id="entryModalActions">
+        <button class="schedule-ghost-btn" type="button" onclick="closeEntryModal()">取消</button>
+        <button class="schedule-solid-btn" type="button" onclick="saveEntryFromModal()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="schedule-modal" id="commentModal" onclick="handleCommentModalMask(event)">
+    <div class="schedule-modal-card">
+      <h3 id="commentModalTitle">留言</h3>
+      <div class="schedule-modal-sub" id="commentModalSub"></div>
+      <div class="schedule-sticky-grid" id="commentStickyGrid"></div>
+      <div class="schedule-comment-composer">
+        <textarea class="schedule-textarea" id="commentComposerText" placeholder="留一句话吧..."></textarea>
+      </div>
+      <div class="schedule-modal-actions">
+        <button class="schedule-ghost-btn" type="button" onclick="closeCommentModal()">取消</button>
+        <button class="schedule-solid-btn" type="button" onclick="saveUserComment()">贴上去</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="schedule-modal" id="secretModal" onclick="handleSecretModalMask(event)">
+    <div class="schedule-modal-card">
+      <h3 id="secretModalTitle">查看秘密行程</h3>
+      <div class="schedule-modal-sub" id="secretModalSub"></div>
+      <div class="schedule-form-grid">
+        <div class="schedule-secret-input is-empty" id="secretPasswordInput" data-value="">输入数字密码</div>
+        <div class="schedule-secret-keypad">
+          <button class="schedule-secret-key" type="button" onclick="tapSecretDigit(1,'peek')">1</button>
+          <button class="schedule-secret-key" type="button" onclick="tapSecretDigit(2,'peek')">2</button>
+          <button class="schedule-secret-key" type="button" onclick="tapSecretDigit(3,'peek')">3</button>
+          <button class="schedule-secret-key" type="button" onclick="tapSecretDigit(4,'peek')">4</button>
+          <button class="schedule-secret-key" type="button" onclick="tapSecretDigit(5,'peek')">5</button>
+          <button class="schedule-secret-key" type="button" onclick="tapSecretDigit(6,'peek')">6</button>
+          <button class="schedule-secret-key" type="button" onclick="tapSecretDigit(7,'peek')">7</button>
+          <button class="schedule-secret-key" type="button" onclick="tapSecretDigit(8,'peek')">8</button>
+          <button class="schedule-secret-key" type="button" onclick="tapSecretDigit(9,'peek')">9</button>
+          <button class="schedule-secret-key wide" type="button" onclick="clearSecretDigits('peek')">清空</button>
+          <button class="schedule-secret-key" type="button" onclick="tapSecretDigit(0,'peek')">0</button>
+        </div>
+      </div>
+      <div class="schedule-pass-result" id="secretHintText"></div>
+      <div class="schedule-modal-actions">
+        <button class="schedule-ghost-btn" type="button" onclick="closeSecretModal()">取消</button>
+        <button class="schedule-solid-btn" type="button" onclick="attemptSecretPeek()">试试看</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="schedule-modal" id="deleteModal" onclick="handleDeleteModalMask(event)">
+    <div class="schedule-modal-card">
+      <h3>删除这条安排？</h3>
+      <div class="schedule-modal-sub" id="deleteModalSub">删掉之后不会自动恢复哦。</div>
+      <div class="schedule-modal-actions">
+        <button class="schedule-ghost-btn" type="button" onclick="closeDeleteModal()">取消</button>
+        <button class="schedule-solid-btn" type="button" onclick="confirmDeleteTarget()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="schedule-modal" id="clearDayModal" onclick="handleClearDayModalMask(event)">
+    <div class="schedule-modal-card">
+      <h3>清空当天行程？</h3>
+      <div class="schedule-modal-sub">会一起清掉这一天里 char 和 user 的行程与待办。</div>
+      <div class="schedule-modal-actions">
+        <button class="schedule-ghost-btn" type="button" onclick="closeClearDayModal()">取消</button>
+        <button class="schedule-solid-btn" type="button" onclick="confirmClearDaySchedule()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="schedule-modal" id="timelineActionModal" onclick="handleTimelineActionMask(event)">
+    <div class="schedule-modal-card">
+      <h3 id="timelineActionTitle">这条安排</h3>
+      <div class="schedule-modal-sub" id="timelineActionSub">你想怎么处理？</div>
+      <div class="schedule-modal-actions" style="justify-content:flex-start">
+        <button class="schedule-ghost-btn" type="button" id="timelineActionShareBtn" onclick="openShareTargetModal()">分享到聊天</button>
+        <button class="schedule-ghost-btn" type="button" id="timelineActionEditBtn" onclick="openTimelineActionEdit()">编辑</button>
+        <button class="schedule-ghost-btn" type="button" id="timelineActionDeleteBtn" onclick="confirmTimelineActionDelete()">删除</button>
+        <button class="schedule-solid-btn" type="button" onclick="closeTimelineActionModal()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="schedule-modal" id="shareTargetModal" onclick="handleShareTargetMask(event)">
+    <div class="schedule-modal-card">
+      <h3>分享到聊天</h3>
+      <div class="schedule-modal-sub" id="shareTargetSub">选择一个角色，把这条安排发过去。</div>
+      <div class="schedule-picker-list" id="shareTargetList"></div>
+      <div class="schedule-modal-actions">
+        <button class="schedule-ghost-btn" type="button" onclick="closeShareTargetModal()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <button class="schedule-chat-peek" id="scheduleChatPeek" type="button" onclick="openPeekChat()">
+    <span class="schedule-chat-peek-avatar" id="scheduleChatPeekAvatar"></span>
+    <span class="schedule-chat-peek-copy">
+      <span class="schedule-chat-peek-name" id="scheduleChatPeekName">角色</span>
+      <span class="schedule-chat-peek-text" id="scheduleChatPeekText"></span>
+    </span>
+  </button>
+
+<script>
+var scheduleState = ScheduleShared.normalizeState(null);
+var characterList = [];
+var activeCharId = '';
+var pendingScheduleCharId = '';
+var viewMonthKey = '';
+var selectedDateKey = '';
+var entryModalMode = '';
+var toastTimer = null;
+var scheduleAvatarAssetCache = {};
+var schedulePersistPromise = Promise.resolve();
+var scheduleLiveTimeRenderTimer = null;
+var scheduleKaomoji = ['(>_<)','(｡･ω･｡)','(≧▽≦)','(っ˘ω˘ς )','(｡•̀ᴗ-)✧','(╥﹏╥)','(๑•̀ㅂ•́)و','( ˘͈ ᵕ ˘͈ )','(ง •̀_•́)ง','(｡>﹏<｡)','( ´ ▽ ` )','(￣▽￣*)ゞ'];
+var entryDraft = null;
+var entryEditTarget = null;
+var commentTarget = null;
+var commentTriggerSource = 'modal';
+var secretTarget = null;
+var secretPeekDraft = '';
+var deleteTarget = null;
+var timelineActionTarget = null;
+var unlockedSecretKeys = {};
+var longPressTimer = 0;
+var schedulePeekTimer = 0;
+var schedulePeekQueue = [];
+var currentPeekChar = null;
+var stickyToastToken = 0;
+
+function esc(text){
+  return String(text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escJs(text){
+  return String(text || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/\r/g,'');
+}
+
+function loadStoredAsset(key){
+  var shell = getParentShell();
+  try{
+    if(shell && shell !== window && typeof shell.loadStoredAsset === 'function'){
+      return shell.loadStoredAsset(key).then(function(src){
+        return String(src || '').trim();
+      }).catch(function(){ return ''; });
+    }
+    if(shell && shell !== window && shell.assetStore && typeof shell.assetStore.load === 'function'){
+      return shell.assetStore.load(key).then(function(src){
+        return String(src || '').trim();
+      }).catch(function(){ return ''; });
+    }
+  }catch(err){}
+  if(window.assetStore && typeof window.assetStore.load === 'function') return window.assetStore.load(key);
+  try{ return Promise.resolve(localStorage.getItem(key) || ''); }catch(e){ return Promise.resolve(''); }
+}
+
+function inferToastKind(text){
+  var raw = String(text || '');
+  if(/成功|已保存|已添加|已删除|已更新|送达|完成|解锁/.test(raw)) return 'success';
+  if(/失败|错误|不对|不能|没有|拦截|超时|限流|额度|权限|密钥|key|CORS|跨域|加载失败/.test(raw)) return 'error';
+  if(/稍等|需要|慢|重试|注意/.test(raw)) return 'warning';
+  return 'info';
+}
+function setScheduleToastKind(node, text, type){
+  if(!node) return;
+  node.classList.remove('toast-success','toast-info','toast-warning','toast-error');
+  node.classList.add('toast-' + (type || inferToastKind(text)));
+}
+function toast(text, type){
+  var node = document.getElementById('toast');
+  if(!node) return;
+  var kind = type || inferToastKind(text);
+  var sticky = kind === 'error';
+  node.textContent = String(text || '').trim();
+  setScheduleToastKind(node, text, kind);
+  node.classList.toggle('sticky', sticky);
+  node.onclick = sticky ? function(){
+    node.classList.remove('show');
+    node.classList.remove('sticky');
+    node.onclick = null;
+  } : null;
+  node.classList.add('show');
+  clearTimeout(toastTimer);
+  stickyToastToken = 0;
+  if(!sticky) toastTimer = setTimeout(function(){ node.classList.remove('show'); }, 4200);
+}
+
+function showStickyToast(text, type){
+  var node = document.getElementById('toast');
+  if(!node) return 0;
+  stickyToastToken = Date.now();
+  node.textContent = String(text || '').trim();
+  setScheduleToastKind(node, text, type);
+  node.classList.add('sticky');
+  node.onclick = function(){
+    node.classList.remove('show');
+    node.classList.remove('sticky');
+    node.onclick = null;
+  };
+  node.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = null;
+  return stickyToastToken;
+}
+
+function settleStickyToast(token, text){
+  if(!token) return;
+  if(stickyToastToken && token !== stickyToastToken) return;
+  stickyToastToken = 0;
+  toast(text);
+}
+
+function showScheduleChatPeek(char, text){
+  currentPeekChar = char || null;
+  var card = document.getElementById('scheduleChatPeek');
+  var avatar = document.getElementById('scheduleChatPeekAvatar');
+  var name = document.getElementById('scheduleChatPeekName');
+  var body = document.getElementById('scheduleChatPeekText');
+  if(!card || !avatar || !name || !body) return;
+  var src = getCharacterAvatar(char);
+  avatar.style.backgroundImage = src ? ('url(' + JSON.stringify(src) + ')') : '';
+  name.textContent = getCharacterName(char);
+  body.textContent = String(text || '').trim();
+  card.classList.add('show');
+  clearTimeout(schedulePeekTimer);
+  schedulePeekTimer = setTimeout(function(){
+    card.classList.remove('show');
+    currentPeekChar = null;
+    processScheduleChatPeekQueue();
+  }, 3200);
+}
+
+function openPeekChat(){
+  clearTimeout(schedulePeekTimer);
+  document.getElementById('scheduleChatPeek').classList.remove('show');
+  try{
+    if(window.parent) window.parent.postMessage({ type:'OPEN_CHAT_WITH', payload:(currentPeekChar || getActiveChar()) }, '*');
+  }catch(err){}
+  currentPeekChar = null;
+  processScheduleChatPeekQueue();
+}
+
+function enqueueScheduleChatPeek(char, text){
+  schedulePeekQueue.push({ char:char || null, text:String(text || '').trim() });
+  processScheduleChatPeekQueue();
+}
+
+function processScheduleChatPeekQueue(){
+  var card = document.getElementById('scheduleChatPeek');
+  if(!card || card.classList.contains('show')) return;
+  var next = schedulePeekQueue.shift();
+  if(!next || !next.text) return;
+  showScheduleChatPeek(next.char, next.text);
+}
+
+function closeScheduleApp(evt){
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  resetScheduleViewToToday();
+  flushScheduleState().then(function(){
+    try{
+      if(window.parent) window.parent.postMessage({ type:'CLOSE_APP' }, '*');
+    }catch(err){}
+  }).catch(function(err){
+    toast('日程保存失败：' + (err && err.message ? err.message : '未知错误'));
+  });
+}
+
+function getParentShell(){
+  try{
+    if(window.parent && window.parent !== window) return window.parent;
+  }catch(err){}
+  return window;
+}
+
+function getScheduleActiveAccountId(){
+  try{
+    if(window.AccountManager){
+      window.AccountManager.ensure();
+      var active = window.AccountManager.getActive && window.AccountManager.getActive();
+      return String(active && active.id || '').trim();
+    }
+  }catch(err){}
+  return '';
+}
+
+function getScheduleScopedKey(base){
+  var safeBase = String(base || '').trim();
+  if(!safeBase) return '';
+  try{
+    if(window.AccountManager){
+      window.AccountManager.ensure();
+      return window.AccountManager.scopedKey(safeBase);
+    }
+  }catch(err){}
+  var activeId = getScheduleActiveAccountId();
+  return activeId ? (safeBase + '__acct_' + activeId) : safeBase;
+}
+
+function getScheduleWeatherSetting(role, charId){
+  var safeRole = role === 'char' ? 'char' : 'user';
+  var safeCharId = String(charId || '').trim();
+  if(!safeCharId) return null;
+  var baseKey = (safeRole === 'char' ? 'real_weather_char_' : 'real_weather_user_') + safeCharId;
+  var keys = [getScheduleScopedKey(baseKey), baseKey].filter(Boolean);
+  try{
+    var activeChar = getActiveChar();
+    var embedded = activeChar && safeRole === 'char' ? activeChar.weatherCharSetting : (activeChar && activeChar.weatherUserSetting);
+    if(embedded && typeof embedded === 'object' && String(embedded.timezone || '').trim()){
+      return embedded;
+    }
+  }catch(err){}
+  try{
+    for(var k = 0; k < localStorage.length; k++){
+      var key = localStorage.key(k);
+      if(key && (key === baseKey || key.indexOf(baseKey + '__acct_') === 0) && keys.indexOf(key) === -1){
+        keys.push(key);
+      }
+    }
+  }catch(scanErr){}
+  var best = null;
+  for(var i = 0; i < keys.length; i++){
+    try{
+      var raw = localStorage.getItem(keys[i]);
+      if(!raw) continue;
+      var parsed = JSON.parse(raw);
+      if(!(parsed && typeof parsed === 'object')) continue;
+      if(parsed.locked && String(parsed.timezone || '').trim()) return parsed;
+      if(!best || Number(parsed.updatedAt || 0) > Number(best.updatedAt || 0)) best = parsed;
+    }catch(err){}
+  }
+  return best;
+}
+
+function buildScheduleWeatherSnapshot(role, charId){
+  var setting = getScheduleWeatherSetting(role, charId);
+  if(!(setting && typeof setting === 'object')) return null;
+  return {
+    aliasName: String(setting.aliasName || '').trim(),
+    realName: String(setting.realName || '').trim(),
+    resolvedName: String(setting.resolvedName || '').trim(),
+    timezone: String(setting.timezone || '').trim(),
+    country: String(setting.country || '').trim(),
+    admin1: String(setting.admin1 || '').trim(),
+    latitude: setting.latitude === null || setting.latitude === '' ? null : Number(setting.latitude),
+    longitude: setting.longitude === null || setting.longitude === '' ? null : Number(setting.longitude),
+    locked: !!setting.locked
+  };
+}
+
+function getPresenceShared(){
+  try{
+    if(window.PresenceShared) return window.PresenceShared;
+    var shell = getParentShell();
+    if(shell && shell !== window && shell.PresenceShared) return shell.PresenceShared;
+  }catch(err){}
+  return null;
+}
+
+function getScheduleDisplayLocationLabel(role){
+  role = role === 'char' ? 'char' : 'user';
+  var safeCharId = String((getActiveChar() && getActiveChar().id) || '').trim();
+  if(!safeCharId) return '';
+  try{
+    var raw = localStorage.getItem(((window.__activeAccountId ? '__acct_' + window.__activeAccountId + '__' : '') + (role === 'char' ? 'real_weather_char_' : 'real_weather_user_') + safeCharId)) || '';
+    if(raw){
+      var parsed = JSON.parse(raw);
+      var alias = String(parsed && parsed.aliasName || '').trim();
+      if(alias) return alias;
+    }
+  }catch(err){}
+  try{
+    var fallbackRaw = localStorage.getItem((role === 'char' ? 'real_weather_char_' : 'real_weather_user_') + safeCharId) || '';
+    if(fallbackRaw){
+      var fallbackParsed = JSON.parse(fallbackRaw);
+      var fallbackAlias = String(fallbackParsed && fallbackParsed.aliasName || '').trim();
+      if(fallbackAlias) return fallbackAlias;
+    }
+  }catch(err){}
+  return '';
+}
+
+function renderScheduleDisplayLocation(owner, location){
+  var text = String(location || '').trim();
+  if(!text) return '';
+  var alias = getScheduleDisplayLocationLabel(owner);
+  if(!alias) return text;
+  var userReal = '';
+  var charReal = '';
+  try{
+    var safeCharId = String((getActiveChar() && getActiveChar().id) || '').trim();
+    if(safeCharId){
+      var userRaw = localStorage.getItem('real_weather_user_' + safeCharId) || '';
+      var charRaw = localStorage.getItem('real_weather_char_' + safeCharId) || '';
+      userReal = String((userRaw && JSON.parse(userRaw).resolvedName) || (userRaw && JSON.parse(userRaw).realName) || '').trim();
+      charReal = String((charRaw && JSON.parse(charRaw).resolvedName) || (charRaw && JSON.parse(charRaw).realName) || '').trim();
+    }
+  }catch(err){}
+  [userReal, charReal].filter(Boolean).forEach(function(realName){
+    if(realName && text.indexOf(realName) !== -1){
+      text = text.split(realName).join(alias);
+    }
+  });
+  return text;
+}
+
+function renderScheduleDisplayText(owner, text){
+  return renderScheduleDisplayLocation(owner, String(text || '').trim());
+}
+
+function getLocalClockParts(nowMs, timezoneName, timezoneOffset){
+  var safeNow = Number(nowMs || Date.now()) || Date.now();
+  var safeName = String(timezoneName || '').trim();
+  function fromParts(parts){
+    var year = parseInt(parts.year || '0', 10) || 0;
+    var month = parseInt(parts.month || '0', 10) || 0;
+    var day = parseInt(parts.day || '0', 10) || 0;
+    var hour = parseInt(parts.hour || '0', 10) || 0;
+    var minute = parseInt(parts.minute || '0', 10) || 0;
+    var weekday = Number(parts.weekdayIndex);
+    return {
+      dateKey: year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0'),
+      monthKey: year + '-' + String(month).padStart(2, '0'),
+      nowTime: String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0'),
+      weekdayIndex: Number.isFinite(weekday) ? weekday : 0
+    };
+  }
+  if(safeName){
+    try{
+      var partMap = {};
+      var weekdayRaw = '';
+      new Intl.DateTimeFormat('en-CA', {
+        timeZone: safeName,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        weekday: 'short',
+        hourCycle: 'h23'
+      }).formatToParts(new Date(safeNow)).forEach(function(part){
+        if(part.type === 'weekday') weekdayRaw = String(part.value || '').toLowerCase();
+        else if(part.type !== 'literal') partMap[part.type] = part.value;
+      });
+      partMap.weekdayIndex = ['mon','tue','wed','thu','fri','sat','sun'].indexOf(weekdayRaw.slice(0, 3));
+      return fromParts(partMap);
+    }catch(err){}
+  }
+  var shifted = new Date(safeNow + (Number(timezoneOffset || 0) || 0) * 3600000);
+  return fromParts({
+    year: shifted.getUTCFullYear(),
+    month: shifted.getUTCMonth() + 1,
+    day: shifted.getUTCDate(),
+    hour: shifted.getUTCHours(),
+    minute: shifted.getUTCMinutes(),
+    weekdayIndex: (shifted.getUTCDay() + 6) % 7
+  });
+}
+
+function buildScheduleGeoTimeContext(char){
+  var safeNow = Date.now();
+  var ps = getPresenceShared();
+  var snapshot = null;
+  try{
+    if(ps && char && typeof ps.getPresenceSnapshot === 'function'){
+      snapshot = ps.getPresenceSnapshot(char, safeNow);
+    }
+  }catch(err){}
+  var user = snapshot && snapshot.user ? snapshot.user : null;
+  var charPresence = snapshot && snapshot.char ? snapshot.char : null;
+  var userWeather = char && char.id ? buildScheduleWeatherSnapshot('user', char.id) : null;
+  var charWeather = char && char.id ? buildScheduleWeatherSnapshot('char', char.id) : null;
+  var userOffset = 0;
+  var userTimezoneName = '';
+  try{
+    if(ps && user){
+      userTimezoneName = String((userWeather && userWeather.timezone) || user.weatherTimezone || user.timezone || '').trim();
+      if(Number.isFinite(Number(user.weatherTimezoneOffset))){
+        userOffset = Number(user.weatherTimezoneOffset) || 0;
+      }else if(user.cityId && typeof ps.getCity === 'function'){
+        userOffset = Number((ps.getCity(user.cityId) || {}).tz || 0) || 0;
+      }
+    }
+  }catch(err){}
+  var charOffset = Number(charPresence && charPresence.timezoneOffset || userOffset || 0) || 0;
+  var charTimezoneName = String((charWeather && charWeather.timezone) || (charPresence && charPresence.timezoneName) || '').trim();
+  var userLocal = getLocalClockParts(safeNow, userTimezoneName, userOffset);
+  var charLocal = getLocalClockParts(safeNow, charTimezoneName, charOffset);
+  return {
+    user: userLocal,
+    char: charLocal,
+    liveInput: {
+      userDateKey: userLocal.dateKey,
+      userNowTime: userLocal.nowTime,
+      charDateKey: charLocal.dateKey,
+      charNowTime: charLocal.nowTime
+    }
+  };
+}
+
+function getActiveCharacterFromShell(){
+  var shell = getParentShell();
+  try{
+    if(shell && typeof shell.getCurrentForegroundCharacter === 'function'){
+      var live = shell.getCurrentForegroundCharacter();
+      if(live && live.id) return live;
+    }
+  }catch(err){}
+  try{
+    if(window.AccountManager){
+      window.AccountManager.ensure();
+      var scopedChatId = window.AccountManager.scopedKey('activeChatCharacterId');
+      var rawChatId = localStorage.getItem(scopedChatId) || localStorage.getItem('activeChatCharacterId') || '';
+      var chatId = String(rawChatId || '').trim();
+      if(chatId){
+        var list = Array.isArray(characterList) ? characterList : [];
+        var matched = list.find(function(item){ return item && String(item.id) === chatId; });
+        if(matched) return matched;
+        return { id: chatId };
+      }
+      var scoped = window.AccountManager.scopedKey('activeCharacter');
+      var parsed = JSON.parse(localStorage.getItem(scoped) || localStorage.getItem('activeCharacter') || 'null');
+      if(parsed && parsed.id) return parsed;
+    }
+  }catch(err){}
+  try{
+    if(shell && typeof shell.getActiveCharacterData === 'function'){
+      var active = shell.getActiveCharacterData();
+      if(active && active.id) return active;
+    }
+  }catch(err){}
+  return null;
+}
+
+function getLiveChatAvatarSrcFromShell(charId){
+  var shell = getParentShell();
+  var safeId = String(charId || '').trim();
+  try{
+    var frame = shell && shell.document ? shell.document.getElementById('app-iframe') : null;
+    var win = frame && frame.contentWindow ? frame.contentWindow : null;
+    if(!win || !win.document) return '';
+    var liveChar = win.character;
+    if(safeId && liveChar && String(liveChar.id || '') && String(liveChar.id || '') !== safeId) return '';
+    var selectors = ['#hdrAvatar img', '#csCharAvatar img', '#idcAvatar img', '#chatExportIdcAvatar img'];
+    for(var i = 0; i < selectors.length; i++){
+      var node = win.document.querySelector(selectors[i]);
+      var src = String((node && node.getAttribute && node.getAttribute('src')) || (node && node.src) || '').trim();
+      if(src) return src;
+    }
+  }catch(err){}
+  return '';
+}
+
+function getShellResolvedCharacter(charId){
+  var shell = getParentShell();
+  var safeId = String(charId || '').trim();
+  if(!safeId) return null;
+  try{
+    if(shell && typeof shell.resolveShellCharacterById === 'function'){
+      var fallback = shell && typeof shell.getActiveCharacterData === 'function' ? shell.getActiveCharacterData() : null;
+      var resolved = shell.resolveShellCharacterById(safeId, fallback);
+      if(resolved && resolved.id) return resolved;
+    }
+  }catch(err){}
+  try{
+    if(shell && typeof shell.getActiveCharacterData === 'function'){
+      var active = shell.getActiveCharacterData();
+      if(active && String(active.id || '') === safeId) return active;
+    }
+  }catch(err){}
+  try{
+    if(shell && typeof shell.getCurrentForegroundCharacter === 'function'){
+      var live = shell.getCurrentForegroundCharacter();
+      if(live && String(live.id || '') === safeId) return live;
+    }
+  }catch(err){}
+  return null;
+}
+
+function getShellAvatarSrc(charId){
+  var shell = getParentShell();
+  var safeId = String(charId || '').trim();
+  if(!safeId) return '';
+  try{
+    if(shell && typeof shell.getCharacterAvatarForBg === 'function'){
+      var resolved = getShellResolvedCharacter(safeId);
+      var src = String(shell.getCharacterAvatarForBg(resolved || { id:safeId }) || '').trim();
+      if(src) return src;
+    }
+  }catch(err){}
+  return '';
+}
+
+function getCharacterName(char){
+  return String((char && (char.nickname || char.name)) || '角色');
+}
+
+function getActiveUserName(){
+  try{
+    var activeChar = typeof getActiveChar === 'function' ? getActiveChar() : null;
+    var embedded = String((activeChar && activeChar.userNameProfile) || '').trim();
+    if(embedded) return embedded;
+    var shell = getParentShell();
+    if(shell && typeof shell.getChatUserName === 'function'){
+      var live = String(shell.getChatUserName(activeCharId) || '').trim();
+      if(live) return live;
+    }
+  }catch(err){}
+  try{
+    var am = window.AccountManager;
+    if(am && typeof am.getActiveProfileName === 'function'){
+      var profile = String(am.getActiveProfileName() || '').trim();
+      if(profile) return profile;
+    }
+  }catch(err){}
+  try{
+    var safeCharId = String(activeCharId || '').trim();
+    var scoped = window.AccountManager && typeof window.AccountManager.scopedKey === 'function' && safeCharId
+      ? String(window.AccountManager.scopedKey('user_name_' + safeCharId) || '').trim()
+      : '';
+    var scopedValue = String((scoped ? localStorage.getItem(scoped) : '') || (safeCharId ? localStorage.getItem('user_name_' + safeCharId) : '') || '').trim();
+    if(scopedValue) return scopedValue;
+    if(safeCharId) return 'USER';
+    return String(localStorage.getItem('user_name') || 'USER').trim() || 'USER';
+  }catch(err){}
+  return 'USER';
+}
+
+function getActiveUserPersona(){
+  try{
+    var activeChar = typeof getActiveChar === 'function' ? getActiveChar() : null;
+    var embedded = String((activeChar && activeChar.userPersonaProfile) || '').trim();
+    if(embedded) return embedded;
+    var safeCharId = String(activeCharId || '').trim();
+    var scoped = window.AccountManager && typeof window.AccountManager.scopedKey === 'function' && safeCharId
+      ? String(window.AccountManager.scopedKey('user_persona_' + safeCharId) || '').trim()
+      : '';
+    var scopedValue = String((scoped ? localStorage.getItem(scoped) : '') || (safeCharId ? localStorage.getItem('user_persona_' + safeCharId) : '') || '').trim();
+    if(scopedValue) return scopedValue;
+    if(safeCharId) return '';
+    return String(localStorage.getItem('user_persona') || '').trim();
+  }catch(err){}
+  return '';
+}
+
+function formatScheduleDateZh(dateKey){
+  var d = new Date(String(dateKey || '') + 'T12:00:00');
+  if(Number.isNaN(d.getTime())) d = new Date();
+  return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+}
+
+function formatScheduleWeekdayZh(dateKey){
+  var d = new Date(String(dateKey || '') + 'T12:00:00');
+  if(Number.isNaN(d.getTime())) d = new Date();
+  return ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()] || '';
+}
+
+function formatCommentClock(value){
+  var d = new Date(Number(value || 0) || Date.now());
+  if(Number.isNaN(d.getTime())) d = new Date();
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+function getTimelineUnlockKey(kind, itemId){
+  return String(selectedDateKey || '') + '::' + String(kind || '') + '::' + String(itemId || '');
+}
+
+function isTimelineSecretUnlocked(kind, itemId){
+  return !!unlockedSecretKeys[getTimelineUnlockKey(kind, itemId)];
+}
+
+function rememberTimelineSecretUnlocked(kind, itemId){
+  unlockedSecretKeys[getTimelineUnlockKey(kind, itemId)] = true;
+}
+
+function buildHalfHourOptions(){
+  var list = [];
+  for(var h = 0; h < 24; h++){
+    list.push(String(h).padStart(2, '0') + ':00');
+    list.push(String(h).padStart(2, '0') + ':30');
+  }
+  return list;
+}
+
+function getEventPublicMask(item){
+  var raw = String(item && (item.publicMask || item.maskedTitle || item.title) || '').trim();
+  return raw || '有安排';
+}
+
+function getRenderedCharTimelineTitle(item){
+  if(!item || !item.secret) return String(item && item.title || '').trim();
+  if(isTimelineSecretUnlocked('timeline', item.id)) return String(item.title || '').trim();
+  return getEventPublicMask(item);
+}
+
+function getRenderedCharTimelineNote(item){
+  if(!item || !item.secret) return String(item && item.note || '').trim();
+  if(isTimelineSecretUnlocked('timeline', item.id)) return String(item.note || '').trim();
+  return item.secretHint ? ('提示：' + String(item.secretHint || '').trim()) : '需要密码才能偷看。';
+}
+
+function isRenderableScheduleAvatarSrc(src){
+  return /^(data:|https?:|blob:|\/|\.\.?\/|assets\/)/i.test(String(src || '').trim());
+}
+
+function getCharacterAvatar(char){
+  if(!char) return '';
+  var shellResolved = getShellResolvedCharacter(char.id);
+  var shellDirect = String((shellResolved && (shellResolved.imageData || shellResolved.avatarUrl || shellResolved.avatar)) || '').trim();
+  if(isRenderableScheduleAvatarSrc(shellDirect)) return shellDirect;
+  var liveSrc = getLiveChatAvatarSrcFromShell(char.id);
+  if(isRenderableScheduleAvatarSrc(liveSrc)) return liveSrc;
+  var shellSrc = getShellAvatarSrc(char.id);
+  if(isRenderableScheduleAvatarSrc(shellSrc)) return shellSrc;
+  var direct = String(char.imageData || char.avatarUrl || char.avatar || '').trim();
+  if(isRenderableScheduleAvatarSrc(direct)) return direct;
+  var id = String(char.id || '').trim();
+  if(id){
+    if(isRenderableScheduleAvatarSrc(scheduleAvatarAssetCache[id])) return String(scheduleAvatarAssetCache[id] || '').trim();
+    try{
+      var scoped = window.AccountManager && typeof window.AccountManager.scopedKey === 'function'
+        ? String(window.AccountManager.scopedKey('char_avatar_' + id) || '').trim()
+        : '';
+      var stored = (scoped ? localStorage.getItem(scoped) : '') || localStorage.getItem('char_avatar_' + id) || '';
+      stored = String(stored || '').trim();
+      if(isRenderableScheduleAvatarSrc(stored)) return stored;
+    }catch(err){}
+  }
+  return '';
+}
+
+function getCharacterById(charId){
+  var safeId = String(charId || '').trim();
+  if(!safeId) return null;
+  return characterList.find(function(item){ return item && String(item.id) === safeId; }) || null;
+}
+
+function renderScheduleAvatarButton(btn, char, avatarSrc){
+  if(!btn) return;
+  var safeSrc = String(avatarSrc || '').trim();
+  var fallbackText = esc(getCharacterName(char).slice(0,2) || 'CH');
+  btn.style.backgroundImage = 'none';
+  btn.innerHTML = '';
+  if(isRenderableScheduleAvatarSrc(safeSrc)){
+    var media = document.createElement('span');
+    media.className = 'schedule-current-char-media';
+    media.style.backgroundImage = 'url("' + safeSrc.replace(/(["\\])/g, '\\$1') + '")';
+    btn.appendChild(media);
+    return;
+  }
+  btn.innerHTML = '<span class="schedule-current-char-fallback">' + fallbackText + '</span>';
+}
+
+function resolveCharacterAvatarAsync(char){
+  if(!char || !char.id) return Promise.resolve('');
+  var charId = String(char.id);
+  var shellResolved = getShellResolvedCharacter(charId);
+  var shellDirect = String((shellResolved && (shellResolved.imageData || shellResolved.avatarUrl || shellResolved.avatar)) || '').trim();
+  if(isRenderableScheduleAvatarSrc(shellDirect)) return Promise.resolve(shellDirect);
+  var liveSrc = getLiveChatAvatarSrcFromShell(charId);
+  if(isRenderableScheduleAvatarSrc(liveSrc)) return Promise.resolve(liveSrc);
+  var shellSrc = getShellAvatarSrc(charId);
+  if(isRenderableScheduleAvatarSrc(shellSrc)) return Promise.resolve(shellSrc);
+  var syncSrc = getCharacterAvatar(char);
+  if(isRenderableScheduleAvatarSrc(syncSrc)) return Promise.resolve(syncSrc);
+  var fromRoster = getCharacterById(charId);
+  var rosterSrc = getCharacterAvatar(fromRoster);
+  if(isRenderableScheduleAvatarSrc(rosterSrc)) return Promise.resolve(rosterSrc);
+  return loadStoredAsset('char_avatar_' + charId).then(function(src){
+    var safe = String(src || '').trim();
+    if(isRenderableScheduleAvatarSrc(safe)){
+      scheduleAvatarAssetCache[charId] = safe;
+      return safe;
+    }
+    return '';
+  }).catch(function(){
+    return '';
+  });
+}
+
+function loadCharacters(){
+  function mergeCharKeepingProfiles(base, incoming){
+    var next = Object.assign({}, base || {}, incoming || {});
+    var keepKeys = ['userNameProfile', 'userPersonaProfile'];
+    keepKeys.forEach(function(key){
+      var baseVal = String((base && base[key]) || '').trim();
+      var incomingVal = String((incoming && incoming[key]) || '').trim();
+      if(baseVal && !incomingVal){
+        next[key] = baseVal;
+      }
+    });
+    return next;
+  }
+  var shellList = [];
+  try{
+    var shell = getParentShell();
+    if(shell && typeof shell.getStoredCharactersSnapshot === 'function'){
+      shellList = shell.getStoredCharactersSnapshot().filter(function(item){ return item && item.id; });
+    }
+  }catch(err){}
+  if(window.MetadataStore && typeof window.MetadataStore.getCharactersSync === 'function'){
+    characterList = window.MetadataStore.getCharactersSync().filter(function(item){ return item && item.id; });
+  }else{
+    try{
+      var list = JSON.parse(localStorage.getItem('characters') || '[]');
+      characterList = Array.isArray(list) ? list.filter(function(item){ return item && item.id; }) : [];
+    }catch(err){
+      characterList = [];
+    }
+  }
+  shellList.forEach(function(item){
+    var idx = characterList.findIndex(function(entry){ return String(entry && entry.id || '') === String(item && item.id || ''); });
+    if(idx >= 0){
+      characterList[idx] = mergeCharKeepingProfiles(characterList[idx], item);
+    }else{
+      characterList.push(item);
+    }
+  });
+  var active = getActiveCharacterFromShell();
+  if(active && active.id && !characterList.some(function(entry){ return String(entry.id || '') === String(active.id || ''); })){
+    characterList.unshift(active);
+  }
+}
+
+function getShareTargetCharacters(){
+  var seen = {};
+  var list = [];
+  function pushChar(char){
+    if(!char || !char.id) return;
+    var key = String(char.id || '');
+    if(!key || seen[key]) return;
+    seen[key] = true;
+    list.push(char);
+  }
+  try{ characterList.forEach(pushChar); }catch(err){}
+  try{
+    var shell = getParentShell();
+    if(shell && typeof shell.getStoredCharactersSnapshot === 'function'){
+      shell.getStoredCharactersSnapshot().forEach(pushChar);
+    }
+  }catch(err){}
+  try{
+    if(window.MetadataStore && typeof window.MetadataStore.getCharactersSync === 'function'){
+      window.MetadataStore.getCharactersSync().forEach(pushChar);
+    }
+  }catch(err){}
+  try{
+    var shell2 = getParentShell();
+    if(shell2 && shell2.MetadataStore && typeof shell2.MetadataStore.getCharactersSync === 'function'){
+      shell2.MetadataStore.getCharactersSync().forEach(pushChar);
+    }
+  }catch(err){}
+  pushChar(getActiveCharacterFromShell());
+  pushChar(getActiveChar());
+  return list;
+}
+
+function getActiveChar(){
+  if(activeCharId){
+    var exact = characterList.find(function(item){ return item && String(item.id) === String(activeCharId); });
+    if(exact) return exact;
+    var shellMatch = getActiveCharacterFromShell();
+    if(shellMatch && String(shellMatch.id || '') === String(activeCharId)) return shellMatch;
+  }
+  var shellActive = getActiveCharacterFromShell();
+  if(shellActive && shellActive.id) return shellActive;
+  return characterList[0] || null;
+}
+
+function getActiveCharOverride(){
+  var char = getActiveChar();
+  if(!char) return { timeAwarenessEnabled:null, allowCalendarComments:true, allowChatQuotes:true };
+  return Object.assign({ timeAwarenessEnabled:null, allowCalendarComments:true, allowChatQuotes:true }, scheduleState.charOverrides[String(char.id)] || {});
+}
+
+function getActiveCharState(){
+  var char = getActiveChar();
+  return ScheduleShared.getCharState(scheduleState, char && char.id);
+}
+
+function persistState(){
+  scheduleState.lastViewedCharId = String(activeCharId || '').trim();
+  var snapshot = ScheduleShared.normalizeState(scheduleState);
+  schedulePersistPromise = Promise.resolve(schedulePersistPromise).catch(function(){ return null; }).then(function(){
+    return ScheduleShared.saveState(snapshot).then(function(saved){
+      scheduleState = ScheduleShared.normalizeState(saved || snapshot);
+      return scheduleState;
+    });
+  });
+  return schedulePersistPromise;
+}
+
+async function reloadScheduleStateSnapshot(){
+  scheduleState = ScheduleShared.normalizeState(await ScheduleShared.loadState());
+  ensureActiveChar();
+  renderAll();
+}
+
+function flushScheduleState(){
+  return persistState().then(function(){
+    return schedulePersistPromise;
+  });
+}
+
+function renderCurrentCharAvatar(){
+  var btn = document.getElementById('currentCharAvatarBtn');
+  var label = document.getElementById('currentCharLabel');
+  if(!btn) return;
+  var char = getActiveChar();
+  if(!char){
+    btn.style.display = 'flex';
+    btn.innerHTML = '<span class="schedule-current-char-fallback">CH</span>';
+    if(label) label.textContent = 'CHAR';
+    return;
+  }
+  btn.style.display = 'flex';
+  if(label) label.textContent = getCharacterName(char);
+  renderScheduleAvatarButton(btn, char, getCharacterAvatar(char));
+  if(char.id){
+    resolveCharacterAvatarAsync(char).then(function(src){
+      if(String(activeCharId || '') !== String(char.id || '')) return;
+      var liveBtn = document.getElementById('currentCharAvatarBtn');
+      if(!liveBtn) return;
+      renderScheduleAvatarButton(liveBtn, char, src);
+    });
+  }
+}
+
+function monthDateFromKey(key){
+  var match = String(key || '').match(/^(\d{4})-(\d{2})$/);
+  if(!match) return new Date();
+  return new Date(parseInt(match[1], 10), parseInt(match[2], 10) - 1, 1);
+}
+
+function formatMonthHead(date){
+  var d = date instanceof Date ? date : new Date(date);
+  var monthNames = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+  document.getElementById('monthName').textContent = (monthNames[d.getMonth()] || '');
+}
+
+function resetScheduleViewToToday(){
+  var clock = buildScheduleGeoTimeContext(getActiveChar());
+  selectedDateKey = String(clock.user.dateKey || ScheduleShared.toDateKey(new Date()));
+  viewMonthKey = String(clock.user.monthKey || ScheduleShared.toMonthKey(new Date()));
+}
+
+function getLunarishText(day){
+  var hints = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十','月末'];
+  return hints[(day - 1) % hints.length];
+}
+
+function renderCalendar(){
+  var date = monthDateFromKey(viewMonthKey);
+  formatMonthHead(date);
+  var weekdayNodes = Array.prototype.slice.call(document.querySelectorAll('.schedule-day-head [data-weekday-index]'));
+  var clock = buildScheduleGeoTimeContext(getActiveChar());
+  var todayWeekdayIndex = Number(clock.user.weekdayIndex);
+  weekdayNodes.forEach(function(node){
+    var nodeIndex = parseInt(node.getAttribute('data-weekday-index') || '-1', 10);
+    node.classList.toggle('is-today-weekday', nodeIndex === todayWeekdayIndex);
+  });
+  var year = date.getFullYear();
+  var month = date.getMonth();
+  var first = new Date(year, month, 1);
+  var firstDay = (first.getDay() + 6) % 7;
+  var daysInMonth = new Date(year, month + 1, 0).getDate();
+  var todayKey = String(clock.user.dateKey || ScheduleShared.toDateKey(new Date()));
+  var charState = getActiveCharState();
+  var holidays = ScheduleShared.getHolidayMap(year);
+  var marks = {};
+  charState.events.forEach(function(item){
+    marks[item.date] = marks[item.date] || {};
+    if(String(item.source || 'user') === 'char') marks[item.date].char = true;
+    else marks[item.date].user = true;
+  });
+  charState.todos.forEach(function(item){
+    marks[item.date] = marks[item.date] || {};
+    marks[item.date].user = true;
+  });
+  charState.specialDates.forEach(function(item){
+    if(item.yearDate) marks[item.yearDate] = Object.assign(marks[item.yearDate] || {}, { special:true });
+    if(item.monthDay){
+      var key = year + '-' + item.monthDay;
+      marks[key] = Object.assign(marks[key] || {}, { special:true });
+    }
+  });
+  Object.keys(charState.charDays || {}).forEach(function(key){
+    var day = charState.charDays[key];
+    if(!day) return;
+    if((Array.isArray(day.timeline) && day.timeline.length) || day.diary || day.calendarNote || day.comment || (Array.isArray(day.quoteDrafts) && day.quoteDrafts.length)){
+      marks[key] = marks[key] || {};
+      marks[key].char = true;
+    }
+  });
+  Object.keys(holidays).forEach(function(key){
+    marks[key] = Object.assign(marks[key] || {}, { special:true });
+  });
+  var html = '';
+  for(var i = 0; i < firstDay; i++){
+    html += '<div></div>';
+  }
+  for(var day = 1; day <= daysInMonth; day++){
+    var cellDate = new Date(year, month, day);
+    var key = ScheduleShared.toDateKey(cellDate);
+    var info = marks[key] || {};
+    var classes = ['schedule-day-cell'];
+    if(key === selectedDateKey) classes.push('selected');
+    if(key === todayKey) classes.push('today');
+    var dots = '';
+    if(info.user || info.char){
+      dots = '<span class="schedule-day-dots">'
+        + (info.user ? '<span class="schedule-day-dot user"></span>' : '')
+        + (info.char ? '<span class="schedule-day-dot char"></span>' : '')
+        + '</span>';
+    }
+    html += '<button class="' + classes.join(' ') + '" type="button" onclick="selectDate(\'' + key + '\')">'
+      + '<span class="schedule-day-inner">'
+      + '<span class="schedule-day-number">' + day + '</span>'
+      + dots
+      + '</span></button>';
+  }
+  document.getElementById('calendarGrid').innerHTML = html;
+}
+
+function renderBadges(ctx){
+  var host = document.getElementById('badgeList');
+  if(!host) return;
+  var parts = [];
+  (ctx.holidays || []).forEach(function(item){
+    parts.push('<div class="schedule-badge-item"><div class="schedule-badge-title">' + esc(item.title) + '</div><div class="schedule-badge-note">' + esc(item.note || '节日') + '</div></div>');
+  });
+  (ctx.specialDates || []).forEach(function(item){
+    parts.push('<div class="schedule-badge-item"><div class="schedule-badge-title">' + esc(item.title) + '</div><div class="schedule-badge-note">' + esc(item.note || '重要日子') + '</div></div>');
+  });
+  host.innerHTML = parts.join('');
+}
+
+function getAutoSpecialDatesForDate(dateKey){
+  var items = [];
+  var char = getActiveChar();
+  var safeDay = String(dateKey || '').slice(5);
+  if(char){
+    var charBirthday = ScheduleShared.extractBirthday([
+      char.personality || '',
+      char.description || '',
+      char.system_prompt || ''
+    ].join('\n'));
+    if(charBirthday && charBirthday === safeDay){
+      items.push({ title:getCharacterName(char) + ' 的生日', note:'这一天对他本人是有意义的。', kind:'birthday', source:'system' });
+    }
+  }
+  try{
+    var userPersona = getActiveUserPersona();
+    var userBirthday = ScheduleShared.extractBirthday(userPersona);
+    if(userBirthday && userBirthday === safeDay){
+      items.push({ title:'你的生日', note:'如果这个角色会记得，这一天会变得很特别。', kind:'birthday', source:'system' });
+    }
+  }catch(err){}
+  return items;
+}
+
+function getSelectedDayContext(){
+  var activeChar = getActiveChar();
+  var ctx = ScheduleShared.summarizeDayContext(scheduleState, activeChar && activeChar.id, selectedDateKey);
+  ctx.specialDates = (ctx.specialDates || []).concat(getAutoSpecialDatesForDate(selectedDateKey));
+  return ctx;
+}
+
+function getTimeRangeText(item){
+  var start = String(item && item.start || '').trim();
+  var end = String(item && item.end || '').trim();
+  if(start && end) return start + ' - ' + end;
+  if(start) return start;
+  if(end) return '至 ' + end;
+  return '待定';
+}
+
+function buildUserEventVisibleTail(item){
+  var tail = [];
+  if(item.note) tail.push(String(item.note || '').trim());
+  if(item.remindChar) tail.push('记得提醒我');
+  if(item.visibleToChar === false) tail.push('对Ta保密');
+  return tail.join(' · ');
+}
+
+function getCommentCount(item){
+  return Array.isArray(item && item.comments) ? item.comments.length : 0;
+}
+
+function getCommentAuthorLabel(author){
+  var activeChar = getActiveChar();
+  var charName = getCharacterName(activeChar);
+  var userName = getActiveUserName();
+  return String(author || '') === 'char' ? charName : userName;
+}
+
+function getCommentNoteClass(author){
+  return String(author || '') === 'char' ? 'char' : 'user';
+}
+
+function getSecretAttemptNotice(success, item){
+  var status = String(getItemTimeStatusText(item) || '').trim();
+  var statusTail = '';
+  if(status.indexOf('正在发生') !== -1) statusTail = ' 那条安排这会儿其实正在发生。';
+  else if(status.indexOf('已经过去') !== -1) statusTail = ' 不过那条安排的时间已经过去了。';
+  else if(status.indexOf('还没开始') !== -1) statusTail = ' 而且那条安排还没开始。';
+  return getActiveUserName() + (success
+    ? ('偷看了' + formatScheduleDateZh(selectedDateKey) + '的行程，成功啦。' + statusTail)
+    : ('试图偷偷看一眼' + formatScheduleDateZh(selectedDateKey) + '的行程，但密码不对，失败了。' + statusTail));
+}
+
+function getTargetCollections(charState){
+  charState = charState && typeof charState === 'object' ? charState : getActiveCharState();
+  charState.charDays = charState.charDays || {};
+  charState.charDays[selectedDateKey] = ScheduleShared.normalizeCharDay(charState.charDays[selectedDateKey] || { date:selectedDateKey }, selectedDateKey);
+  return {
+    events: Array.isArray(charState.events) ? charState.events : [],
+    todos: Array.isArray(charState.todos) ? charState.todos : [],
+    timeline: Array.isArray(charState.charDays[selectedDateKey].timeline) ? charState.charDays[selectedDateKey].timeline : [],
+    charTodos: Array.isArray(charState.charDays[selectedDateKey].todos) ? charState.charDays[selectedDateKey].todos : []
+  };
+}
+
+function findEntryByKind(kind, itemId, charState){
+  var collections = getTargetCollections(charState);
+  var safeId = String(itemId || '');
+  if(kind === 'event') return collections.events.find(function(item){ return String(item.id) === safeId; }) || null;
+  if(kind === 'todo') return collections.todos.find(function(item){ return String(item.id) === safeId; }) || null;
+  if(kind === 'timeline') return collections.timeline.find(function(item){ return String(item.id) === safeId; }) || null;
+  if(kind === 'chartodo') return collections.charTodos.find(function(item){ return String(item.id) === safeId; }) || null;
+  return null;
+}
+
+function mutateEntryByKind(kind, itemId, mutator){
+  var char = getActiveChar();
+  if(!char) return Promise.resolve(false);
+  var charState = getActiveCharState();
+  var collections = getTargetCollections(charState);
+  var safeId = String(itemId || '');
+  var targetList = kind === 'event'
+    ? collections.events
+    : (kind === 'todo' ? collections.todos : (kind === 'chartodo' ? collections.charTodos : collections.timeline));
+  var changed = false;
+  targetList.forEach(function(item, index){
+    if(changed || String(item.id) !== safeId) return;
+    var next = mutator(item, index, targetList);
+    if(next === false){
+      targetList.splice(index, 1);
+      changed = true;
+      return;
+    }
+    if(next && typeof next === 'object'){
+      targetList[index] = next;
+      changed = true;
+      return;
+    }
+    changed = true;
+  });
+  if(!changed) return Promise.resolve(false);
+  if(kind === 'event') charState.events = collections.events;
+  else if(kind === 'todo') charState.todos = collections.todos;
+  else if(kind === 'chartodo'){
+    charState.charDays[selectedDateKey] = charState.charDays[selectedDateKey] || { date:selectedDateKey };
+    charState.charDays[selectedDateKey].todos = collections.charTodos;
+  }else{
+    charState.charDays[selectedDateKey] = charState.charDays[selectedDateKey] || { date:selectedDateKey };
+    charState.charDays[selectedDateKey].timeline = collections.timeline;
+  }
+  scheduleState = ScheduleShared.setCharState(scheduleState, char.id, charState);
+  return persistState().then(function(){
+    renderAll();
+    return true;
+  });
+}
+
+function getRenderedTimelineItems(ctx){
+  var charName = getCharacterName(getActiveChar());
+  var userName = getActiveUserName();
+  var charItems = ((ctx.charDay && Array.isArray(ctx.charDay.timeline)) ? ctx.charDay.timeline : []).map(function(item){
+    var locked = !!item.secret && !isTimelineSecretUnlocked('timeline', item.id);
+    return {
+      kind:'timeline',
+      owner:'char',
+      id:String(item.id || ''),
+      start:String(item.start || '').trim(),
+      end:String(item.end || '').trim(),
+      title:locked ? getRenderedCharTimelineTitle(item) : String(item.title || '').trim(),
+      note:locked ? getRenderedCharTimelineNote(item) : String(item.note || '').trim(),
+      location:renderScheduleDisplayLocation('char', item.location),
+      done: !!item.done,
+      commentCount:getCommentCount(item),
+      comments:Array.isArray(item.comments) ? item.comments : [],
+      secretLocked:locked,
+      secretHint:String(item.secretHint || '').trim(),
+      label:charName,
+      raw:item
+    };
+  });
+  var userItems = (ctx.events || []).map(function(item){
+    return {
+      kind:'event',
+      owner:'user',
+      id:String(item.id || ''),
+      start:String(item.start || '').trim(),
+      end:String(item.end || '').trim(),
+      title:String(item.title || '').trim() || '未命名安排',
+      note:buildUserEventVisibleTail(item),
+      location:renderScheduleDisplayLocation('user', item.location),
+      done: !!item.done,
+      commentCount:getCommentCount(item),
+      comments:Array.isArray(item.comments) ? item.comments : [],
+      secretLocked:false,
+      label:userName,
+      raw:item
+    };
+  });
+  return charItems.concat(userItems).sort(function(a, b){
+    var aa = String(a.start || '99:99');
+    var bb = String(b.start || '99:99');
+    if(aa !== bb) return aa.localeCompare(bb);
+    if(a.owner !== b.owner) return a.owner === 'char' ? -1 : 1;
+    return String(a.title || '').localeCompare(String(b.title || ''));
+  });
+}
+
+function getTimelineSecondaryText(item){
+  var parts = [];
+  var owner = getItemTimeOwner(item);
+  var location = item && item.location ? renderScheduleDisplayLocation(owner, item.location) : '';
+  var note = item && item.note ? renderScheduleDisplayText(owner, item.note) : '';
+  if(location) parts.push(location);
+  if(note){
+    var normalizedLocation = location.replace(/\s+/g, '');
+    var normalizedNote = note.replace(/\s+/g, '');
+    if(!normalizedLocation || (normalizedNote !== normalizedLocation && normalizedNote.indexOf(normalizedLocation + '·') !== 0 && normalizedNote.indexOf(normalizedLocation + '，') !== 0 && normalizedNote.indexOf(normalizedLocation + '。') !== 0 && normalizedNote !== normalizedLocation + normalizedLocation)){
+      parts.push(note);
+    }
+  }
+  return parts.filter(Boolean).join(' · ');
+}
+
+function scheduleTimeToMinutes(value){
+  var text = String(value || '').trim();
+  var match = text.match(/^(\d{1,2})[:：](\d{1,2})$/);
+  if(!match) return -1;
+  return (parseInt(match[1], 10) || 0) * 60 + (parseInt(match[2], 10) || 0);
+}
+
+function compareDateKey(a, b){
+  return String(a || '').localeCompare(String(b || ''));
+}
+
+function getScheduleProgressStatus(item, index, clock){
+  if(item && item.done) return 'completed';
+  var owner = getItemTimeOwner(item);
+  var selected = String(selectedDateKey || '');
+  var liveDay = owner === 'user'
+    ? String(clock && clock.user && clock.user.dateKey || '')
+    : String(clock && clock.char && clock.char.dateKey || '');
+  var liveTime = owner === 'user'
+    ? String(clock && clock.user && clock.user.nowTime || '')
+    : String(clock && clock.char && clock.char.nowTime || '');
+  var nowMinutes = scheduleTimeToMinutes(liveTime);
+  var start = scheduleTimeToMinutes(item && item.start);
+  var end = scheduleTimeToMinutes(item && item.end);
+  if(start >= 0 && end < 0) end = start + 59;
+  if(compareDateKey(selected, liveDay) < 0) return 'completed';
+  if(compareDateKey(selected, liveDay) > 0) return 'pending';
+  if(start < 0) return index === 0 ? 'active' : 'pending';
+  if(nowMinutes < start) return 'pending';
+  if(end >= start && nowMinutes <= end) return 'active';
+  if(end < start && nowMinutes <= start + 59) return 'active';
+  return 'completed';
+}
+
+function buildScheduleLockButtonHtml(kind, itemId, unlocked){
+  var safeKind = escJs(kind || 'timeline');
+  var safeId = escJs(itemId || '');
+  return '<button class="schedule-secret-unlock-btn' + (unlocked ? ' is-unlocked' : '') + '" type="button" aria-label="' + (unlocked ? '已解锁秘密行程' : '解锁秘密行程') + '" onclick="event.stopPropagation();openSecretModal(\'' + safeKind + '\',\'' + safeId + '\')">'
+    + '<span class="schedule-lock-label">'
+    + '<span class="schedule-lock-wrapper">'
+    + '<span class="schedule-shackle"></span>'
+    + '<svg class="schedule-lock-body" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 5C0 2.23858 2.23858 0 5 0H23C25.7614 0 28 2.23858 28 5V23C28 25.7614 25.7614 28 23 28H5C2.23858 28 0 25.7614 0 23V5ZM16 13.2361C16.6137 12.6868 17 11.8885 17 11C17 9.34315 15.6569 8 14 8C12.3431 8 11 9.34315 11 11C11 11.8885 11.3863 12.6868 12 13.2361V18C12 19.1046 12.8954 20 14 20C15.1046 20 16 19.1046 16 18V13.2361Z" fill="white"></path></svg>'
+    + '</span></span></button>';
+}
+
+function renderCharProgressStepper(ctx){
+  var host = document.getElementById('charProgressStepper');
+  if(!host) return;
+  var timeline = getRenderedTimelineItems(ctx).filter(function(item){
+    return item && (item.start || item.title || item.note || item.location);
+  });
+  if(!timeline.length){
+    host.innerHTML = '';
+    return;
+  }
+  var clock = buildScheduleGeoTimeContext(getActiveChar());
+  var rows = timeline.map(function(item, index){
+    var status = getScheduleProgressStatus(item, index, clock);
+    var label = status === 'completed' ? 'Completed' : (status === 'active' ? 'In Progress' : 'Pending');
+    var cls = status === 'completed' ? 'schedule-stepper-completed' : (status === 'active' ? 'schedule-stepper-active' : 'schedule-stepper-pending');
+    var commentCount = getCommentCount(item);
+    var owner = getItemTimeOwner(item);
+    var secretLocked = !!item.secretLocked;
+    var secretUnlocked = !!(item.raw && item.raw.secret) && !secretLocked;
+    var icon = status === 'completed'
+      ? '<svg viewBox="0 0 16 16" fill="currentColor" height="16" width="16" aria-hidden="true"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"></path></svg>'
+      : String(index + 1);
+    var title = String(item.title || item.note || '未命名安排').trim();
+    var note = getTimelineSecondaryText(item);
+    var actionKind = item.kind || (owner === 'user' ? 'event' : 'timeline');
+    var safeItemId = escJs(item.id || '');
+    var safeKind = escJs(actionKind);
+    var contentClick = secretLocked ? (' onclick="openSecretModal(\'timeline\',\'' + safeItemId + '\')"') : (' onclick="handleTimelinePrimaryClick(event,\'' + safeKind + '\',\'' + safeItemId + '\')"');
+    return '<div class="schedule-stepper-step ' + cls + ' schedule-stepper-owner-' + esc(owner) + (secretLocked ? ' is-secret-locked' : '') + '" data-action-kind="' + esc(actionKind) + '" data-action-id="' + esc(item.id || '') + '">'
+      + '<div class="schedule-stepper-circle">' + icon + '</div>'
+      + '<div class="schedule-stepper-line"></div>'
+      + '<div class="schedule-stepper-content"' + contentClick + '>'
+      + (commentCount ? '<span class="schedule-stepper-comment-badge" aria-label="' + esc(commentCount > 99 ? '99+' : String(commentCount)) + ' 条留言"></span>' : '')
+      + '<div class="schedule-timeline-kicker">' + esc(item.label || (owner === 'user' ? getActiveUserName() : getCharacterName(getActiveChar()))) + '</div>'
+      + '<div class="schedule-stepper-title">' + esc(title) + '</div>'
+      + '<div class="schedule-stepper-status">' + esc(label) + '</div>'
+      + '<div class="schedule-stepper-time">' + esc(getTimeRangeText(item)) + '</div>'
+      + (note ? '<div class="schedule-stepper-note">' + esc(note) + '</div>' : '')
+      + (item.raw && item.raw.secret ? '<div class="schedule-stepper-actions">' + buildScheduleLockButtonHtml('timeline', item.id, secretUnlocked) + '<span class="schedule-secret-lock-text">' + (secretUnlocked ? '已解锁' : '秘密行程') + '</span></div>' : '')
+      + '</div></div>';
+  }).join('');
+  host.innerHTML = '<section class="schedule-progress-card">'
+    + '<div class="schedule-progress-head"><div><div class="schedule-kicker">DAY PROGRESS</div><div class="schedule-progress-title">今日进度</div></div><div class="schedule-progress-clock">' + esc((clock.user && clock.user.nowTime) || (clock.char && clock.char.nowTime) || '') + '</div></div>'
+    + '<div class="schedule-stepper-box">' + rows + '</div>'
+    + '</section>';
+  bindLongPressDeletes();
+}
+
+function renderTimeline(ctx){
+  var host = document.getElementById('timelineList');
+  if(!host) return;
+  var items = getRenderedTimelineItems(ctx);
+  if(!items.length){
+    host.innerHTML = '<div class="schedule-empty">这一天还没有真正写进时间里的安排。点日期就能加行程，也可以先生成Ta的一天。</div>';
+    return;
+  }
+  host.innerHTML = items.map(function(item){
+    var attrs = ' data-action-kind="' + esc(item.kind) + '" data-action-id="' + esc(item.id) + '"';
+    if(item.owner === 'user'){
+      attrs += ' data-delete-kind="' + esc(item.kind) + '" data-delete-id="' + esc(item.id) + '"';
+    }
+    var userSecret = item.owner === 'user' && item.raw && item.raw.visibleToChar === false;
+    return '<div class="schedule-timeline-item is-' + esc(item.owner) + (item.done ? ' done' : '') + '"' + attrs + '>'
+      + '<div class="schedule-time">' + esc(getTimeRangeText(item)) + '</div>'
+      + '<div class="schedule-timeline-main' + (item.commentCount ? ' has-comments' : '') + '" onclick="handleTimelinePrimaryClick(event,\'' + esc(item.kind) + '\',\'' + esc(item.id) + '\')">'
+      + '<span class="schedule-comment-badge" aria-hidden="true">' + esc(item.commentCount > 99 ? '99' : item.commentCount) + '</span>'
+      + '<div class="schedule-item-top"><div>'
+      + '<div class="schedule-timeline-kicker">' + esc(item.label) + '</div>'
+      + '<div class="schedule-timeline-title">' + esc(item.title) + '</div>'
+      + (getTimelineSecondaryText(item) ? ('<div class="schedule-timeline-note">' + esc(getTimelineSecondaryText(item)) + '</div>') : '')
+      + '</div>'
+      + '</div>'
+      + '<div class="schedule-item-actions">'
+      + (item.secretLocked ? '<button class="schedule-item-chip" type="button" onclick="event.stopPropagation();openSecretModal(\'' + esc(item.kind) + '\',\'' + esc(item.id) + '\')">输入密码</button>' : '')
+      + (userSecret ? '<span class="schedule-secret-lock">仅自己可见</span>' : '')
+      + (item.secretLocked ? '<span class="schedule-secret-lock">秘密行程</span>' : '')
+      + '</div></div></div>';
+  }).join('');
+  bindLongPressDeletes();
+}
+
+function getRenderedTodoItems(ctx){
+  var userName = getActiveUserName();
+  var charName = getCharacterName(getActiveChar());
+  var userItems = (ctx.todos || []).map(function(item){
+    return {
+      kind:'todo',
+      id:String(item.id || ''),
+      owner:'user',
+      prefix:'U',
+      label:userName,
+      text:renderScheduleDisplayText('user', item.text),
+      note:renderScheduleDisplayText('user', item.note),
+      done:!!item.done,
+      remindEnabled: !!item.remindEnabled,
+      remindAt: String(item.remindAt || '').trim(),
+      commentCount:getCommentCount(item),
+      comments:Array.isArray(item.comments) ? item.comments : [],
+      raw:item
+    };
+  });
+  var charItems = ((ctx.charDay && Array.isArray(ctx.charDay.todos)) ? ctx.charDay.todos : []).map(function(item){
+    return {
+      kind:'chartodo',
+      id:String(item.id || ''),
+      owner:'char',
+      prefix:'C',
+      label:charName,
+      text:renderScheduleDisplayText('char', item.text),
+      note:renderScheduleDisplayText('char', item.note),
+      done:!!item.done,
+      remindEnabled:false,
+      remindAt:'',
+      commentCount:getCommentCount(item),
+      comments:Array.isArray(item.comments) ? item.comments : [],
+      raw:item
+    };
+  });
+  return charItems.concat(userItems);
+}
+
+function renderTodos(ctx){
+  renderTodoListIntoHost(ctx, 'todoList');
+}
+
+function renderTodoListIntoHost(ctx, hostId){
+  var host = document.getElementById(hostId || 'todoList');
+  if(!host) return;
+  var items = getRenderedTodoItems(ctx);
+  if(!items.length){
+    host.innerHTML = '<div class="schedule-empty">这一天还没有待办。点日期就能加待办，勾掉之后也会保留完成痕迹。</div>';
+    return;
+  }
+  host.innerHTML = items.map(function(item){
+    var deleteAttrs = item.owner === 'user' ? (' data-delete-kind="todo" data-delete-id="' + esc(item.id) + '"') : '';
+    return '<div class="schedule-todo-item is-' + esc(item.owner) + (item.done ? ' done' : '') + (item.commentCount ? ' has-comments' : '') + '"' + deleteAttrs + ' onclick="handleTimelinePrimaryClick(event,\'' + esc(item.kind) + '\',\'' + esc(item.id) + '\')">'
+      + '<span class="schedule-comment-note-count" aria-hidden="true">' + esc(item.commentCount > 99 ? '99' : item.commentCount) + '</span>'
+      + (item.owner === 'char'
+        ? '<button class="schedule-todo-toggle" type="button" disabled aria-label="角色待办不可勾选">' + (item.done ? '✓' : '') + '</button>'
+        : '<button class="schedule-todo-toggle" type="button" onclick="event.stopPropagation();toggleTodoDone(\'' + esc(item.kind) + '\',\'' + esc(item.id) + '\')">' + (item.done ? '✓' : '') + '</button>')
+      + '<div class="schedule-todo-prefix">' + esc(item.prefix) + '</div>'
+      + '<div class="schedule-todo-body">'
+      + '<div class="schedule-todo-head">'
+      + '<div class="schedule-todo-main">'
+      + '<div class="schedule-todo-text">' + esc(item.text) + '</div>'
+      + '<div class="schedule-todo-meta">' + esc(item.label + (item.note ? (' · ' + item.note) : '') + (item.remindEnabled && item.remindAt ? (' · ' + item.remindAt + ' 提醒') : '')) + '</div>'
+      + '</div>'
+      + (item.remindEnabled ? '<span class="schedule-todo-bell" title="到点提醒">铃</span>' : '')
+      + '</div>'
+      + '</div></div>';
+  }).join('');
+  bindLongPressDeletes();
+}
+
+function renderDetails(){
+  var ctx = getSelectedDayContext();
+  renderBadges(ctx);
+  renderCharProgressStepper(ctx);
+  var oldTimelineHost = document.getElementById('timelineList');
+  if(oldTimelineHost) oldTimelineHost.innerHTML = '';
+  renderTodos(ctx);
+}
+
+function renderSettings(){
+  var globalSwitch = document.getElementById('globalAwarenessSwitch');
+  var charSwitch = document.getElementById('charAwarenessSwitch');
+  var commentSwitch = document.getElementById('charCommentSwitch');
+  var quoteSwitch = document.getElementById('charQuoteSwitch');
+  var override = getActiveCharOverride();
+  if(globalSwitch) globalSwitch.classList.toggle('on', scheduleState.globalTimeAwareness !== false);
+  if(charSwitch) charSwitch.classList.toggle('on', override.timeAwarenessEnabled !== false);
+  if(commentSwitch) commentSwitch.classList.toggle('on', override.allowCalendarComments !== false);
+  if(quoteSwitch) quoteSwitch.classList.toggle('on', override.allowChatQuotes !== false);
+}
+
+function renderAll(){
+  renderCurrentCharAvatar();
+  renderCalendar();
+  renderDetails();
+  renderSettings();
+}
+
+function scheduleLiveTimeRenderTick(){
+  if(document.visibilityState === 'hidden') return;
+  renderDetails();
+}
+
+function startScheduleLiveTimeRenderTimer(){
+  if(scheduleLiveTimeRenderTimer) clearInterval(scheduleLiveTimeRenderTimer);
+  scheduleLiveTimeRenderTimer = setInterval(scheduleLiveTimeRenderTick, 30000);
+}
+
+function stopScheduleLiveTimeRenderTimer(){
+  if(!scheduleLiveTimeRenderTimer) return;
+  clearInterval(scheduleLiveTimeRenderTimer);
+  scheduleLiveTimeRenderTimer = null;
+}
+
+function showRandomCharMood(evt){
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  var char = getActiveChar();
+  var face = scheduleKaomoji[Math.floor(Math.random() * scheduleKaomoji.length)] || '(｡･ω･｡)';
+  toast(getCharacterName(char) + '：' + face);
+}
+
+function ensureActiveChar(){
+  var pendingId = String(pendingScheduleCharId || '').trim();
+  var currentId = String(activeCharId || '').trim();
+  var shellActive = getActiveCharacterFromShell();
+  var last = String(scheduleState.lastViewedCharId || '').trim();
+  if(pendingId && characterList.some(function(item){ return String(item && item.id || '') === pendingId; })){
+    activeCharId = pendingId;
+  }else if(currentId && characterList.some(function(item){ return String(item && item.id || '') === currentId; })){
+    activeCharId = currentId;
+  }else if(shellActive && shellActive.id){
+    activeCharId = String(shellActive.id);
+  }else if(last && characterList.some(function(item){ return String(item.id) === last; })){
+    activeCharId = last;
+  }else if(characterList[0]){
+    activeCharId = String(characterList[0].id);
+  }else{
+    activeCharId = '';
+  }
+  pendingScheduleCharId = '';
+  resetScheduleViewToToday();
+}
+
+function syncCurrentCharView(){
+  var char = getActiveChar();
+  if(!char) return Promise.resolve();
+  var charState = getActiveCharState();
+  charState.selectedDate = selectedDateKey;
+  charState.monthKey = viewMonthKey;
+  scheduleState = ScheduleShared.setCharState(scheduleState, char.id, charState);
+  scheduleState.lastViewedCharId = String(char.id);
+  return persistState();
+}
+
+function selectDate(dateKey){
+  selectedDateKey = String(dateKey || '');
+  viewMonthKey = selectedDateKey.slice(0, 7);
+  syncCurrentCharView().then(function(){
+    renderAll();
+    openEntryModal('menu');
+  });
+}
+
+function shiftMonth(delta){
+  var date = monthDateFromKey(viewMonthKey);
+  date.setMonth(date.getMonth() + (Number(delta) || 0));
+  viewMonthKey = ScheduleShared.toMonthKey(date);
+  var today = new Date();
+  if(date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth()){
+    selectedDateKey = ScheduleShared.toDateKey(today);
+  }else{
+    var selected = new Date(selectedDateKey + 'T12:00:00');
+    if(selected.getFullYear() !== date.getFullYear() || selected.getMonth() !== date.getMonth()){
+      selectedDateKey = ScheduleShared.toDateKey(new Date(date.getFullYear(), date.getMonth(), 1));
+    }
+  }
+  syncCurrentCharView().then(renderAll);
+}
+
+function openSettingsDrawer(){
+  document.getElementById('settingsDrawer').classList.add('open');
+}
+
+function closeSettingsDrawer(){
+  document.getElementById('settingsDrawer').classList.remove('open');
+}
+
+function updateOverride(patch){
+  var char = getActiveChar();
+  if(!char) return;
+  var safeId = String(char.id);
+  var current = getActiveCharOverride();
+  scheduleState.charOverrides[safeId] = Object.assign({}, current, patch || {});
+  persistState().then(renderSettings);
+}
+
+function toggleGlobalAwareness(){
+  scheduleState.globalTimeAwareness = scheduleState.globalTimeAwareness === false;
+  persistState().then(renderSettings);
+}
+
+function toggleCharAwareness(){
+  var override = getActiveCharOverride();
+  updateOverride({ timeAwarenessEnabled: override.timeAwarenessEnabled === false });
+}
+
+function toggleCharComments(){
+  var override = getActiveCharOverride();
+  updateOverride({ allowCalendarComments: override.allowCalendarComments === false });
+}
+
+function toggleCharQuotes(){
+  var override = getActiveCharOverride();
+  updateOverride({ allowChatQuotes: override.allowChatQuotes === false });
+}
+
+function handleModalMask(evt){
+  if(!evt.target) return;
+  if(evt.target.id === 'entryModal') closeEntryModal();
+}
+
+function ensureEntryDraft(mode){
+  if(entryDraft && entryDraft.mode === mode && !entryEditTarget) return;
+  entryDraft = {
+    mode: mode,
+    title: '',
+    note: '',
+    location: '',
+    start: '09:00',
+    end: '10:00',
+    remindEnabled: false,
+    remindAt: '18:00',
+    visibleToChar: true,
+    publicMask: '这个时间段有安排',
+    secretPassword: '',
+    secretHint: ''
+  };
+  if(entryEditTarget && mode === 'event'){
+    var editItem = findEntryByKind(entryEditTarget.kind, entryEditTarget.itemId, getActiveCharState());
+    if(editItem){
+      entryDraft.title = String(editItem.title || '').trim();
+      entryDraft.note = String(editItem.note || '').trim();
+      entryDraft.location = String(editItem.location || '').trim();
+      entryDraft.start = String(editItem.start || '09:00').trim() || '09:00';
+      entryDraft.end = String(editItem.end || '10:00').trim();
+      entryDraft.visibleToChar = editItem.visibleToChar !== false;
+      entryDraft.publicMask = String(editItem.publicMask || '这个时间段有安排').trim() || '这个时间段有安排';
+      entryDraft.secretPassword = String(editItem.secretPassword || '').replace(/\D+/g, '').slice(0, 4);
+      entryDraft.secretHint = String(editItem.secretHint || '').trim();
+    }
+  }
+}
+
+function syncEntryDraftFromInputs(){
+  if(!entryDraft) return;
+  var titleNode = document.getElementById('entryTextTitle');
+  var noteNode = document.getElementById('entryTextNote');
+  var locationNode = document.getElementById('entryTextLocation');
+  var maskNode = document.getElementById('entryTextMask');
+  var passNode = document.getElementById('entryTextPassword');
+  var hintNode = document.getElementById('entryTextHint');
+  if(titleNode) entryDraft.title = String(titleNode.value || '').trim();
+  if(noteNode) entryDraft.note = String(noteNode.value || '').trim();
+  if(locationNode) entryDraft.location = String(locationNode.value || '').trim();
+  if(maskNode) entryDraft.publicMask = String(maskNode.value || '').trim();
+  if(passNode) entryDraft.secretPassword = String(passNode.getAttribute('data-value') || '').replace(/\D+/g, '').slice(0, 4);
+  if(hintNode) entryDraft.secretHint = String(hintNode.value || '').trim();
+}
+
+function renderSecretInput(node, value, placeholder){
+  if(!node) return;
+  var safe = String(value || '').replace(/\D+/g, '').slice(0, 4);
+  node.setAttribute('data-value', safe);
+  var slots = [];
+  for(var i = 0; i < 4; i++){
+    var digit = safe.charAt(i);
+    slots.push('<span class="schedule-secret-slot' + (digit ? '' : ' is-empty') + '">' + esc(digit || '') + '</span>');
+  }
+  node.innerHTML = slots.join('');
+  node.classList.toggle('is-empty', !safe);
+  node.setAttribute('aria-label', String(placeholder || '输入四位数字密码'));
+}
+
+function tapSecretDigit(digit, target){
+  var safeDigit = (digit === 0 || digit === '0') ? '0' : String(digit || '').replace(/\D+/g, '').slice(-1);
+  if(!safeDigit) return;
+  if(String(target || '') === 'peek'){
+    secretPeekDraft = (String(secretPeekDraft || '').replace(/\D+/g, '') + safeDigit).slice(0, 4);
+    renderSecretInput(document.getElementById('secretPasswordInput'), secretPeekDraft, '输入四位数字密码');
+    return;
+  }
+  syncEntryDraftFromInputs();
+  entryDraft.secretPassword = (String(entryDraft.secretPassword || '').replace(/\D+/g, '') + safeDigit).slice(0, 4);
+  renderSecretInput(document.getElementById('entryTextPassword'), entryDraft.secretPassword, '设置四位数字密码');
+}
+
+function clearSecretDigits(target){
+  if(String(target || '') === 'peek'){
+    secretPeekDraft = '';
+    renderSecretInput(document.getElementById('secretPasswordInput'), secretPeekDraft, '输入四位数字密码');
+    return;
+  }
+  syncEntryDraftFromInputs();
+  entryDraft.secretPassword = '';
+  renderSecretInput(document.getElementById('entryTextPassword'), entryDraft.secretPassword, '设置四位数字密码');
+}
+
+function toggleTodoReminder(){
+  syncEntryDraftFromInputs();
+  entryDraft.remindEnabled = !entryDraft.remindEnabled;
+  renderEntryForm();
+}
+
+function buildTimeChipHtml(field){
+  return buildHalfHourOptions().map(function(value){
+    var active = entryDraft && String(entryDraft[field] || '') === value;
+    return '<button class="schedule-time-chip' + (active ? ' active' : '') + '" type="button" onclick="selectEntryTime(\'' + esc(field) + '\',\'' + esc(value) + '\')">' + esc(value) + '</button>';
+  }).join('');
+}
+
+function buildTimeWheelHtml(field, includeUnset){
+  var list = buildHalfHourOptions().map(function(value){
+    var active = entryDraft && String(entryDraft[field] || '') === value;
+    return '<button class="schedule-time-option' + (active ? ' active' : '') + '" type="button" onclick="selectEntryTime(\'' + esc(field) + '\',\'' + esc(value) + '\')">' + esc(value) + '</button>';
+  });
+  if(includeUnset){
+    list.unshift('<button class="schedule-time-option' + (!entryDraft[field] ? ' active' : '') + '" type="button" onclick="selectEntryTime(\'' + esc(field) + '\', \'\')">未定</button>');
+  }
+  return list.join('');
+}
+
+function renderEntryForm(){
+  var grid = document.getElementById('entryFormGrid');
+  var actions = document.getElementById('entryModalActions');
+  var sub = document.getElementById('entryModalSub');
+  if(!grid || !actions || !sub) return;
+  sub.textContent = formatScheduleDateZh(selectedDateKey) + ' · ' + formatScheduleWeekdayZh(selectedDateKey);
+  if(entryModalMode === 'menu'){
+    grid.innerHTML = '<div class="schedule-action-sheet" style="grid-column:1/-1">'
+      + '<button class="schedule-sheet-btn" type="button" onclick="openEntryModal(\'event\')"><strong>添加行程</strong><span>把今天某个时间段写进时间轴。</span></button>'
+      + '<button class="schedule-sheet-btn" type="button" onclick="openEntryModal(\'special\')"><strong>添加日期</strong><span>把纪念日、节日或重要日子贴上去。</span></button>'
+      + '</div>'
+      + '<div class="schedule-todo-list-wrap" style="grid-column:1/-1;margin-top:2px">'
+      + '<div class="schedule-todo-list-head">'
+        + '<div class="schedule-todo-list-title">待办事项</div>'
+        + '<button class="schedule-add-mini-btn" type="button" onclick="openEntryModal(\'todo\')">+</button>'
+      + '</div>'
+      + '<div class="schedule-todo-list" id="entryTodoList"></div>'
+      + '</div>';
+    actions.style.display = 'none';
+    renderTodoListIntoHost(getSelectedDayContext(), 'entryTodoList');
+    return;
+  }
+  actions.style.display = 'flex';
+  if(entryModalMode === 'event'){
+    grid.innerHTML = ''
+      + '<input class="schedule-input" id="entryTextTitle" placeholder="比如：和xx去看展" value="' + esc(entryDraft.title || '') + '" style="grid-column:1/-1">'
+      + '<div class="schedule-wheel-grid" style="grid-column:1/-1">'
+      + '<div class="schedule-time-group"><label>开始时间</label><div class="schedule-time-wheel">' + buildTimeWheelHtml('start', false) + '</div></div>'
+      + '<div class="schedule-time-group"><label>结束时间</label><div class="schedule-time-wheel">' + buildTimeWheelHtml('end', true) + '</div></div>'
+      + '</div>'
+      + '<input class="schedule-input" id="entryTextLocation" placeholder="地点，可选" value="' + esc(entryDraft.location || '') + '">'
+      + '<input class="schedule-input" id="entryTextNote" placeholder="补一句细节，可选" value="' + esc(entryDraft.note || '') + '">'
+      + '<div class="schedule-switch-tile" style="grid-column:1/-1">'
+      + '<div class="schedule-switch-copy"><strong>char 可见</strong><span>默认开启。关掉后，他只知道这个时间段你有安排。</span></div>'
+      + '<button class="schedule-mini-switch' + (entryDraft.visibleToChar !== false ? ' on' : '') + '" type="button" onclick="toggleEntryVisibility()"></button>'
+      + '</div>'
+      + (entryDraft.visibleToChar === false
+        ? '<div class="schedule-secret-fields" style="grid-column:1/-1">'
+          + '<input class="schedule-input" id="entryTextMask" placeholder="给Ta看到的模糊说法，比如：这段时间有约" value="' + esc(entryDraft.publicMask || '') + '">'
+          + '<div class="schedule-secret-input' + (entryDraft.secretPassword ? '' : ' is-empty') + '" id="entryTextPassword" data-value="' + esc(String(entryDraft.secretPassword || '').replace(/\D+/g, '').slice(0, 4)) + '"></div>'
+          + '<div class="schedule-secret-keypad">'
+            + '<button class="schedule-secret-key" type="button" onclick="tapSecretDigit(1,\'entry\')">1</button>'
+            + '<button class="schedule-secret-key" type="button" onclick="tapSecretDigit(2,\'entry\')">2</button>'
+            + '<button class="schedule-secret-key" type="button" onclick="tapSecretDigit(3,\'entry\')">3</button>'
+            + '<button class="schedule-secret-key" type="button" onclick="tapSecretDigit(4,\'entry\')">4</button>'
+            + '<button class="schedule-secret-key" type="button" onclick="tapSecretDigit(5,\'entry\')">5</button>'
+            + '<button class="schedule-secret-key" type="button" onclick="tapSecretDigit(6,\'entry\')">6</button>'
+            + '<button class="schedule-secret-key" type="button" onclick="tapSecretDigit(7,\'entry\')">7</button>'
+            + '<button class="schedule-secret-key" type="button" onclick="tapSecretDigit(8,\'entry\')">8</button>'
+            + '<button class="schedule-secret-key" type="button" onclick="tapSecretDigit(9,\'entry\')">9</button>'
+            + '<button class="schedule-secret-key wide" type="button" onclick="clearSecretDigits(\'entry\')">清空</button>'
+            + '<button class="schedule-secret-key" type="button" onclick="tapSecretDigit(0,\'entry\')">0</button>'
+          + '</div>'
+          + '<input class="schedule-input" id="entryTextHint" placeholder="小提示，可选" value="' + esc(entryDraft.secretHint || '') + '">'
+          + '</div>'
+        : '');
+    return;
+  }
+  if(entryModalMode === 'todo'){
+    grid.innerHTML = ''
+      + '<input class="schedule-input" id="entryTextTitle" placeholder="比如：下午三点前把报告交掉" value="' + esc(entryDraft.title || '') + '" style="grid-column:1/-1">'
+      + '<input class="schedule-input" id="entryTextNote" placeholder="补一句备注，可选" value="' + esc(entryDraft.note || '') + '" style="grid-column:1/-1">'
+      + '<div class="schedule-switch-tile" style="grid-column:1/-1">'
+      + '<div class="schedule-switch-copy"><strong>是否提醒？</strong><span>默认关闭。到点后 Ta 会主动发消息提醒你。</span></div>'
+      + '<button class="schedule-mini-switch' + (entryDraft.remindEnabled ? ' on' : '') + '" type="button" onclick="toggleTodoReminder()"></button>'
+      + '</div>'
+      + (entryDraft.remindEnabled
+        ? '<div class="schedule-time-group" style="grid-column:1/-1"><label>提醒时间</label><div class="schedule-time-wheel">' + buildTimeWheelHtml('remindAt', false) + '</div></div>'
+        : '');
+    return;
+  }
+  grid.innerHTML = ''
+    + '<input class="schedule-input" id="entryTextTitle" placeholder="比如：生日 / 纪念日 / 想记住的一天" value="' + esc(entryDraft.title || '') + '" style="grid-column:1/-1">'
+    + '<input class="schedule-input" id="entryTextNote" placeholder="写下这一天对你们意味着什么..." value="' + esc(entryDraft.note || '') + '" style="grid-column:1/-1">';
+}
+
+function openEntryModal(mode){
+  entryModalMode = String(mode || 'menu');
+  ensureEntryDraft(entryModalMode === 'menu' ? 'event' : entryModalMode);
+  var title = entryModalMode === 'menu'
+    ? '今天要做什么'
+    : (entryModalMode === 'todo' ? '添加待办' : (entryModalMode === 'special' ? '添加重要日期' : (entryEditTarget ? '编辑行程' : '添加行程')));
+  document.getElementById('entryModalTitle').textContent = title;
+  renderEntryForm();
+  document.getElementById('entryModal').classList.add('open');
+}
+
+function closeEntryModal(){
+  document.getElementById('entryModal').classList.remove('open');
+  entryModalMode = '';
+  entryEditTarget = null;
+}
+
+function selectEntryTime(field, value){
+  syncEntryDraftFromInputs();
+  entryDraft[field] = String(value || '');
+  renderEntryForm();
+}
+
+function toggleEntryVisibility(){
+  syncEntryDraftFromInputs();
+  entryDraft.visibleToChar = entryDraft.visibleToChar === false;
+  renderEntryForm();
+}
+
+function saveEntryFromModal(){
+  var char = getActiveChar();
+  if(!char) return;
+  var wasEditing = !!entryEditTarget;
+  syncEntryDraftFromInputs();
+  var charState = getActiveCharState();
+  if(entryModalMode === 'todo'){
+    var todo = ScheduleShared.normalizeTodo({
+      date: selectedDateKey,
+      text: entryDraft.title,
+      note: entryDraft.note,
+      remindEnabled: !!entryDraft.remindEnabled,
+      remindAt: entryDraft.remindEnabled ? entryDraft.remindAt : '',
+      visibleToChar: true,
+      source: 'user'
+    });
+    if(!todo.text){ toast('待办内容不能为空'); return; }
+    charState.todos.unshift(todo);
+  }else if(entryModalMode === 'special'){
+    var special = ScheduleShared.normalizeSpecialDate({
+      yearDate: selectedDateKey,
+      monthDay: String(selectedDateKey || '').slice(5),
+      title: entryDraft.title,
+      note: entryDraft.note,
+      kind: 'special',
+      source: 'user'
+    });
+    if(!special.title){ toast('重要日期要写个名字'); return; }
+    charState.specialDates.unshift(special);
+  }else{
+    if(entryDraft.visibleToChar === false && String(entryDraft.secretPassword || '').replace(/\D+/g, '').length !== 4){
+      toast('秘密行程要设置四位密码');
+      return;
+    }
+    var evt = ScheduleShared.normalizeEvent({
+      date: selectedDateKey,
+      start: entryDraft.start,
+      end: entryDraft.end,
+      title: entryDraft.title,
+      note: entryDraft.note,
+      location: entryDraft.location,
+      visibleToChar: entryDraft.visibleToChar !== false,
+      secret: entryDraft.visibleToChar === false,
+      publicMask: entryDraft.visibleToChar === false ? (entryDraft.publicMask || '这个时间段有安排') : '',
+      secretPassword: entryDraft.visibleToChar === false ? entryDraft.secretPassword : '',
+      secretHint: entryDraft.visibleToChar === false ? entryDraft.secretHint : '',
+      source: 'user'
+    });
+    if(!evt.title){ toast('行程标题不能为空'); return; }
+    if(entryEditTarget && entryEditTarget.kind === 'event' && entryEditTarget.itemId){
+      evt.id = entryEditTarget.itemId;
+      charState.events = (Array.isArray(charState.events) ? charState.events : []).map(function(item){
+        return String(item && item.id || '') === String(entryEditTarget.itemId) ? evt : item;
+      });
+    }else{
+      charState.events.unshift(evt);
+    }
+  }
+  scheduleState = ScheduleShared.setCharState(scheduleState, char.id, charState);
+  persistState().then(function(){
+    closeEntryModal();
+    renderAll();
+    toast(wasEditing ? '已经改好了' : '已写进日程');
+  });
+}
+
+function toggleTodoDone(kind, todoId){
+  mutateEntryByKind(kind, todoId, function(item){
+    item = Object.assign({}, item);
+    item.done = !item.done;
+    return item;
+  });
+}
+
+function openCommentModal(kind, itemId){
+  var item = findEntryByKind(kind, itemId, getActiveCharState());
+  if(!item){ toast('没找到这条安排'); return; }
+  commentTarget = { kind:String(kind || ''), itemId:String(itemId || '') };
+  document.getElementById('commentModalTitle').textContent = (kind === 'todo' ? '待办留言' : '行程留言');
+  document.getElementById('commentModalSub').textContent = formatScheduleDateZh(selectedDateKey) + ' · ' + getTimeRangeText(item);
+  document.getElementById('commentComposerText').value = '';
+  renderCommentStickyGrid();
+  document.getElementById('commentModal').classList.add('open');
+}
+
+function renderCommentStickyGrid(){
+  var host = document.getElementById('commentStickyGrid');
+  if(!host || !commentTarget) return;
+  var item = findEntryByKind(commentTarget.kind, commentTarget.itemId, getActiveCharState());
+  var comments = Array.isArray(item && item.comments) ? item.comments : [];
+  if(!comments.length){
+    host.innerHTML = '<div class="schedule-empty" style="grid-column:1/-1">这里还没有留言。贴一张小便签上去吧。</div>';
+    return;
+  }
+  host.innerHTML = comments.slice().sort(function(a, b){
+    return Number(a.createdAt || 0) - Number(b.createdAt || 0);
+  }).map(function(comment){
+    return '<div class="schedule-sticky-note ' + esc(getCommentNoteClass(comment.author)) + '">'
+      + '<div class="schedule-sticky-meta">' + esc(getCommentAuthorLabel(comment.author)) + ' · ' + esc(formatCommentClock(comment.createdAt)) + '</div>'
+      + '<div class="schedule-sticky-text">' + esc(comment.text || '') + '</div>'
+      + '</div>';
+  }).join('');
+  host.scrollTop = host.scrollHeight;
+}
+
+function closeCommentModal(){
+  document.getElementById('commentModal').classList.remove('open');
+  commentTarget = null;
+}
+
+function handleCommentModalMask(evt){
+  if(evt.target && evt.target.id === 'commentModal') closeCommentModal();
+}
+
+function saveUserComment(){
+  if(!commentTarget) return;
+  var text = String(document.getElementById('commentComposerText').value || '').trim();
+  if(!text){ toast('先写一句话吧'); return; }
+  mutateEntryByKind(commentTarget.kind, commentTarget.itemId, function(item){
+    item = Object.assign({}, item);
+    item.comments = Array.isArray(item.comments) ? item.comments.slice() : [];
+    item.comments.unshift({
+      id: ScheduleShared.createId('comment'),
+      author: 'user',
+      text: text,
+      createdAt: Date.now()
+    });
+    return item;
+  }).then(function(changed){
+    if(!changed) return;
+    document.getElementById('commentComposerText').value = '';
+    renderCommentStickyGrid();
+    toast('便签贴上去了');
+  });
+}
+
+function buildCommentPromptItem(kind, item){
+  item = item && typeof item === 'object' ? item : {};
+  if(kind === 'event' && item.visibleToChar === false){
+    return {
+      title: String(item.publicMask || '这个时间段有安排').trim() || '这个时间段有安排',
+      note: '用户没有公开细节，只知道这段时间很忙。',
+      location: '',
+      start: item.start || '',
+      end: item.end || ''
+    };
+  }
+  if(kind === 'timeline' && item.secret && !isTimelineSecretUnlocked('timeline', item.id)){
+    return {
+      title: getRenderedCharTimelineTitle(item),
+      note: '这是一条秘密行程，还没解锁，不能泄露真实内容。',
+      location: '',
+      start: item.start || '',
+      end: item.end || ''
+    };
+  }
+  return {
+    title: String(item.title || item.text || '').trim(),
+    note: String(item.note || '').trim(),
+    location: String(item.location || '').trim(),
+    start: item.start || '',
+    end: item.end || ''
+  };
+}
+
+function getItemTimeOwner(item){
+  item = item && typeof item === 'object' ? item : {};
+  if(String(item.owner || '').trim()) return String(item.owner).trim();
+  if(item.kind === 'timeline' || item.kind === 'chartodo') return 'char';
+  if(item.kind === 'event' || item.kind === 'todo') return 'user';
+  if(Object.prototype.hasOwnProperty.call(item, 'visibleToChar')) return 'user';
+  if(Object.prototype.hasOwnProperty.call(item, 'remindEnabled') || Object.prototype.hasOwnProperty.call(item, 'remindAt')) return 'user';
+  if(Object.prototype.hasOwnProperty.call(item, 'start') && Object.prototype.hasOwnProperty.call(item, 'location') && !Object.prototype.hasOwnProperty.call(item, 'visibleToChar')) return 'char';
+  return 'user';
+}
+
+function getItemTimeStatusText(item){
+  item = item && typeof item === 'object' ? item : {};
+  var owner = getItemTimeOwner(item);
+  var clock = buildScheduleGeoTimeContext(getActiveChar());
+  var live = (window.ScheduleShared && typeof window.ScheduleShared.getLiveTimeContext === 'function')
+    ? window.ScheduleShared.getLiveTimeContext(scheduleState, activeCharId, clock.liveInput)
+    : null;
+  if(!live || live.enabled === false) return '';
+  var liveDateKey = owner === 'char' ? String(live.charDateKey || '') : String(live.userDateKey || live.dateKey || '');
+  if(String(selectedDateKey || '') !== liveDateKey) return '';
+  var nowMinutes = (function(txt){
+    txt = String(txt || '');
+    var parts = txt.split(':');
+    return parts.length === 2 ? ((parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0)) : -1;
+  })(owner === 'char' ? live.charNowTime : live.userNowTime || live.nowTime);
+  var start = String(item.start || '').trim();
+  var end = String(item.end || '').trim();
+  var startParts = start.split(':');
+  var endParts = end.split(':');
+  var startMinutes = startParts.length === 2 ? ((parseInt(startParts[0], 10) || 0) * 60 + (parseInt(startParts[1], 10) || 0)) : -1;
+  var endMinutes = endParts.length === 2 ? ((parseInt(endParts[0], 10) || 0) * 60 + (parseInt(endParts[1], 10) || 0)) : -1;
+  if(startMinutes < 0) return '当前已经是这一天里的稍后时段。';
+  if(endMinutes < startMinutes) endMinutes = startMinutes + 59;
+  if(nowMinutes > endMinutes) return '这条安排的时间已经过去了。';
+  if(nowMinutes >= startMinutes && nowMinutes <= endMinutes) return '这条安排现在正在发生。';
+  if(nowMinutes < startMinutes) return '这条安排还没开始。';
+  return '';
+}
+
+function getLatestUserFreshTarget(ctx){
+  var best = null;
+  var bestAt = 0;
+  function scan(kind, list){
+    (Array.isArray(list) ? list : []).forEach(function(item){
+      var at = Number(item && item.createdAt || 0) || 0;
+      if(!at) return;
+      if(at >= bestAt){
+        bestAt = at;
+        best = { kind:kind, itemId:String(item.id || '') };
+      }
+    });
+  }
+  scan('event', ctx && ctx.events);
+  scan('todo', ctx && ctx.todos);
+  return best;
+}
+
+function hasCharComment(item){
+  return Array.isArray(item && item.comments) && item.comments.some(function(comment){
+    return String(comment && comment.author || '') === 'char';
+  });
+}
+
+function getLatestCommentAtByAuthor(item, author){
+  var latest = 0;
+  (Array.isArray(item && item.comments) ? item.comments : []).forEach(function(comment){
+    if(String(comment && comment.author || '') !== String(author || '')) return;
+    var at = Number(comment && comment.createdAt || 0) || 0;
+    if(at > latest) latest = at;
+  });
+  return latest;
+}
+
+function shouldCharReplyToTarget(item){
+  if(!(item && typeof item === 'object')) return false;
+  var latestUser = getLatestCommentAtByAuthor(item, 'user');
+  var latestChar = getLatestCommentAtByAuthor(item, 'char');
+  return latestUser > latestChar;
+}
+
+function getFreshUserTargets(ctx, limit){
+  var list = [];
+  function push(kind, item){
+    if(!(item && item.id)) return;
+    var at = Number(item.createdAt || 0) || 0;
+    if(!at) return;
+    list.push({ kind:kind, itemId:String(item.id || ''), createdAt:at });
+  }
+  (Array.isArray(ctx && ctx.events) ? ctx.events : []).forEach(function(item){ push('event', item); });
+  (Array.isArray(ctx && ctx.todos) ? ctx.todos : []).forEach(function(item){ push('todo', item); });
+  return list.sort(function(a, b){
+    return Number(b.createdAt || 0) - Number(a.createdAt || 0);
+  }).slice(0, Math.max(1, Number(limit) || 2));
+}
+
+function collectGlobalCommentTargets(ctx){
+  var result = [];
+  var seen = {};
+  function push(kind, item, reason){
+    if(!(item && item.id)) return;
+    var key = String(kind || '') + ':' + String(item.id || '');
+    if(!key || seen[key]) return;
+    seen[key] = true;
+    result.push({
+      kind: String(kind || ''),
+      itemId: String(item.id || ''),
+      reason: String(reason || 'fresh')
+    });
+  }
+  function scanList(kind, list){
+    (Array.isArray(list) ? list : []).forEach(function(item){
+      if(shouldCharReplyToTarget(item)) push(kind, item, 'reply');
+    });
+  }
+  scanList('event', ctx && ctx.events);
+  scanList('todo', ctx && ctx.todos);
+  scanList('timeline', ctx && ctx.charDay && ctx.charDay.timeline);
+  scanList('chartodo', ctx && ctx.charDay && ctx.charDay.todos);
+  return result;
+}
+
+function buildGlobalScheduleChatFallback(target, item){
+  return '';
+}
+
+function buildChatPromptFromTarget(kind, item){
+  var promptItem = buildCommentPromptItem(kind, item);
+  var title = String(promptItem.title || '').trim();
+  var note = String(promptItem.note || '').trim();
+  return [title, note].filter(Boolean).join('，');
+}
+
+function appendScheduleChatBurst(char, shell, messages){
+  messages = Array.isArray(messages) ? messages.map(function(item){ return String(item || '').trim(); }).filter(Boolean) : [];
+  if(!messages.length || !char || !shell || !shell.ScheduleShell || typeof shell.ScheduleShell.appendChatMessage !== 'function'){
+    return Promise.resolve();
+  }
+  return messages.reduce(function(chain, text){
+    return chain.then(function(){
+      return shell.ScheduleShell.appendChatMessage({
+        charId: char.id,
+        role: 'assistant',
+        text: text
+      }).catch(function(){});
+    });
+  }, Promise.resolve());
+}
+
+function findScheduleActionRef(kind, itemId){
+  var item = findEntryByKind(kind, itemId, getActiveCharState());
+  return item ? { kind:kind, itemId:String(itemId || ''), item:item } : null;
+}
+
+function collectScheduleThoughtTargets(ctx, primaryTarget){
+  var refs = [];
+  var seen = {};
+  function push(kind, item, reason){
+    if(!(item && item.id)) return;
+    var key = kind + ':' + String(item.id || '');
+    if(seen[key]) return;
+    seen[key] = true;
+    refs.push({ kind:kind, itemId:String(item.id || ''), item:item, reason:String(reason || '') });
+  }
+  if(primaryTarget){
+    var primary = findScheduleActionRef(primaryTarget.kind, primaryTarget.itemId);
+    if(primary) push(primary.kind, primary.item, 'primary');
+  }
+  collectGlobalCommentTargets(ctx).forEach(function(ref){
+    var item = findEntryByKind(ref.kind, ref.itemId, getActiveCharState());
+    if(item) push(ref.kind, item, 'reply');
+  });
+  (Array.isArray(ctx && ctx.events) ? ctx.events : []).forEach(function(item){ push('event', item, 'look'); });
+  (Array.isArray(ctx && ctx.todos) ? ctx.todos : []).forEach(function(item){ push('todo', item, 'look'); });
+  ((ctx && ctx.charDay && Array.isArray(ctx.charDay.timeline)) ? ctx.charDay.timeline : []).forEach(function(item){ push('timeline', item, 'look'); });
+  ((ctx && ctx.charDay && Array.isArray(ctx.charDay.todos)) ? ctx.charDay.todos : []).forEach(function(item){ push('chartodo', item, 'look'); });
+  return refs;
+}
+
+function persistScheduleActionState(char, charState, message){
+  scheduleState = ScheduleShared.setCharState(scheduleState, char.id, charState);
+  return persistState().then(function(){
+    renderAll();
+    return message || '';
+  });
+}
+
+function buildScheduleThoughtActionPayload(char, primaryTarget){
+  var ctx = getSelectedDayContext();
+  var targets = collectScheduleThoughtTargets(ctx, primaryTarget).map(function(ref){
+    var item = ref.item || {};
+    return {
+      id: String(ref.itemId || item.id || ''),
+      kind: String(ref.kind || ''),
+      owner: (ref.kind === 'timeline' || ref.kind === 'chartodo') ? 'char' : 'user',
+      time: getTimeRangeText(item),
+      title: String(item.title || item.text || '').trim(),
+      note: String(item.note || '').trim(),
+      secret: !!item.secret,
+      userCommentAt: getLatestCommentAtByAuthor(item, 'user'),
+      charCommentAt: getLatestCommentAtByAuthor(item, 'char')
+    };
+  });
+  var day = ctx && ctx.charDay ? ctx.charDay : { timeline:[], todos:[] };
+  var deletableMemos = (Array.isArray(day.todos) ? day.todos : []).map(function(item){
+    return {
+      id: String(item.id || ''),
+      kind: 'chartodo',
+      owner: 'char',
+      title: String(item.text || '').trim(),
+      note: String(item.note || '').trim(),
+      done: !!item.done,
+      userCommentAt: getLatestCommentAtByAuthor(item, 'user'),
+      charCommentAt: getLatestCommentAtByAuthor(item, 'char')
+    };
+  }).filter(function(item){ return item.id && item.title; });
+  var deletableTimelines = (Array.isArray(day.timeline) ? day.timeline : []).filter(function(item){
+    return item && item.id && !item.secret;
+  }).map(function(item){
+    return {
+      id: String(item.id || ''),
+      kind: 'timeline',
+      owner: 'char',
+      time: getTimeRangeText(item),
+      title: String(item.title || '').trim(),
+      note: String(item.note || '').trim(),
+      userCommentAt: getLatestCommentAtByAuthor(item, 'user'),
+      charCommentAt: getLatestCommentAtByAuthor(item, 'char')
+    };
+  });
+  return {
+    charId: char && char.id,
+    dateKey: selectedDateKey,
+    primaryTarget: primaryTarget || null,
+    targets: targets,
+    deletableMemos: deletableMemos,
+    deletableTimelines: deletableTimelines
+  };
+}
+
+function normalizeScheduleThoughtAction(action){
+  action = action && typeof action === 'object' ? action : {};
+  var type = String(action.type || '').trim();
+  var normalized = {
+    type: type,
+    targetKind: String(action.targetKind || '').trim(),
+    targetId: String(action.targetId || '').trim(),
+    text: String(action.text || '').trim(),
+    memoText: String(action.memoText || '').trim(),
+    memoNote: String(action.memoNote || '').trim(),
+    timeline: action.timeline && typeof action.timeline === 'object' ? {
+      start: String(action.timeline.start || '').trim(),
+      end: String(action.timeline.end || '').trim(),
+      title: String(action.timeline.title || '').trim(),
+      note: String(action.timeline.note || '').trim(),
+      location: String(action.timeline.location || '').trim()
+    } : null
+  };
+  return normalized;
+}
+
+function runScheduleThoughtAction(char, action){
+  action = normalizeScheduleThoughtAction(action);
+  if(action.type === 'reply_comment' || action.type === 'add_comment'){
+    if(!action.targetKind || !action.targetId || !action.text) return Promise.resolve('');
+    var targetItem = findEntryByKind(action.targetKind, action.targetId, getActiveCharState());
+    if(!targetItem) return Promise.resolve('');
+    if(action.type === 'reply_comment' && getLatestCommentAtByAuthor(targetItem, 'user') <= getLatestCommentAtByAuthor(targetItem, 'char')){
+      return Promise.resolve('');
+    }
+    return mutateEntryByKind(action.targetKind, action.targetId, function(target){
+      target = Object.assign({}, target);
+      target.comments = Array.isArray(target.comments) ? target.comments.slice() : [];
+      target.comments.unshift({
+        id: ScheduleShared.createId('comment'),
+        author: 'char',
+        text: action.text,
+        createdAt: Date.now()
+      });
+      return target;
+    }).then(function(changed){
+      if(!changed) return '';
+      var label = String(targetItem.title || targetItem.text || '这件事');
+      return action.type === 'reply_comment' ? ('回了「' + label + '」') : ('看了「' + label + '」');
+    });
+  }
+  if(action.type === 'add_memo'){
+    if(!action.memoText) return Promise.resolve('');
+    var addMemoState = getActiveCharState();
+    addMemoState.charDays = addMemoState.charDays || {};
+    addMemoState.charDays[selectedDateKey] = ScheduleShared.normalizeCharDay(addMemoState.charDays[selectedDateKey] || { date:selectedDateKey }, selectedDateKey);
+    addMemoState.charDays[selectedDateKey].todos = Array.isArray(addMemoState.charDays[selectedDateKey].todos) ? addMemoState.charDays[selectedDateKey].todos.slice() : [];
+    addMemoState.charDays[selectedDateKey].todos.unshift({
+      id: ScheduleShared.createId('chartodo'),
+      text: action.memoText,
+      note: action.memoNote,
+      done: false,
+      comments: [],
+      createdAt: Date.now()
+    });
+    return persistScheduleActionState(char, addMemoState, '加了一条备忘录');
+  }
+  if(action.type === 'delete_memo'){
+    if(action.targetKind !== 'chartodo' || !action.targetId) return Promise.resolve('');
+    return mutateEntryByKind('chartodo', action.targetId, function(){ return false; }).then(function(changed){
+      return changed ? '删掉一条备忘录' : '';
+    });
+  }
+  if(action.type === 'add_timeline'){
+    if(!(action.timeline && action.timeline.title)) return Promise.resolve('');
+    var addTimelineState = getActiveCharState();
+    addTimelineState.charDays = addTimelineState.charDays || {};
+    addTimelineState.charDays[selectedDateKey] = ScheduleShared.normalizeCharDay(addTimelineState.charDays[selectedDateKey] || { date:selectedDateKey }, selectedDateKey);
+    addTimelineState.charDays[selectedDateKey].timeline = Array.isArray(addTimelineState.charDays[selectedDateKey].timeline) ? addTimelineState.charDays[selectedDateKey].timeline.slice() : [];
+    addTimelineState.charDays[selectedDateKey].timeline.push({
+      id: ScheduleShared.createId('timeline'),
+      start: action.timeline.start,
+      end: action.timeline.end,
+      title: action.timeline.title,
+      note: action.timeline.note,
+      location: action.timeline.location,
+      done: false,
+      kind: 'char',
+      secret: false,
+      secretPassword: '',
+      secretHint: '',
+      publicMask: '',
+      comments: [],
+      createdAt: Date.now()
+    });
+    addTimelineState.charDays[selectedDateKey].timeline.sort(function(a, b){ return String(a && a.start || '99:99').localeCompare(String(b && b.start || '99:99')); });
+    return persistScheduleActionState(char, addTimelineState, '加了一段行程');
+  }
+  if(action.type === 'delete_timeline'){
+    if(action.targetKind !== 'timeline' || !action.targetId) return Promise.resolve('');
+    var target = findEntryByKind('timeline', action.targetId, getActiveCharState());
+    if(!target || target.secret) return Promise.resolve('');
+    return mutateEntryByKind('timeline', action.targetId, function(){ return false; }).then(function(changed){
+      return changed ? '删掉一段行程' : '';
+    });
+  }
+  return Promise.resolve('');
+}
+
+function maybeApplyGlobalScheduleAction(char, shell, primaryTarget){
+  if(!char || !shell || !shell.ScheduleShell || typeof shell.ScheduleShell.generateThoughtActions !== 'function') return Promise.reject(new Error('动作生成器还没接上'));
+  return shell.ScheduleShell.generateThoughtActions(buildScheduleThoughtActionPayload(char, primaryTarget)).then(function(plan){
+    var actions = plan && Array.isArray(plan.actions) ? plan.actions : [];
+    if(actions.length < 1) throw new Error('动作不足');
+    var notes = [];
+    var chain = Promise.resolve();
+    actions.slice(0, 4).forEach(function(action){
+      chain = chain.then(function(){
+        return runScheduleThoughtAction(char, action).then(function(note){
+          note = String(note || '').trim();
+          if(note) notes.push(note);
+        });
+      });
+    });
+    return chain.then(function(){
+      if(notes.length < 1) throw new Error('有效动作不足');
+      return notes.slice(0, 4);
+    });
+  });
+}
+
+function pickCommentTargetForSelectedDay(){
+  var ctx = getSelectedDayContext();
+  var clock = buildScheduleGeoTimeContext(getActiveChar());
+  var live = (window.ScheduleShared && typeof window.ScheduleShared.getLiveTimeContext === 'function')
+    ? window.ScheduleShared.getLiveTimeContext(scheduleState, activeCharId, clock.liveInput)
+    : null;
+  var latestUserCommentTarget = null;
+  var latestUserCommentAt = 0;
+  function scanComments(kind, item){
+    var comments = Array.isArray(item && item.comments) ? item.comments : [];
+    comments.forEach(function(comment){
+      if(String(comment.author || '') !== 'user') return;
+      var at = Number(comment.createdAt || 0) || 0;
+      if(at >= latestUserCommentAt){
+        latestUserCommentAt = at;
+        latestUserCommentTarget = { kind:kind, itemId:String(item.id || '') };
+      }
+    });
+  }
+  (ctx.events || []).forEach(function(item){ scanComments('event', item); });
+  (ctx.todos || []).forEach(function(item){ scanComments('todo', item); });
+  ((ctx.charDay && ctx.charDay.timeline) || []).forEach(function(item){ scanComments('timeline', item); });
+  ((ctx.charDay && ctx.charDay.todos) || []).forEach(function(item){ scanComments('chartodo', item); });
+  if(latestUserCommentTarget) return latestUserCommentTarget;
+  if(live && live.enabled !== false && String(selectedDateKey || '') === String(live.userDateKey || live.dateKey || '')){
+    if(live.currentUserItem && live.currentUserItem.id) return { kind:'event', itemId:String(live.currentUserItem.id) };
+    if(live.nextUserItem && live.nextUserItem.id) return { kind:'event', itemId:String(live.nextUserItem.id) };
+  }
+  if(live && live.enabled !== false && String(selectedDateKey || '') === String(live.charDateKey || '')){
+    if(live.currentCharItem && live.currentCharItem.id) return { kind:'timeline', itemId:String(live.currentCharItem.id) };
+    if(live.nextCharItem && live.nextCharItem.id) return { kind:'timeline', itemId:String(live.nextCharItem.id) };
+  }
+  if(ctx.events && ctx.events[0] && ctx.events[0].id) return { kind:'event', itemId:String(ctx.events[0].id) };
+  if(ctx.todos && ctx.todos[0] && ctx.todos[0].id) return { kind:'todo', itemId:String(ctx.todos[0].id) };
+  if(ctx.charDay && Array.isArray(ctx.charDay.timeline) && ctx.charDay.timeline[0] && ctx.charDay.timeline[0].id) return { kind:'timeline', itemId:String(ctx.charDay.timeline[0].id) };
+  if(ctx.charDay && Array.isArray(ctx.charDay.todos) && ctx.charDay.todos[0] && ctx.charDay.todos[0].id) return { kind:'chartodo', itemId:String(ctx.charDay.todos[0].id) };
+  return null;
+}
+
+function triggerCharPageComment(){
+  var target = pickCommentTargetForSelectedDay();
+  if(!target){ toast('先写一条行程或待办吧'); return; }
+  commentTarget = { kind:target.kind, itemId:target.itemId };
+  commentTriggerSource = 'global';
+  triggerCharCommentNow();
+}
+
+function triggerCharCommentNow(){
+  if(!commentTarget) return;
+  var char = getActiveChar();
+  var shell = getParentShell();
+  var override = getActiveCharOverride();
+  var pendingToastToken = 0;
+  if(!char || !(shell.ScheduleShell && typeof shell.ScheduleShell.generateInlineComment === 'function')){
+    toast('留言生成器还没接上');
+    return;
+  }
+  if(override.allowCalendarComments === false){
+    toast('这个角色当前关掉了日历留言');
+    return;
+  }
+  var item = findEntryByKind(commentTarget.kind, commentTarget.itemId, getActiveCharState());
+  if(!item) return;
+  if(commentTriggerSource === 'global'){
+    pendingToastToken = showStickyToast('正在听TA怎么想…');
+    maybeApplyGlobalScheduleAction(char, shell, commentTarget).then(function(actionNotes){
+      actionNotes = Array.isArray(actionNotes) ? actionNotes : [];
+      settleStickyToast(pendingToastToken, '完成 ' + String(actionNotes.length) + ' 个小动作');
+      renderAll();
+    }).catch(function(err){
+      settleStickyToast(pendingToastToken, '动作失败：' + (err && err.message ? err.message : '未知错误'));
+    }).finally(function(){
+      commentTriggerSource = 'modal';
+    });
+    return;
+  }
+  Promise.resolve(shell.ScheduleShell.generateInlineComment({
+    charId: char.id,
+    dateKey: selectedDateKey,
+    owner: commentTarget.kind === 'timeline' ? 'char' : 'user',
+    item: buildCommentPromptItem(commentTarget.kind, item),
+    comments: Array.isArray(item.comments) ? item.comments : [],
+    timeStatus: getItemTimeStatusText(item)
+  })).then(function(reply){
+    reply = String(reply || '').trim();
+    if(!reply) throw new Error('没有生成内容');
+    return mutateEntryByKind(commentTarget.kind, commentTarget.itemId, function(target){
+      target = Object.assign({}, target);
+      target.comments = Array.isArray(target.comments) ? target.comments.slice() : [];
+      target.comments.unshift({
+        id: ScheduleShared.createId('comment'),
+        author: 'char',
+        text: reply,
+        createdAt: Date.now()
+      });
+      return target;
+    }).then(function(){
+      renderCommentStickyGrid();
+      settleStickyToast(pendingToastToken, 'Ta回你了');
+      commentTriggerSource = 'modal';
+      var post = Promise.resolve();
+      if(shell.ScheduleShell && typeof shell.ScheduleShell.appendChatMessage === 'function' && Math.random() < 0.28){
+        post = shell.ScheduleShell.appendChatMessage({
+          charId: char.id,
+          role: 'assistant',
+          text: reply,
+          silentPeek: true
+        }).catch(function(){});
+      }
+      return post;
+    });
+  }).catch(function(err){
+    commentTriggerSource = 'modal';
+    settleStickyToast(pendingToastToken, '留言失败：' + (err && err.message ? err.message : '未知错误'));
+  });
+}
+
+function openSecretModal(kind, itemId){
+  var item = findEntryByKind(kind, itemId, getActiveCharState());
+  if(!item){ toast('没找到这条秘密行程'); return; }
+  secretTarget = { kind:String(kind || ''), itemId:String(itemId || '') };
+  document.getElementById('secretModalTitle').textContent = '查看秘密行程';
+  document.getElementById('secretModalSub').textContent = formatScheduleDateZh(selectedDateKey) + ' · ' + (String(item.publicMask || '这段时间有安排').trim() || '这段时间有安排');
+  secretPeekDraft = '';
+  renderSecretInput(document.getElementById('secretPasswordInput'), '', '输入四位数字密码');
+  document.getElementById('secretHintText').textContent = item.secretHint ? ('提示：' + String(item.secretHint || '').trim()) : '输对密码才能看到完整内容。';
+  document.getElementById('secretModal').classList.add('open');
+}
+
+function closeSecretModal(){
+  document.getElementById('secretModal').classList.remove('open');
+  secretTarget = null;
+  secretPeekDraft = '';
+}
+
+function handleSecretModalMask(evt){
+  if(evt.target && evt.target.id === 'secretModal') closeSecretModal();
+}
+
+function attemptSecretPeek(){
+  if(!secretTarget) return;
+  var item = findEntryByKind(secretTarget.kind, secretTarget.itemId, getActiveCharState());
+  if(!item){ closeSecretModal(); return; }
+  var input = String(secretPeekDraft || '').replace(/\D+/g, '').trim().slice(0, 4);
+  if(String(item.secretPassword || '').trim() && input.length < 4){
+    toast('请输入四位密码');
+    return;
+  }
+  var success = !String(item.secretPassword || '').trim() || input === String(item.secretPassword || '').trim();
+  var shell = getParentShell();
+  var noticeChar = getActiveChar() || getActiveCharacterFromShell() || null;
+  var noticeCharId = String(activeCharId || (noticeChar && noticeChar.id) || '').trim();
+  if(shell.ScheduleShell && typeof shell.ScheduleShell.appendSystemNotice === 'function'){
+    shell.ScheduleShell.appendSystemNotice({
+      charId: noticeCharId,
+      text: getSecretAttemptNotice(success, item)
+    }).then(function(ok){
+      if(!ok) console.warn('schedule system notice not persisted');
+    }).catch(function(err){
+      console.warn('schedule system notice failed', err);
+    });
+  }
+  if(success){
+    rememberTimelineSecretUnlocked(secretTarget.kind, secretTarget.itemId);
+    closeSecretModal();
+    renderAll();
+    toast('已记录到聊天，点回复按钮再让TA回应');
+    return;
+  }
+  document.getElementById('secretHintText').textContent = (item.secretHint ? ('提示：' + String(item.secretHint || '').trim() + '。') : '') + ' 四位密码不对，再试一次？';
+  toast('密码不对');
+}
+
+function openDeleteModal(kind, itemId, label){
+  deleteTarget = { kind:String(kind || ''), itemId:String(itemId || '') };
+  document.getElementById('deleteModalSub').textContent = '要删掉“' + String(label || '这条安排') + '”吗？删掉之后不会自动恢复哦。';
+  document.getElementById('deleteModal').classList.add('open');
+}
+
+function closeDeleteModal(){
+  document.getElementById('deleteModal').classList.remove('open');
+  deleteTarget = null;
+}
+
+function openClearDayModal(){
+  closeSettingsDrawer();
+  document.getElementById('clearDayModal').classList.add('open');
+}
+
+function closeClearDayModal(){
+  document.getElementById('clearDayModal').classList.remove('open');
+}
+
+function handleClearDayModalMask(evt){
+  if(evt.target && evt.target.id === 'clearDayModal') closeClearDayModal();
+}
+
+function confirmClearDaySchedule(){
+  var char = getActiveChar();
+  if(!char){
+    closeClearDayModal();
+    return;
+  }
+  var charState = getActiveCharState();
+  charState.events = (Array.isArray(charState.events) ? charState.events : []).filter(function(item){
+    return String(item && item.date || '') !== String(selectedDateKey || '');
+  });
+  charState.todos = (Array.isArray(charState.todos) ? charState.todos : []).filter(function(item){
+    return String(item && item.date || '') !== String(selectedDateKey || '');
+  });
+  if(charState.charDays && charState.charDays[selectedDateKey]){
+    delete charState.charDays[selectedDateKey];
+  }
+  scheduleState = ScheduleShared.setCharState(scheduleState, char.id, charState);
+  persistState().then(function(){
+    closeClearDayModal();
+    renderAll();
+    toast('这一天已经清空了');
+  });
+}
+
+function handleDeleteModalMask(evt){
+  if(evt.target && evt.target.id === 'deleteModal') closeDeleteModal();
+}
+
+function confirmDeleteTarget(){
+  if(!deleteTarget) return;
+  mutateEntryByKind(deleteTarget.kind, deleteTarget.itemId, function(){ return false; }).then(function(changed){
+    if(!changed) return;
+    closeDeleteModal();
+    toast('已经删掉了');
+  });
+}
+
+function openTimelineActionModal(kind, itemId){
+  var item = findEntryByKind(kind, itemId, getActiveCharState());
+  if(!item) return;
+  timelineActionTarget = { kind:String(kind || ''), itemId:String(itemId || '') };
+  document.getElementById('timelineActionTitle').textContent = String(item.title || item.text || '这条安排');
+  document.getElementById('timelineActionSub').textContent = formatScheduleDateZh(selectedDateKey) + ' · ' + getTimeRangeText(item);
+  document.getElementById('timelineActionEditBtn').style.display = kind === 'event' ? 'inline-flex' : 'none';
+  document.getElementById('timelineActionDeleteBtn').style.display = (kind === 'event' || kind === 'timeline') ? 'inline-flex' : 'none';
+  document.getElementById('timelineActionModal').classList.add('open');
+}
+
+function closeTimelineActionModal(){
+  document.getElementById('timelineActionModal').classList.remove('open');
+  timelineActionTarget = null;
+}
+
+function handleTimelineActionMask(evt){
+  if(evt.target && evt.target.id === 'timelineActionModal') closeTimelineActionModal();
+}
+
+function confirmTimelineActionDelete(){
+  if(!timelineActionTarget) return;
+  var target = { kind:String(timelineActionTarget.kind || ''), itemId:String(timelineActionTarget.itemId || '') };
+  closeTimelineActionModal();
+  var item = findEntryByKind(target.kind, target.itemId, getActiveCharState());
+  openDeleteModal(target.kind, target.itemId, String(item && (item.title || item.text) || '这条安排'));
+}
+
+function openTimelineActionEdit(){
+  if(!timelineActionTarget || timelineActionTarget.kind !== 'event') return;
+  entryEditTarget = { kind:'event', itemId:String(timelineActionTarget.itemId || '') };
+  closeTimelineActionModal();
+  openEntryModal('event');
+}
+
+function openShareTargetModal(){
+  if(!timelineActionTarget) return;
+  var host = document.getElementById('shareTargetList');
+  if(!host) return;
+  host.innerHTML = '<div class="schedule-empty">正在装进聊天列表…</div>';
+  document.getElementById('timelineActionModal').classList.remove('open');
+  document.getElementById('shareTargetModal').classList.add('open');
+  try{
+    loadCharacters();
+    var list = getShareTargetCharacters();
+    if(!list.length){
+      host.innerHTML = '<div class="schedule-empty">先去创建一个角色吧。</div>';
+      return;
+    }
+    host.innerHTML = '<div class="schedule-picker-strip is-chat-share">' + list.map(function(char){
+      var avatar = '';
+      try{ avatar = getCharacterAvatar(char) || ''; }catch(err){}
+      var face = getCharacterName(char).slice(0, 1) || 'C';
+      return '<div class="schedule-picker-chip"><button class="schedule-picker-chip-btn" type="button" data-share-char-id="' + esc(String(char.id || '')) + '">'
+        + (avatar ? ('<img src="' + esc(avatar) + '" alt="">') : ('<div class="schedule-picker-chip-avatar">' + esc(face) + '</div>'))
+        + '</button><div class="schedule-picker-chip-label">' + esc(getCharacterName(char)) + '</div></div>';
+    }).join('') + '</div>';
+    Array.prototype.forEach.call(host.querySelectorAll('[data-share-char-id]'), function(btn){
+      btn.onclick = function(evt){
+        evt.preventDefault();
+        evt.stopPropagation();
+        shareTimelineToChar(String(btn.getAttribute('data-share-char-id') || ''));
+      };
+    });
+    list.forEach(function(char){
+      resolveCharacterAvatarAsync(char).then(function(src){
+        src = String(src || '').trim();
+        if(!src) return;
+        var btn = host.querySelector('[data-share-char-id="' + String(char.id || '').replace(/"/g, '&quot;') + '"]');
+        if(!btn) return;
+        btn.innerHTML = '<img src="' + esc(src) + '" alt="">';
+      }).catch(function(){});
+    });
+    host.scrollLeft = 0;
+  }catch(err){
+    host.innerHTML = '<div class="schedule-empty">聊天列表打开失败了，再试一次吧。</div>';
+    console.warn('schedule share modal failed', err);
+  }
+}
+
+function closeShareTargetModal(){
+  document.getElementById('shareTargetModal').classList.remove('open');
+}
+
+function handleShareTargetMask(evt){
+  if(evt.target && evt.target.id === 'shareTargetModal') closeShareTargetModal();
+}
+
+function buildShareExcerpt(item){
+  item = item && typeof item === 'object' ? item : {};
+  var time = getTimeRangeText(item);
+  var secretLocked = !!(item.secret && !isTimelineSecretUnlocked('timeline', item.id));
+  var hiddenUser = item.visibleToChar === false;
+  var title = hiddenUser
+    ? (String(item.publicMask || '').trim() || '这个时间段有安排')
+    : (secretLocked ? getRenderedCharTimelineTitle(item) : String(item.title || item.text || '').trim());
+  var owner = getItemTimeOwner(item);
+  var location = (hiddenUser || secretLocked) ? '' : renderScheduleDisplayLocation(owner, item.location);
+  var note = hiddenUser
+    ? '具体内容没有公开。'
+    : (secretLocked ? '具体内容还没解锁。' : renderScheduleDisplayText(owner, item.note));
+  return [time, title, location, note].filter(Boolean).join(' · ');
+}
+
+function shareTimelineToChar(targetCharId){
+  targetCharId = String(targetCharId || '').trim();
+  if(!timelineActionTarget || !targetCharId) return;
+  var shell = getParentShell();
+  var sourceChar = getActiveChar();
+  var targetChar = characterList.find(function(char){ return String(char && char.id || '') === targetCharId; }) || null;
+  var item = findEntryByKind(timelineActionTarget.kind, timelineActionTarget.itemId, getActiveCharState());
+  if(!item || !shell || !shell.ScheduleShell || typeof shell.ScheduleShell.sendScheduleQuote !== 'function'){
+    toast('分享到聊天还没接上');
+    return;
+  }
+  var excerpt = buildShareExcerpt(item);
+  var itemOwner = timelineActionTarget.kind === 'timeline' ? 'char' : 'user';
+  var shareTitle = itemOwner === 'char' && sourceChar && targetChar && String(sourceChar.id || '') !== String(targetChar.id || '')
+    ? (getCharacterName(sourceChar) + '的日程')
+    : '日程分享';
+  Promise.resolve(shell.ScheduleShell.sendScheduleQuote({
+    charId: targetCharId,
+    role: 'user',
+    title: shareTitle,
+    excerpt: excerpt,
+    reply: '',
+    dateKey: selectedDateKey
+  }).then(function(){
+    closeShareTargetModal();
+    try{
+      var jumpChar = targetChar || getCharacterById(targetCharId) || getShellResolvedCharacter(targetCharId) || { id: targetCharId, name: '角色' };
+      if(window.parent) window.parent.postMessage({ type:'OPEN_CHAT_WITH', payload: jumpChar }, '*');
+    }catch(err){}
+    timelineActionTarget = null;
+    toast('已经发到聊天里了');
+  }).catch(function(err){
+    toast('分享失败：' + (err && err.message ? err.message : '未知错误'));
+  }));
+}
+
+function bindLongPressDeletes(){
+  Array.prototype.slice.call(document.querySelectorAll('[data-action-kind][data-action-id],[data-delete-kind][data-delete-id]')).forEach(function(node){
+    var labelNode = node.querySelector('.schedule-timeline-title,.schedule-todo-text');
+    var label = labelNode ? String(labelNode.textContent || '').trim() : '这条安排';
+    function clearPress(){
+      if(longPressTimer){ clearTimeout(longPressTimer); longPressTimer = 0; }
+    }
+    node.onpointerdown = function(evt){
+      if(evt.target && evt.target.closest('button')) return;
+      clearPress();
+      longPressTimer = setTimeout(function(){
+        var kind = String(node.getAttribute('data-action-kind') || node.getAttribute('data-delete-kind') || '');
+        var itemId = String(node.getAttribute('data-action-id') || node.getAttribute('data-delete-id') || '');
+        if(kind === 'event' || kind === 'timeline'){
+          openTimelineActionModal(kind, itemId);
+        }else{
+          openDeleteModal(String(node.getAttribute('data-delete-kind') || kind), String(node.getAttribute('data-delete-id') || itemId), label);
+        }
+      }, 480);
+    };
+    node.onpointerup = clearPress;
+    node.onpointerleave = clearPress;
+    node.onpointercancel = clearPress;
+  });
+}
+
+function handleTimelinePrimaryClick(evt, kind, itemId){
+  if(evt && evt.target && evt.target.closest('button')) return;
+  var item = findEntryByKind(kind, itemId, getActiveCharState());
+  if(!item) return;
+  if(kind === 'timeline' && item.secret && !isTimelineSecretUnlocked(kind, itemId)){
+    openSecretModal(kind, itemId);
+    return;
+  }
+  openCommentModal(kind, itemId);
+}
+
+function collectGenerationPayload(){
+  var char = getActiveChar();
+  if(!char) return null;
+  var ctx = getSelectedDayContext();
+  return {
+    charId: char.id,
+    charSnapshot: Object.assign({}, char),
+    userName: getActiveUserName(),
+    userPersona: getActiveUserPersona(),
+    userWeather: buildScheduleWeatherSnapshot('user', char.id),
+    charWeather: buildScheduleWeatherSnapshot('char', char.id),
+    dateKey: selectedDateKey,
+    monthKey: viewMonthKey,
+    globalTimeAwareness: scheduleState.globalTimeAwareness !== false,
+    charOverride: getActiveCharOverride(),
+    events: ctx.events,
+    todos: ctx.todos,
+    holidays: ctx.holidays,
+    specialDates: ctx.specialDates
+  };
+}
+
+async function generateSelectedDay(){
+  var shell = getParentShell();
+  var payload = collectGenerationPayload();
+  if(!payload || !payload.charId){ toast('先选一个角色'); return; }
+  if(!(shell.ScheduleShell && typeof shell.ScheduleShell.generateDayPlan === 'function')){
+    toast('日程生成器还没接上');
+    return;
+  }
+  try{
+    toast('正在写Ta的一天...');
+    var generated = await shell.ScheduleShell.generateDayPlan(payload);
+    if(!generated) throw new Error('没有拿到结果');
+    var char = getActiveChar();
+    var charState = getActiveCharState();
+    charState.charDays[selectedDateKey] = ScheduleShared.normalizeCharDay(generated, selectedDateKey);
+    scheduleState = ScheduleShared.setCharState(scheduleState, char.id, charState);
+    await persistState();
+    renderAll();
+    toast('行程已经送达');
+  }catch(err){
+    toast('生成失败：' + (err && err.message ? err.message : '未知错误'));
+  }
+}
+
+function bindMetadataUpdates(){
+  if(window.MetadataStore && typeof window.MetadataStore.subscribe === 'function'){
+    window.MetadataStore.subscribe(function(topic){
+      if(topic !== 'characters') return;
+      loadCharacters();
+      ensureActiveChar();
+      renderAll();
+    });
+  }
+}
+
+function bindShellMessages(){
+  window.addEventListener('message', function(evt){
+    var data = evt && evt.data && typeof evt.data === 'object' ? evt.data : null;
+    if(!data) return;
+    if(data.type === 'SCHEDULE_STATE_DIRTY'){
+      reloadScheduleStateSnapshot().catch(function(){});
+      return;
+    }
+    if(data.type === 'BACKGROUND_AI_MESSAGE'){
+      var payload = data.payload && typeof data.payload === 'object' ? data.payload : {};
+      var entry = payload.entry && typeof payload.entry === 'object' ? payload.entry : null;
+      var incomingCharId = String(payload.charId || '').trim();
+      if(!entry || !incomingCharId) return;
+      if(String(entry.role || '') !== 'assistant') return;
+      if(entry.silentPeek) return;
+      var char = characterList.find(function(item){ return item && String(item.id || '') === incomingCharId; })
+        || getShellResolvedCharacter(incomingCharId)
+        || { id: incomingCharId, name: String(payload.charName || '角色') };
+      var text = '';
+      if(String(entry.type || '') === 'schedulequote'){
+        try{
+          var parsed = JSON.parse(String(entry.content || '{}'));
+          text = String(parsed.reply || parsed.excerpt || '发来了一条日程消息').trim();
+        }catch(err){
+          text = '发来了一条日程消息';
+        }
+      }else{
+        text = String(entry.content || '').trim();
+      }
+      if(!text) return;
+      enqueueScheduleChatPeek(char, text);
+      return;
+    }
+    if(data.type !== 'SET_ACTIVE_CHARACTER' && data.type !== 'OPEN_CHAT_WITH' && data.type !== 'OPEN_APP_WITH') return;
+    var incomingId = String((data.payload && (data.payload.id || data.payload.charId)) || '').trim();
+    if(!incomingId) return;
+    pendingScheduleCharId = incomingId;
+    activeCharId = incomingId;
+    loadCharacters();
+    ensureActiveChar();
+    syncCurrentCharView().then(renderAll);
+  });
+}
+
+async function initSchedule(){
+  if(window.MetadataStore && typeof window.MetadataStore.init === 'function'){
+    try{ await window.MetadataStore.init(); }catch(err){}
+    if(typeof window.MetadataStore.loadCharacters === 'function'){
+      try{ await window.MetadataStore.loadCharacters(true); }catch(err){}
+    }
+  }
+  try{
+    pendingScheduleCharId = String(localStorage.getItem('scheduleCharId') || '').trim();
+    if(pendingScheduleCharId){
+      activeCharId = pendingScheduleCharId;
+      localStorage.removeItem('scheduleCharId');
+    }
+  }catch(err){}
+  loadCharacters();
+  scheduleState = await ScheduleShared.loadState();
+  ensureActiveChar();
+  bindMetadataUpdates();
+  bindShellMessages();
+  renderAll();
+}
+
+window.addEventListener('pagehide', function(){
+  stopScheduleLiveTimeRenderTimer();
+  flushScheduleState().catch(function(){});
+});
+
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'hidden'){
+    stopScheduleLiveTimeRenderTimer();
+    flushScheduleState().catch(function(){});
+  }else{
+    startScheduleLiveTimeRenderTimer();
+    loadCharacters();
+    reloadScheduleStateSnapshot().catch(function(){
+      ensureActiveChar();
+      renderAll();
+    });
+    scheduleLiveTimeRenderTick();
+  }
+});
+
+window.addEventListener('blur', function(){
+  stopScheduleLiveTimeRenderTimer();
+});
+
+window.addEventListener('focus', function(){
+  startScheduleLiveTimeRenderTimer();
+  loadCharacters();
+  reloadScheduleStateSnapshot().catch(function(){
+    ensureActiveChar();
+    renderAll();
+  });
+  scheduleLiveTimeRenderTick();
+});
+
+initSchedule();
+startScheduleLiveTimeRenderTimer();
+</script>
+</body>
+</html>

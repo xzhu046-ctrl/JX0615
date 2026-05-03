@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>个人中心</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<script src="../chatStorage.js?v=2026-05-01T18:22:00Z"></script>
+<script src="../assetStore.js?v=2026-05-01T18:22:00Z"></script>
+<script src="../accountManager.js?v=2026-05-01T18:22:00Z"></script>
+<script src="../metadataStore.js?v=2026-05-01T18:22:00Z"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--b:#0a0a0a;--w:#fff;--off:#f5f5f5;--g:#666;--bd:2px solid #0a0a0a;--sh:2px 2px 0 #0a0a0a;--font:'Quicksand',sans-serif;--fontd:'Nunito',sans-serif;--safe-top:max(env(safe-area-inset-top),0px);--safe-bottom:max(env(safe-area-inset-bottom),0px)}
+html,body{width:100%;height:100%}
+body{font-family:var(--font);background:linear-gradient(180deg,#fff 0%,#f3f3f3 100%);color:var(--b);padding:calc(8px + var(--safe-top)) 12px calc(104px + var(--safe-bottom));overflow:auto}
+button,input,textarea,select{color:var(--b);-webkit-text-fill-color:var(--b)}
+.profile-topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:center;min-height:48px;margin-bottom:10px;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,0));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.top-title{position:relative;display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:0 4px;background:transparent;color:#111;font-family:var(--fontd);font-size:20px;font-weight:900;letter-spacing:.02em;box-shadow:none}
+.top-title::after{content:'';position:absolute;left:2px;right:2px;bottom:1px;border-bottom:3px dashed rgba(17,17,17,.72)}
+.card{border:1px solid rgba(17,17,17,.14);border-radius:8px;background:rgba(255,255,255,.96);box-shadow:0 18px 40px rgba(0,0,0,.1);overflow:hidden}
+.id{position:relative;padding:16px;background:linear-gradient(180deg,#fff 0%,#f7f7f7 100%)}
+.id::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:3px;background:linear-gradient(180deg,rgba(17,17,17,.12) 0%,rgba(17,17,17,.9) 24%,rgba(17,17,17,.9) 76%,rgba(17,17,17,.12) 100%)}
+.id-row{position:relative;z-index:1;display:flex;gap:14px;align-items:center}
+.avatar{width:92px;height:92px;border:1.5px solid rgba(17,17,17,.86);border-radius:999px;background:#eee center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;cursor:pointer;box-shadow:0 0 0 5px #fff,0 14px 28px rgba(0,0,0,.14);color:#0a0a0a;overflow:hidden}
+.name-wrap{flex:1;display:flex;flex-direction:column;gap:7px;min-width:0}
+.label{font-size:10px;font-weight:900;color:#777;letter-spacing:.16em;text-transform:uppercase}
+.name-input{width:100%;border:none;border-radius:0 18px 18px 0;padding:12px 13px 10px 18px;font-family:var(--fontd);font-size:15px;font-weight:900;background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(238,238,238,.42)),linear-gradient(180deg,rgba(17,17,17,.12) 0%,rgba(17,17,17,.82) 25%,rgba(17,17,17,.82) 75%,rgba(17,17,17,.12) 100%);background-repeat:no-repeat,no-repeat;background-size:100% 100%,3px 100%;outline:none;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-color:rgba(85,85,85,.42);text-decoration-thickness:1.2px;text-underline-offset:4px}
+.hint{display:none}
+.section{margin-top:14px;padding:12px;background:#fff}
+.row-btn{width:100%;display:flex;align-items:center;justify-content:space-between;border:none;border-radius:0;background:transparent;padding:13px 2px;font-family:var(--fontd);font-weight:900;font-size:14px;cursor:pointer;box-shadow:none}
+.row-btn + .row-btn{margin-top:8px}
+.row-btn + .row-btn{border-top:2px dashed rgba(17,17,17,.22)}
+.row-btn:active{transform:translateY(1px);box-shadow:none}
+.row-sub{font-size:11px;color:#666;font-weight:900;border-bottom:2px dashed rgba(17,17,17,.34)}
+.del-wrap{margin-top:18px;display:flex;justify-content:center}
+.del-btn{width:auto;min-width:132px;border:1.5px solid #111;border-radius:999px;background:#fff;color:#111;padding:9px 15px;box-shadow:none;font-family:var(--fontd);font-size:12px;font-weight:900;letter-spacing:.04em;cursor:pointer}
+.del-btn:active{transform:translateY(1px);box-shadow:none;background:#111;color:#fff}
+.overlay{position:fixed;inset:0;background:rgba(245,245,245,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;padding:18px;z-index:160}
+.overlay.open{display:flex}
+.modal{width:min(318px,100%);border:1.5px solid rgba(17,17,17,.86);border-radius:10px;background:linear-gradient(180deg,#fff 0%,#f7f7f7 100%);box-shadow:0 22px 48px rgba(0,0,0,.18);padding:16px;display:flex;flex-direction:column;gap:12px}
+.modal h3{position:relative;align-self:center;width:max-content;max-width:100%;padding:0 2px 5px;font-family:var(--fontd);font-size:18px;font-weight:900;letter-spacing:.03em;text-align:center}
+.modal h3::after{content:'';position:absolute;left:0;right:0;bottom:0;border-bottom:3px dashed rgba(17,17,17,.64)}
+.modal .sub{font-size:12px;color:#555;font-weight:800;line-height:1.55;text-align:center}
+.actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.actions button,.account-item button{flex:0 0 auto;min-width:86px;border:1.5px solid #111;border-radius:999px;background:#fff;box-shadow:0 8px 18px rgba(0,0,0,.08);padding:9px 13px;font-family:var(--fontd);font-size:12px;font-weight:900;letter-spacing:.03em;cursor:pointer}
+.actions button:active,.account-item button:active{transform:translateY(1px);box-shadow:0 3px 8px rgba(0,0,0,.12);background:#111;color:#fff;-webkit-text-fill-color:#fff}
+.account-list{display:flex;flex-direction:column;gap:10px;max-height:280px;overflow:auto;padding:2px 2px 4px;-webkit-overflow-scrolling:touch}
+.account-item{position:relative;border:1.5px solid rgba(17,17,17,.84);border-radius:8px;background:rgba(255,255,255,.96);padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 22px rgba(0,0,0,.08);overflow:hidden}
+.account-item::before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:3px;background:linear-gradient(180deg,rgba(17,17,17,.1) 0%,rgba(17,17,17,.86) 28%,rgba(17,17,17,.86) 72%,rgba(17,17,17,.1) 100%)}
+.account-main{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.account-main strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:8px;font-family:var(--fontd);font-size:15px;font-weight:900;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-thickness:1.5px;text-decoration-color:rgba(17,17,17,.38);text-underline-offset:4px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:9px;border:1.5px solid #111;border-radius:999px;padding:2px 7px;font-weight:900;background:#111;color:#fff;letter-spacing:.08em}
+.fav-list{display:flex;flex-direction:column;gap:14px;max-height:360px;overflow:auto;padding:18px 2px 6px;-webkit-overflow-scrolling:touch}
+.fav-list .fav-item:first-child{margin-top:2px}
+.fav-item{position:relative;width:100%;margin:0 auto;border:none;border-radius:0 18px 18px 0;background:linear-gradient(180deg,rgba(255,255,255,.58),rgba(240,240,240,.24));box-shadow:none;padding:12px 12px 13px 28px;display:flex;gap:10px;touch-action:pan-y;transition:transform .15s ease;color:#666;overflow:visible}
+.fav-item::before{content:'';position:absolute;left:10px;top:10px;bottom:10px;width:3px;background:linear-gradient(180deg,rgba(17,17,17,.16) 0%,rgba(17,17,17,.9) 23%,rgba(17,17,17,.9) 77%,rgba(17,17,17,.16) 100%);opacity:.92}
+.fav-item::after{content:'“';position:absolute;left:16px;top:-14px;font-family:Georgia,'Times New Roman',serif;font-size:44px;line-height:1;color:rgba(17,17,17,.48);font-weight:900;pointer-events:none}
+.fav-item.swiping{transition:none}
+.fav-av{width:28px;height:28px;border:1.5px solid rgba(17,17,17,.64);border-radius:999px;background:linear-gradient(180deg,#fff 0%,#ececec 100%);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--fontd);font-size:10px;font-weight:900;color:#555;box-shadow:0 0 0 3px rgba(255,255,255,.82)}
+.fav-av img{width:100%;height:100%;object-fit:cover;display:block}
+.fav-meta{min-width:0;flex:1}
+.fav-name{font-family:var(--fontd);font-size:11px;font-weight:900;color:#555;letter-spacing:.04em;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-thickness:1.3px;text-decoration-color:rgba(109,109,109,.62);text-underline-offset:4px}
+.fav-time{margin-top:2px;font-size:9px;color:#888;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.fav-text{position:relative;margin-top:7px;padding-right:13px;font-size:12px;font-weight:750;line-height:1.68;color:#6d6d6d;word-break:break-word;white-space:pre-wrap;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-color:rgba(109,109,109,.68);text-decoration-thickness:1.25px;text-underline-offset:4px}
+.fav-text::after{content:'”';position:absolute;right:-2px;bottom:-27px;font-family:Georgia,'Times New Roman',serif;font-size:44px;line-height:1;color:rgba(17,17,17,.42);font-weight:900;pointer-events:none;text-decoration:none}
+.fav-rich-wrap{position:relative;margin-top:9px;border:none;border-radius:0 14px 14px 0;background:rgba(255,255,255,.48);box-shadow:none;padding:7px 7px 7px 12px}
+.fav-rich-wrap::before{content:'';position:absolute;left:0;top:7px;bottom:7px;width:2px;background:linear-gradient(180deg,rgba(17,17,17,.12),rgba(17,17,17,.72),rgba(17,17,17,.12))}
+.fav-rich-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px}
+.fav-rich-tag{display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:0 10px;border-radius:999px;background:#111;color:#fff;font-family:var(--fontd);font-size:10px;font-weight:900;letter-spacing:.12em}
+.fav-rich-expand{width:30px;height:30px;border:1.5px solid #111;border-radius:999px;background:#fff;box-shadow:0 8px 16px rgba(0,0,0,.08);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.fav-rich-expand:active{transform:translateY(1px);box-shadow:0 3px 8px rgba(0,0,0,.12)}
+.fav-rich-expand img{width:16px;height:16px;object-fit:contain;display:block}
+.fav-rich-frame{display:block;width:100%;height:220px;border:none;border-radius:10px;background:#fff}
+.fav-rich-hint{margin-top:6px;font-size:10px;color:#666;font-weight:800;letter-spacing:.04em}
+.fav-rich-full-overlay{position:fixed;inset:0;z-index:190;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(0,0,0,.5)}
+.fav-rich-full-overlay.open{display:flex}
+.fav-rich-full-card{width:min(980px,100%);height:min(92vh,100%);border:var(--bd);border-radius:20px;background:#fff;box-shadow:4px 6px 0 #0a0a0a;padding:10px;display:flex;flex-direction:column;gap:8px}
+.fav-rich-full-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fav-rich-full-title{display:inline-flex;align-items:center;justify-content:center;min-height:26px;padding:0 12px;border-radius:999px;background:#111;color:#fff;font-family:var(--fontd);font-size:10px;font-weight:900;letter-spacing:.14em}
+.fav-rich-full-close{width:34px;height:34px;border:var(--bd);border-radius:999px;background:#fff;box-shadow:var(--sh);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.fav-rich-full-close:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #0a0a0a}
+.fav-rich-full-close img{width:18px;height:18px;object-fit:contain;display:block}
+.fav-rich-full-frame{width:100%;flex:1 1 auto;border:none;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(10px);background:#111;color:#fff;padding:8px 14px;border-radius:999px;font-size:12px;font-weight:800;opacity:0;transition:all .2s;pointer-events:none;z-index:99}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#avatarInput{display:none}
+.wallet-page{position:fixed;inset:0;display:none;flex-direction:column;background:linear-gradient(180deg,#fff 0%,#f1f1f1 100%);padding:calc(10px + var(--safe-top)) 14px 16px;z-index:90}
+.wallet-page.open{display:flex}
+.wallet-topbar{position:relative;display:flex;align-items:center;justify-content:center;min-height:44px;margin-bottom:12px;flex-shrink:0}
+.wallet-heart{position:absolute;left:0;top:2px;width:38px;height:38px;border:1.5px solid #111;border-radius:999px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 22px rgba(0,0,0,.12);cursor:pointer}
+.wallet-heart:active,.wallet-cta:active,.wallet-mini-btn:active,.wallet-record:active,.wallet-plus:active,.family-unlink-btn:active,.family-mode-btn:active{transform:translateY(1px);box-shadow:0 4px 10px rgba(0,0,0,.14)}
+.wallet-heart svg{width:18px;height:18px;display:block;fill:#0a0a0a}
+.wallet-title{position:relative;padding:0 4px 5px;font-family:var(--fontd);font-size:23px;font-weight:900;letter-spacing:.03em}
+.wallet-title::after{content:'';position:absolute;left:0;right:0;bottom:0;border-bottom:3px dashed rgba(17,17,17,.68)}
+.wallet-shell{display:flex;flex-direction:column;gap:14px;min-height:0;flex:1}
+.wallet-balance-card{position:relative;border:1.5px solid rgba(17,17,17,.86);border-radius:10px;background:linear-gradient(180deg,#fff 0%,#f6f6f6 100%);box-shadow:0 20px 42px rgba(0,0,0,.14);padding:18px 16px 16px;overflow:hidden;flex-shrink:0}
+.wallet-balance-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:3px;background:linear-gradient(180deg,rgba(17,17,17,.1) 0%,rgba(17,17,17,.9) 26%,rgba(17,17,17,.9) 74%,rgba(17,17,17,.1) 100%)}
+.wallet-balance-card::after{content:'BALANCE';position:absolute;right:14px;top:14px;font-family:var(--fontd);font-size:10px;font-weight:900;letter-spacing:.18em;color:rgba(17,17,17,.34)}
+.wallet-amount{position:relative;z-index:1;margin:9px 0 16px;padding-left:7px;font-family:var(--fontd);font-size:52px;line-height:.98;font-weight:900;letter-spacing:-.04em}
+.wallet-actions{position:relative;z-index:1;display:flex;justify-content:flex-end;gap:10px}
+.wallet-cta{min-width:66px;height:34px;border:1.5px solid #111;border-radius:999px;background:#fff;box-shadow:0 8px 18px rgba(0,0,0,.08);font-family:var(--fontd);font-size:13px;font-weight:900;cursor:pointer}
+.wallet-strip{border:1.5px solid rgba(17,17,17,.84);border-radius:10px;background:rgba(255,255,255,.96);box-shadow:0 12px 28px rgba(0,0,0,.09);padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0}
+.wallet-strip-copy{display:flex;flex-direction:column;gap:3px}
+.wallet-strip-title{font-family:var(--fontd);font-size:18px;font-weight:900;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-thickness:1.5px;text-decoration-color:rgba(17,17,17,.38);text-underline-offset:5px}
+.wallet-strip-sub{font-size:11px;color:#666;font-weight:800}
+.wallet-plus{width:38px;height:38px;border:1.5px solid #111;border-radius:999px;background:#111;color:#fff;-webkit-text-fill-color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--fontd);font-size:24px;font-weight:900;cursor:pointer;box-shadow:0 10px 20px rgba(0,0,0,.14)}
+.wallet-divider{height:1px;border-top:2px dashed rgba(17,17,17,.42);opacity:.9;margin:0 2px;flex-shrink:0}
+.wallet-ledger{display:flex;flex-direction:column;gap:10px;min-height:0;flex:1;overflow:auto;padding:2px 2px 4px;-webkit-overflow-scrolling:touch}
+.wallet-record{width:100%;border:1.5px solid rgba(17,17,17,.82);border-radius:8px;background:rgba(255,255,255,.98);box-shadow:0 10px 24px rgba(0,0,0,.08);padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;cursor:pointer}
+.wallet-record-copy{min-width:0}
+.wallet-record-title{font-family:var(--fontd);font-size:16px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wallet-record-sub{margin-top:4px;font-size:11px;color:#666;font-weight:800}
+.wallet-record-amount{font-family:var(--fontd);font-size:22px;font-weight:900;flex-shrink:0}
+.wallet-empty{border:2px dashed rgba(17,17,17,.38);border-radius:8px;background:rgba(255,255,255,.78);box-shadow:none;padding:20px 16px;text-align:center;color:#666;font-size:12px;font-weight:800}
+.wallet-input{width:100%;border:none;border-left:3px solid transparent;border-radius:0 16px 16px 0;background:linear-gradient(180deg,rgba(255,255,255,.84),rgba(238,238,238,.42)),linear-gradient(180deg,rgba(17,17,17,.12) 0%,rgba(17,17,17,.84) 25%,rgba(17,17,17,.84) 75%,rgba(17,17,17,.12) 100%);background-repeat:no-repeat,no-repeat;background-size:100% 100%,3px 100%;box-shadow:none;padding:12px 14px 12px 18px;font-family:var(--fontd);font-size:22px;font-weight:900;outline:none}
+.wallet-input::placeholder,.family-amount-input::placeholder{color:#999;-webkit-text-fill-color:#999}
+.wallet-note{font-size:12px;color:#666;font-weight:700;line-height:1.5}
+.couple-page{position:fixed;inset:0;display:none;flex-direction:column;background:
+  radial-gradient(circle at 18px 18px,rgba(17,17,17,.12) 0 1px,transparent 1.5px) 0 0/18px 18px,
+  linear-gradient(180deg,#f8f8f8 0%,#ececec 100%);padding:0 0 calc(82px + var(--safe-bottom));z-index:92;overflow:hidden}
+.couple-page.open{display:flex}
+.couple-chat-head{position:relative;min-height:148px;padding:calc(14px + var(--safe-top)) 14px 0 2px;display:flex;flex-direction:column;gap:2px;overflow:visible;flex-shrink:0}
+.couple-chat-head::before{content:'';position:absolute;inset:0 0 -2px;background-image:var(--couple-head-art,url('assets/%E6%A8%B1%E8%8A%B1%E5%9C%A8%E6%B0%B4%E9%87%8C.jpg'));background-position:center 14%;background-size:cover;background-repeat:no-repeat;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 58%,rgba(0,0,0,.94) 68%,rgba(0,0,0,.66) 77%,rgba(0,0,0,.28) 86%,transparent 96%);mask-image:linear-gradient(180deg,#000 0%,#000 58%,rgba(0,0,0,.94) 68%,rgba(0,0,0,.66) 77%,rgba(0,0,0,.28) 86%,transparent 96%);z-index:0}
+.couple-head-top{position:absolute;top:calc(12px + var(--safe-top));left:10px;right:10px;display:flex;align-items:flex-start;justify-content:flex-start;gap:10px;z-index:2}
+.couple-back{width:34px;height:34px;border:2px solid #111;border-radius:10px;background:rgba(255,255,255,.9);box-shadow:2px 2px 0 rgba(17,17,17,.16);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;font-family:'Times New Roman',serif;font-size:28px;font-weight:900;line-height:1;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.couple-head-pill{display:none}
+.couple-head-center{position:relative;z-index:1;min-width:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;margin-top:auto;padding-bottom:2px}
+.couple-polaroid-pair{position:relative;width:264px;height:118px;margin:-17px auto 0}
+.couple-polaroid{position:absolute;width:102px;height:110px;padding:6px 6px 28px;border:2px solid #111;border-radius:0;background:#fff;box-shadow:2px 2px 0 rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;overflow:hidden;color:#111;font-family:var(--fontd);font-size:12px;font-weight:900}
+.couple-polaroid.char{left:34px;top:4px;transform:rotate(-8deg);z-index:12}
+.couple-polaroid.user{right:34px;top:4px;transform:rotate(8deg);z-index:8}
+.couple-polaroid img{width:100%;height:100%;object-fit:cover;display:block}
+.couple-polaroid::after{content:attr(data-label);position:absolute;left:7px;right:7px;bottom:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;font-family:var(--fontd);font-size:11px;font-weight:900;line-height:1;color:#111}
+.couple-head-title{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:6px;width:min(216px,calc(100vw - 120px));margin:0 auto;font-family:var(--fontd);font-size:12px;font-weight:900;line-height:1;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.32)}
+.couple-head-name{min-width:0;max-width:92px;display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:0 8px;border-radius:999px;background:rgba(17,17,17,.78);box-shadow:0 6px 12px rgba(0,0,0,.12);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.couple-head-x{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:#111;color:#fff;box-shadow:2px 2px 0 rgba(17,17,17,.18);font-size:14px}
+.couple-scroll{min-height:0;flex:1;overflow:auto;padding:0 14px 18px;-webkit-overflow-scrolling:touch}
+.couple-strip{display:flex;gap:12px;overflow-x:auto;padding:8px 2px 14px;margin-top:-2px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.couple-char-chip{position:relative;min-width:78px;width:78px;height:78px;border:2px solid #111;border-radius:0;background:#fff;box-shadow:2px 2px 0 #111;padding:5px;display:flex;align-items:center;justify-content:center;cursor:pointer;scroll-snap-align:start}
+.couple-char-chip.active{background:#111;color:#fff;box-shadow:2px 2px 0 #fff,4px 4px 0 #111}
+.couple-chip-av{width:100%;height:100%;border:2px solid currentColor;border-radius:0;background:#eee;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--fontd);font-size:11px;font-weight:900}
+.couple-chip-av img{width:100%;height:100%;object-fit:cover;display:block}
+.couple-chip-name{position:absolute;left:5px;right:5px;bottom:5px;min-height:18px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.88);color:#111;font-family:var(--fontd);font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;padding:0 4px}
+.couple-char-chip.active .couple-chip-name{background:#111;color:#fff;box-shadow:0 0 0 1px #fff inset}
+.couple-chip-music{position:absolute;right:-6px;top:-7px;width:24px;height:24px;border:2px solid #111;background:#fff;box-shadow:2px 2px 0 #111;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.couple-chip-music img{width:18px;height:18px;object-fit:contain;display:block}
+.couple-card{position:relative;border:2px solid #111;border-radius:0;background:#fff;box-shadow:2px 2px 0 #fff,5px 5px 0 #111;padding:12px;margin:0 2px 14px}
+.couple-card-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;font-family:var(--fontd);font-size:18px;font-weight:900}
+.couple-card-title small{font-size:10px;color:#666;font-weight:900;letter-spacing:.04em}
+.couple-score-row{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center}
+.couple-score{font-family:var(--fontd);font-size:48px;line-height:.92;font-weight:900;letter-spacing:-.05em}
+.couple-meter{height:16px;border:2px solid #111;background:#f1f1f1;box-shadow:inset 0 0 0 2px #fff;overflow:hidden}
+.couple-meter-fill{height:100%;width:0;background:#111;transition:width .25s ease}
+.couple-unlock-now{margin-top:8px;font-size:11px;font-weight:900;color:#555;line-height:1.35}
+.couple-task-list{display:grid;gap:9px}
+.couple-task{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border-top:2px dashed rgba(17,17,17,.5);padding-top:9px}
+.couple-task:first-child{border-top:none;padding-top:0}
+.couple-task-name{font-family:var(--fontd);font-size:14px;font-weight:900}
+.couple-task-sub{margin-top:2px;font-size:11px;color:#666;font-weight:800;line-height:1.35}
+.couple-task-btn{min-width:54px;height:32px;border:2px solid #111;border-radius:0;background:#fff;box-shadow:2px 2px 0 #111;font-family:var(--fontd);font-size:12px;font-weight:900;cursor:pointer}
+.couple-task-btn.done{background:#111;color:#fff;box-shadow:2px 2px 0 #fff,4px 4px 0 #111}
+.couple-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.couple-badge{min-height:84px;border:2px dashed rgba(17,17,17,.55);background:#f8f8f8;padding:10px;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
+.couple-badge.earned{border-style:solid;background:#fff;box-shadow:2px 2px 0 rgba(17,17,17,.14)}
+.couple-badge-title{font-family:var(--fontd);font-size:14px;font-weight:900;line-height:1.2}
+.couple-badge-sub{font-size:10px;color:#666;font-weight:800;line-height:1.35}
+.couple-lock{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:2px dashed rgba(17,17,17,.45);padding-top:9px}
+.couple-lock:first-child{border-top:none;padding-top:0}
+.couple-lock-name{font-family:var(--fontd);font-size:14px;font-weight:900}
+.couple-lock-state{display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:0 9px;border:2px solid #111;background:#111;color:#fff;font-family:var(--fontd);font-size:10px;font-weight:900;white-space:nowrap}
+.couple-lock.locked .couple-lock-state{background:#fff;color:#111}
+.couple-anniv-list{display:flex;flex-direction:column;gap:8px}
+.couple-anniv{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:flex-start;border-top:2px dashed rgba(17,17,17,.45);padding-top:8px}
+.couple-anniv:first-child{border-top:none;padding-top:0}
+.couple-anniv-date{min-width:58px;border:2px solid #111;background:#111;color:#fff;text-align:center;font-family:var(--fontd);font-size:12px;font-weight:900;padding:4px 6px}
+.couple-anniv-title{font-family:var(--fontd);font-size:14px;font-weight:900}
+.couple-anniv-note{margin-top:2px;font-size:11px;color:#666;font-weight:800;line-height:1.4}
+.couple-empty{border:2px dashed rgba(17,17,17,.45);padding:14px;font-size:12px;font-weight:900;color:#666;text-align:center}
+.family-card-modal{display:flex;flex-direction:column;gap:12px}
+.family-card-title{position:relative;align-self:center;width:max-content;max-width:100%;padding:0 2px 5px;font-family:var(--fontd);font-size:22px;font-weight:900;text-align:center}
+.family-card-title::after{content:'';position:absolute;left:0;right:0;bottom:0;border-bottom:3px dashed rgba(17,17,17,.64)}
+.family-select{width:100%;border:1.5px solid rgba(17,17,17,.84);border-radius:8px;background:#fff;box-shadow:0 8px 18px rgba(0,0,0,.08);padding:12px 13px;font-family:var(--fontd);font-size:15px;font-weight:900;outline:none}
+.family-mode-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.family-mode-btn{border:1.5px solid #111;border-radius:999px;background:#fff;box-shadow:0 8px 18px rgba(0,0,0,.08);padding:10px 13px;display:flex;align-items:center;justify-content:space-between;font-family:var(--fontd);font-size:16px;font-weight:900;cursor:pointer}
+.family-mode-btn .check{font-size:18px;line-height:1}
+.family-line{height:1px;border-top:2px dashed rgba(17,17,17,.36);background:transparent}
+.family-amount-wrap{display:flex;flex-direction:column;gap:6px;padding-top:2px}
+.family-amount-label{font-family:var(--fontd);font-size:15px;font-weight:900;color:#666}
+.family-amount-input{width:100%;border:none;border-bottom:2px solid #0a0a0a;background:transparent;padding:8px 4px 10px;font-family:var(--fontd);font-size:44px;font-weight:900;text-align:center;outline:none}
+.family-active-list{display:flex;flex-direction:column;gap:10px}
+.family-active-card{border:1.5px solid rgba(17,17,17,.84);border-radius:8px;background:rgba(255,255,255,.96);box-shadow:0 10px 24px rgba(0,0,0,.08);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.family-active-title{font-family:var(--fontd);font-size:15px;font-weight:900}
+.family-active-sub{margin-top:4px;font-size:11px;color:#666;font-weight:800}
+.family-unlink-btn{min-width:58px;height:32px;border:1.5px solid #111;border-radius:999px;background:#111;color:#fff;-webkit-text-fill-color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.1);font-family:var(--fontd);font-size:12px;font-weight:900;cursor:pointer}
+.qq-bottom-nav{position:fixed;left:12px;right:12px;bottom:calc(10px + var(--safe-bottom));z-index:95;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.qq-bottom-btn > span:not(.nav-icon){display:none}
+.qq-bottom-btn{gap:0;font-size:0}
+.qq-bottom-btn{border:none;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#7a7a80;font-family:var(--fontd);font-size:10px;font-weight:900;cursor:pointer}
+.qq-bottom-btn:active{transform:translateY(1px)}
+.qq-bottom-btn .nav-icon{width:46px;height:46px;border:2px solid #111;border-radius:999px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 20px rgba(0,0,0,.12)}
+.qq-bottom-btn .nav-icon img{width:28px;height:28px;object-fit:contain;display:block;filter:brightness(0)}
+.qq-bottom-btn.active{color:#111}
+.qq-bottom-btn.active .nav-icon{background:#111}
+.qq-bottom-btn.active .nav-icon img{filter:brightness(0) invert(1)}
+</style>
+</head>
+<body>
+  <div class="profile-topbar">
+    <div class="top-title">个人设置</div>
+  </div>
+  <section class="card id">
+    <div class="id-row">
+      <button class="avatar" id="avatarBtn" type="button" onclick="pickAvatar()">+</button>
+      <div class="name-wrap">
+        <div class="label">Display Name</div>
+        <input class="name-input" id="nameInput" maxlength="24" placeholder="我哥天下第一好">
+      </div>
+    </div>
+    <div class="hint">这里修改会同步到朋友圈头像和名字。</div>
+  </section>
+
+  <section class="card section">
+    <button class="row-btn" type="button" onclick="openWalletPage()">
+      <span>支付与服务</span><span class="row-sub" id="walletSub">钱包</span>
+    </button>
+    <button class="row-btn" type="button" onclick="openFavorites()">
+      <span>收藏</span><span class="row-sub" id="favCount">0条</span>
+    </button>
+    <button class="row-btn" type="button" onclick="openAccountCenter()">
+      <span>账号</span><span class="row-sub">切换 / 创建</span>
+    </button>
+  </section>
+
+  <div class="del-wrap">
+    <button class="del-btn" type="button" onclick="confirmDeleteAccount()">删除当前账号</button>
+  </div>
+
+  <input id="avatarInput" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg">
+
+  <div class="overlay" id="accountOverlay"><div class="modal"><h3>账号中心</h3><div class="account-list" id="accountList"></div><div class="actions"><button type="button" onclick="createAccountAction()">创建账号</button><button type="button" onclick="closeOverlay('accountOverlay')">关闭</button></div></div></div>
+  <div class="overlay" id="favOverlay"><div class="modal"><h3>收藏</h3><div class="fav-list" id="favList"></div><div class="actions"><button type="button" onclick="closeOverlay('favOverlay')">关闭</button></div></div></div>
+  <div class="fav-rich-full-overlay" id="favRichFullOverlay">
+    <div class="fav-rich-full-card">
+      <div class="fav-rich-full-head">
+        <div class="fav-rich-full-title">SURPRISE</div>
+        <button class="fav-rich-full-close" type="button" onclick="closeFavoriteRichFullscreen()"><img src="assets/屏幕缩小.png" alt="缩小"></button>
+      </div>
+      <iframe class="fav-rich-full-frame" id="favRichFullFrame" sandbox="allow-scripts" loading="lazy"></iframe>
+    </div>
+  </div>
+  <div class="overlay" id="confirmOverlay"><div class="modal" id="confirmModal"></div></div>
+
+  <div class="wallet-page" id="walletPage">
+    <div class="wallet-topbar">
+      <button class="wallet-heart" type="button" onclick="closeWalletPage()" aria-label="返回个人设置">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09A6 6 0 0 1 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg>
+      </button>
+      <div class="wallet-title">钱包</div>
+    </div>
+    <div class="wallet-shell">
+      <section class="wallet-balance-card">
+        <div class="wallet-amount" id="walletAmount">¥0.00</div>
+        <div class="wallet-actions">
+          <button class="wallet-cta" type="button" onclick="openWalletRechargeModal()">充值</button>
+          <button class="wallet-cta" type="button" onclick="openWalletClearModal()">清空</button>
+        </div>
+      </section>
+      <section class="wallet-strip">
+        <div class="wallet-strip-copy">
+          <div class="wallet-strip-title">开通亲密付</div>
+          <div class="wallet-strip-sub">可赠送给角色，或向角色索要亲属卡</div>
+        </div>
+        <button class="wallet-plus" type="button" onclick="openFamilyCardModal()">+</button>
+      </section>
+      <section class="family-active-list" id="familyActiveList"></section>
+      <div class="wallet-divider"></div>
+      <section class="wallet-ledger" id="walletLedger"></section>
+    </div>
+  </div>
+
+  <div class="couple-page" id="couplePage">
+    <header class="couple-chat-head">
+      <div class="couple-head-top">
+        <button class="couple-back" type="button" onclick="closeCouplePage()" aria-label="返回">‹</button>
+        <div class="couple-head-pill" id="coupleHeadPill">情侣空间</div>
+      </div>
+      <div class="couple-head-center">
+        <div class="couple-polaroid-pair">
+          <div class="couple-polaroid char" id="coupleHeroChar" data-label="CHAR">CHAR</div>
+          <div class="couple-polaroid user" id="coupleHeroUser" data-label="USER">USER</div>
+        </div>
+        <div class="couple-head-title" id="coupleHeadTitle"><span class="couple-head-name">USER</span><span class="couple-head-x">×</span><span class="couple-head-name">CHAR</span></div>
+      </div>
+    </header>
+    <main class="couple-scroll">
+      <section class="couple-strip" id="coupleCharStrip"></section>
+      <section class="couple-card">
+        <div class="couple-card-title"><span>亲密度</span><small id="coupleLevelLabel">LV.0</small></div>
+        <div class="couple-score-row">
+          <div class="couple-score" id="coupleScore">0</div>
+          <div>
+            <div class="couple-meter"><div class="couple-meter-fill" id="coupleMeterFill"></div></div>
+            <div class="couple-unlock-now" id="coupleUnlockNow">先一起留下第一条记录吧。</div>
+          </div>
+        </div>
+      </section>
+      <section class="couple-card">
+        <div class="couple-card-title"><span>今日任务</span><small>每个 +5</small></div>
+        <div class="couple-task-list" id="coupleDailyTasks"></div>
+      </section>
+      <section class="couple-card">
+        <div class="couple-card-title"><span>纪念日</span><small>一直显示</small></div>
+        <div class="couple-anniv-list" id="coupleAnniversaries"></div>
+      </section>
+      <section class="couple-card">
+        <div class="couple-card-title"><span>已发现成就</span><small>自己摸索</small></div>
+        <div class="couple-grid" id="coupleAchievements"></div>
+      </section>
+      <section class="couple-card">
+        <div class="couple-card-title"><span>解锁柜</span><small>亲密度开启</small></div>
+        <div id="coupleUnlocks"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="qq-bottom-nav">
+    <button class="qq-bottom-btn" type="button" aria-label="聊天" title="聊天" onclick="openChatHub()">
+      <span class="nav-icon"><img src="assets/聊天图标.png" alt=""></span>
+      <span>聊天</span>
+    </button>
+    <button class="qq-bottom-btn" type="button" aria-label="发现" title="发现" onclick="openMomentsPage()">
+      <span class="nav-icon"><img src="assets/moments-icon.svg" alt=""></span>
+      <span>发现</span>
+    </button>
+    <button class="qq-bottom-btn" id="archiveNavBtn" type="button" aria-label="档案馆" title="档案馆" onclick="openArchivePage()">
+      <span class="nav-icon"><img src="assets/Chat-Bubble-Heart--Streamline-Sharp.png" alt=""></span>
+      <span>档案馆</span>
+    </button>
+    <button class="qq-bottom-btn active" id="profileNavBtn" type="button" aria-label="自己" title="自己">
+      <span class="nav-icon"><img src="assets/User-Story--Streamline-Sharp.png" alt=""></span>
+      <span>自己</span>
+    </button>
+  </div>
+
+<script>
+let toastTimer = null;
+
+function goBackQQ(){ window.location.href = 'qq.html'; }
+function openChatHub(){ window.location.href = 'qq.html'; }
+function openMomentsPage(){ window.location.href = 'qq_moments.html'; }
+async function openArchivePage(){ await openCouplePage(); }
+function shouldAutoOpenCouplePage(){
+  try{ return new URLSearchParams(window.location.search || '').get('couple') === '1'; }catch(err){ return false; }
+}
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1700); }
+function toast(msg){ showToast(msg); }
+function closeOverlay(id){ const el=document.getElementById(id); if(el) el.classList.remove('open'); }
+function setArchiveNavActive(activeState){
+  const archive=document.getElementById('archiveNavBtn');
+  const profile=document.getElementById('profileNavBtn');
+  if(archive) archive.classList.toggle('active', !!activeState);
+  if(profile) profile.classList.toggle('active', !activeState);
+}
+
+function hideParentTopbar(){
+  const docs=[];
+  try{ if(window.parent && window.parent!==window && window.parent.document) docs.push(window.parent.document); }catch(e){}
+  try{ if(window.top && window.top!==window && window.top.document) docs.push(window.top.document); }catch(e){}
+  docs.forEach((doc)=>{ try{ const bar=doc.querySelector('.app-topbar'); if(bar){ bar.dataset.prevDisplay=bar.style.display||''; bar.style.display='none'; } const frame=doc.getElementById('app-iframe'); if(frame){ frame.dataset.prevMarginTop=frame.style.marginTop||''; frame.style.marginTop='0'; } }catch(err){} });
+}
+function restoreParentTopbar(){
+  const docs=[];
+  try{ if(window.parent && window.parent!==window && window.parent.document) docs.push(window.parent.document); }catch(e){}
+  try{ if(window.top && window.top!==window && window.top.document) docs.push(window.top.document); }catch(e){}
+  docs.forEach((doc)=>{ try{ const bar=doc.querySelector('.app-topbar'); if(bar) bar.style.display=bar.dataset.prevDisplay||''; const frame=doc.getElementById('app-iframe'); if(frame) frame.style.marginTop=frame.dataset.prevMarginTop||''; }catch(err){} });
+}
+
+function loadStoredAsset(key){ if(window.assetStore) return window.assetStore.load(key); try{ return Promise.resolve(localStorage.getItem(key)||''); }catch(e){ return Promise.resolve(''); } }
+function saveStoredAsset(key, value){ if(window.assetStore) return window.assetStore.saveOrFallback(key, value); try{ if(value) localStorage.setItem(key, value); else localStorage.removeItem(key); return Promise.resolve(true);}catch(e){ return Promise.resolve(false);} }
+
+function active(){ return window.AccountManager.getActive(); }
+function walletKey(){ return window.AccountManager.scopedKey('qq_wallet_state'); }
+function familyQueueKey(){ return window.AccountManager.scopedKey('qq_family_card_queue'); }
+function familyActiveKey(){ return window.AccountManager.scopedKey('qq_family_card_active'); }
+function moneyStateStorageId(){ return window.AccountManager.scopedKey('chat_money_state'); }
+let profileMoneyStateCache = { walletState:{ balance:0, records:[] }, familyQueue:[], familyActive:[] };
+let profileFavoritesCache = [];
+
+function favoritesStoreId(){ return window.AccountManager.scopedKey('favorites_store'); }
+function normalizeFavoriteEntries(list){
+  return (Array.isArray(list) ? list : []).filter((item)=>item && typeof item==='object').map((item)=>({
+    id:String(item.id||'').trim() || ('fav_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7)),
+    from:String(item.from||'').trim(),
+    charId:String(item.charId||'').trim(),
+    name:String(item.name||'').trim(),
+    avatar:String(item.avatar||'').trim(),
+    text:String(item.text||'').trim(),
+    previewText:String(item.previewText||'').trim(),
+    type:normalizeFavoriteType(item.type||'text'),
+    richPayload:String(item.richPayload||'').trim(),
+    richPayloadAssetKey:String(item.richPayloadAssetKey||'').trim(),
+    at:Number(item.at||Date.now())||Date.now()
+  }));
+}
+function getCurrentFavorites(){ return normalizeFavoriteEntries(profileFavoritesCache.length ? profileFavoritesCache : ((active()&&active().favorites)||[])); }
+function syncFavoriteCount(){ const el=document.getElementById('favCount'); if(el) el.textContent = getCurrentFavorites().length + '条'; }
+async function hydrateFavoritesCache(){
+  let accountFavs = normalizeFavoriteEntries((active() && active().favorites) || []);
+  let finalFavs = accountFavs.slice();
+  if(window.PhoneStorage && typeof window.PhoneStorage.getJson === 'function'){
+    try{
+      const stored = normalizeFavoriteEntries(await window.PhoneStorage.getJson(favoritesStoreId()));
+      if(stored.length){
+        finalFavs = stored.slice();
+        if(stored.length !== accountFavs.length){
+          try{ window.AccountManager.updateActive((a)=>{ a.favorites = stored.slice(0, 200); }); }catch(syncErr){}
+        }
+      }else if(accountFavs.length && typeof window.PhoneStorage.putJson === 'function'){
+        window.PhoneStorage.putJson(favoritesStoreId(), accountFavs.slice(0, 200)).catch(()=>{});
+      }
+    }catch(err){}
+  }
+  profileFavoritesCache = finalFavs.slice(0, 200);
+  syncFavoriteCount();
+  return profileFavoritesCache.slice();
+}
+function saveFavoritesEverywhere(nextList){
+  const safe = normalizeFavoriteEntries(nextList).slice(0, 200);
+  profileFavoritesCache = safe;
+  try{ window.AccountManager.updateActive((a)=>{ a.favorites = safe.slice(); }); }catch(err){}
+  if(window.PhoneStorage && typeof window.PhoneStorage.putJson === 'function'){
+    window.PhoneStorage.putJson(favoritesStoreId(), safe).catch(()=>{});
+  }
+  syncFavoriteCount();
+}
+
+function defaultWalletState(){ return { balance:0, records:[] }; }
+function syncMoneyStateCache(){ if(window.PhoneStorage && typeof window.PhoneStorage.put === 'function'){ window.PhoneStorage.put('moneyStates', { id:moneyStateStorageId(), updatedAt:Date.now(), data:Object.assign({}, profileMoneyStateCache) }).catch(()=>{}); } try{ localStorage.removeItem(walletKey()); }catch(e){} try{ localStorage.removeItem(familyActiveKey()); }catch(e){} try{ localStorage.removeItem(familyQueueKey()); }catch(e){} }
+async function hydrateMoneyStateCache(){ if(window.PhoneStorage && typeof window.PhoneStorage.get === 'function'){ try{ const record=await window.PhoneStorage.get('moneyStates', moneyStateStorageId()); if(record && record.data){ profileMoneyStateCache={ walletState:record.data.walletState||defaultWalletState(), familyQueue:Array.isArray(record.data.familyQueue)?record.data.familyQueue:[], familyActive:Array.isArray(record.data.familyActive)?record.data.familyActive:[] }; return; } }catch(e){} } let wallet=defaultWalletState(); let familyActive=[]; let familyQueue=[]; try{ const raw=JSON.parse(localStorage.getItem(walletKey())||'null'); if(raw&&typeof raw==='object') wallet={ balance:Number(raw.balance||0)||0, records:Array.isArray(raw.records)?raw.records:[] }; }catch(e){} try{ const raw=JSON.parse(localStorage.getItem(familyActiveKey())||'[]'); familyActive=Array.isArray(raw)?raw:[]; }catch(e){} try{ const raw=JSON.parse(localStorage.getItem(familyQueueKey())||'[]'); familyQueue=Array.isArray(raw)?raw:[]; }catch(e){} profileMoneyStateCache={ walletState:wallet, familyQueue:familyQueue, familyActive:familyActive }; if(wallet.records.length||wallet.balance||familyActive.length||familyQueue.length) syncMoneyStateCache(); }
+function loadWalletState(){ const raw=profileMoneyStateCache.walletState||defaultWalletState(); return { balance:Number(raw.balance||0)||0, records:Array.isArray(raw.records)?raw.records:[] }; }
+function saveWalletState(state){ const next=state||defaultWalletState(); next.balance=Number(next.balance||0)||0; next.records=Array.isArray(next.records)?next.records:[]; profileMoneyStateCache.walletState=next; syncMoneyStateCache(); }
+function loadActiveFamilyCards(){ return Array.isArray(profileMoneyStateCache.familyActive)?profileMoneyStateCache.familyActive.slice():[]; }
+function saveActiveFamilyCards(list){ profileMoneyStateCache.familyActive=Array.isArray(list)?list.slice():[]; syncMoneyStateCache(); }
+function removeActiveFamilyCard(cardId){ saveActiveFamilyCards(loadActiveFamilyCards().filter((item)=>String((item&&item.id)||'')!==String(cardId||''))); }
+function loadFamilyQueue(){ return Array.isArray(profileMoneyStateCache.familyQueue)?profileMoneyStateCache.familyQueue.slice():[]; }
+function saveFamilyQueue(queue){ profileMoneyStateCache.familyQueue=Array.isArray(queue)?queue.slice():[]; syncMoneyStateCache(); }
+function queueFamilyRequest(payload){ const charId=String((payload&&payload.charId)||''); const queue=loadFamilyQueue().filter((item)=>String((item&&item.charId)||'')!==charId); queue.push(payload); saveFamilyQueue(queue); }
+function hasFamilyCardBinding(charId){ const id=String(charId||''); if(!id) return false; return loadActiveFamilyCards().some((item)=>String((item&&item.charId)||'')===id) || loadFamilyQueue().some((item)=>String((item&&item.charId)||'')===id); }
+function removeFamilyBindingsForChar(charId){ const id=String(charId||''); if(!id) return; saveFamilyQueue(loadFamilyQueue().filter((item)=>String((item&&item.charId)||'')!==id)); saveActiveFamilyCards(loadActiveFamilyCards().filter((item)=>String((item&&item.charId)||'')!==id)); }
+
+function formatMoney(val){ let num=Number(val||0); if(!Number.isFinite(num)) num=0; return '¥' + num.toFixed(2); }
+function walletAmountText(record){ const num=Math.abs(Number(record&&record.amount||0)); const sign=String(record&&record.direction||'in')==='out' ? '-' : '+'; return sign + '¥' + num.toFixed(2); }
+function walletTime(ts){ const d=new Date(ts||Date.now()); const p=(n)=>String(n).padStart(2,'0'); return p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); }
+function walletRecord(id){ return (loadWalletState().records||[]).find((item)=>String(item.id||'')===String(id||''))||null; }
+function pushWalletRecord(partial){ const state=loadWalletState(); const record=Object.assign({ id:'wallet_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7), title:'余额变动', amount:0, direction:'in', note:'', at:Date.now() }, partial||{}); state.records.unshift(record); state.records=state.records.slice(0,120); saveWalletState(state); return record; }
+
+function accountScopedChatKey(charId){ return window.AccountManager.scopedKey('chat_' + charId); }
+let profileCharactersCache = null;
+function filterWalletCharacters(rawChars){
+  const acct=active();
+  const defaultId=window.AccountManager.getDefaultId();
+  let chars=(Array.isArray(rawChars)?rawChars:[]).filter((c)=>c&&typeof c==='object').map((c)=>{ if(!c.ownerAccountId) c.ownerAccountId=defaultId || (acct&&acct.id) || ''; return c; });
+  if(acct){
+    chars=chars.filter((c)=>c && c.ownerAccountId===acct.id);
+    if(!acct.isDefault){
+      const friendSet=new Set(Array.isArray(acct.friends)?acct.friends:[]);
+      chars=chars.filter((c)=>friendSet.has(c.id));
+    }
+  }
+  return chars;
+}
+function loadWalletCharacters(){
+  let chars=[]; try{ chars=JSON.parse(localStorage.getItem('characters')||'[]'); }catch(e){ chars=[]; }
+  const cached = Array.isArray(profileCharactersCache) && profileCharactersCache.length ? profileCharactersCache : chars;
+  return filterWalletCharacters(cached);
+}
+async function hydrateWalletCharactersCache(){
+  let chars=[];
+  if(window.MetadataStore && typeof window.MetadataStore.loadCharacters === 'function'){
+    try{ chars = await window.MetadataStore.loadCharacters(true); }catch(err){ chars=[]; }
+  }
+  if(!Array.isArray(chars) || !chars.length){
+    try{ chars=JSON.parse(localStorage.getItem('characters')||'[]'); }catch(err){ chars=[]; }
+  }
+  profileCharactersCache = filterWalletCharacters(chars);
+  return profileCharactersCache.slice();
+}
+let coupleSelectedCharId = '';
+let coupleStateCache = {};
+let coupleSignalsCache = {};
+function coupleSpaceKey(charId){ return window.AccountManager.scopedKey('couple_space_' + String(charId || '')); }
+function todayKey(){ const d=new Date(); const p=(n)=>String(n).padStart(2,'0'); return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()); }
+function shortDate(ts){ const d=new Date(ts || Date.now()); const yy=String(d.getFullYear()).slice(-2); return String(d.getMonth()+1) + '.' + String(d.getDate()) + '.' + yy; }
+function defaultCoupleState(){ return { createdAt:Date.now(), intimacy:0, daily:{ date:todayKey(), claimed:{} }, anniversaries:[] }; }
+function normalizeCoupleState(raw){
+  const base = defaultCoupleState();
+  const next = raw && typeof raw === 'object' ? raw : {};
+  const daily = next.daily && typeof next.daily === 'object' ? next.daily : {};
+  return {
+    createdAt:Number(next.createdAt || base.createdAt) || Date.now(),
+    intimacy:Number(next.intimacy || 0) || 0,
+    daily:{
+      date:String(daily.date || todayKey()),
+      claimed:(daily.claimed && typeof daily.claimed === 'object') ? daily.claimed : {}
+    },
+    anniversaries:Array.isArray(next.anniversaries) ? next.anniversaries.slice(0,80) : []
+  };
+}
+async function loadCoupleState(charId){
+  const id=String(charId || '').trim();
+  if(!id) return defaultCoupleState();
+  if(coupleStateCache[id]) return normalizeCoupleState(coupleStateCache[id]);
+  let raw=null;
+  if(window.PhoneStorage && typeof window.PhoneStorage.getJson === 'function'){
+    raw = await window.PhoneStorage.getJson(coupleSpaceKey(id)).catch(()=>null);
+  }
+  if(!raw){
+    try{ raw = JSON.parse(localStorage.getItem(coupleSpaceKey(id)) || 'null'); }catch(err){ raw = null; }
+  }
+  const state=normalizeCoupleState(raw);
+  if(state.daily.date !== todayKey()) state.daily = { date:todayKey(), claimed:{} };
+  coupleStateCache[id]=state;
+  return normalizeCoupleState(state);
+}
+function saveCoupleState(charId, state){
+  const id=String(charId || '').trim();
+  if(!id) return;
+  const safe=normalizeCoupleState(state);
+  coupleStateCache[id]=safe;
+  if(window.PhoneStorage && typeof window.PhoneStorage.putJson === 'function'){
+    window.PhoneStorage.putJson(coupleSpaceKey(id), safe).then(()=>{ try{ localStorage.removeItem(coupleSpaceKey(id)); }catch(err){} }).catch(()=>{});
+  }else{
+    try{ localStorage.setItem(coupleSpaceKey(id), JSON.stringify(safe)); }catch(err){}
+  }
+}
+function parseCoupleStoredHistory(raw){
+  try{
+    const obj=JSON.parse(raw || 'null');
+    const list=(obj && (obj.history || obj.messages)) || [];
+    return Array.isArray(list) ? list : [];
+  }catch(err){ return []; }
+}
+function coupleChatKeyCandidates(charId){
+  const id=String(charId || '').trim();
+  const keys=[];
+  if(!id) return keys;
+  keys.push(accountScopedChatKey(id));
+  keys.push('chat_' + id);
+  try{
+    const acct=active();
+    const defaultId=window.AccountManager.getDefaultId ? window.AccountManager.getDefaultId() : '';
+    [acct && acct.id, defaultId].forEach((accountId)=>{
+      if(accountId) keys.push('chat_' + id + '__acct_' + accountId);
+    });
+  }catch(err){}
+  return Array.from(new Set(keys.filter(Boolean)));
+}
+function coupleHistoryStamp(list){
+  let lastTs=0;
+  const entries=Array.isArray(list) ? list : [];
+  entries.forEach((entry)=>{
+    const ts=Number((entry && (entry.sentAt || entry.readAt || entry.createdAt || entry.at || entry.time || entry.timestamp)) || 0) || 0;
+    if(ts > lastTs) lastTs=ts;
+  });
+  return { lastTs:lastTs, count:entries.length };
+}
+function chooseCoupleHistory(best, next){
+  if(!next || !Array.isArray(next.history) || !next.history.length) return best;
+  if(!best || !Array.isArray(best.history) || !best.history.length) return next;
+  const b=coupleHistoryStamp(best.history);
+  const n=coupleHistoryStamp(next.history);
+  if((Number(next.updatedAt)||0) > (Number(best.updatedAt)||0)) return next;
+  if(n.lastTs > b.lastTs) return next;
+  if(n.lastTs === b.lastTs && n.count > b.count) return next;
+  return best;
+}
+async function loadCoupleChatHistory(charId){
+  const id=String(charId || '').trim();
+  if(!id) return [];
+  const keys=coupleChatKeyCandidates(id);
+  let best=null;
+  for(const key of keys){
+    if(window.PhoneStorage && typeof window.PhoneStorage.get === 'function'){
+      try{
+        const rec=await window.PhoneStorage.get('chats', key);
+        const history=Array.isArray(rec && rec.history) ? rec.history : [];
+        if(history.length) best=chooseCoupleHistory(best,{ key:key, updatedAt:Number(rec && rec.updatedAt)||0, history:history });
+      }catch(err){}
+    }
+    try{
+      const localHistory=parseCoupleStoredHistory(localStorage.getItem(key));
+      if(localHistory.length) best=chooseCoupleHistory(best,{ key:key, updatedAt:0, history:localHistory });
+    }catch(err){}
+  }
+  if((!best || !best.history.length) && window.PhoneStorage && typeof window.PhoneStorage.list === 'function'){
+    try{
+      const all=await window.PhoneStorage.list('chats');
+      (Array.isArray(all) ? all : []).forEach((rec)=>{
+        const recCharId=String((rec && rec.charId) || '').trim();
+        const recKey=String((rec && rec.id) || '');
+        const history=Array.isArray(rec && rec.history) ? rec.history : [];
+        if(!history.length) return;
+        if(recCharId !== id && keys.indexOf(recKey) === -1) return;
+        best=chooseCoupleHistory(best,{ key:recKey, updatedAt:Number(rec && rec.updatedAt)||0, history:history });
+      });
+    }catch(err){}
+  }
+  return best && Array.isArray(best.history) ? best.history : [];
+}
+function latestCoupleCharId(){
+  const keys=[];
+  try{ keys.push(window.AccountManager.scopedKey('activeChatCharacterId')); }catch(err){}
+  keys.push('activeChatCharacterId');
+  for(const key of keys){
+    try{
+      const val=String(localStorage.getItem(key) || '').trim();
+      if(val) return val;
+    }catch(err){}
+  }
+  return currentActiveCharId();
+}
+function coupleEntryRole(entry){
+  return String((entry && (entry.role || entry.sender || entry.from || entry.author)) || '').toLowerCase();
+}
+function coupleEntryType(entry){
+  return String((entry && (entry.type || entry.kind || entry.messageType)) || '').toLowerCase();
+}
+function coupleEntryText(entry){
+  return String((entry && (entry.text || entry.content || entry.message || entry.html || entry.summary)) || '');
+}
+function coupleEntryTime(entry){
+  return Number((entry && (entry.sentAt || entry.readAt || entry.createdAt || entry.at || entry.time || entry.timestamp)) || 0) || 0;
+}
+function isTodayStamp(ts){
+  if(!ts) return false;
+  const d=new Date(ts);
+  const n=new Date();
+  return d.getFullYear()===n.getFullYear() && d.getMonth()===n.getMonth() && d.getDate()===n.getDate();
+}
+async function computeCoupleSignals(charId){
+  const history=await loadCoupleChatHistory(charId);
+  const days=new Set();
+  let todayMessages=0, userMessages=0, charMessages=0, hasMeme=false, hasTodayMeme=false, hasRich=false, hasOffline=false, firstTs=0;
+  history.forEach((entry)=>{
+    const ts=coupleEntryTime(entry);
+    if(ts && (!firstTs || ts < firstTs)) firstTs=ts;
+    if(ts) days.add(new Date(ts).toDateString());
+    if(isTodayStamp(ts)) todayMessages += 1;
+    const role=coupleEntryRole(entry);
+    if(role.indexOf('user') >= 0 || role === 'me') userMessages += 1;
+    if(role.indexOf('assistant') >= 0 || role.indexOf('ai') >= 0 || role.indexOf('char') >= 0) charMessages += 1;
+    const type=coupleEntryType(entry);
+    const text=coupleEntryText(entry);
+    const isMeme=type.indexOf('meme') >= 0 || type.indexOf('sticker') >= 0 || text.indexOf('表情包') >= 0;
+    if(isMeme){ hasMeme=true; if(isTodayStamp(ts)) hasTodayMeme=true; }
+    if(type.indexOf('rich') >= 0 || type.indexOf('html') >= 0 || type.indexOf('card') >= 0 || text.trim().startsWith('{"html"')) hasRich=true;
+    if(type.indexOf('offline') >= 0 || text.indexOf('offline_invite') >= 0 || text.indexOf('见面') >= 0 || text.indexOf('赴约') >= 0) hasOffline=true;
+  });
+  const signals={ history:history, messageCount:history.length, todayMessages:todayMessages, userMessages:userMessages, charMessages:charMessages, daysCount:days.size, hasMeme:hasMeme, hasTodayMeme:hasTodayMeme, hasRich:hasRich, hasOffline:hasOffline, firstTs:firstTs };
+  coupleSignalsCache[String(charId || '')]=signals;
+  return signals;
+}
+function coupleAchievementTemplates(){
+  return [
+    { id:'first_chat', title:'第一声招呼', desc:'你们留下了第一条聊天记录。', test:(s)=>s.messageCount>=1 },
+    { id:'chat_10', title:'十句不嫌多', desc:'聊天满 10 条。', test:(s)=>s.messageCount>=10 },
+    { id:'chat_50', title:'小话痨同盟', desc:'聊天满 50 条。', test:(s)=>s.messageCount>=50 },
+    { id:'chat_100', title:'一百次回头', desc:'聊天满 100 条。', test:(s)=>s.messageCount>=100 },
+    { id:'days_3', title:'三天热度', desc:'连续留下多天痕迹。', test:(s)=>s.daysCount>=3 },
+    { id:'days_10', title:'十日约定', desc:'一起出现过 10 个不同日子。', test:(s)=>s.daysCount>=10 },
+    { id:'days_50', title:'五十枚日落', desc:'一起出现过 50 个不同日子。', test:(s)=>s.daysCount>=50 },
+    { id:'meme_first', title:'表情包暗号', desc:'互相丢过表情包。', test:(s)=>s.hasMeme },
+    { id:'rich_first', title:'会变形的小纸条', desc:'出现过小卡片或 HTML 番外。', test:(s)=>s.hasRich },
+    { id:'offline_first', title:'离开屏幕以后', desc:'有过见面或约会相关记录。', test:(s)=>s.hasOffline },
+    { id:'mutual_voice', title:'互相有声音', desc:'触发过语音相关内容。', test:(s)=>s.history.some((m)=>coupleEntryType(m).indexOf('voice')>=0 || coupleEntryText(m).indexOf('语音')>=0) },
+    { id:'night_owl', title:'夜猫子频道', desc:'深夜也留下过记录。', test:(s)=>s.history.some((m)=>{ const ts=coupleEntryTime(m); if(!ts) return false; const h=new Date(ts).getHours(); return h>=23 || h<5; }) }
+  ];
+}
+function getCoupleEarnedAchievements(signals){
+  return coupleAchievementTemplates().filter((item)=>{
+    try{ return item.test(signals || {}); }catch(err){ return false; }
+  });
+}
+function coupleUnlockTemplates(){
+  return [
+    { id:'letters', title:'互相写信', threshold:20 },
+    { id:'games', title:'一起玩小游戏', threshold:45 },
+    { id:'dreams', title:'梦境入口', threshold:80 },
+    { id:'ifline', title:'IF 线世界', threshold:120 },
+    { id:'time', title:'未来 / 过去', threshold:180 }
+  ];
+}
+function coupleDailyTasks(signals, state){
+  const claimed=state.daily.claimed || {};
+  return [
+    { id:'chat10', title:'聊天十句', sub:'今天聊天满 10 条就能领取。', ready:(signals.todayMessages || signals.messageCount) >= 10, claimed:!!claimed.chat10 },
+    { id:'meme', title:'发一个表情包', sub:'今天有表情包最好，没有时间戳就按已有记录算。', ready:!!(signals.hasTodayMeme || signals.hasMeme), claimed:!!claimed.meme },
+    { id:'checkin', title:'情侣空间打卡', sub:'点一下就算今天来过啦。', ready:true, claimed:!!claimed.checkin }
+  ];
+}
+function renderCoupleAvatarBox(el, src, label){
+  if(!el) return;
+  const safe=String(src || '').trim();
+  const text=String(label || '头像').slice(0,4);
+  el.setAttribute('data-label', text);
+  if(safe && isRenderableAvatarSrc(safe)){
+    el.innerHTML='<img src="' + escAttr(safe) + '" alt="">';
+  }else{
+    el.textContent=text;
+  }
+}
+function getCoupleCharById(charId){
+  const id=String(charId || '').trim();
+  return loadWalletCharacters().find((item)=>String((item && item.id) || '') === id) || null;
+}
+function getCoupleSelectedChar(){
+  const chars=loadWalletCharacters();
+  if(!chars.length) return null;
+  const activeId=currentActiveCharId();
+  const target=String(coupleSelectedCharId || activeId || '').trim();
+  return chars.find((c)=>String((c && c.id) || '') === target) || chars[0];
+}
+async function getCoupleSelectedCharAsync(){
+  const chars=await hydrateWalletCharactersCache();
+  if(!chars.length) return null;
+  if(!coupleSelectedCharId){
+    const latestId=latestCoupleCharId();
+    const activeId=currentActiveCharId();
+    coupleSelectedCharId=String(latestId || activeId || '').trim();
+  }
+  const target=String(coupleSelectedCharId || '').trim();
+  return chars.find((c)=>String((c && c.id) || '') === target) || chars[0];
+}
+async function hydrateCoupleAvatarNodes(){
+  const page=document.getElementById('couplePage');
+  if(!page) return;
+  const nodes=Array.from(page.querySelectorAll('[data-couple-avatar-role]'));
+  nodes.forEach((node)=>{
+    const role=String(node.getAttribute('data-couple-avatar-role') || '');
+    const charId=String(node.getAttribute('data-couple-char-id') || '');
+    const label=String(node.getAttribute('data-couple-label') || '头像');
+    const chip=node.closest ? node.closest('.couple-char-chip') : null;
+    if(chip && role === 'char' && charId !== coupleSelectedCharId) return;
+    let task=Promise.resolve('');
+    if(role === 'char' && charId){
+      const charObj=getCoupleCharById(charId);
+      const immediate=getCharAvatarSnapshot(charObj);
+      if(immediate && isRenderableAvatarSrc(immediate)){
+        renderCoupleAvatarBox(node, immediate, label);
+        return;
+      }
+      task=loadFirstRenderableAvatar(['char_avatar_' + charId]).then((src)=>src || immediate || '');
+    }else if(role === 'user'){
+      const immediate=getChatUserAvatar(charId);
+      if(immediate && isRenderableAvatarSrc(immediate)){
+        renderCoupleAvatarBox(node, immediate, label);
+        return;
+      }
+      task=resolveFavoriteUserAvatarAsync(charId);
+    }
+    task.then((src)=>{
+      const safe=String(src || '').trim();
+      if(safe && isRenderableAvatarSrc(safe)) renderCoupleAvatarBox(node, safe, label);
+    }).catch(()=>{});
+  });
+}
+function renderCoupleCharStrip(selectedId){
+  const strip=document.getElementById('coupleCharStrip');
+  if(!strip) return;
+  const chars=loadWalletCharacters();
+  if(!chars.length){
+    strip.innerHTML='<div class="couple-empty">还没有角色可以放进情侣空间。</div>';
+    return;
+  }
+  strip.innerHTML=chars.map((charObj)=>{
+    const id=String((charObj && charObj.id) || '');
+    const name=getCharDisplayName(charObj);
+    const active=id === selectedId ? ' active' : '';
+    const syncSrc=getCharAvatarSnapshot(charObj);
+    const thumb=syncSrc && isRenderableAvatarSrc(syncSrc)
+      ? '<img src="' + escAttr(syncSrc) + '" alt="">'
+      : esc(name.slice(0,2) || 'CH');
+    return '<button class="couple-char-chip' + active + '" type="button" onclick="selectCoupleChar(\'' + escAttr(id) + '\')"><div class="couple-chip-av" data-couple-avatar-role="char" data-couple-char-id="' + escAttr(id) + '" data-couple-label="' + escAttr(name) + '">' + thumb + '</div><span class="couple-chip-music"><img src="assets/小猫听歌.png" alt=""></span><div class="couple-chip-name">' + esc(name) + '</div></button>';
+  }).join('');
+}
+function renderCoupleDailyTasks(tasks){
+  const host=document.getElementById('coupleDailyTasks');
+  if(!host) return;
+  host.innerHTML=tasks.map((task)=>{
+    const cls=task.claimed ? ' done' : '';
+    const label=task.claimed ? '已领' : (task.ready ? '领取' : '未达成');
+    return '<div class="couple-task"><div><div class="couple-task-name">' + esc(task.title) + '</div><div class="couple-task-sub">' + esc(task.sub) + '</div></div><button class="couple-task-btn' + cls + '" type="button" onclick="claimCoupleTask(\'' + escAttr(task.id) + '\')">' + esc(label) + '</button></div>';
+  }).join('');
+}
+function buildCoupleAnniversaries(state, signals, charName, userName){
+  const list=Array.isArray(state.anniversaries) ? state.anniversaries.slice() : [];
+  list.unshift({ id:'space_opened', at:state.createdAt, title:'情侣空间开门', note:userName + '和' + charName + '有了一个专门放纪念的地方。' });
+  if(signals.firstTs) list.push({ id:'first_chat', at:signals.firstTs, title:'第一次留下聊天痕迹', note:'从这里开始，普通对话也会变成可回头看的日子。' });
+  if(signals.hasOffline) list.push({ id:'offline_first', at:Date.now(), title:'第一次离开屏幕', note:'见面、赴约、走出去，都会被这个空间记住。' });
+  const seen=new Set();
+  return list.filter((item)=>{
+    const id=String((item && item.id) || (item && item.title) || '');
+    if(seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  }).slice(0,12);
+}
+function renderCoupleAnniversaries(list){
+  const host=document.getElementById('coupleAnniversaries');
+  if(!host) return;
+  if(!list.length){
+    host.innerHTML='<div class="couple-empty">纪念日会一直放在这里。</div>';
+    return;
+  }
+  host.innerHTML=list.map((item)=>'<div class="couple-anniv"><div class="couple-anniv-date">' + esc(shortDate(item.at)) + '</div><div><div class="couple-anniv-title">' + esc(item.title || '纪念日') + '</div><div class="couple-anniv-note">' + esc(item.note || '') + '</div></div></div>').join('');
+}
+function renderCoupleAchievements(earned){
+  const host=document.getElementById('coupleAchievements');
+  if(!host) return;
+  const cards=(earned || []).map((item)=>'<div class="couple-badge earned"><div class="couple-badge-title">' + esc(item.title) + '</div><div class="couple-badge-sub">' + esc(item.desc) + '</div></div>');
+  cards.push('<div class="couple-badge"><div class="couple-badge-title">???</div><div class="couple-badge-sub">还有很多没有被发现的事情，触发以后才会露出来。</div></div>');
+  host.innerHTML=cards.join('');
+}
+function renderCoupleUnlocks(totalScore){
+  const host=document.getElementById('coupleUnlocks');
+  if(!host) return;
+  host.innerHTML=coupleUnlockTemplates().map((item)=>{
+    const unlocked=totalScore >= item.threshold;
+    return '<div class="couple-lock' + (unlocked ? '' : ' locked') + '"><div><div class="couple-lock-name">' + esc(item.title) + '</div><div class="couple-task-sub">亲密度 ' + item.threshold + ' 解锁</div></div><span class="couple-lock-state">' + (unlocked ? '已解锁' : 'LOCK') + '</span></div>';
+  }).join('');
+}
+function currentUnlockHint(totalScore){
+  const next=coupleUnlockTemplates().find((item)=>totalScore < item.threshold);
+  if(!next) return '特殊功能已经全部开门，剩下就是继续养这个空间。';
+  return '距离「' + next.title + '」还差 ' + Math.max(0, next.threshold - totalScore) + ' 亲密度。';
+}
+async function renderCouplePage(){
+  const charObj=await getCoupleSelectedCharAsync();
+  if(!charObj){
+    renderCoupleCharStrip('');
+    return;
+  }
+  const charId=String(charObj.id || '');
+  coupleSelectedCharId=charId;
+  const charName=getCharDisplayName(charObj);
+  const userName=getChatUserName(charId);
+  const state=await loadCoupleState(charId);
+  const signals=await computeCoupleSignals(charId);
+  const earned=getCoupleEarnedAchievements(signals);
+  const totalScore=Math.max(0, Number(state.intimacy || 0) + earned.length * 10);
+  const level=Math.floor(totalScore / 50);
+  renderCoupleCharStrip(charId);
+  const headPill=document.getElementById('coupleHeadPill');
+  const headTitle=document.getElementById('coupleHeadTitle');
+  const levelLabel=document.getElementById('coupleLevelLabel');
+  const scoreEl=document.getElementById('coupleScore');
+  const fill=document.getElementById('coupleMeterFill');
+  const unlockNow=document.getElementById('coupleUnlockNow');
+  if(headPill) headPill.textContent='';
+  if(headTitle) headTitle.innerHTML='<span class="couple-head-name">' + esc(userName) + '</span><span class="couple-head-x">×</span><span class="couple-head-name">' + esc(charName) + '</span>';
+  if(levelLabel) levelLabel.textContent='LV.' + level;
+  if(scoreEl) scoreEl.textContent=String(totalScore);
+  if(fill) fill.style.width=Math.max(6, Math.min(100, totalScore % 50 * 2)) + '%';
+  if(unlockNow) unlockNow.textContent=currentUnlockHint(totalScore);
+  const charHero=document.getElementById('coupleHeroChar');
+  const userHero=document.getElementById('coupleHeroUser');
+  if(charHero){
+    charHero.setAttribute('data-couple-avatar-role','char');
+    charHero.setAttribute('data-couple-char-id',charId);
+    charHero.setAttribute('data-couple-label',charName);
+    renderCoupleAvatarBox(charHero, getCharAvatarSnapshot(charObj), charName);
+  }
+  if(userHero){
+    userHero.setAttribute('data-couple-avatar-role','user');
+    userHero.setAttribute('data-couple-char-id',charId);
+    userHero.setAttribute('data-couple-label',userName);
+    renderCoupleAvatarBox(userHero, getChatUserAvatar(charId), userName);
+  }
+  renderCoupleDailyTasks(coupleDailyTasks(signals, state));
+  renderCoupleAnniversaries(buildCoupleAnniversaries(state, signals, charName, userName));
+  renderCoupleAchievements(earned);
+  renderCoupleUnlocks(totalScore);
+  hydrateCoupleAvatarNodes();
+}
+async function openCouplePage(){
+  const page=document.getElementById('couplePage');
+  if(!page) return;
+  setArchiveNavActive(true);
+  page.classList.add('open');
+  await hydrateWalletCharactersCache();
+  await renderCouplePage();
+}
+function closeCouplePage(){
+  const page=document.getElementById('couplePage');
+  if(page) page.classList.remove('open');
+  setArchiveNavActive(false);
+}
+async function selectCoupleChar(charId){
+  coupleSelectedCharId=String(charId || '').trim();
+  await renderCouplePage();
+}
+async function claimCoupleTask(taskId){
+  const charObj=getCoupleSelectedChar();
+  if(!charObj) return;
+  const charId=String(charObj.id || '');
+  const state=await loadCoupleState(charId);
+  const signals=coupleSignalsCache[charId] || await computeCoupleSignals(charId);
+  const tasks=coupleDailyTasks(signals, state);
+  const task=tasks.find((item)=>item.id === taskId);
+  if(!task || !task.ready){ showToast('这个任务还没完成'); return; }
+  if(task.claimed){ showToast('今天已经领过啦'); return; }
+  state.daily.claimed[taskId]=true;
+  state.intimacy=Number(state.intimacy || 0) + 5;
+  saveCoupleState(charId, state);
+  await renderCouplePage();
+  showToast('亲密度 +5');
+}
+function currentActiveCharId(){ try{ const scoped=localStorage.getItem(window.AccountManager.scopedKey('activeCharacter'))||''; const global=localStorage.getItem('activeCharacter')||''; const parsed=JSON.parse(scoped||global||'null'); return parsed&&parsed.id ? String(parsed.id) : ''; }catch(e){ return ''; } }
+function getChatUserName(charId){ const profileName=String((active()&&active().name)||'').trim(); if(profileName) return profileName; const keys=[]; if(charId) keys.push(window.AccountManager.scopedKey('user_name_' + charId)); keys.push(window.AccountManager.scopedKey('user_name')); if(charId) keys.push('user_name_' + charId); keys.push('user_name'); for(const key of keys){ const val=String(localStorage.getItem(key)||'').trim(); if(val) return val; } return 'User'; }
+function getChatUserAvatar(charId){ const keys=[]; if(charId) keys.push(window.AccountManager.scopedKey('user_avatar_' + charId)); keys.push(window.AccountManager.scopedKey('user_avatar')); if(charId) keys.push('user_avatar_' + charId); keys.push('user_avatar'); for(const key of keys){ const val=String(localStorage.getItem(key)||'').trim(); if(val) return val; } return String((active()&&active().avatar)||'').trim(); }
+function isRenderableAvatarSrc(src){ return /^(data:|https?:|blob:|\/|\.\.?\/|assets\/|apps\/assets\/)/i.test(String(src||'').trim()); }
+function assetMarkerText(){ return String((window.assetStore && window.assetStore.marker) || '__asset__'); }
+async function resolveProfileAvatar(){
+  const keys=[
+    window.AccountManager.scopedKey('qq_profile_avatar_asset'),
+    window.AccountManager.scopedKey('qq_moments_hero_avatar_asset'),
+    window.AccountManager.scopedKey('user_avatar'),
+    'qq_profile_avatar_asset',
+    'qq_moments_hero_avatar_asset',
+    'user_avatar'
+  ];
+  for(const key of keys){
+    const src = String(await loadStoredAsset(key).catch(()=>'' ) || '').trim();
+    if(src) return src;
+  }
+  return String((active() && active().avatar) || '').trim();
+}
+function getCharAvatarSnapshot(charObj){ const id=String((charObj&&charObj.id)||''); const key=id ? ('char_avatar_' + id) : ''; const saved=key ? String(localStorage.getItem(key)||'').trim() : ''; return saved || String((charObj&&charObj.imageData)||'').trim(); }
+function getCharDisplayName(charObj){ return String((charObj && (charObj.nickname || charObj.name)) || '').trim() || 'Char'; }
+function favoriteAvatarLabel(item){
+  const name = String((item && item.name) || '').trim();
+  return (name || '头').slice(0, 1);
+}
+function favoriteAvatarSyncSrc(item){
+  const marker = assetMarkerText();
+  const from = String((item && item.from) || '').trim();
+  const charId = String((item && item.charId) || '').trim();
+  let src = String((item && item.avatar) || '').trim();
+  if(src && src !== marker && isRenderableAvatarSrc(src)) return src;
+  if((from === 'char' || (!from && charId)) && charId){
+    try{
+      const localSrc = String(localStorage.getItem('char_avatar_' + charId) || '').trim();
+      if(localSrc && localSrc !== marker && isRenderableAvatarSrc(localSrc)) return localSrc;
+    }catch(err){}
+  }
+  if(from === 'user'){
+    src = String(getChatUserAvatar(charId) || '').trim();
+    if(src && src !== marker && isRenderableAvatarSrc(src)) return src;
+  }
+  return '';
+}
+function renderFavoriteAvatar(item){
+  const src = favoriteAvatarSyncSrc(item);
+  const label = esc(favoriteAvatarLabel(item));
+  const from = escAttr(String((item && item.from) || '').trim());
+  const charId = escAttr(String((item && item.charId) || '').trim());
+  if(src){
+    return '<div class="fav-av has-image" data-fav-from="' + from + '" data-fav-char-id="' + charId + '"><img src="' + escAttr(src) + '" alt=""></div>';
+  }
+  return '<div class="fav-av" data-fav-from="' + from + '" data-fav-char-id="' + charId + '">' + label + '</div>';
+}
+function loadFirstRenderableAvatar(keys){
+  const list = Array.isArray(keys) ? keys.filter(Boolean) : [];
+  let idx = 0;
+  const marker = assetMarkerText();
+  const next = ()=>{
+    if(idx >= list.length) return Promise.resolve('');
+    const key = list[idx++];
+    return loadStoredAsset(key).then((src)=>{
+      const safe = String(src || '').trim();
+      if(safe && safe !== marker && isRenderableAvatarSrc(safe)) return safe;
+      return next();
+    }).catch(()=>next());
+  };
+  return next();
+}
+function resolveFavoriteUserAvatarAsync(charId){
+  const id = String(charId || '').trim();
+  const keys = [];
+  if(id) keys.push(window.AccountManager.scopedKey('user_avatar_' + id));
+  keys.push(window.AccountManager.scopedKey('user_avatar'));
+  if(id) keys.push('user_avatar_' + id);
+  keys.push('user_avatar');
+  return loadFirstRenderableAvatar(keys).then((src)=>{
+    if(src) return src;
+    return resolveProfileAvatar().then((fallback)=>String(fallback || '').trim()).catch(()=> '');
+  });
+}
+function hydrateFavoriteAvatarNodes(){
+  const list = document.getElementById('favList');
+  if(!list) return;
+  list.querySelectorAll('.fav-av').forEach((slot)=>{
+    if(!slot || slot.querySelector('img')) return;
+    const from = String(slot.getAttribute('data-fav-from') || '').trim();
+    const charId = String(slot.getAttribute('data-fav-char-id') || '').trim();
+    let task = Promise.resolve('');
+    if((from === 'char' || (!from && charId)) && charId){
+      task = loadFirstRenderableAvatar(['char_avatar_' + charId]);
+    }else if(from === 'user'){
+      task = resolveFavoriteUserAvatarAsync(charId);
+    }
+    task.then((src)=>{
+      const safe = String(src || '').trim();
+      if(!safe || !isRenderableAvatarSrc(safe) || slot.querySelector('img')) return;
+      slot.innerHTML = '<img src="' + escAttr(safe) + '" alt="">';
+      slot.classList.add('has-image');
+    }).catch(()=>{});
+  });
+}
+function buildFamilyInviteText(userName, charName, mode){ return userName + '邀请' + charName + (mode==='request' ? '来掏钱' : '来花钱'); }
+function pendingFamilyAutoTriggerKey(charId){ return window.AccountManager.scopedKey('pending_family_auto_trigger_' + charId); }
+function createFamilyCardPayload(charObj, mode, amount){ const userName=getChatUserName(charObj&&charObj.id); const charName=getCharDisplayName(charObj); return { id:'family_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7), type:'family_card', kind:'request', status:'pending', mode:mode==='request'?'request':'gift', amount:Number(amount||0)||0, userName:userName, userAvatar:getChatUserAvatar(charObj&&charObj.id), charName:charName, charAvatar:getCharAvatarSnapshot(charObj), charId:String((charObj&&charObj.id)||''), summary:buildFamilyInviteText(userName,charName,mode), createdAt:Date.now() }; }
+function appendFamilyCardToChat(charObj, payload){ if(!charObj||!charObj.id||!payload) return; const scopedKey=accountScopedChatKey(charObj.id); const pushEntry=(list)=>{ list.push({ id:payload.id, role:'user', content:JSON.stringify(payload), type:'family_card', replyToId:null, sentAt:Date.now(), readAt:null }); return list; }; if(window.PhoneStorage && typeof window.PhoneStorage.get==='function' && typeof window.PhoneStorage.put==='function'){ window.PhoneStorage.get('chats', scopedKey).then((store)=>{ let list=store&&Array.isArray(store.history)?store.history:[]; list=pushEntry(list); return window.PhoneStorage.put('chats',{ id:scopedKey, charId:String(charObj.id||''), updatedAt:Date.now(), history:list }); }).catch(()=>{}); } else { const legacyKey='chat_'+charObj.id; let store=null; try{ store=JSON.parse(localStorage.getItem(scopedKey)||localStorage.getItem(legacyKey)||'null'); }catch(e){ store=null; } let list=store && (store.history||store.messages); if(!Array.isArray(list)) list=[]; list=pushEntry(list); const next={ history:list, messages:list }; try{ localStorage.setItem(scopedKey, JSON.stringify(next)); }catch(e){} try{ localStorage.setItem(legacyKey, JSON.stringify(next)); }catch(e){} } try{ window.parent.postMessage({ type:'CHAT_UPDATED', payload:{ id:charObj.id, data:charObj, last:payload.summary, lastType:'text' } }, '*'); }catch(e){} }
+function openChatWithFamilyAutoTrigger(charObj){ if(!charObj||!charObj.id) return; const cloneList=(list)=>Array.isArray(list)?list.map((item)=>{ if(item&&typeof item==='object'){ try{ return JSON.parse(JSON.stringify(item)); }catch(err){ return Object.assign({}, item); } } return item; }):[]; const slim={ id:charObj.id, name:charObj.name, nickname:charObj.nickname, description:charObj.description, avatar:charObj.avatar, imageData:charObj.imageData, avatarUrl:String(charObj.avatarUrl||''), personality:charObj.personality, scenario:charObj.scenario, system_prompt:charObj.system_prompt, first_mes:charObj.first_mes, alternate_greetings:charObj.alternate_greetings, tags:charObj.tags, character_version:charObj.character_version, spec:charObj.spec, creator:charObj.creator, importedAvatarResources:cloneList(charObj.importedAvatarResources), importedMemeResources:cloneList(charObj.importedMemeResources), importedRuleBlocks:cloneList(charObj.importedRuleBlocks), importedRegexScripts:cloneList(charObj.importedRegexScripts), importedMemeCategory:String(charObj.importedMemeCategory||''), authorRulesEnabled:charObj.authorRulesEnabled!==false, regexRulesEnabled:charObj.regexRulesEnabled!==false, regexRulesUserTouched:!!charObj.regexRulesUserTouched }; try{ localStorage.setItem(pendingFamilyAutoTriggerKey(charObj.id), '1'); }catch(e){} try{ window.parent.postMessage({ type:'OPEN_CHAT_WITH', payload:slim }, '*'); }catch(e){} }
+function postProfilePreviewUpdate(){ try{ window.parent.postMessage({ type:'BOND_WIDGET_PREVIEW', payload:{ userName:getChatUserName(currentActiveCharId()), userAvatar:getChatUserAvatar(currentActiveCharId()) } }, '*'); }catch(e){} }
+
+function renderProfile(){
+  const acc=active(); const nameIn=document.getElementById('nameInput'); const curName=String(acc.name||'').trim();
+  if(curName && curName !== '我哥天下第一好'){ nameIn.value=curName; nameIn.placeholder=''; } else { nameIn.value=''; nameIn.placeholder='我哥天下第一好'; }
+  const av=document.getElementById('avatarBtn');
+  resolveProfileAvatar().then((src)=>{
+    const next = String(src || '').trim();
+    if(next){
+      av.style.backgroundImage='url(' + JSON.stringify(next).slice(1,-1) + ')';
+      av.textContent='';
+    }else{
+      av.style.backgroundImage='';
+      av.textContent='+';
+    }
+  }).catch(()=>{
+    if(acc.avatar){ av.style.backgroundImage='url(' + JSON.stringify(acc.avatar).slice(1,-1) + ')'; av.textContent=''; } else { av.style.backgroundImage=''; av.textContent='+'; }
+  });
+  syncFavoriteCount();
+  document.getElementById('walletSub').textContent=formatMoney(loadWalletState().balance);
+}
+function renderFamilyActiveCards(){
+  const host=document.getElementById('familyActiveList'); if(!host) return;
+  const list=loadActiveFamilyCards();
+  if(!list.length){ host.innerHTML=''; return; }
+  host.innerHTML=list.map((item)=>'<div class="family-active-card"><div><div class="family-active-title">和' + esc(item.charName||'对方') + '开通了亲属卡</div><div class="family-active-sub">额度/笔 ' + esc(formatMoney(item.amount||0)) + '</div></div><button class="family-unlink-btn" type="button" onclick="openRevokeFamilyCardConfirm(\'' + escAttr(item.id||'') + '\')">解除</button></div>').join('');
+}
+function renderWallet(){
+  const state=loadWalletState(); const amountEl=document.getElementById('walletAmount'); const ledger=document.getElementById('walletLedger');
+  if(amountEl) amountEl.textContent=formatMoney(state.balance);
+  renderFamilyActiveCards();
+  if(!ledger) return;
+  if(!state.records.length){ ledger.innerHTML='<div class="wallet-empty">还没有余额流水。充值、清空或以后做转账时，都会显示在这里。</div>'; return; }
+  ledger.innerHTML=state.records.map((item)=>'<button class="wallet-record" type="button" onclick="openWalletRecordDetail(\'' + escAttr(item.id||'') + '\')"><div class="wallet-record-copy"><div class="wallet-record-title">' + esc(item.title||'余额变动') + '</div><div class="wallet-record-sub">' + esc(walletTime(item.at)) + '</div></div><div class="wallet-record-amount">' + esc(walletAmountText(item)) + '</div></button>').join('');
+}
+function openWalletPage(){ renderWallet(); document.getElementById('walletPage').classList.add('open'); }
+function closeWalletPage(){ document.getElementById('walletPage').classList.remove('open'); }
+
+function openWalletRechargeModal(){ const m=document.getElementById('confirmModal'); m.innerHTML='<h3>充值余额</h3><input class="wallet-input" id="walletRechargeInput" type="number" min="0" step="0.01" placeholder="¥0.00"><div class="wallet-note">输入任意金额后确认，会直接写入当前账号的钱包余额与流水。</div><div class="actions"><button type="button" onclick="closeOverlay(\'confirmOverlay\')">取消</button><button type="button" id="confirmYesBtn">确认</button></div>'; document.getElementById('confirmOverlay').classList.add('open'); setTimeout(()=>document.getElementById('walletRechargeInput')?.focus(),20); document.getElementById('confirmYesBtn').onclick=function(){ const amount=Number(document.getElementById('walletRechargeInput').value||0); if(!Number.isFinite(amount)||amount<0){ showToast('金额无效'); return; } const state=loadWalletState(); state.balance=Number(state.balance||0)+amount; saveWalletState(state); pushWalletRecord({ title:'余额充值', amount:amount, direction:'in', note:'手动充值余额' }); closeOverlay('confirmOverlay'); renderProfile(); renderWallet(); showToast('余额已更新'); }; }
+function openWalletClearModal(){ const m=document.getElementById('confirmModal'); m.innerHTML='<h3>清空余额</h3><div class="sub">确认后当前账号的钱包余额会归零，并删除所有流水记录。</div><div class="actions"><button type="button" onclick="closeOverlay(\'confirmOverlay\')">取消</button><button type="button" id="confirmYesBtn">确认</button></div>'; document.getElementById('confirmOverlay').classList.add('open'); document.getElementById('confirmYesBtn').onclick=function(){ const state=loadWalletState(); state.balance=0; state.records=[]; saveWalletState(state); closeOverlay('confirmOverlay'); renderProfile(); renderWallet(); showToast('余额和记录已清空'); }; }
+function openWalletRecordDetail(id){ const item=walletRecord(id); if(!item) return; const m=document.getElementById('confirmModal'); m.innerHTML='<h3>' + esc(item.title||'余额变动') + '</h3><div class="wallet-note">金额：' + esc(walletAmountText(item)) + '<br>时间：' + esc(walletTime(item.at)) + '<br>备注：' + esc(item.note||'无') + '</div><div class="actions"><button type="button" onclick="closeOverlay(\'confirmOverlay\')">关闭</button></div>'; document.getElementById('confirmOverlay').classList.add('open'); }
+
+function openFamilyCardModal(){
+  const chars=loadWalletCharacters(); if(!chars.length){ showToast('还没有可选角色'); return; }
+  const activeId=currentActiveCharId();
+  const options=['<option value="">选择对象</option>'].concat(chars.map((charObj)=>{ const cid=String(charObj.id||''); const selected=cid===activeId ? ' selected' : ''; return '<option value="' + escAttr(cid) + '"' + selected + '>' + esc(getCharDisplayName(charObj)) + '</option>'; }));
+  const m=document.getElementById('confirmModal');
+  m.innerHTML='<div class="family-card-modal"><div class="family-card-title">亲属卡</div><select class="family-select" id="familyCharSelect">' + options.join('') + '</select><div class="family-mode-row"><button class="family-mode-btn" type="button" id="familyGiftBtn" onclick="setFamilyMode(\'gift\')"><span>赠送</span><span class="check">☑</span></button><button class="family-mode-btn" type="button" id="familyRequestBtn" onclick="setFamilyMode(\'request\')"><span>索要</span><span class="check">☐</span></button></div><div class="family-line"></div><div class="family-amount-wrap"><div class="family-amount-label">额度/笔</div><input class="family-amount-input" id="familyAmountInput" type="number" min="0" step="0.01" placeholder="¥ 0.00"></div><div class="actions"><button type="button" onclick="closeOverlay(\'confirmOverlay\')">取消</button><button type="button" id="confirmYesBtn">确认</button></div></div>';
+  document.getElementById('confirmOverlay').classList.add('open');
+  window.__familyCardMode='gift';
+  document.getElementById('confirmYesBtn').onclick=submitFamilyCardRequest;
+}
+function setFamilyMode(mode){ window.__familyCardMode=mode==='request'?'request':'gift'; const gift=document.getElementById('familyGiftBtn'); const req=document.getElementById('familyRequestBtn'); if(gift) gift.querySelector('.check').textContent=window.__familyCardMode==='gift'?'☑':'☐'; if(req) req.querySelector('.check').textContent=window.__familyCardMode==='request'?'☑':'☐'; }
+function submitFamilyCardRequest(){
+  const charId=String((document.getElementById('familyCharSelect')||{}).value||'').trim(); const amount=Number((document.getElementById('familyAmountInput')||{}).value||0);
+  if(!charId){ showToast('请选择对象'); return; }
+  if(!Number.isFinite(amount) || amount < 0){ showToast('金额无效'); return; }
+  const target=loadWalletCharacters().find((item)=>String((item&&item.id)||'')===charId); if(!target){ showToast('对象不存在'); return; }
+  if(hasFamilyCardBinding(charId)){ showToast('同一个角色当前只能绑定一张亲属卡'); return; }
+  const payload=createFamilyCardPayload(target, window.__familyCardMode||'gift', amount);
+  appendFamilyCardToChat(target, payload); queueFamilyRequest(payload); openChatWithFamilyAutoTrigger(target); closeOverlay('confirmOverlay'); renderWallet(); showToast('亲属卡邀请已发送');
+}
+function openRevokeFamilyCardConfirm(cardId){ const item=loadActiveFamilyCards().find((entry)=>String((entry&&entry.id)||'')===String(cardId||'')); if(!item) return; const m=document.getElementById('confirmModal'); m.innerHTML='<h3>解除亲密付</h3><div class="sub">确认后将和' + esc(item.charName||'对方') + '解除亲属卡关系。</div><div class="actions"><button type="button" onclick="closeOverlay(\'confirmOverlay\')">取消</button><button type="button" id="confirmYesBtn">确认</button></div>'; document.getElementById('confirmOverlay').classList.add('open'); document.getElementById('confirmYesBtn').onclick=function(){ const payload={ id:'family_revoke_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7), type:'family_card', kind:'revoke', status:'done', mode:item.mode||'gift', amount:Number(item.amount||0)||0, userName:getChatUserName(item.charId), userAvatar:getChatUserAvatar(item.charId), charName:item.charName||'Char', charAvatar:String(item.charAvatar||'').trim(), charId:item.charId||'', summary:getChatUserName(item.charId) + '和您解除了亲密付', createdAt:Date.now() }; appendFamilyCardToChat({ id:item.charId, name:item.charName, nickname:item.charName, imageData:item.charAvatar||'' }, payload); removeFamilyBindingsForChar(item.charId); closeOverlay('confirmOverlay'); renderWallet(); showToast('已解除亲密付'); }; }
+
+function saveName(){ const v=String(document.getElementById('nameInput').value||'').trim(); window.AccountManager.updateActive(a=>{ a.name=v; }); try{ localStorage.setItem(window.AccountManager.scopedKey('user_name'), v); localStorage.setItem('user_name', v); }catch(err){} renderProfile(); postProfilePreviewUpdate(); showToast('名称已保存'); }
+function pickAvatar(){ document.getElementById('avatarInput').click(); }
+function bindAvatarInput(){ document.getElementById('avatarInput').addEventListener('change', async (e)=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=async ()=>{ const data=String(r.result||''); const av=document.getElementById('avatarBtn'); if(av){ av.style.backgroundImage='url(' + JSON.stringify(data).slice(1,-1) + ')'; av.textContent=''; } try{ window.AccountManager.updateActive(a=>{ a.avatar=data; }); }catch(accountErr){} const scopedProfileKey=window.AccountManager.scopedKey('qq_profile_avatar_asset'); const scopedUserKey=window.AccountManager.scopedKey('user_avatar'); const scopedMomentsAvatarKey=window.AccountManager.scopedKey('qq_moments_hero_avatar_asset'); const scopedMomentsLegacyKey=window.AccountManager.scopedKey('qq_moments_hero_avatar'); try{ localStorage.setItem(scopedProfileKey, data); localStorage.setItem(scopedUserKey, data); localStorage.setItem(scopedMomentsAvatarKey, data); localStorage.setItem(scopedMomentsLegacyKey, data); localStorage.setItem('qq_profile_avatar_asset', data); localStorage.setItem('qq_moments_hero_avatar_asset', data); localStorage.setItem('qq_moments_hero_avatar', data); localStorage.setItem('user_avatar', data); }catch(storageErr){} await Promise.all([ saveStoredAsset(scopedProfileKey, data), saveStoredAsset(scopedUserKey, data), saveStoredAsset(scopedMomentsAvatarKey, data), saveStoredAsset(scopedMomentsLegacyKey, data), saveStoredAsset('qq_profile_avatar_asset', data), saveStoredAsset('qq_moments_hero_avatar_asset', data), saveStoredAsset('qq_moments_hero_avatar', data), saveStoredAsset('user_avatar', data) ]); renderProfile(); postProfilePreviewUpdate(); try{ window.parent.postMessage({ type:'USER_AVATAR_UPDATED', payload:{ src:data } }, '*'); }catch(err){} showToast('头像已更新'); }; r.readAsDataURL(f); e.target.value=''; }); }
+function normalizeFavoriteType(type){
+  const safe = String(type || '').trim().toLowerCase();
+  if(safe === 'rich_html' || safe === 'richhtml' || safe === 'html_card') return 'richhtml';
+  if(safe === 'voice_message' || safe === 'voice') return 'voice';
+  if(safe === 'image_message' || safe === 'image') return 'image';
+  if(safe === 'meme_message' || safe === 'meme') return 'meme';
+  return safe || 'text';
+}
+function parseFavoriteRichPayload(raw){
+  if(!raw) return null;
+  let parsed = null;
+  if(typeof raw === 'object'){
+    parsed = raw;
+  }else{
+    try{ parsed = JSON.parse(String(raw || '')); }catch(err){ parsed = null; }
+  }
+  if(!parsed || typeof parsed !== 'object') return null;
+  if(parsed.type){
+    const safeType = normalizeFavoriteType(parsed.type);
+    if(safeType === 'richhtml'){
+      return parseFavoriteRichPayload(parsed.content || parsed.richPayload || null);
+    }
+  }
+  const html = String(parsed.html || '').trim();
+  const css = String(parsed.css || '').trim();
+  const js = String(parsed.js || '').trim();
+  const summary = String(parsed.summary || '').trim();
+  const text = String(parsed.text || '').trim();
+  if(!html && !summary && !text) return null;
+  return { html, css, js, summary, text };
+}
+function buildFavoriteRichSrcdoc(payload){
+  const data = payload && typeof payload === 'object' ? payload : { html:'', css:'', js:'', summary:'', text:'' };
+  let html = String(data.html || '').trim();
+  const css = String(data.css || '').trim();
+  const js = String(data.js || '').trim();
+  const summary = String(data.summary || data.text || 'SURPRISE').trim() || 'SURPRISE';
+  if(!html){
+    html = '<section style="padding:16px 14px;display:flex;align-items:center;justify-content:center;min-height:120px;border:2px solid #111;border-radius:16px;background:linear-gradient(180deg,#fff,#f2f2f2);font-family:-apple-system,BlinkMacSystemFont,\'SF Pro Text\',\'PingFang SC\',sans-serif;font-size:14px;font-weight:800;color:#111;">'
+      + esc(summary) + '</section>';
+  }
+  return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<style>html,body{margin:0;padding:0;background:#fff;color:#111;font-family:-apple-system,BlinkMacSystemFont,\'SF Pro Text\',\'PingFang SC\',sans-serif;overflow:auto}*,*:before,*:after{box-sizing:border-box}'
+    + css + '</style></head><body>' + html + (js ? ('<script>' + js + '<\/script>') : '') + '</body></html>';
+}
+function getFavoritePreviewText(fav){
+  const item = fav && typeof fav === 'object' ? fav : {};
+  const previewText = String(item.previewText || '').trim();
+  if(previewText) return previewText;
+  const kind = normalizeFavoriteType(item.type || 'text');
+  if(kind === 'richhtml') return '【SURPRISE】';
+  if(kind === 'voice') return '【语音消息】';
+  if(kind === 'image') return '【图片】';
+  if(kind === 'meme') return '【表情包】';
+  if(kind === 'text' && String(item.text || '').trim().startsWith('{')){
+    const maybeRich = parseFavoriteRichPayload(item.text);
+    if(maybeRich) return '【SURPRISE】';
+    try{
+      const parsed = JSON.parse(String(item.text || ''));
+      if(parsed && typeof parsed === 'object' && parsed.content){
+        const parsedKind = normalizeFavoriteType(parsed.type || 'text');
+        if(parsedKind === 'richhtml') return '【SURPRISE】';
+        return String(parsed.content || '').trim() || '空消息';
+      }
+    }catch(err){}
+  }
+  return String(item.text || '').trim() || '空消息';
+}
+function openFavoriteRichFullscreen(frameId){
+  const overlay = document.getElementById('favRichFullOverlay');
+  const fullFrame = document.getElementById('favRichFullFrame');
+  const sourceFrame = frameId ? document.getElementById(frameId) : null;
+  if(!overlay || !fullFrame || !sourceFrame) return;
+  fullFrame.srcdoc = String(sourceFrame.srcdoc || '');
+  overlay.classList.add('open');
+}
+function closeFavoriteRichFullscreen(){
+  const overlay = document.getElementById('favRichFullOverlay');
+  const fullFrame = document.getElementById('favRichFullFrame');
+  if(overlay) overlay.classList.remove('open');
+  if(fullFrame) fullFrame.srcdoc = '';
+}
+function renderFavoriteBody(fav, frameId){
+  const item = fav && typeof fav === 'object' ? fav : {};
+  const kind = normalizeFavoriteType(item.type || 'text');
+  const richKey = String(item.richPayloadAssetKey || '').trim();
+  const richPayload = kind === 'richhtml'
+    ? (parseFavoriteRichPayload(item.richPayload || item.text) || parseFavoriteRichPayload(item.text))
+    : parseFavoriteRichPayload(item.richPayload || '');
+  if(kind === 'richhtml' || richPayload || richKey){
+    const fallbackPayload = { html:'', css:'', js:'', summary:'SURPRISE', text:'SURPRISE' };
+    const srcdoc = buildFavoriteRichSrcdoc(richPayload || fallbackPayload);
+    const keyAttr = richKey ? (' data-rich-key="' + escAttr(richKey) + '"') : '';
+    return '<div class="fav-rich-wrap"><div class="fav-rich-head"><span class="fav-rich-tag">SURPRISE</span><button class="fav-rich-expand" type="button" onclick="openFavoriteRichFullscreen(\'' + escAttr(frameId || '') + '\')"><img src="assets/屏幕放大.png" alt="放大"></button></div><iframe id="' + escAttr(frameId || '') + '" class="fav-rich-frame" loading="lazy" sandbox="allow-scripts"' + keyAttr + ' srcdoc="' + escAttr(srcdoc) + '"></iframe></div><div class="fav-rich-hint">【SURPRISE】</div>';
+  }
+  return '<div class="fav-text">' + esc(getFavoritePreviewText(item)) + '</div>';
+}
+function hydrateFavoriteRichFrames(){
+  const list = document.getElementById('favList');
+  if(!list || !window.assetStore || typeof window.assetStore.load !== 'function') return;
+  list.querySelectorAll('.fav-rich-frame[data-rich-key]').forEach((frame)=>{
+    const key = String(frame.getAttribute('data-rich-key') || '').trim();
+    if(!key) return;
+    window.assetStore.load(key).then((raw)=>{
+      const payload = parseFavoriteRichPayload(raw);
+      if(!payload) return;
+      frame.srcdoc = buildFavoriteRichSrcdoc(payload);
+      frame.removeAttribute('data-rich-key');
+    }).catch(()=>{});
+  });
+}
+function renderFavorites(){
+  const list = document.getElementById('favList');
+  const favs = getCurrentFavorites();
+  if(!favs.length){
+    list.innerHTML = '<div class="sub">还没有收藏，去聊天里长按消息收藏吧。</div>';
+    return;
+  }
+  try{
+    list.innerHTML = favs.map((f)=>{
+      const frameId = 'favRichFrame_' + (String(f.id || '').replace(/[^a-zA-Z0-9_-]/g, '') || Math.random().toString(36).slice(2,8));
+      return '<article class="fav-item" data-fav-id="' + escAttr(f.id || '') + '">' + renderFavoriteAvatar(f) + '<div class="fav-meta"><div class="fav-name">' + esc(f.name || '未命名') + '</div><div class="fav-time">' + fmtTime(f.at) + '</div>' + renderFavoriteBody(f, frameId) + '</div></article>';
+    }).join('');
+  }catch(err){
+    list.innerHTML = favs.map((f)=>{
+      const preview = getFavoritePreviewText(f);
+      return '<article class="fav-item" data-fav-id="' + escAttr(f.id || '') + '">' + renderFavoriteAvatar(f) + '<div class="fav-meta"><div class="fav-name">' + esc(f.name || '未命名') + '</div><div class="fav-time">' + fmtTime(f.at) + '</div><div class="fav-text">' + esc(preview) + '</div></div></article>';
+    }).join('');
+  }
+  bindFavoriteSwipeDelete();
+  hydrateFavoriteRichFrames();
+  hydrateFavoriteAvatarNodes();
+}
+async function openFavorites(){ await hydrateFavoritesCache(); renderFavorites(); document.getElementById('favOverlay').classList.add('open'); }
+function removeFavoriteById(id){
+  if(!id) return;
+  const next = getCurrentFavorites().filter((it)=>String(it&&it.id||'')!==String(id));
+  saveFavoritesEverywhere(next);
+  renderProfile();
+  renderFavorites();
+}
+function confirmRemoveFavorite(id){ confirmModal('取消收藏','确定取消收藏？',()=>{ removeFavoriteById(id); }); }
+function bindFavoriteSwipeDelete(){ const list=document.getElementById('favList'); if(!list) return; list.querySelectorAll('.fav-item').forEach((item)=>{ let startX=0,startY=0,dx=0,dragging=false,pointerId=null; const reset=()=>{ item.classList.remove('swiping'); item.style.transform=''; dragging=false; pointerId=null; }; item.addEventListener('pointerdown',(e)=>{ if(e.pointerType==='mouse'&&e.button!==0) return; pointerId=e.pointerId; startX=e.clientX; startY=e.clientY; dx=0; dragging=true; item.classList.add('swiping'); try{ item.setPointerCapture(pointerId); }catch(err){} }); item.addEventListener('pointermove',(e)=>{ if(!dragging || (pointerId!==null&&e.pointerId!==pointerId)) return; const moveX=e.clientX-startX; const moveY=e.clientY-startY; if(Math.abs(moveY)>16 && Math.abs(moveY)>Math.abs(moveX)){ reset(); return; } dx=Math.min(0,Math.max(-68,moveX)); item.style.transform='translateX(' + dx + 'px)'; }); item.addEventListener('pointerup',(e)=>{ if(!dragging || (pointerId!==null&&e.pointerId!==pointerId)) return; const swipe=dx; const id=item.getAttribute('data-fav-id')||''; reset(); if(swipe<=-42){ confirmRemoveFavorite(id); } }); item.addEventListener('pointercancel',reset); item.addEventListener('lostpointercapture',reset); }); }
+function renderAccountList(){ const list=document.getElementById('accountList'); const accounts=window.AccountManager.ensure(); const activeId=active().id; const defaultId=window.AccountManager.getDefaultId(); list.innerHTML=accounts.map((a)=>'<div class="account-item"><div class="account-main"><strong>'+esc(a.name||'未命名')+'</strong><div class="badges">'+(a.id===activeId?'<span class="badge">当前</span>':'')+(a.id===defaultId?'<span class="badge">默认</span>':'')+'</div></div><div class="actions"><button type="button" onclick="switchAccount(\''+escAttr(a.id)+'\')">切换</button><button type="button" onclick="setDefaultAccount(\''+escAttr(a.id)+'\')">设为默认</button></div></div>').join(''); }
+function openAccountCenter(){ renderAccountList(); document.getElementById('accountOverlay').classList.add('open'); }
+function confirmModal(title,desc,onConfirm){ const m=document.getElementById('confirmModal'); m.innerHTML='<h3>'+esc(title)+'</h3><div class="sub">'+esc(desc)+'</div><div class="actions"><button type="button" onclick="closeOverlay(\'confirmOverlay\')">取消</button><button type="button" id="confirmYesBtn">确认</button></div>'; document.getElementById('confirmOverlay').classList.add('open'); document.getElementById('confirmYesBtn').onclick=function(){ closeOverlay('confirmOverlay'); onConfirm&&onConfirm(); }; }
+function createAccountAction(){ const accounts=window.AccountManager.ensure(); if(accounts.length>=2){ showToast('最多只能拥有两个账号'); return; } confirmModal('创建新账号','创建后将切换到新账号并重置为默认头像与名字，继续吗？',()=>{ const res=window.AccountManager.createAccount(); if(!res){ showToast('创建失败'); return; } location.reload(); }); }
+function switchAccount(id){ window.AccountManager.setActive(id); location.reload(); }
+function setDefaultAccount(id){ window.AccountManager.setDefault(id); renderAccountList(); showToast('已设为默认账号'); }
+function confirmDeleteAccount(){ const acc=active(); confirmModal('删除账号','删除后该账号的聊天与朋友圈数据会被清空，确认删除？',()=>{ const res=window.AccountManager.deleteAccount(acc.id); if(!res.ok){ if(res.reason==='default') showToast('不能删除默认账号，请先切换默认账号'); else if(res.reason==='need_one') showToast('至少要保留一个账号'); else showToast('删除失败'); return; } location.reload(); }); }
+
+function esc(s){ return String(s||'').replace(/[&<>\"]/g,(m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m])); }
+function escAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtTime(ts){ const d=new Date(ts||Date.now()); const p=(n)=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); }
+
+document.getElementById('nameInput').addEventListener('change', saveName);
+document.getElementById('nameInput').addEventListener('blur', saveName);
+['accountOverlay','favOverlay','confirmOverlay','favRichFullOverlay'].forEach((id)=>{ const el=document.getElementById(id); if(!el) return; el.addEventListener('click',(evt)=>{ if(evt.target!==el) return; if(id==='favRichFullOverlay') closeFavoriteRichFullscreen(); else el.classList.remove('open'); }); });
+
+bindAvatarInput();
+hideParentTopbar();
+window.addEventListener('beforeunload', restoreParentTopbar);
+window.addEventListener('pagehide', restoreParentTopbar);
+Promise.resolve()
+  .then(()=>window.AccountManager.hydrateFromStorage())
+  .catch(()=>{ window.AccountManager.ensure(); })
+  .then(()=>Promise.all([
+    hydrateMoneyStateCache(),
+    hydrateFavoritesCache(),
+    resolveProfileAvatar()
+  ]))
+  .then((results)=>{ const src=results[2]; if(src){ try{ window.AccountManager.updateActive((a)=>{ a.avatar=src; }); }catch(err){} } renderProfile(); renderWallet(); if(shouldAutoOpenCouplePage()) openCouplePage(); })
+  .catch(()=>{ renderProfile(); renderWallet(); if(shouldAutoOpenCouplePage()) openCouplePage(); });
+</script>
+</body>
+</html>

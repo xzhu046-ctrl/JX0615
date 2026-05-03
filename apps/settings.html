@@ -1,0 +1,2379 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>设置</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<script src="../chatStorage.js?v=2026-05-03T06:08:00Z"></script>
+<script src="../assetStore.js?v=2026-05-03T06:08:00Z"></script>
+<script src="../accountManager.js?v=2026-05-03T06:08:00Z"></script>
+<script src="../metadataStore.js?v=2026-05-03T06:08:00Z"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+button{-webkit-appearance:none;appearance:none;-webkit-touch-callout:none;color:inherit;-webkit-text-fill-color:currentColor}
+:root{--black:#0a0a0a;--white:#ffffff;--off:#f7f7f7;--gray:#888;--pale:#eee;--border:2px solid #0a0a0a;--shadow:2px 2px 0 #0a0a0a;--radius:18px;--font:'Quicksand',sans-serif;--font-d:'Nunito',sans-serif;--safe-bottom:max(env(safe-area-inset-bottom),0px)}
+body{font-family:var(--font);background:var(--off);color:var(--black);min-height:100vh;min-height:100dvh;padding:0 0 calc(40px + var(--safe-bottom));}
+.body{display:flex;flex-direction:column;gap:14px;padding:12px 16px 0}
+.card{background:var(--white);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.card-header{padding:12px 16px;border-bottom:var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-header h3{font-family:var(--font-d);font-size:14px;font-weight:900}
+.card-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gray)}
+input,select,textarea{font-family:var(--font);background:var(--off);border:var(--border);border-radius:12px;padding:10px 14px;font-size:13px;color:var(--black);width:100%;outline:none;font-weight:600;transition:box-shadow .15s;-webkit-text-fill-color:currentColor;font-variant-emoji:text}
+input:not([type="range"]):focus,select:focus,textarea:focus{box-shadow:3px 3px 0 var(--black);background:var(--white)}
+input::placeholder,textarea::placeholder{color:#aaa}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230a0a0a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-color:var(--off);padding-right:32px;cursor:pointer}
+textarea{resize:none}
+.temp-card{background:var(--white);border:var(--border);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;margin-top:6px}
+.temp-val{font-family:var(--font-d);font-weight:900;font-size:11px;min-width:30px;text-align:center;color:var(--black)}
+.temp-slider{flex:1;-webkit-appearance:none;appearance:none;height:22px;background:transparent;border:none;outline:none;cursor:pointer}
+.temp-slider::-webkit-slider-runnable-track{height:2px;background:var(--black);border:none;border-radius:999px}
+.temp-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--white);border:2px solid var(--black);box-shadow:2px 2px 0 var(--black);margin-top:-7px;transition:none}
+.temp-slider::-webkit-slider-thumb:active{transform:none;box-shadow:2px 2px 0 var(--black)}
+.temp-slider::-moz-range-track{height:2px;background:var(--black);border:none;border-radius:999px}
+.temp-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--white);border:2px solid var(--black);box-shadow:2px 2px 0 var(--black);transition:none}
+.temp-slider::-moz-range-thumb:active{transform:none;box-shadow:2px 2px 0 var(--black)}
+
+.btn{font-family:var(--font-d);font-weight:800;border:var(--border);border-radius:12px;padding:10px 18px;cursor:pointer;font-size:13px;transition:transform .12s,box-shadow .12s;box-shadow:var(--shadow);-webkit-text-fill-color:currentColor}
+.btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--black)}
+.btn-black{background:var(--black);color:var(--white)}
+.btn-white{background:var(--white);color:var(--black)}
+.btn-full{width:100%;text-align:center}
+.btn-sm{padding:7px 14px;font-size:12px}
+.btn-row{display:flex;gap:8px}
+
+.provider-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.ptab{padding:7px 14px;border:var(--border);border-radius:20px;font-family:var(--font-d);font-weight:800;font-size:12px;cursor:pointer;background:var(--white);transition:all .15s;box-shadow:2px 2px 0 var(--black)}
+.ptab.active{background:var(--black);color:var(--white)}
+.ptab:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--black)}
+.preset-shell{margin-top:10px;padding:12px;border:var(--border);border-radius:16px;background:linear-gradient(180deg,#fff 0%,#f7f7f7 100%);box-shadow:2px 2px 0 var(--black);display:flex;flex-direction:column;gap:12px}
+.preset-row{display:flex;gap:8px;align-items:center}
+.preset-row input{flex:1}
+.preset-list{display:flex;flex-wrap:wrap;gap:8px}
+.preset-chip{display:flex;align-items:center;gap:8px;padding:9px 11px;border:var(--border);border-radius:12px;background:#fff;box-shadow:2px 2px 0 var(--black);min-width:0;max-width:100%}
+.preset-chip.active{background:var(--black);color:var(--white)}
+.preset-chip-main{display:flex;align-items:center;gap:8px;min-width:0;cursor:pointer;background:transparent;border:none;padding:0;color:inherit}
+.preset-chip-name{font-family:var(--font-d);font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:128px}
+.preset-chip-meta{display:inline-flex;align-items:center;justify-content:center;padding:2px 8px;border:1.5px solid currentColor;border-radius:999px;font-size:10px;font-weight:900;opacity:.88;text-transform:uppercase;letter-spacing:.05em}
+.preset-chip-del{width:24px;height:24px;border:var(--border);border-radius:999px;background:#fff;color:#0a0a0a;font-family:var(--font-d);font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-shadow:1px 1px 0 var(--black)}
+.preset-chip.active .preset-chip-del{background:#fff;color:#0a0a0a}
+.preset-empty{font-size:11px;color:#777;font-weight:700;line-height:1.5}
+
+.provider-section{display:none;flex-direction:column;gap:10px}
+.provider-section.active{display:flex}
+
+.model-row{display:flex;gap:8px;align-items:flex-end}
+.model-row .model-select-wrap{flex:1}
+.model-row .fetch-btn{flex-shrink:0;height:42px;display:flex;align-items:center;white-space:nowrap}
+
+.fetch-status{font-size:11px;font-weight:600;padding:6px 10px;border-radius:8px;text-align:center;display:none}
+.fetch-status.loading{background:#f0f0f0;color:#666;display:block}
+.fetch-status.ok{background:#e8ffe8;color:#1a7a1a;border:1.5px solid #1a7a1a;display:block}
+.fetch-status.err{background:#ffe8e8;color:#aa1a1a;border:1.5px solid #aa1a1a;display:block}
+.debug-box{background:var(--off);border:var(--border);border-radius:14px;padding:12px;min-height:120px;max-height:340px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.debug-meta{font-size:11px;color:#666;font-weight:700;line-height:1.5}
+.muted-note{font-size:11px;color:#888;line-height:1.5}
+
+.key-row{display:flex;gap:8px;align-items:flex-end}
+.key-row input{flex:1}
+.key-toggle{flex-shrink:0;height:42px;padding:0 14px;display:flex;align-items:center}
+.key-saved{font-size:11px;color:#1a7a1a;font-weight:700;display:none}
+.key-saved.show{display:block}
+
+.divider{height:1px;background:var(--pale);margin:2px 0}
+.switch-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0}
+.switch-meta{flex:1;min-width:0}
+.switch-meta .hint{font-size:11px;color:#666;font-weight:700;line-height:1.45;margin-top:2px}
+.switch{width:46px;height:24px;border:var(--border);border-radius:999px;background:var(--off);position:relative;cursor:pointer;flex-shrink:0;transition:background .2s}
+.switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:999px;background:var(--black);transition:transform .2s,background .2s}
+.switch.on{background:var(--black)}
+.switch.on::after{transform:translateX(20px);background:var(--white)}
+.save-bar{position:sticky;bottom:0;left:0;right:0;padding:12px 16px calc(12px + var(--safe-bottom));background:var(--off);border-top:var(--border);margin-top:8px}
+.toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--black);color:var(--white);padding:10px 20px;border-radius:20px;font-weight:700;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.import-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(247,247,247,.74);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:1200}
+.import-overlay.open{display:flex}
+.import-card{width:min(320px,100%);background:#fff;border:var(--border);border-radius:22px;box-shadow:4px 4px 0 #0a0a0a;padding:18px 16px;display:flex;flex-direction:column;gap:12px}
+.import-kicker{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#666}
+.import-title{font-family:var(--font-d);font-size:18px;font-weight:900}
+.import-sub{font-size:12px;line-height:1.6;color:#444;min-height:38px}
+.import-progress-track{height:10px;border:var(--border);border-radius:999px;background:#f3f3f3;overflow:hidden}
+.import-progress-fill{height:100%;width:0;background:#0a0a0a;border-radius:999px;transition:width .28s ease}
+.import-meta{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:800;color:#666}
+.import-mode-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(247,247,247,.74);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:1190}
+.import-mode-overlay.open{display:flex}
+.import-mode-card{width:min(340px,100%);background:#fff;border:var(--border);border-radius:22px;box-shadow:4px 4px 0 #0a0a0a;padding:18px 16px;display:flex;flex-direction:column;gap:12px}
+.import-mode-title{font-family:var(--font-d);font-size:17px;font-weight:900}
+.import-mode-option{border:var(--border);border-radius:16px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:6px;cursor:pointer;box-shadow:2px 2px 0 #0a0a0a}
+.import-mode-option:active{transform:translate(2px,2px);box-shadow:0 0 0 #0a0a0a}
+.import-mode-name{font-size:13px;font-weight:900}
+.import-mode-desc{font-size:12px;line-height:1.55;color:#555}
+.import-mode-actions{display:flex;gap:8px}
+.import-preview-list{list-style:none;display:flex;flex-direction:column;gap:8px;max-height:180px;overflow:auto;padding:10px;border:var(--border);border-radius:16px;background:#fafafa}
+.import-preview-item{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;font-weight:800;color:#222}
+.import-preview-item span:last-child{color:#666;font-weight:700}
+.settings-item{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.settings-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.settings-mini-btn{font-family:var(--font-d);font-weight:800;border:var(--border);border-radius:12px;padding:8px 14px;background:#fff;color:#0a0a0a;box-shadow:var(--shadow);cursor:pointer}
+.settings-mini-btn:active{transform:translate(2px,2px);box-shadow:0 0 0 #0a0a0a}
+.notify-settings-card{border:1.5px solid #0a0a0a;border-radius:24px;box-shadow:0 18px 42px rgba(0,0,0,.14);background:linear-gradient(180deg,#fff 0%,#f8f8f8 100%)}
+.notify-settings-card .card-header{border-bottom:1px solid rgba(0,0,0,.12);padding:13px 16px 10px;justify-content:center}
+.notify-settings-card .card-header h3{font-size:15px;letter-spacing:0;text-transform:none}
+.notify-settings-card .card-body{padding:16px;gap:10px}
+.notify-settings-card .switch-row,
+.notify-settings-card .settings-item{min-height:48px;padding:9px 0;border-bottom:1px dashed rgba(0,0,0,.24)}
+.notify-settings-card .switch-row:last-child,
+.notify-settings-card .settings-item:last-child{border-bottom:0}
+.notify-settings-card .switch-meta label,
+.notify-settings-card .settings-item label{font-family:var(--font-d);font-size:13px;font-weight:900;color:#0a0a0a;text-transform:none;letter-spacing:0}
+.notify-settings-card .switch-meta .hint{display:none}
+.notify-settings-card .settings-right{gap:10px}
+.notify-settings-card .settings-mini-btn{min-width:54px;border:1.5px solid #0a0a0a;border-radius:999px;padding:7px 12px;box-shadow:0 5px 0 rgba(0,0,0,.16);font-size:12px}
+.notify-settings-card .settings-mini-btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.notify-settings-card input,
+.notify-settings-card select{border:1.5px solid #0a0a0a;border-radius:16px;background:#fff;box-shadow:none}
+.update-status{font-size:12px;line-height:1.6;color:#444;background:#fafafa;border:var(--border);border-radius:14px;padding:12px}
+.console-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.console-tab{padding:7px 12px;border:var(--border);border-radius:999px;background:#fff;color:#0a0a0a;box-shadow:2px 2px 0 #0a0a0a;font-family:var(--font-d);font-size:11px;font-weight:900;cursor:pointer}
+.console-tab.active{background:#0a0a0a;color:#fff}
+.console-panel{background:#fff;border:var(--border);border-radius:16px;box-shadow:4px 4px 0 #0a0a0a;padding:10px;display:flex;flex-direction:column;gap:8px}
+.console-content{background:#f8f8f8;border:var(--border);border-radius:14px;min-height:160px;max-height:320px;overflow:auto;padding:10px}
+.console-entry{padding:8px 10px;border-radius:12px;background:#fff;border:1.5px solid rgba(10,10,10,.12);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.console-entry + .console-entry{margin-top:8px}
+.console-entry.warn{border-color:#aa7a00;background:#fffaf0}
+.console-entry.error{border-color:#b10000;background:#fff4f4;color:#b10000}
+.console-timestamp{font-weight:900;color:#666;margin-right:6px}
+.console-empty{padding:18px 12px;text-align:center;font-size:12px;color:#777;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="body">
+
+  <!-- AI 提供方 -->
+  <div class="card">
+    <div class="card-header">
+      <h3>AI 提供方</h3>
+      <span id="active-provider-badge" style="font-size:11px;font-weight:700;background:#0a0a0a;color:#fff;padding:3px 10px;border-radius:20px">OpenAI</span>
+    </div>
+    <div class="card-body">
+      <div class="provider-tabs">
+        <div class="ptab active" data-p="openai" onclick="switchProvider('openai')">OpenAI</div>
+        <div class="ptab" data-p="claude" onclick="switchProvider('claude')">Claude</div>
+        <div class="ptab" data-p="gemini" onclick="switchProvider('gemini')">Gemini</div>
+        <div class="ptab" data-p="openrouter" onclick="switchProvider('openrouter')">OpenRouter</div>
+        <div class="ptab" data-p="custom" onclick="switchProvider('custom')">自定义地址</div>
+      </div>
+
+      <!-- OpenAI -->
+      <div class="provider-section active" id="sec-openai">
+        <label>API 密钥</label>
+        <div class="key-row">
+          <input type="password" id="key-openai" placeholder="sk-..." oninput="markDirty()">
+          <button class="btn btn-white btn-sm key-toggle" onclick="toggleVis('key-openai',this)">显示</button>
+        </div>
+        <label>模型</label>
+        <div class="model-row">
+          <div class="model-select-wrap">
+            <select id="model-openai" onchange="markDirty()">
+              <option value="gpt-4o-mini">gpt-4o-mini</option>
+              <option value="gpt-4o">gpt-4o</option>
+              <option value="gpt-4-turbo">gpt-4-turbo</option>
+              <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+            </select>
+          </div>
+          <button class="btn btn-black btn-sm fetch-btn" onclick="fetchModels('openai')">获取模型</button>
+        </div>
+        <div class="temp-card">
+          <div class="temp-val">0</div>
+          <input class="temp-slider" type="range" min="0" max="2" step="0.05" id="temp-openai" oninput="syncTempLabel('openai')" onchange="markDirty()">
+          <div class="temp-val" id="temp-label-openai">1.00</div>
+        </div>
+        <div class="fetch-status" id="fetch-status-openai"></div>
+      </div>
+
+      <!-- Claude -->
+      <div class="provider-section" id="sec-claude">
+        <label>API 密钥</label>
+        <div class="key-row">
+          <input type="password" id="key-claude" placeholder="sk-ant-..." oninput="markDirty()">
+          <button class="btn btn-white btn-sm key-toggle" onclick="toggleVis('key-claude',this)">显示</button>
+        </div>
+        <label>模型</label>
+        <div class="model-row">
+          <div class="model-select-wrap">
+            <select id="model-claude" onchange="markDirty()">
+              <option value="claude-haiku-4-5-20251001">claude-haiku-4-5</option>
+              <option value="claude-sonnet-4-6">claude-sonnet-4-6</option>
+              <option value="claude-opus-4-6">claude-opus-4-6</option>
+            </select>
+          </div>
+          <button class="btn btn-black btn-sm fetch-btn" onclick="fetchModels('claude')">获取模型</button>
+        </div>
+        <div class="temp-card">
+          <div class="temp-val">0</div>
+          <input class="temp-slider" type="range" min="0" max="2" step="0.05" id="temp-claude" oninput="syncTempLabel('claude')" onchange="markDirty()">
+          <div class="temp-val" id="temp-label-claude">1.00</div>
+        </div>
+        <div class="fetch-status" id="fetch-status-claude"></div>
+      </div>
+
+      <!-- Gemini -->
+      <div class="provider-section" id="sec-gemini">
+        <label>API 密钥（Google AI Studio）</label>
+        <div class="key-row">
+          <input type="password" id="key-gemini" placeholder="AIza..." oninput="markDirty()">
+          <button class="btn btn-white btn-sm key-toggle" onclick="toggleVis('key-gemini',this)">显示</button>
+        </div>
+        <label>模型</label>
+        <div class="model-row">
+          <div class="model-select-wrap">
+            <select id="model-gemini" onchange="markDirty()">
+              <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+              <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+              <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+            </select>
+          </div>
+          <button class="btn btn-black btn-sm fetch-btn" onclick="fetchModels('gemini')">获取模型</button>
+        </div>
+        <div class="temp-card">
+          <div class="temp-val">0</div>
+          <input class="temp-slider" type="range" min="0" max="2" step="0.05" id="temp-gemini" oninput="syncTempLabel('gemini')" onchange="markDirty()">
+          <div class="temp-val" id="temp-label-gemini">1.00</div>
+        </div>
+        <div class="fetch-status" id="fetch-status-gemini"></div>
+      </div>
+
+      <!-- OpenRouter -->
+      <div class="provider-section" id="sec-openrouter">
+        <label>API 密钥（openrouter.ai）</label>
+        <div class="key-row">
+          <input type="password" id="key-openrouter" placeholder="sk-or-..." oninput="markDirty()">
+          <button class="btn btn-white btn-sm key-toggle" onclick="toggleVis('key-openrouter',this)">显示</button>
+        </div>
+        <label>模型</label>
+        <div class="model-row">
+          <div class="model-select-wrap">
+            <select id="model-openrouter" onchange="markDirty()">
+              <option value="openai/gpt-4o-mini">openai/gpt-4o-mini</option>
+              <option value="openai/gpt-4o">openai/gpt-4o</option>
+              <option value="anthropic/claude-3-haiku">anthropic/claude-3-haiku</option>
+              <option value="google/gemini-flash-1.5">google/gemini-flash-1.5</option>
+              <option value="meta-llama/llama-3.1-8b-instruct:free">meta-llama/llama-3.1-8b-instruct:free</option>
+            </select>
+          </div>
+          <button class="btn btn-black btn-sm fetch-btn" onclick="fetchModels('openrouter')">获取模型</button>
+        </div>
+        <div class="temp-card">
+          <div class="temp-val">0</div>
+          <input class="temp-slider" type="range" min="0" max="2" step="0.05" id="temp-openrouter" oninput="syncTempLabel('openrouter')" onchange="markDirty()">
+          <div class="temp-val" id="temp-label-openrouter">1.00</div>
+        </div>
+        <div class="fetch-status" id="fetch-status-openrouter"></div>
+      </div>
+
+      <!-- 自定义地址（反向代理） -->
+      <div class="provider-section" id="sec-custom">
+        <label>反向代理 / 自定义基础地址</label>
+        <input type="text" id="key-custom-url" placeholder="https://你的代理地址.com/v1" oninput="markDirty()">
+        <label>API 密钥（如需）</label>
+        <div class="key-row">
+          <input type="password" id="key-custom" placeholder="可选" oninput="markDirty()">
+          <button class="btn btn-white btn-sm key-toggle" onclick="toggleVis('key-custom',this)">显示</button>
+        </div>
+        <label>模型</label>
+        <div class="model-row">
+          <div class="model-select-wrap">
+            <select id="model-custom" onchange="markDirty()">
+              <option value="">-- 先获取或在下方手动输入 --</option>
+            </select>
+          </div>
+          <button class="btn btn-black btn-sm fetch-btn" onclick="fetchModels('custom')">获取模型</button>
+        </div>
+        <input type="text" id="model-custom-manual" placeholder="或手动输入模型名称..." oninput="onManualModel()" style="margin-top:4px">
+        <div class="temp-card">
+          <div class="temp-val">0</div>
+          <input class="temp-slider" type="range" min="0" max="2" step="0.05" id="temp-custom" oninput="syncTempLabel('custom')" onchange="markDirty()">
+          <div class="temp-val" id="temp-label-custom">1.00</div>
+        </div>
+        <div class="fetch-status" id="fetch-status-custom"></div>
+      <div style="font-size:11px;color:#888;line-height:1.5;margin-top:4px">
+          支持任意兼容 OpenAI 的代理服务（LM Studio、Ollama、SillyTavern API server 等），会调用 <code>/models</code> 接口获取模型列表。
+        </div>
+      </div>
+
+      <div class="preset-shell">
+        <label>API 预设</label>
+        <div class="preset-row">
+          <input type="text" id="api-preset-name" placeholder="给这套 API 起个名字..." oninput="markDirty()">
+          <button class="btn btn-white btn-sm" type="button" onclick="saveCurrentApiPreset()">保存预设</button>
+        </div>
+        <div class="preset-list" id="api-preset-list"></div>
+      </div>
+
+      <button class="btn btn-black btn-full" style="margin-top:10px" onclick="saveAll()">保存 API 设置</button>
+
+    </div>
+  </div>
+
+  <!-- 高级设置 -->
+  <div class="card">
+    <div class="card-header"><h3>高级设置</h3></div>
+    <div class="card-body">
+      <div class="switch-row">
+        <div class="switch-meta">
+          <label style="margin:0">AI 后台活动</label>
+          <div class="hint">开启后，AI 会按你设置的时间间隔，主动发消息 / 说说 / 动态。</div>
+        </div>
+        <button class="switch" id="ai-bg-switch" type="button" onclick="toggleAiBg()"></button>
+      </div>
+      <label>后台活动间隔（分钟）</label>
+      <input type="number" id="ai-bg-interval" value="6" min="1" max="120" oninput="markDirty()">
+      <label>系统提示词覆盖（可选）</label>
+      <textarea id="sysprompt" rows="4" placeholder="留空则使用角色卡里的系统提示词..."></textarea>
+    </div>
+  </div>
+
+  <div class="card notify-settings-card">
+    <div class="card-header">
+      <h3>系统通知</h3>
+    </div>
+    <div class="card-body" style="gap:12px">
+      <div class="switch-row">
+        <div class="switch-meta">
+          <label style="margin:0">启用系统通知</label>
+        </div>
+        <button class="switch" id="sys-notify-switch" type="button" onclick="toggleShellNotifySetting('enabled')"></button>
+      </div>
+      <div class="settings-item">
+        <label style="margin:0;text-transform:none;letter-spacing:0;color:#222;font-size:13px;font-weight:800">权限状态</label>
+        <div class="settings-right">
+          <span id="sys-notify-permission" style="font-size:12px;color:#666;font-weight:800">未检测</span>
+          <button class="settings-mini-btn" type="button" onclick="requestShellNotificationPermissionFromSettings()">授权</button>
+        </div>
+      </div>
+      <div class="settings-item">
+        <label style="margin:0;text-transform:none;letter-spacing:0;color:#222;font-size:13px;font-weight:800">显示名称</label>
+        <div class="settings-right" style="flex:1;min-width:0">
+          <input type="text" id="sys-notify-app-name" placeholder="0615" maxlength="20" oninput="markDirty()" style="max-width:180px">
+        </div>
+      </div>
+      <div class="switch-row">
+        <div class="switch-meta">
+          <label style="margin:0">聊天页内也通知</label>
+        </div>
+        <button class="switch" id="sys-notify-in-chat-switch" type="button" onclick="toggleShellNotifySetting('notifyInChat')"></button>
+      </div>
+      <div class="switch-row">
+        <div class="switch-meta">
+          <label style="margin:0">关闭页内小卡片</label>
+        </div>
+        <button class="switch" id="sys-notify-disable-internal-switch" type="button" onclick="toggleShellNotifySetting('disableInternal')"></button>
+      </div>
+      <div class="switch-row">
+        <div class="switch-meta">
+          <label style="margin:0">消息震动</label>
+        </div>
+        <button class="switch" id="sys-notify-vibration-switch" type="button" onclick="toggleShellNotifySetting('vibrationEnabled')"></button>
+      </div>
+      <div class="settings-item">
+        <label style="margin:0;text-transform:none;letter-spacing:0;color:#222;font-size:13px;font-weight:800">震动模式</label>
+        <div class="settings-right">
+          <select id="sys-notify-vibration-pattern" onchange="markDirty()" style="max-width:168px">
+            <option value="short">短震（1次）</option>
+            <option value="medium">中震（2次）</option>
+            <option value="long">长震（3次）</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-white btn-full" type="button" onclick="sendShellNotificationTest('chat')">测试聊天通知</button>
+        <button class="btn btn-white btn-full" type="button" onclick="sendShellNotificationTest('schedule')">测试日程通知</button>
+      </div>
+      <button class="btn btn-black btn-full" type="button" onclick="debugShellNotificationFromSettings()">通知调试</button>
+      <div class="debug-box" id="sys-notify-debug-box" style="display:none;min-height:88px;max-height:220px"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>移动端控制台</h3>
+      <span style="font-size:11px;color:#666;font-weight:800">运行日志 / 报错</span>
+    </div>
+    <div class="card-body" style="gap:12px">
+      <div class="console-tabs">
+        <button class="console-tab active" type="button" data-console-filter="all" onclick="setMobileConsoleFilter('all', this)">全部</button>
+        <button class="console-tab" type="button" data-console-filter="info" onclick="setMobileConsoleFilter('info', this)">普通</button>
+        <button class="console-tab" type="button" data-console-filter="warn" onclick="setMobileConsoleFilter('warn', this)">警告</button>
+        <button class="console-tab" type="button" data-console-filter="error" onclick="setMobileConsoleFilter('error', this)">报错</button>
+      </div>
+      <div class="console-panel">
+        <div class="btn-row">
+          <button class="btn btn-white btn-full" type="button" onclick="copyMobileConsoleLogs()">复制日志</button>
+          <button class="btn btn-white btn-full" type="button" onclick="clearMobileConsoleLogs()">清空日志</button>
+        </div>
+        <div class="console-content" id="mobile-console-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset / Format -->
+  <div class="card">
+    <div class="card-header">
+      <h3>整机备份</h3>
+      <span style="font-size:11px;color:#666;font-weight:800">导出 / 导入</span>
+    </div>
+    <div class="card-body" style="gap:12px">
+      <div style="font-size:12px;line-height:1.6;color:#444">可以把当前小手机的全部数据打包成一个 JSON 文件，也可以从备份文件完整恢复，包括 API、角色、聊天、头像、壁纸和自定义外观。</div>
+      <div class="btn-row">
+        <button class="btn btn-white btn-full" type="button" onclick="exportAllData()">导出所有数据</button>
+        <button class="btn btn-white btn-full" type="button" onclick="triggerImportAllData()">导入备份文件</button>
+      </div>
+      <input type="file" id="import-all-data-input" accept=".json,application/json" style="display:none" onchange="onImportAllData(event)">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>应用更新</h3>
+      <span style="font-size:11px;color:#666;font-weight:800">最新版本</span>
+    </div>
+    <div class="card-body" style="gap:12px">
+      <div class="settings-item">
+        <label style="margin:0;text-transform:none;letter-spacing:0;color:#222;font-size:13px;font-weight:800">检查并更新到最新版本</label>
+        <div class="settings-right">
+          <button class="settings-mini-btn" type="button" id="check-update-btn" onclick="checkAndUpdateLatestVersion()">检查更新</button>
+        </div>
+      </div>
+      <div class="update-status" id="settings-update-status">当前版本：读取中…<br>远端版本：未检查<br>状态：等待检查</div>
+      <button class="btn btn-black btn-full" type="button" id="settings-refresh-btn" onclick="refreshLatestVersionFromSettings()" style="display:none">刷新到最新版本</button>
+    </div>
+  </div>
+
+  <div class="card" style="border-color:#c00;box-shadow:2px 2px 0 #c00">
+    <div class="card-header" style="border-color:#c00">
+      <h3 style="color:#c00">格式化 Ephone</h3>
+      <span style="font-size:11px;color:#c00;font-weight:800">危险操作</span>
+    </div>
+    <div class="card-body" style="gap:12px">
+      <div style="font-size:12px;line-height:1.6;color:#a00">点击下方按钮将清空所有本地数据（角色卡、聊天记录、档案、头像、自定义外观、API 配置等）。操作不可撤销。</div>
+      <button class="btn btn-white btn-full" style="border-color:#c00;color:#c00" onclick="confirmFormat()">格式化 / 恢复出厂</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="save-bar">
+  <button class="btn btn-black btn-full" onclick="saveAll()">保存设置</button>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="import-overlay" id="import-overlay" aria-hidden="true">
+  <div class="import-card">
+    <div class="import-kicker">Restore</div>
+    <div class="import-title">正在把小手机装回来</div>
+    <div class="import-sub" id="import-progress-text">准备中…</div>
+    <div class="import-progress-track"><div class="import-progress-fill" id="import-progress-fill"></div></div>
+    <div class="import-meta">
+      <span id="import-progress-step">0 / 0</span>
+      <span>请先别退出</span>
+    </div>
+  </div>
+</div>
+<div class="import-mode-overlay" id="import-mode-overlay" aria-hidden="true">
+  <div class="import-mode-card">
+    <div class="import-kicker">Import</div>
+    <div class="import-mode-title">请选择导入方式</div>
+    <ul class="import-preview-list" id="import-preview-list"></ul>
+    <button class="import-mode-option" type="button" onclick="confirmImportMode('merge')">
+      <div class="import-mode-name">选择性导入</div>
+      <div class="import-mode-desc">尽量合并现有数据，不先清空整台手机。更适合保命和补回数据。</div>
+    </button>
+    <button class="import-mode-option" type="button" onclick="confirmImportMode('replace')">
+      <div class="import-mode-name">完全导入</div>
+      <div class="import-mode-desc">覆盖当前手机全部数据，但失败时也会自动回滚到导入前状态。</div>
+    </button>
+    <div class="import-mode-actions">
+      <button class="btn btn-white btn-full" type="button" onclick="closeImportModePicker()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var dirty = false;
+var curProvider = 'openai';
+var AI_BG_ENABLED_KEY = 'ai_bg_activity_enabled';
+var AI_BG_INTERVAL_KEY = 'ai_bg_activity_interval_min';
+var API_PRESETS_KEY = 'api_provider_presets_v1';
+var API_PRESETS_KV_ID = 'api_provider_presets';
+var API_SETTINGS_KV_ID = 'api_settings_v1';
+var apiSettingsSaveWaiters = {};
+var PROVIDER_LABELS = {
+  openai: 'OpenAI',
+  claude: 'Claude',
+  gemini: 'Gemini',
+  openrouter: 'OpenRouter',
+  custom: '自定义地址'
+};
+var importOverlayLocked = false;
+var lastImportRollbackPayload = null;
+var pendingImportPayload = null;
+var pendingImportInput = null;
+var lastSettingsRemoteBuild = '';
+var shellNotifySettingsState = {
+  enabled: true,
+  appName: '0615',
+  vibrationEnabled: true,
+  vibrationPattern: 'medium',
+  notifyInChat: false,
+  disableInternal: false
+};
+var mobileConsoleFilter = 'all';
+
+function init() {
+  importOverlayLocked = false;
+  var bootOverlay = document.getElementById('import-overlay');
+  if(bootOverlay) bootOverlay.classList.remove('open');
+  switchProvider(curProvider, true);
+  ['openai','claude','gemini','openrouter','custom'].forEach(function(p) {
+    var t = document.getElementById('temp-'+p);
+    if(t){ t.value = '1'; syncTempLabel(p); }
+  });
+  loadShellNotificationSettings();
+  renderApiPresetList();
+  renderMobileConsole();
+  readCurrentBuildId().then(function(currentBuild){
+    updateSettingsUpdateStatus(currentBuild, '', '等待检查');
+  });
+  loadApiSettingsRecord().then(function(record){
+    if(record) applyApiSettingsRecordToForm(record);
+  }).catch(function(err){
+    console.warn('load api settings record failed', err);
+  });
+  dirty = false;
+}
+
+function setSelectValue(id, val) {
+  var sel = document.getElementById(id);
+  if(!sel) return;
+  for(var i=0;i<sel.options.length;i++){
+    if(sel.options[i].value===val){sel.selectedIndex=i;return;}
+  }
+  // not found - add it
+  var opt = document.createElement('option');
+  opt.value = val; opt.textContent = val;
+  sel.appendChild(opt);
+  sel.value = val;
+}
+
+function switchProvider(p, silent) {
+  curProvider = p;
+  document.querySelectorAll('.ptab').forEach(function(t){
+    t.classList.toggle('active', t.dataset.p===p);
+  });
+  document.querySelectorAll('.provider-section').forEach(function(s){
+    s.classList.toggle('active', s.id==='sec-'+p);
+  });
+  document.getElementById('active-provider-badge').textContent = PROVIDER_LABELS[p] || p;
+  if(!silent) { markDirty(); }
+}
+
+function toggleVis(id, btn) {
+  var inp = document.getElementById(id);
+  if(inp.type==='password'){inp.type='text';btn.textContent='隐藏';}
+  else{inp.type='password';btn.textContent='显示';}
+}
+
+function markDirty() { dirty = true; }
+
+function toggleAiBg(){
+  var sw = document.getElementById('ai-bg-switch');
+  if(!sw) return;
+  sw.classList.toggle('on');
+  markDirty();
+}
+
+function normalizeHeartText(value){
+  return typeof value === 'string' ? value.replace(/\u2665(\uFE0E|\uFE0F)?/g, '\u2665\uFE0E') : value;
+}
+
+function normalizeApiPresetItem(item){
+  var src = item && typeof item === 'object' ? item : {};
+  var keys = src.keys && typeof src.keys === 'object' ? src.keys : {};
+  var models = src.models && typeof src.models === 'object' ? src.models : {};
+  var temps = src.temps && typeof src.temps === 'object' ? src.temps : {};
+  return {
+    id: String(src.id || ('api_preset_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7))),
+    name: String(src.name || '未命名预设').trim() || '未命名预设',
+    provider: String(src.provider || 'openai').trim() || 'openai',
+    customUrl: String(src.customUrl || '').trim(),
+    customManual: String(src.customManual || '').trim(),
+    keys: {
+      openai: String(keys.openai || '').trim(),
+      claude: String(keys.claude || '').trim(),
+      gemini: String(keys.gemini || '').trim(),
+      openrouter: String(keys.openrouter || '').trim(),
+      custom: String(keys.custom || '').trim()
+    },
+    models: {
+      openai: String(models.openai || '').trim(),
+      claude: String(models.claude || '').trim(),
+      gemini: String(models.gemini || '').trim(),
+      openrouter: String(models.openrouter || '').trim(),
+      custom: String(models.custom || '').trim()
+    },
+    temps: {
+      openai: String(temps.openai || '1').trim() || '1',
+      claude: String(temps.claude || '1').trim() || '1',
+      gemini: String(temps.gemini || '1').trim() || '1',
+      openrouter: String(temps.openrouter || '1').trim() || '1',
+      custom: String(temps.custom || '1').trim() || '1'
+    }
+  };
+}
+
+async function loadApiPresets(){
+  try{
+    var payload = null;
+    if(window.parent && window.parent !== window && window.parent.PhoneStorage && typeof window.parent.PhoneStorage.get === 'function'){
+      payload = await window.parent.PhoneStorage.get('kv', API_PRESETS_KV_ID).catch(function(){ return null; });
+    }else if(window.PhoneStorage && typeof window.PhoneStorage.get === 'function'){
+      payload = await window.PhoneStorage.get('kv', API_PRESETS_KV_ID).catch(function(){ return null; });
+    }
+    var fromKv = payload && payload.value;
+    if(Array.isArray(fromKv)) return fromKv.map(normalizeApiPresetItem);
+  }catch(err){
+    console.warn('loadApiPresets kv failed', err);
+  }
+  try{
+    var parsed = JSON.parse(localStorage.getItem(API_PRESETS_KEY) || '[]');
+    if(!Array.isArray(parsed)) return [];
+    return parsed.map(normalizeApiPresetItem);
+  }catch(err2){
+    console.warn('loadApiPresets local failed', err2);
+    return [];
+  }
+}
+
+async function saveApiPresets(list){
+  var safeList = Array.isArray(list) ? list.map(normalizeApiPresetItem) : [];
+  var stored = false;
+  try{
+    var payload = { id: API_PRESETS_KV_ID, value: safeList, updatedAt: Date.now() };
+    if(window.parent && window.parent !== window && window.parent.PhoneStorage && typeof window.parent.PhoneStorage.put === 'function'){
+      await window.parent.PhoneStorage.put('kv', payload);
+      stored = true;
+    }else if(window.PhoneStorage && typeof window.PhoneStorage.put === 'function'){
+      await window.PhoneStorage.put('kv', payload);
+      stored = true;
+    }
+  }catch(err){
+    console.warn('saveApiPresets kv failed', err);
+  }
+  if(!stored){
+    throw new Error('PhoneStorage unavailable for api presets');
+  }
+  return safeList;
+}
+
+function collectCurrentApiPresetDraft(){
+  var providers = ['openai','claude','gemini','openrouter','custom'];
+  var keys = {};
+  var models = {};
+  var temps = {};
+  providers.forEach(function(p){
+    keys[p] = String(((document.getElementById('key-' + p) || {}).value) || '').trim();
+    models[p] = String(((document.getElementById('model-' + p) || {}).value) || '').trim();
+    temps[p] = String(((document.getElementById('temp-' + p) || {}).value) || '1').trim() || '1';
+  });
+  return normalizeApiPresetItem({
+    provider: curProvider,
+    customUrl: String(((document.getElementById('key-custom-url') || {}).value) || '').trim(),
+    customManual: String(((document.getElementById('model-custom-manual') || {}).value) || '').trim(),
+    keys: keys,
+    models: models,
+    temps: temps
+  });
+}
+
+function getApiPresetFingerprint(preset){
+  var normalized = normalizeApiPresetItem(preset);
+  return JSON.stringify({
+    provider: normalized.provider,
+    customUrl: normalized.customUrl,
+    customManual: normalized.customManual,
+    keys: normalized.keys,
+    models: normalized.models,
+    temps: normalized.temps
+  });
+}
+
+function getSettingsPhoneStorage(){
+  try{
+    if(window.parent && window.parent !== window && window.parent.PhoneStorage) return window.parent.PhoneStorage;
+  }catch(err){}
+  return window.PhoneStorage || null;
+}
+
+function readLegacyApiSetting(key){
+  try{ return localStorage.getItem(key); }catch(err){ return null; }
+}
+
+function collectApiSettingsRecord(){
+  var providers = ['openai','claude','gemini','openrouter','custom'];
+  var keys = {};
+  var models = {};
+  var temps = {};
+  providers.forEach(function(p){
+    keys[p] = String(((document.getElementById('key-'+p) || {}).value) || '').trim();
+    models[p] = String(((document.getElementById('model-'+p) || {}).value) || '').trim();
+    temps[p] = String(((document.getElementById('temp-'+p) || {}).value) || '1').trim() || '1';
+  });
+  return {
+    provider: String(curProvider || 'openai').trim() || 'openai',
+    keys: keys,
+    models: models,
+    temps: temps,
+    customUrl: String(((document.getElementById('key-custom-url') || {}).value) || '').trim(),
+    customManual: String(((document.getElementById('model-custom-manual') || {}).value) || '').trim(),
+    sysprompt: String(((document.getElementById('sysprompt') || {}).value) || ''),
+    aiBgEnabled: !!((document.getElementById('ai-bg-switch') || {}).classList && document.getElementById('ai-bg-switch').classList.contains('on')),
+    aiBgIntervalMin: String(((document.getElementById('ai-bg-interval') || {}).value) || '6'),
+    updatedAt: Date.now()
+  };
+}
+
+async function loadApiSettingsRecord(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.getShellApiSettingsRecord === 'function'){
+      var fromShell = await window.parent.getShellApiSettingsRecord();
+      if(fromShell && typeof fromShell === 'object') return fromShell;
+    }
+  }catch(parentErr){}
+  var storage = getSettingsPhoneStorage();
+  if(storage && typeof storage.get === 'function'){
+    var record = await storage.get('kv', API_SETTINGS_KV_ID).catch(function(){ return null; });
+    var value = record && (record.value || record.data || record.settings);
+    if(value && typeof value === 'object') return value;
+  }
+  var providers = ['openai','claude','gemini','openrouter','custom'];
+  var legacy = {
+    provider: String(readLegacyApiSetting('provider') || 'openai').trim() || 'openai',
+    keys: {},
+    models: {},
+    temps: {},
+    customUrl: String(readLegacyApiSetting('custom_url') || '').trim(),
+    customManual: String(readLegacyApiSetting('model_custom_manual') || '').trim(),
+    sysprompt: String(readLegacyApiSetting('sysprompt') || ''),
+    aiBgEnabled: String(readLegacyApiSetting(AI_BG_ENABLED_KEY) || '') === '1',
+    aiBgIntervalMin: String(readLegacyApiSetting(AI_BG_INTERVAL_KEY) || '6')
+  };
+  providers.forEach(function(p){
+    legacy.keys[p] = String(readLegacyApiSetting('key_' + p) || '').trim();
+    legacy.models[p] = String(readLegacyApiSetting('model_' + p) || '').trim();
+    legacy.temps[p] = String(readLegacyApiSetting('temp_' + p) || '1').trim() || '1';
+  });
+  var hasLegacy = providers.some(function(p){ return legacy.keys[p] || legacy.models[p]; })
+    || legacy.customUrl || legacy.customManual || legacy.sysprompt || legacy.aiBgEnabled || legacy.aiBgIntervalMin !== '6';
+  if(hasLegacy && storage && typeof storage.put === 'function'){
+    storage.put('kv', { id: API_SETTINGS_KV_ID, value: legacy, updatedAt: Date.now() }).catch(function(){});
+  }
+  return hasLegacy ? legacy : null;
+}
+
+function applyApiSettingsRecordToForm(record){
+  if(!record || typeof record !== 'object') return;
+  var keys = record.keys || {};
+  var models = record.models || {};
+  var temps = record.temps || {};
+  ['openai','claude','gemini','openrouter','custom'].forEach(function(p){
+    var k = document.getElementById('key-'+p);
+    if(k && Object.prototype.hasOwnProperty.call(keys, p)) k.value = String(keys[p] || '');
+    var m = document.getElementById('model-'+p);
+    if(m && String(models[p] || '').trim()) setSelectValue('model-'+p, String(models[p] || '').trim());
+    var t = document.getElementById('temp-'+p);
+    if(t && Object.prototype.hasOwnProperty.call(temps, p)){ t.value = String(temps[p] || '1'); syncTempLabel(p); }
+  });
+  var customUrl = document.getElementById('key-custom-url');
+  if(customUrl && Object.prototype.hasOwnProperty.call(record, 'customUrl')) customUrl.value = String(record.customUrl || '');
+  var customManual = document.getElementById('model-custom-manual');
+  if(customManual && Object.prototype.hasOwnProperty.call(record, 'customManual')) customManual.value = String(record.customManual || '');
+  var sys = document.getElementById('sysprompt');
+  if(sys && Object.prototype.hasOwnProperty.call(record, 'sysprompt')) sys.value = String(record.sysprompt || '');
+  var aiBgSwitch = document.getElementById('ai-bg-switch');
+  if(aiBgSwitch && Object.prototype.hasOwnProperty.call(record, 'aiBgEnabled')){
+    aiBgSwitch.classList.toggle('on', !!record.aiBgEnabled);
+  }
+  var aiBgInterval = document.getElementById('ai-bg-interval');
+  if(aiBgInterval && Object.prototype.hasOwnProperty.call(record, 'aiBgIntervalMin')){
+    aiBgInterval.value = String(record.aiBgIntervalMin || '6');
+  }
+  if(record.provider) switchProvider(String(record.provider || 'openai'), true);
+}
+
+async function persistCurrentApiSettings(){
+  var record = collectApiSettingsRecord();
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.saveShellApiSettingsRecord === 'function'){
+      var savedByShell = await window.parent.saveShellApiSettingsRecord(record);
+      if(savedByShell && typeof savedByShell === 'object') record = savedByShell;
+    }else if(window.parent && window.parent !== window){
+      record = await requestShellApiSettingsSave(record);
+    }else{
+      var storage = getSettingsPhoneStorage();
+      if(!(storage && typeof storage.put === 'function')){
+        throw new Error('PhoneStorage unavailable for api settings');
+      }
+      await storage.put('kv', {
+        id: API_SETTINGS_KV_ID,
+        value: record,
+        updatedAt: Date.now()
+      });
+    }
+  }catch(err){
+    throw err;
+  }
+  try{
+    if(window.parent && window.parent !== window){
+      window.parent.postMessage({ type:'API_SETTINGS_SAVED', payload: record }, '*');
+    }
+  }catch(err){}
+  return record;
+}
+
+function requestShellApiSettingsSave(record){
+  return new Promise(function(resolve, reject){
+    var requestId = 'api_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+    var timer = setTimeout(function(){
+      delete apiSettingsSaveWaiters[requestId];
+      reject(new Error('API 设置保存超时'));
+    }, 3500);
+    apiSettingsSaveWaiters[requestId] = {
+      resolve: function(value){ clearTimeout(timer); resolve(value); },
+      reject: function(err){ clearTimeout(timer); reject(err); }
+    };
+    window.parent.postMessage({ type:'API_SETTINGS_SAVE_REQUEST', payload:{ requestId:requestId, settings:record } }, '*');
+  });
+}
+
+window.addEventListener('message', function(event){
+  var data = event && event.data || {};
+  if(data.type !== 'API_SETTINGS_SAVE_RESULT') return;
+  var payload = data.payload || {};
+  var requestId = String(payload.requestId || '').trim();
+  var waiter = apiSettingsSaveWaiters[requestId];
+  if(!waiter) return;
+  delete apiSettingsSaveWaiters[requestId];
+  if(payload.ok) waiter.resolve(payload.settings || collectApiSettingsRecord());
+  else waiter.reject(new Error(String(payload.error || 'API 设置保存失败')));
+});
+
+function persistCurrentApiSettingsLegacyMirror(){
+  return false;
+}
+
+async function renderApiPresetList(){
+  var host = document.getElementById('api-preset-list');
+  if(!host) return;
+  var presets = await loadApiPresets();
+  if(!presets.length){
+    host.innerHTML = '<div class="preset-empty">还没有 API 预设，存一套以后就能一键切换。</div>';
+    return;
+  }
+  var activeFingerprint = getApiPresetFingerprint(collectCurrentApiPresetDraft());
+  host.innerHTML = presets.map(function(item){
+    var isActive = getApiPresetFingerprint(item) === activeFingerprint;
+    return '<div class="preset-chip' + (isActive ? ' active' : '') + '">' +
+      '<button class="preset-chip-main" type="button" onclick="applyApiPreset(\'' + String(item.id || '').replace(/'/g, '&#39;') + '\')">' +
+        '<span class="preset-chip-name">' + escapeHtml(item.name) + '</span>' +
+        '<span class="preset-chip-meta">' + escapeHtml(PROVIDER_LABELS[item.provider] || item.provider) + '</span>' +
+      '</button>' +
+      '<button class="preset-chip-del" type="button" onclick="deleteApiPreset(\'' + String(item.id || '').replace(/'/g, '&#39;') + '\')">×</button>' +
+    '</div>';
+  }).join('');
+}
+
+async function saveCurrentApiPreset(){
+  var input = document.getElementById('api-preset-name');
+  var name = String((input && input.value) || '').trim();
+  if(!name){
+    showToast('先起一个预设名字');
+    return;
+  }
+  var preset = collectCurrentApiPresetDraft();
+  preset.name = name;
+  var presets = await loadApiPresets();
+  var existingIndex = presets.findIndex(function(item){ return String(item.name || '') === name; });
+  if(existingIndex >= 0){
+    preset.id = presets[existingIndex].id;
+    presets[existingIndex] = preset;
+  }else{
+    presets.unshift(preset);
+  }
+  try{
+    await saveApiPresets(presets);
+    await renderApiPresetList();
+    showToast('API 预设已保存');
+  }catch(err){
+    console.error(err);
+    showToast('API 预设保存失败');
+  }
+}
+
+async function applyApiPreset(id){
+  var preset = (await loadApiPresets()).find(function(item){ return String(item.id || '') === String(id || ''); });
+  if(!preset){
+    showToast('这个预设不见了');
+    return;
+  }
+  ['openai','claude','gemini','openrouter','custom'].forEach(function(p){
+    var keyInput = document.getElementById('key-' + p);
+    var modelInput = document.getElementById('model-' + p);
+    var tempInput = document.getElementById('temp-' + p);
+    if(keyInput) keyInput.value = String((preset.keys || {})[p] || '');
+    if(modelInput && String((preset.models || {})[p] || '').trim()) setSelectValue('model-' + p, String((preset.models || {})[p] || '').trim());
+    if(tempInput){
+      tempInput.value = String((preset.temps || {})[p] || '1');
+      syncTempLabel(p);
+    }
+  });
+  var customUrl = document.getElementById('key-custom-url');
+  if(customUrl) customUrl.value = String(preset.customUrl || '');
+  var customManual = document.getElementById('model-custom-manual');
+  if(customManual) customManual.value = String(preset.customManual || '');
+  switchProvider(preset.provider || 'openai', true);
+  await persistCurrentApiSettings();
+  dirty = false;
+  await renderApiPresetList();
+  showToast('已切换到 ' + (preset.name || 'API 预设'));
+}
+
+async function deleteApiPreset(id){
+  var presets = (await loadApiPresets()).filter(function(item){ return String(item.id || '') !== String(id || ''); });
+  try{
+    await saveApiPresets(presets);
+    await renderApiPresetList();
+    showToast('预设已删除');
+  }catch(err){
+    console.error(err);
+    showToast('删除预设失败');
+  }
+}
+
+function bindTextNormalization() {
+  document.addEventListener('input', function(evt){
+    var target = evt.target;
+    if(!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) return;
+    if(!('value' in target)) return;
+    var next = normalizeHeartText(target.value);
+    if(next === target.value) return;
+    var start = target.selectionStart;
+    var end = target.selectionEnd;
+    target.value = next;
+    try{ target.setSelectionRange(start, end); }catch(err){}
+  }, true);
+}
+
+function syncTempLabel(p){
+  var el = document.getElementById('temp-'+p);
+  var lab = document.getElementById('temp-label-'+p);
+  if(el && lab){
+    var v = parseFloat(el.value || '1');
+    lab.textContent = v.toFixed(2);
+  }
+}
+
+function onManualModel() {
+  markDirty();
+  var val = document.getElementById('model-custom-manual').value.trim();
+  if(val) setSelectValue('model-custom', val);
+}
+
+async function fetchModels(p) {
+  var statusEl = document.getElementById('fetch-status-'+p);
+  statusEl.className = 'fetch-status loading';
+  statusEl.textContent = '正在获取模型列表...';
+
+  try {
+    var models = [];
+    var key = (document.getElementById('key-'+p)||{}).value || '';
+
+    if(p === 'openai') {
+      var res = await fetch('https://api.openai.com/v1/models', {
+        headers: { 'Authorization': 'Bearer '+key }
+      });
+      var d = await res.json();
+      if(d.error) throw new Error(d.error.message);
+      models = d.data.map(function(m){return m.id;})
+        .filter(function(id){return id.startsWith('gpt')||id.startsWith('o1')||id.startsWith('o3');})
+        .sort();
+    }
+
+    else if(p === 'claude') {
+      var res = await fetch('https://api.anthropic.com/v1/models', {
+        headers: {
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        }
+      });
+      var d = await res.json();
+      if(d.error) throw new Error(d.error.message);
+      models = (d.data||[]).map(function(m){return m.id;}).sort();
+    }
+
+    else if(p === 'gemini') {
+      var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+key);
+      var d = await res.json();
+      if(d.error) throw new Error(d.error.message||d.error.status);
+      models = (d.models||[])
+        .map(function(m){return m.name.replace('models/','');})
+        .filter(function(n){return n.includes('gemini');})
+        .sort();
+    }
+
+    else if(p === 'openrouter') {
+      var res = await fetch('https://openrouter.ai/api/v1/models', {
+        headers: { 'Authorization': 'Bearer '+key }
+      });
+      var d = await res.json();
+      if(d.error) throw new Error(d.error.message);
+      models = (d.data||[]).map(function(m){return m.id;}).sort();
+    }
+
+    else if(p === 'custom') {
+      var baseUrl = document.getElementById('key-custom-url').value.trim().replace(/\/$/, '');
+      if(!baseUrl) throw new Error('请先输入基础地址');
+      var headers = { 'Content-Type': 'application/json' };
+      if(key) headers['Authorization'] = 'Bearer '+key;
+      var res = await fetch(baseUrl+'/models', { headers: headers });
+      var d = await res.json();
+      if(d.error) throw new Error(d.error.message||JSON.stringify(d.error));
+      models = (d.data||d.models||[]).map(function(m){
+        return typeof m === 'string' ? m : (m.id || m.name || m.model || JSON.stringify(m));
+      }).sort();
+    }
+
+    if(!models.length) throw new Error('没有返回任何模型');
+    populateModels(p, models);
+    statusEl.className = 'fetch-status ok';
+    statusEl.textContent = '已获取 ' + models.length + ' 个模型';
+    setTimeout(function(){statusEl.style.display='none';}, 3000);
+
+  } catch(err) {
+    statusEl.className = 'fetch-status err';
+    statusEl.textContent = '出错：' + err.message;
+  }
+}
+
+function populateModels(p, models) {
+  var sel = document.getElementById('model-'+p);
+  if(!sel) return;
+  var current = sel.value;
+  sel.innerHTML = '';
+  models.forEach(function(m) {
+    var opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    sel.appendChild(opt);
+  });
+  if(current) {
+    for(var i=0;i<sel.options.length;i++){
+      if(sel.options[i].value===current){sel.selectedIndex=i;return;}
+    }
+  }
+  markDirty();
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+
+async function shareOrDownloadSettingsFile(filename, text, mimeType){
+  var safeName = String(filename || 'backup.json').trim() || 'backup.json';
+  var body = String(text || '');
+  var type = String(mimeType || 'application/json');
+  var blob = new Blob([body], { type:type });
+  try{
+    var file = new File([blob], safeName, { type:type });
+    if(navigator && typeof navigator.canShare === 'function' && typeof navigator.share === 'function' && navigator.canShare({ files:[file] })){
+      await navigator.share({ files:[file], title:safeName });
+      return 'shared';
+    }
+  }catch(shareErr){}
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  link.href = url;
+  link.download = safeName;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(function(){
+    URL.revokeObjectURL(url);
+    if(link && link.parentNode) link.parentNode.removeChild(link);
+  }, 1600);
+  return 'download';
+}
+
+function getParentShellNotificationSettings(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.getShellNotificationSettings === 'function'){
+      return window.parent.getShellNotificationSettings();
+    }
+  }catch(err){}
+  return null;
+}
+
+function getParentShellNotificationPermission(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.getShellNotificationPermissionInfo === 'function'){
+      return window.parent.getShellNotificationPermissionInfo();
+    }
+  }catch(err){}
+  return { permission: ('Notification' in window ? Notification.permission : 'unsupported') };
+}
+
+function renderShellNotificationSettings(){
+  document.getElementById('sys-notify-switch').classList.toggle('on', !!shellNotifySettingsState.enabled);
+  document.getElementById('sys-notify-in-chat-switch').classList.toggle('on', !!shellNotifySettingsState.notifyInChat);
+  document.getElementById('sys-notify-disable-internal-switch').classList.toggle('on', !!shellNotifySettingsState.disableInternal);
+  document.getElementById('sys-notify-vibration-switch').classList.toggle('on', !!shellNotifySettingsState.vibrationEnabled);
+  document.getElementById('sys-notify-app-name').value = shellNotifySettingsState.appName || '0615';
+  setSelectValue('sys-notify-vibration-pattern', shellNotifySettingsState.vibrationPattern || 'medium');
+  var permission = getParentShellNotificationPermission();
+  var map = { granted:'已允许', denied:'已拒绝', default:'未请求', unsupported:'不支持' };
+  document.getElementById('sys-notify-permission').textContent = map[permission.permission] || permission.permission || '未检测';
+}
+
+function loadShellNotificationSettings(){
+  var fromParent = getParentShellNotificationSettings();
+  if(fromParent && typeof fromParent === 'object'){
+    shellNotifySettingsState = {
+      enabled: !!fromParent.enabled,
+      appName: String(fromParent.appName || '0615'),
+      vibrationEnabled: !!fromParent.vibrationEnabled,
+      vibrationPattern: String(fromParent.vibrationPattern || 'medium'),
+      notifyInChat: !!fromParent.notifyInChat,
+      disableInternal: !!fromParent.disableInternal
+    };
+  }else{
+    shellNotifySettingsState = {
+      enabled: localStorage.getItem('shell_notify_enabled') == null ? true : localStorage.getItem('shell_notify_enabled') === '1',
+      appName: String(localStorage.getItem('shell_notify_app_name') || '0615'),
+      vibrationEnabled: localStorage.getItem('shell_notify_vibration_enabled') == null ? true : localStorage.getItem('shell_notify_vibration_enabled') === '1',
+      vibrationPattern: String(localStorage.getItem('shell_notify_vibration_pattern') || 'medium'),
+      notifyInChat: localStorage.getItem('shell_notify_in_chat_page') === '1',
+      disableInternal: localStorage.getItem('shell_notify_disable_internal') === '1'
+    };
+  }
+  renderShellNotificationSettings();
+}
+
+function toggleShellNotifySetting(key){
+  shellNotifySettingsState[key] = !shellNotifySettingsState[key];
+  renderShellNotificationSettings();
+  markDirty();
+}
+
+async function requestShellNotificationPermissionFromSettings(){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.ensureShellNotificationPermission === 'function'){
+      await window.parent.ensureShellNotificationPermission();
+    }else if('Notification' in window){
+      await Notification.requestPermission();
+    }
+  }catch(err){}
+  renderShellNotificationSettings();
+}
+
+async function sendShellNotificationTest(kind){
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.testShellNotification === 'function'){
+      var ok = await window.parent.testShellNotification(kind);
+      showToast(ok === false ? '测试通知失败' : '测试通知已发送');
+      return;
+    }
+  }catch(err){
+    console.error(err);
+  }
+  showToast('测试通知发送失败');
+}
+
+function safeStorageSet(key, value){
+  var storage = getSettingsPhoneStorage();
+  if(!(storage && typeof storage.put === 'function')) return false;
+  storage.put('kv', {
+    id: 'setting_' + String(key || '').trim(),
+    value: value == null ? '' : String(value),
+    updatedAt: Date.now()
+  }).catch(function(err){
+    console.warn('settings kv write failed', err);
+  });
+  return true;
+}
+
+async function persistShellNotifySettingsState(){
+  try{
+    var payload = {
+      id: 'shell_notify_settings',
+      value: Object.assign({}, shellNotifySettingsState),
+      updatedAt: Date.now()
+    };
+    if(window.parent && window.parent !== window && window.parent.PhoneStorage && typeof window.parent.PhoneStorage.put === 'function'){
+      await window.parent.PhoneStorage.put('kv', payload);
+      return true;
+    }
+    if(window.PhoneStorage && typeof window.PhoneStorage.put === 'function'){
+      await window.PhoneStorage.put('kv', payload);
+      return true;
+    }
+  }catch(err){}
+  return false;
+}
+
+async function debugShellNotificationFromSettings(){
+  var box = document.getElementById('sys-notify-debug-box');
+  if(!box) return;
+  try{
+    var text = '';
+    if(window.parent && window.parent !== window && typeof window.parent.debugShellNotification === 'function'){
+      text = await window.parent.debugShellNotification();
+    }
+    box.style.display = 'block';
+    box.textContent = String(text || '[shell-notify-debug]\n(empty)');
+  }catch(err){
+    box.style.display = 'block';
+    box.textContent = '[shell-notify-debug]\n' + String(err && err.message || err || 'unknown error');
+  }
+}
+
+function readMobileConsoleLogs(){
+  try{
+    if(window.parent && window.parent !== window && window.parent.BackstageRuntime && typeof window.parent.BackstageRuntime.getLogs === 'function'){
+      var live = window.parent.BackstageRuntime.getLogs();
+      if(Array.isArray(live)) return live.slice();
+    }
+  }catch(err){}
+  try{
+    var raw = localStorage.getItem('backend_runtime_logs_v1') || '[]';
+    var parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  }catch(err){
+    return [];
+  }
+}
+
+function renderMobileConsole(){
+  var host = document.getElementById('mobile-console-content');
+  if(!host) return;
+  var logs = readMobileConsoleLogs();
+  var filtered = mobileConsoleFilter === 'all'
+    ? logs
+    : logs.filter(function(item){ return String(item && item.level || 'info') === mobileConsoleFilter; });
+  if(!filtered.length){
+    host.innerHTML = '<div class="console-empty">暂无日志</div>';
+    return;
+  }
+  host.innerHTML = filtered.map(function(item){
+    var level = String(item && item.level || 'info');
+    var time = new Date(Number(item && item.ts || Date.now())).toLocaleTimeString('zh-CN', { hour12:false });
+    var source = String(item && item.app || 'shell') + '/' + String(item && item.source || 'runtime');
+    var message = escapeHtml(String(item && item.message || '(empty)'));
+    var detail = String(item && item.detail || '').trim();
+    return '<div class="console-entry ' + escapeHtml(level) + '">'
+      + '<span class="console-timestamp">[' + escapeHtml(time) + '] [' + escapeHtml(source) + ']</span>'
+      + message
+      + (detail ? ('\n' + escapeHtml(detail)) : '')
+      + '</div>';
+  }).join('');
+  host.scrollTop = host.scrollHeight;
+}
+
+function setMobileConsoleFilter(filter, btn){
+  mobileConsoleFilter = String(filter || 'all');
+  Array.prototype.forEach.call(document.querySelectorAll('.console-tab'), function(tab){
+    tab.classList.toggle('active', tab === btn || tab.getAttribute('data-console-filter') === mobileConsoleFilter);
+  });
+  renderMobileConsole();
+}
+
+async function copyMobileConsoleLogs(){
+  var logs = readMobileConsoleLogs();
+  var text = logs.map(function(item){
+    var time = new Date(Number(item && item.ts || Date.now())).toLocaleString('zh-CN', { hour12:false });
+    return '[' + time + '][' + String(item && item.level || 'info').toUpperCase() + '][' + String(item && item.app || 'shell') + '/' + String(item && item.source || 'runtime') + '] '
+      + String(item && item.message || '')
+      + (item && item.detail ? ('\n' + String(item.detail)) : '');
+  }).join('\n\n');
+  if(!text){
+    showToast('还没有日志');
+    return;
+  }
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(text);
+      showToast('日志已复制');
+      return;
+    }
+  }catch(err){}
+  alert(text);
+}
+
+function clearMobileConsoleLogs(){
+  try{
+    if(window.parent && window.parent !== window && window.parent.BackstageRuntime && typeof window.parent.BackstageRuntime.clearLogs === 'function'){
+      window.parent.BackstageRuntime.clearLogs();
+    }else{
+      localStorage.removeItem('backend_runtime_logs_v1');
+    }
+  }catch(err){}
+  renderMobileConsole();
+  showToast('日志已清空');
+}
+
+function escapeHtml(value){
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function openImportProgress(totalSteps){
+  var overlay = document.getElementById('import-overlay');
+  var fill = document.getElementById('import-progress-fill');
+  var text = document.getElementById('import-progress-text');
+  var step = document.getElementById('import-progress-step');
+  importOverlayLocked = true;
+  if(overlay) overlay.classList.add('open');
+  if(fill) fill.style.width = '0%';
+  if(text) text.textContent = '准备中…';
+  if(step) step.textContent = '0 / ' + Math.max(0, Number(totalSteps || 0) || 0);
+}
+
+function updateImportProgress(index, total, message){
+  var fill = document.getElementById('import-progress-fill');
+  var text = document.getElementById('import-progress-text');
+  var step = document.getElementById('import-progress-step');
+  var safeTotal = Math.max(1, Number(total || 0) || 1);
+  var safeIndex = Math.max(0, Math.min(safeTotal, Number(index || 0) || 0));
+  if(fill) fill.style.width = ((safeIndex / safeTotal) * 100).toFixed(1) + '%';
+  if(text && message) text.textContent = String(message);
+  if(step) step.textContent = safeIndex + ' / ' + safeTotal;
+}
+
+function closeImportProgress(){
+  if(importOverlayLocked) return;
+  var overlay = document.getElementById('import-overlay');
+  if(overlay) overlay.classList.remove('open');
+}
+
+function unlockAndCloseImportProgress(){
+  importOverlayLocked = false;
+  closeImportProgress();
+}
+
+function openImportModePicker(payload, input){
+  pendingImportPayload = payload || null;
+  pendingImportInput = input || null;
+  renderImportPreviewList(payload);
+  var overlay = document.getElementById('import-mode-overlay');
+  if(overlay) overlay.classList.add('open');
+}
+
+function closeImportModePicker(){
+  pendingImportPayload = null;
+  pendingImportInput = null;
+  var overlay = document.getElementById('import-mode-overlay');
+  if(overlay) overlay.classList.remove('open');
+}
+
+function renderImportPreviewList(payload){
+  var list = document.getElementById('import-preview-list');
+  if(!list) return;
+  var userData = payload && payload.userData && typeof payload.userData === 'object' ? payload.userData : {};
+  var worldbooks = dedupeWorldbooksSnapshot(userData.worldbooks || {});
+  var worldbookCount = 0;
+  Object.keys(worldbooks || {}).forEach(function(key){
+    worldbookCount += Array.isArray(worldbooks[key]) ? worldbooks[key].length : 0;
+  });
+  var phoneStorage = payload && payload.phoneStorage && typeof payload.phoneStorage === 'object' ? payload.phoneStorage : {};
+  var chatCount = 0;
+  Object.keys(phoneStorage).forEach(function(storeName){
+    if(storeName !== 'chats') return;
+    chatCount = Array.isArray(phoneStorage[storeName]) ? phoneStorage[storeName].length : 0;
+  });
+  var assets = payload && payload.assets && typeof payload.assets === 'object' ? payload.assets : {};
+  var localStorageData = payload && payload.localStorage && typeof payload.localStorage === 'object' ? payload.localStorage : {};
+  var items = [
+    ['角色', Array.isArray(userData.characters) ? userData.characters.length + ' 个' : '0 个'],
+    ['档案条目', worldbookCount + ' 条'],
+    ['聊天仓库', chatCount + ' 份'],
+    ['资源文件', Object.keys(assets).length + ' 个'],
+    ['本地设置', Object.keys(localStorageData).length + ' 项']
+  ];
+  list.innerHTML = items.map(function(item){
+    return '<li class="import-preview-item"><span>' + escapeHtml(item[0]) + '</span><span>' + escapeHtml(item[1]) + '</span></li>';
+  }).join('');
+}
+
+async function readCurrentBuildId(){
+  try{
+    var res = await fetch('../version.json?settingsCheck=' + Date.now(), { cache:'no-store' });
+    var data = await res.json();
+    return String(data && data.buildId || '').trim();
+  }catch(err){
+    return '';
+  }
+}
+
+function updateSettingsUpdateStatus(currentBuild, remoteBuild, statusText){
+  var box = document.getElementById('settings-update-status');
+  var refreshBtn = document.getElementById('settings-refresh-btn');
+  if(box){
+    box.innerHTML =
+      '当前版本：' + escapeHtml(currentBuild || '未读到') + '<br>' +
+      '远端版本：' + escapeHtml(remoteBuild || '未检查') + '<br>' +
+      '状态：' + escapeHtml(statusText || '等待检查');
+  }
+  if(refreshBtn){
+    refreshBtn.style.display = remoteBuild && currentBuild && remoteBuild !== currentBuild ? 'block' : 'none';
+  }
+}
+
+async function checkAndUpdateLatestVersion(){
+  var btn = document.getElementById('check-update-btn');
+  if(btn) btn.disabled = true;
+  try{
+    var currentBuild = await readCurrentBuildId();
+    updateSettingsUpdateStatus(currentBuild, '', '正在检查…');
+    var remoteBuild = '';
+    if(window.parent && typeof window.parent.buildRemoteAppFingerprint === 'function'){
+      remoteBuild = await window.parent.buildRemoteAppFingerprint();
+    }
+    lastSettingsRemoteBuild = String(remoteBuild || '').trim();
+    var compareFn = window.parent && typeof window.parent.compareHostedBuildIds === 'function'
+      ? window.parent.compareHostedBuildIds
+      : function(a, b){
+          if(a === b) return 0;
+          return String(a || '') > String(b || '') ? 1 : -1;
+        };
+    if(lastSettingsRemoteBuild && currentBuild && compareFn(lastSettingsRemoteBuild, currentBuild) > 0){
+      updateSettingsUpdateStatus(currentBuild, lastSettingsRemoteBuild, '发现新版本，可以刷新');
+      if(window.parent && typeof window.parent.announceHostedUpdate === 'function'){
+        window.parent.announceHostedUpdate(lastSettingsRemoteBuild);
+      }
+      showToast('发现新版本啦');
+      return;
+    }
+    updateSettingsUpdateStatus(currentBuild, lastSettingsRemoteBuild || currentBuild, '已经是最新版本');
+    showToast('已经是最新版本');
+  }catch(err){
+    console.error(err);
+    updateSettingsUpdateStatus(await readCurrentBuildId(), lastSettingsRemoteBuild, '检查失败');
+    showToast('检查更新失败');
+  }finally{
+    if(btn) btn.disabled = false;
+  }
+}
+
+function refreshLatestVersionFromSettings(){
+  if(window.parent && typeof window.parent.refreshInstalledApp === 'function'){
+    window.parent.refreshInstalledApp();
+    return;
+  }
+  window.location.reload();
+}
+
+function getPhoneStorageStoreNames(){
+  if(window.PhoneStorage && Array.isArray(window.PhoneStorage.STORE_NAMES) && window.PhoneStorage.STORE_NAMES.length){
+    return window.PhoneStorage.STORE_NAMES.slice();
+  }
+  return ['chats','moneyStates','memorySummaries','innerVoices','callRecords','kv'];
+}
+
+function isKnownPhoneStorageStore(storeName){
+  var safe = String(storeName || '').trim();
+  if(!safe) return false;
+  return getPhoneStorageStoreNames().indexOf(safe) !== -1;
+}
+
+function storageToObject(storage){
+  var out = {};
+  if(!storage) return out;
+  try{
+    Object.keys(storage).forEach(function(key){
+      out[key] = storage.getItem(key);
+    });
+  }catch(err){}
+  return out;
+}
+
+function restoreStorageFromObject(storage, values){
+  if(!storage || !values || typeof values !== 'object') return;
+  Object.keys(values).forEach(function(key){
+    try{
+      var val = values[key];
+      if(val === null || typeof val === 'undefined') return;
+      storage.setItem(key, String(val));
+    }catch(err){}
+  });
+}
+
+async function yieldToUi(){
+  await new Promise(function(resolve){
+    setTimeout(resolve, 0);
+  });
+}
+
+async function yieldToUi(){
+  await new Promise(function(resolve){
+    setTimeout(resolve, 0);
+  });
+}
+
+function safeJsonParse(raw, fallback){
+  if(typeof raw !== 'string' || !raw) return fallback;
+  try{
+    var parsed = JSON.parse(raw);
+    return typeof parsed === 'undefined' ? fallback : parsed;
+  }catch(err){
+    return fallback;
+  }
+}
+
+function isBlobLike(value){
+  return !!value && typeof value === 'object'
+    && typeof value.size === 'number'
+    && typeof value.type === 'string'
+    && typeof value.arrayBuffer === 'function';
+}
+
+function readBlobAsDataUrl(blob){
+  return new Promise(function(resolve, reject){
+    try{
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(String(reader.result || '')); };
+      reader.onerror = function(){ reject(reader.error || new Error('blob read failed')); };
+      reader.readAsDataURL(blob);
+    }catch(err){
+      reject(err);
+    }
+  });
+}
+
+async function serializeBackupValue(value){
+  if(value === null || typeof value === 'undefined') return value;
+  if(typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
+  if(isBlobLike(value)){
+    return {
+      __backupType: 'blob',
+      mime: String(value.type || 'application/octet-stream'),
+      name: String(value.name || ''),
+      dataUrl: await readBlobAsDataUrl(value)
+    };
+  }
+  if(Array.isArray(value)){
+    var arr = [];
+    for(var i = 0; i < value.length; i += 1){
+      arr.push(await serializeBackupValue(value[i]));
+    }
+    return arr;
+  }
+  if(typeof value === 'object'){
+    var out = {};
+    var keys = Object.keys(value);
+    for(var j = 0; j < keys.length; j += 1){
+      var key = keys[j];
+      out[key] = await serializeBackupValue(value[key]);
+    }
+    return out;
+  }
+  return null;
+}
+
+function dataUrlToBlob(dataUrl){
+  var match = String(dataUrl || '').match(/^data:([^;,]+)?(?:;base64)?,(.*)$/i);
+  if(!match) return null;
+  var mime = match[1] || 'application/octet-stream';
+  var body = match[2] || '';
+  try{
+    var binary = atob(body);
+    var len = binary.length;
+    var bytes = new Uint8Array(len);
+    for(var i = 0; i < len; i += 1){
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: mime });
+  }catch(err){
+    return null;
+  }
+}
+
+function deserializeBackupValue(value){
+  if(value === null || typeof value === 'undefined') return value;
+  if(Array.isArray(value)) return value.map(deserializeBackupValue);
+  if(typeof value === 'object'){
+    if(value.__backupType === 'blob' && typeof value.dataUrl === 'string'){
+      return value.dataUrl;
+    }
+    var out = {};
+    Object.keys(value).forEach(function(key){
+      out[key] = deserializeBackupValue(value[key]);
+    });
+    return out;
+  }
+  return value;
+}
+
+function uniqueStrings(list){
+  var seen = Object.create(null);
+  var out = [];
+  (Array.isArray(list) ? list : []).forEach(function(item){
+    var key = String(item || '').trim();
+    if(!key || seen[key]) return;
+    seen[key] = true;
+    out.push(key);
+  });
+  return out;
+}
+
+function dedupeWorldbooksSnapshot(raw){
+  var source = raw && typeof raw === 'object' ? raw : {};
+  var out = {};
+  Object.keys(source).forEach(function(key){
+    var list = Array.isArray(source[key]) ? source[key] : [];
+    var seen = Object.create(null);
+    out[key] = list.filter(function(wb){
+      if(!wb || typeof wb !== 'object') return false;
+      var sig = JSON.stringify({
+        id: String(wb.id || ''),
+        name: String(wb.name || ''),
+        global: !!wb.global,
+        entries: Array.isArray(wb.entries) ? wb.entries : []
+      });
+      if(seen[sig]) return false;
+      seen[sig] = true;
+      return true;
+    });
+  });
+  return out;
+}
+
+function looksLikeStoredAssetValue(value){
+  return typeof value === 'string' && (!!value && (
+    value === (window.assetStore && window.assetStore.marker ? window.assetStore.marker : '__asset__')
+    || /^data:/i.test(value)
+    || /^https?:/i.test(value)
+  ));
+}
+
+function accountScopedBackupKey(base, accountId){
+  return String(base || '') + '__acct_' + String(accountId || '').trim();
+}
+
+function buildSkippedLocalStorageKeySet(payload){
+  var skip = Object.create(null);
+  var userData = payload && payload.userData && typeof payload.userData === 'object' ? payload.userData : {};
+  var explicitLocalStorage = userData.explicitLocalStorage && typeof userData.explicitLocalStorage === 'object'
+    ? Object.keys(userData.explicitLocalStorage)
+    : [];
+  var explicitAssets = userData.explicitAssets && typeof userData.explicitAssets === 'object'
+    ? Object.keys(userData.explicitAssets)
+    : [];
+  var allAssets = payload && payload.assets && typeof payload.assets === 'object'
+    ? Object.keys(payload.assets)
+    : [];
+  explicitLocalStorage.concat(explicitAssets).concat(allAssets).forEach(function(key){
+    if(!key) return;
+    skip[String(key)] = true;
+  });
+  [
+    'characters',
+    'worldbooks',
+    'activeCharacter',
+    'wallpaper',
+    'wallpaper_custom',
+    'qq_accounts_v1',
+    'qq_active_account_id_v1',
+    'qq_default_account_id_v1'
+  ].forEach(function(key){
+    skip[key] = true;
+  });
+  return skip;
+}
+
+function filterStorageForImport(values, skipSet){
+  var source = values && typeof values === 'object' ? values : {};
+  var next = {};
+  Object.keys(source).forEach(function(key){
+    if(skipSet && skipSet[key]) return;
+    next[key] = source[key];
+  });
+  return next;
+}
+
+function buildSkippedLocalStorageKeySet(payload){
+  var skip = Object.create(null);
+  var userData = payload && payload.userData && typeof payload.userData === 'object' ? payload.userData : {};
+  var explicitLocalStorage = userData.explicitLocalStorage && typeof userData.explicitLocalStorage === 'object'
+    ? Object.keys(userData.explicitLocalStorage)
+    : [];
+  var explicitAssets = userData.explicitAssets && typeof userData.explicitAssets === 'object'
+    ? Object.keys(userData.explicitAssets)
+    : [];
+  var allAssets = payload && payload.assets && typeof payload.assets === 'object'
+    ? Object.keys(payload.assets)
+    : [];
+  explicitLocalStorage.concat(explicitAssets).concat(allAssets).forEach(function(key){
+    if(!key) return;
+    skip[String(key)] = true;
+  });
+  [
+    'characters',
+    'worldbooks',
+    'activeCharacter',
+    'wallpaper',
+    'wallpaper_custom',
+    'qq_accounts_v1',
+    'qq_active_account_id_v1',
+    'qq_default_account_id_v1'
+  ].forEach(function(key){
+    skip[key] = true;
+  });
+  return skip;
+}
+
+function filterStorageForImport(values, skipSet){
+  var source = values && typeof values === 'object' ? values : {};
+  var next = {};
+  Object.keys(source).forEach(function(key){
+    if(skipSet && skipSet[key]) return;
+    next[key] = source[key];
+  });
+  return next;
+}
+
+function collectExplicitUserLocalStorageKeys(allStorage){
+  var source = allStorage && typeof allStorage === 'object' ? allStorage : {};
+  var keys = [];
+  var fixed = [
+    'characters',
+    'worldbooks',
+    'activeCharacter',
+    'wallpaper',
+    'wallpaper_custom',
+    'qq_accounts_v1',
+    'qq_active_account_id_v1',
+    'qq_default_account_id_v1',
+    'qq_profile_avatar_asset',
+    'qq_moments_posts',
+    'qq_moments_hero_bg',
+    'qq_moments_hero_avatar',
+    'qq_moments_signature',
+    'qq_moments_bubble_name',
+    'money_cover_library_global_v1',
+    'user_avatar',
+    'user_persona',
+    'offline_minimized_char'
+  ];
+  keys = keys.concat(fixed);
+  Object.keys(source).forEach(function(key){
+    if(
+      /^char_avatar_/i.test(key)
+      || /^user_avatar/i.test(key)
+      || /^user_persona/i.test(key)
+      || /^chat_bg_asset_/i.test(key)
+      || /^qq_profile_avatar_asset/i.test(key)
+      || /^qq_moments_/i.test(key)
+      || /^money_cover_library/i.test(key)
+      || /^offline_/i.test(key)
+      || /^wb_(?:enabled|book_states)_/i.test(key)
+      || /^greeting_idx_/i.test(key)
+      || /^char_moments_freq_/i.test(key)
+      || /^pendingFamilyAutoTrigger_/i.test(key)
+      || /^pendingChatChar$/i.test(key)
+    ){
+      keys.push(key);
+    }
+  });
+  return uniqueStrings(keys);
+}
+
+async function loadBackupCharactersSnapshot(allStorage, phoneStorageData){
+  try{
+    if(window.MetadataStore && typeof window.MetadataStore.loadCharacters === 'function'){
+      var loaded = await window.MetadataStore.loadCharacters(true).catch(function(){ return null; });
+      if(Array.isArray(loaded)) return loaded;
+    }
+  }catch(err){}
+  var phone = phoneStorageData && typeof phoneStorageData === 'object' ? phoneStorageData : {};
+  var kv = Array.isArray(phone.kv) ? phone.kv : [];
+  for(var i = 0; i < kv.length; i += 1){
+    var record = kv[i];
+    if(record && record.id === 'meta_characters_v1' && Array.isArray(record.data)) return record.data;
+  }
+  var storage = allStorage && typeof allStorage === 'object' ? allStorage : {};
+  return safeJsonParse(storage.characters || '[]', []);
+}
+
+async function loadBackupWorldbooksSnapshot(allStorage, phoneStorageData){
+  try{
+    if(window.MetadataStore && typeof window.MetadataStore.loadWorldbooks === 'function'){
+      var loaded = await window.MetadataStore.loadWorldbooks(true).catch(function(){ return null; });
+      if(loaded && typeof loaded === 'object' && !Array.isArray(loaded)) return loaded;
+    }
+  }catch(err){}
+  var phone = phoneStorageData && typeof phoneStorageData === 'object' ? phoneStorageData : {};
+  var kv = Array.isArray(phone.kv) ? phone.kv : [];
+  for(var i = 0; i < kv.length; i += 1){
+    var record = kv[i];
+    if(record && record.id === 'meta_worldbooks_v1' && record.data && typeof record.data === 'object') return record.data;
+  }
+  var storage = allStorage && typeof allStorage === 'object' ? allStorage : {};
+  return safeJsonParse(storage.worldbooks || '{}', {});
+}
+
+function collectExplicitAssetKeys(allStorage, allAssets, characterSnapshot){
+  var storage = allStorage && typeof allStorage === 'object' ? allStorage : {};
+  var assetMap = allAssets && typeof allAssets === 'object' ? allAssets : {};
+  var keys = [];
+  var accounts = safeJsonParse(storage.qq_accounts_v1 || '[]', []);
+  var characters = Array.isArray(characterSnapshot) ? characterSnapshot : safeJsonParse(storage.characters || '[]', []);
+
+  Object.keys(storage).forEach(function(key){
+    var value = storage[key];
+    if(
+      looksLikeStoredAssetValue(value)
+      || /^char_avatar_/i.test(key)
+      || /^user_avatar/i.test(key)
+      || /^chat_bg_asset_/i.test(key)
+      || /^qq_profile_avatar_asset/i.test(key)
+      || /^wallpaper_custom$/i.test(key)
+      || /^qq_moments_hero_(?:bg|avatar)_asset$/i.test(key)
+      || /^offline_char_extra_photo_/i.test(key)
+    ){
+      keys.push(key);
+    }
+  });
+
+  if(Array.isArray(accounts)){
+    accounts.forEach(function(account){
+      var accountId = String(account && account.id || '').trim();
+      if(!accountId) return;
+      keys.push(accountScopedBackupKey('qq_profile_avatar_asset', accountId));
+      keys.push(accountScopedBackupKey('user_avatar', accountId));
+      keys.push(accountScopedBackupKey('qq_moments_hero_bg_asset', accountId));
+      keys.push(accountScopedBackupKey('qq_moments_hero_avatar_asset', accountId));
+      if(Array.isArray(characters)){
+        characters.forEach(function(character){
+          var charId = String(character && character.id || '').trim();
+          if(!charId) return;
+          keys.push(accountScopedBackupKey('user_avatar_' + charId, accountId));
+          keys.push(accountScopedBackupKey('chat_bg_asset_' + charId, accountId));
+          keys.push(accountScopedBackupKey('offline_char_extra_photo_' + charId, accountId));
+        });
+      }
+    });
+  }
+
+  if(Array.isArray(characters)){
+    characters.forEach(function(character){
+      var charId = String(character && character.id || '').trim();
+      if(!charId) return;
+      keys.push('char_avatar_' + charId);
+      keys.push('user_avatar_' + charId);
+      keys.push('chat_bg_asset_' + charId);
+      keys.push('offline_char_extra_photo_' + charId);
+    });
+  }
+
+  Object.keys(assetMap).forEach(function(key){
+    keys.push(key);
+  });
+
+  return uniqueStrings(keys);
+}
+
+async function exportExplicitAssets(assetKeys, allStorage, allAssets){
+  var storage = allStorage && typeof allStorage === 'object' ? allStorage : {};
+  var assetMap = allAssets && typeof allAssets === 'object' ? allAssets : {};
+  var out = {};
+  var keys = uniqueStrings(assetKeys);
+  for(var i = 0; i < keys.length; i += 1){
+    var key = keys[i];
+    var value = '';
+    if(Object.prototype.hasOwnProperty.call(assetMap, key)){
+      value = assetMap[key];
+    }else if(window.assetStore && typeof window.assetStore.load === 'function'){
+      value = await window.assetStore.load(key).catch(function(){ return ''; });
+    }
+    if(!value) value = storage[key] || '';
+    if(value && value !== '__asset__'){
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+async function buildExplicitUserSnapshot(allStorage, allAssets, phoneStorageData){
+  var storage = allStorage && typeof allStorage === 'object' ? allStorage : {};
+  var characterSnapshot = await loadBackupCharactersSnapshot(storage, phoneStorageData);
+  var worldbookSnapshot = await loadBackupWorldbooksSnapshot(storage, phoneStorageData);
+  var explicitLocalStorageKeys = collectExplicitUserLocalStorageKeys(storage);
+  var explicitLocalStorage = {};
+  explicitLocalStorageKeys.forEach(function(key){
+    if(Object.prototype.hasOwnProperty.call(storage, key)){
+      explicitLocalStorage[key] = storage[key];
+    }
+  });
+  var explicitAssetKeys = collectExplicitAssetKeys(storage, allAssets, characterSnapshot);
+  return {
+    accounts: safeJsonParse(storage.qq_accounts_v1 || '[]', []),
+    activeAccountId: String(storage.qq_active_account_id_v1 || ''),
+    defaultAccountId: String(storage.qq_default_account_id_v1 || ''),
+    characters: Array.isArray(characterSnapshot) ? characterSnapshot : [],
+    activeCharacter: safeJsonParse(storage.activeCharacter || 'null', null),
+    worldbooks: worldbookSnapshot && typeof worldbookSnapshot === 'object' ? worldbookSnapshot : {},
+    wallpaper: {
+      mode: String(storage.wallpaper || ''),
+      customAssetKey: 'wallpaper_custom'
+    },
+    explicitLocalStorage: explicitLocalStorage,
+    explicitAssets: await exportExplicitAssets(explicitAssetKeys, storage, allAssets),
+    phoneStorage: phoneStorageData && typeof phoneStorageData === 'object' ? phoneStorageData : {}
+  };
+}
+
+async function restoreExplicitUserSnapshot(snapshot){
+  if(!snapshot || typeof snapshot !== 'object') return;
+  var dedupedWorldbooks = dedupeWorldbooksSnapshot(snapshot.worldbooks || {});
+
+  if(Array.isArray(snapshot.accounts)){
+    try{ localStorage.setItem('qq_accounts_v1', JSON.stringify(snapshot.accounts)); }catch(err){}
+  }
+  if(typeof snapshot.activeAccountId === 'string' && snapshot.activeAccountId){
+    try{ localStorage.setItem('qq_active_account_id_v1', snapshot.activeAccountId); }catch(err){}
+  }
+  if(typeof snapshot.defaultAccountId === 'string' && snapshot.defaultAccountId){
+    try{ localStorage.setItem('qq_default_account_id_v1', snapshot.defaultAccountId); }catch(err){}
+  }
+  if(Array.isArray(snapshot.characters) && snapshot.characters.length){
+    if(window.MetadataStore && typeof window.MetadataStore.saveCharacters === 'function'){
+      await window.MetadataStore.saveCharacters(snapshot.characters).catch(function(){});
+    }
+  }
+  if(snapshot.activeCharacter){
+    try{ localStorage.setItem('activeCharacter', JSON.stringify(snapshot.activeCharacter)); }catch(err){}
+  }
+  if(dedupedWorldbooks && typeof dedupedWorldbooks === 'object' && Object.keys(dedupedWorldbooks).length){
+    if(window.MetadataStore && typeof window.MetadataStore.saveWorldbooks === 'function'){
+      await window.MetadataStore.saveWorldbooks(dedupedWorldbooks).catch(function(){});
+    }
+  }
+  if(snapshot.wallpaper && typeof snapshot.wallpaper === 'object' && snapshot.wallpaper.mode){
+    try{ localStorage.setItem('wallpaper', String(snapshot.wallpaper.mode)); }catch(err){}
+  }
+
+  restoreStorageFromObject(window.localStorage, snapshot.explicitLocalStorage);
+
+  var assetKeys = snapshot.explicitAssets && typeof snapshot.explicitAssets === 'object'
+    ? Object.keys(snapshot.explicitAssets)
+    : [];
+  for(var i = 0; i < assetKeys.length; i += 1){
+    var assetKey = assetKeys[i];
+    var assetValue = snapshot.explicitAssets[assetKey];
+    if(assetValue === null || typeof assetValue === 'undefined' || assetValue === '') continue;
+    if(window.assetStore && typeof window.assetStore.set === 'function'){
+      await window.assetStore.set(assetKey, assetValue).catch(function(){});
+    }else{
+      try{ localStorage.setItem(assetKey, String(assetValue)); }catch(err){}
+    }
+    if(i % 8 === 7) await yieldToUi();
+  }
+
+  if(window.MetadataStore){
+    if(Array.isArray(snapshot.characters) && snapshot.characters.length && typeof window.MetadataStore.saveCharacters === 'function'){
+      await window.MetadataStore.saveCharacters(snapshot.characters).catch(function(){});
+    }
+    if(dedupedWorldbooks && Object.keys(dedupedWorldbooks).length && typeof window.MetadataStore.saveWorldbooks === 'function'){
+      await window.MetadataStore.saveWorldbooks(dedupedWorldbooks).catch(function(){});
+    }
+  }
+}
+
+async function exportAllData(){
+  try{
+    var stores = getPhoneStorageStoreNames();
+    var phoneStorageData = {};
+    if(window.PhoneStorage && typeof window.PhoneStorage.list === 'function'){
+      for(var i = 0; i < stores.length; i += 1){
+        phoneStorageData[stores[i]] = await window.PhoneStorage.list(stores[i]).catch(function(){ return []; });
+      }
+    }
+    var assets = {};
+    if(window.assetStore && typeof window.assetStore.listAll === 'function'){
+      assets = await window.assetStore.listAll().catch(function(){ return {}; });
+    }
+    var localStorageData = storageToObject(window.localStorage);
+    var sessionStorageData = storageToObject(window.sessionStorage);
+    var payload = {
+      version: 3,
+      exportedAt: new Date().toISOString(),
+      localStorage: localStorageData,
+      sessionStorage: sessionStorageData,
+      assets: assets,
+      phoneStorage: phoneStorageData,
+      userData: await buildExplicitUserSnapshot(localStorageData, assets, phoneStorageData)
+    };
+    payload = await serializeBackupValue(payload);
+    var stamp = new Date().toISOString().replace(/[:T]/g, '-').replace(/\..+$/, '');
+    var mode = await shareOrDownloadSettingsFile('ephone-backup-' + stamp + '.json', JSON.stringify(payload, null, 2), 'application/json');
+    showToast(mode === 'shared' ? '已打开导出分享' : '已导出全部数据');
+  }catch(err){
+    console.error(err);
+    showToast('导出失败，请重试');
+  }
+}
+
+async function buildRuntimeRollbackPayload(){
+  var stores = getPhoneStorageStoreNames();
+  var phoneStorageData = {};
+  if(window.PhoneStorage && typeof window.PhoneStorage.list === 'function'){
+    for(var i = 0; i < stores.length; i += 1){
+      phoneStorageData[stores[i]] = await window.PhoneStorage.list(stores[i]).catch(function(){ return []; });
+    }
+  }
+  var assets = {};
+  if(window.assetStore && typeof window.assetStore.listAll === 'function'){
+    assets = await window.assetStore.listAll().catch(function(){ return {}; });
+  }
+  var localStorageData = storageToObject(window.localStorage);
+  var sessionStorageData = storageToObject(window.sessionStorage);
+  return {
+    version: 3,
+    exportedAt: new Date().toISOString(),
+    localStorage: localStorageData,
+    sessionStorage: sessionStorageData,
+    assets: assets,
+    phoneStorage: phoneStorageData,
+    userData: await buildExplicitUserSnapshot(localStorageData, assets, phoneStorageData)
+  };
+}
+
+async function restorePayloadIntoPhone(payload, progressBase, progressTotal){
+  updateImportProgress(progressBase, progressTotal, '正在清空当前手机数据…');
+  if(window.assetStore && typeof window.assetStore.clearAll === 'function'){
+    await window.assetStore.clearAll().catch(function(){});
+  }
+  if(window.PhoneStorage){
+    if(typeof window.PhoneStorage.deleteDatabase === 'function'){
+      await window.PhoneStorage.deleteDatabase().catch(function(){});
+    }else if(typeof window.PhoneStorage.clearAll === 'function'){
+      await window.PhoneStorage.clearAll().catch(function(){});
+    }
+  }
+  try{ localStorage.clear(); }catch(err){}
+  try{ sessionStorage.clear(); }catch(err){}
+
+  updateImportProgress(progressBase + 1, progressTotal, '正在恢复本地设置与会话索引…');
+  var skipLocalStorageKeys = buildSkippedLocalStorageKeySet(payload);
+  restoreStorageFromObject(window.localStorage, filterStorageForImport(payload.localStorage, skipLocalStorageKeys));
+  restoreStorageFromObject(window.sessionStorage, payload.sessionStorage);
+  await yieldToUi();
+
+  updateImportProgress(progressBase + 2, progressTotal, '正在恢复图片、壁纸、表情包和装饰资源…');
+  var assetKeys = payload.assets && typeof payload.assets === 'object' ? Object.keys(payload.assets) : [];
+  for(var i = 0; i < assetKeys.length; i += 1){
+    if(window.assetStore && typeof window.assetStore.set === 'function'){
+      await window.assetStore.set(assetKeys[i], payload.assets[assetKeys[i]]);
+    }else{
+      try{ localStorage.setItem(assetKeys[i], payload.assets[assetKeys[i]]); }catch(err){}
+    }
+    if(i % 6 === 5) await yieldToUi();
+  }
+
+  updateImportProgress(progressBase + 3, progressTotal, '正在恢复聊天、记忆和大数据仓库…');
+  var stores = payload.phoneStorage && typeof payload.phoneStorage === 'object' ? Object.keys(payload.phoneStorage) : [];
+  for(var s = 0; s < stores.length; s += 1){
+    var storeName = stores[s];
+    if(!isKnownPhoneStorageStore(storeName)) continue;
+    var records = Array.isArray(payload.phoneStorage[storeName]) ? payload.phoneStorage[storeName] : [];
+    for(var r = 0; r < records.length; r += 1){
+      if(window.PhoneStorage && typeof window.PhoneStorage.put === 'function'){
+        await window.PhoneStorage.put(storeName, records[r]);
+      }
+      if(r % 10 === 9) await yieldToUi();
+    }
+    await yieldToUi();
+  }
+
+  updateImportProgress(progressBase + 4, progressTotal, '正在整理角色、档案和显示状态…');
+  await restoreExplicitUserSnapshot(payload.userData);
+}
+
+async function mergePayloadIntoPhone(payload, progressBase, progressTotal){
+  updateImportProgress(progressBase, progressTotal, '正在合并本地设置与轻量数据…');
+  restoreStorageFromObject(window.localStorage, filterStorageForImport(payload.localStorage, {}));
+  restoreStorageFromObject(window.sessionStorage, payload.sessionStorage);
+  await yieldToUi();
+
+  updateImportProgress(progressBase + 1, progressTotal, '正在合并图片、壁纸、表情包和装饰资源…');
+  var assetKeys = payload.assets && typeof payload.assets === 'object' ? Object.keys(payload.assets) : [];
+  for(var i = 0; i < assetKeys.length; i += 1){
+    if(window.assetStore && typeof window.assetStore.set === 'function'){
+      await window.assetStore.set(assetKeys[i], payload.assets[assetKeys[i]]);
+    }else{
+      try{ localStorage.setItem(assetKeys[i], payload.assets[assetKeys[i]]); }catch(err){}
+    }
+    if(i % 6 === 5) await yieldToUi();
+  }
+
+  updateImportProgress(progressBase + 2, progressTotal, '正在合并聊天、记忆和大数据仓库…');
+  var stores = payload.phoneStorage && typeof payload.phoneStorage === 'object' ? Object.keys(payload.phoneStorage) : [];
+  for(var s = 0; s < stores.length; s += 1){
+    var storeName = stores[s];
+    if(!isKnownPhoneStorageStore(storeName)) continue;
+    var records = Array.isArray(payload.phoneStorage[storeName]) ? payload.phoneStorage[storeName] : [];
+    for(var r = 0; r < records.length; r += 1){
+      if(window.PhoneStorage && typeof window.PhoneStorage.put === 'function'){
+        await window.PhoneStorage.put(storeName, records[r]);
+      }
+      if(r % 10 === 9) await yieldToUi();
+    }
+    await yieldToUi();
+  }
+
+  updateImportProgress(progressBase + 3, progressTotal, '正在合并角色、档案和显示状态…');
+  var userData = payload.userData && typeof payload.userData === 'object' ? payload.userData : {};
+  var nextCharacters = Array.isArray(userData.characters) ? userData.characters : [];
+  var nextWorldbooks = dedupeWorldbooksSnapshot(userData.worldbooks || {});
+  if(window.MetadataStore){
+    if(nextCharacters.length && typeof window.MetadataStore.loadCharacters === 'function' && typeof window.MetadataStore.saveCharacters === 'function'){
+      var existingChars = await window.MetadataStore.loadCharacters().catch(function(){ return []; });
+      var charMap = Object.create(null);
+      (Array.isArray(existingChars) ? existingChars : []).concat(nextCharacters).forEach(function(item){
+        if(!item || !item.id) return;
+        charMap[String(item.id)] = item;
+      });
+      await window.MetadataStore.saveCharacters(Object.keys(charMap).map(function(key){ return charMap[key]; })).catch(function(){});
+    }
+    if(typeof window.MetadataStore.loadWorldbooks === 'function' && typeof window.MetadataStore.saveWorldbooks === 'function'){
+      var existingWbs = await window.MetadataStore.loadWorldbooks().catch(function(){ return {}; });
+      var mergedWbs = {};
+      Object.keys(existingWbs || {}).forEach(function(key){
+        mergedWbs[key] = Array.isArray(existingWbs[key]) ? existingWbs[key].slice() : [];
+      });
+      Object.keys(nextWorldbooks || {}).forEach(function(key){
+        mergedWbs[key] = (mergedWbs[key] || []).concat(Array.isArray(nextWorldbooks[key]) ? nextWorldbooks[key] : []);
+      });
+      await window.MetadataStore.saveWorldbooks(dedupeWorldbooksSnapshot(mergedWbs)).catch(function(){});
+    }
+  }
+}
+
+async function runImportPayload(payload, mode){
+  var totalSteps = 8;
+  openImportProgress(totalSteps);
+  updateImportProgress(1, totalSteps, mode === 'merge' ? '正在给当前小手机做合并前回滚快照…' : '正在给当前小手机做安全回滚快照…');
+  lastImportRollbackPayload = await buildRuntimeRollbackPayload();
+  if(mode === 'merge'){
+    await mergePayloadIntoPhone(payload, 2, totalSteps);
+  }else{
+    await restorePayloadIntoPhone(payload, 2, totalSteps);
+  }
+  updateImportProgress(8, totalSteps, '导入完成，正在重启小手机…');
+  showToast('已导入，正在重启…');
+  setTimeout(function(){
+    try{
+      if(window.parent && window.parent !== window && window.parent.location){
+        window.parent.location.reload();
+        return;
+      }
+    }catch(err){}
+    window.location.reload();
+  }, 450);
+}
+
+async function confirmImportMode(mode){
+  var payload = pendingImportPayload;
+  var input = pendingImportInput;
+  closeImportModePicker();
+  if(!payload) return;
+  try{
+    await runImportPayload(payload, mode === 'replace' ? 'replace' : 'merge');
+  }catch(err){
+    console.error(err);
+    if(lastImportRollbackPayload){
+      try{
+        openImportProgress(8);
+        updateImportProgress(1, 8, '导入失败，正在恢复你原来的小手机…');
+        await restorePayloadIntoPhone(lastImportRollbackPayload, 2, 8);
+        updateImportProgress(8, 8, '已恢复原数据，正在重启…');
+        showToast('导入失败，原数据已恢复');
+        setTimeout(function(){
+          try{
+            if(window.parent && window.parent !== window && window.parent.location){
+              window.parent.location.reload();
+              return;
+            }
+          }catch(reloadErr){}
+          window.location.reload();
+        }, 450);
+        return;
+      }catch(rollbackErr){
+        console.error('rollback failed', rollbackErr);
+      }
+    }
+    importOverlayLocked = false;
+    closeImportProgress();
+    showToast('导入失败，请检查备份文件');
+  }finally{
+    lastImportRollbackPayload = null;
+    if(input) input.value = '';
+  }
+}
+
+function triggerImportAllData(){
+  var input = document.getElementById('import-all-data-input');
+  if(!input) return;
+  importOverlayLocked = false;
+  var overlay = document.getElementById('import-overlay');
+  if(overlay) overlay.classList.remove('open');
+  input.value = '';
+  try{
+    if(typeof input.showPicker === 'function'){
+      input.showPicker();
+      return;
+    }
+  }catch(err){}
+  input.click();
+}
+
+async function onImportAllData(event){
+  var input = event && event.target;
+  var file = input && input.files && input.files[0];
+  if(!file) return;
+  try{
+    var text = await file.text();
+    var payload = JSON.parse(text);
+    payload = deserializeBackupValue(payload);
+    if(!payload || typeof payload !== 'object'){
+      throw new Error('备份文件无效');
+    }
+    openImportModePicker(payload, input);
+  }catch(err){
+    console.error(err);
+    importOverlayLocked = false;
+    closeImportProgress();
+    showToast('导入失败，请检查备份文件');
+  }finally{
+    if(!pendingImportPayload && input) input.value = '';
+  }
+}
+
+async function confirmFormat() {
+  if (!confirm('将清空所有数据并重启小手机，确认继续？')) return;
+  try{
+    if(window.MetadataStore){
+      if(typeof window.MetadataStore.saveCharacters === 'function'){
+        await window.MetadataStore.saveCharacters([]).catch(function(){});
+      }
+      if(typeof window.MetadataStore.saveWorldbooks === 'function'){
+        await window.MetadataStore.saveWorldbooks({}).catch(function(){});
+      }
+    }
+    if(window.assetStore && typeof window.assetStore.clearAll === 'function'){
+      await window.assetStore.clearAll().catch(function(){});
+    }
+    if(window.PhoneStorage && typeof window.PhoneStorage.deleteDatabase === 'function'){
+      await window.PhoneStorage.deleteDatabase().catch(function(){});
+    }else if(window.PhoneStorage && typeof window.PhoneStorage.clearAll === 'function'){
+      await window.PhoneStorage.clearAll().catch(function(){});
+    }
+    if(typeof caches !== 'undefined' && caches && typeof caches.keys === 'function'){
+      var names = await caches.keys().catch(function(){ return []; });
+      await Promise.all((names || []).map(function(name){
+        return caches.delete(name).catch(function(){ return null; });
+      }));
+    }
+  }catch(err){
+    console.error(err);
+  }
+  try { localStorage.clear(); } catch(e) {}
+  try { sessionStorage.clear(); } catch(e) {}
+  try{
+    if(window.parent && window.parent !== window){
+      window.parent.postMessage({type:'FORMAT_EPHONE', payload:{ confirmed:true }}, '*');
+    }
+  }catch(e){}
+  showToast('已格式化，正在重启…');
+  setTimeout(function(){
+    try{
+      if(window.parent && window.parent !== window && window.parent.location){
+        window.parent.location.reload();
+        return;
+      }
+    }catch(err){}
+    window.location.reload();
+  }, 450);
+}
+
+async function saveAll() {
+  try{
+    var apiSettingsRecord = await persistCurrentApiSettings();
+    safeStorageSet(AI_BG_ENABLED_KEY, document.getElementById('ai-bg-switch').classList.contains('on') ? '1' : '0');
+    var aiBgInterval = parseInt(document.getElementById('ai-bg-interval').value || '6', 10);
+    if(Number.isNaN(aiBgInterval)) aiBgInterval = 6;
+    aiBgInterval = Math.max(1, Math.min(120, aiBgInterval));
+    safeStorageSet(AI_BG_INTERVAL_KEY, String(aiBgInterval));
+    shellNotifySettingsState.appName = String(document.getElementById('sys-notify-app-name').value || '').trim() || '0615';
+    shellNotifySettingsState.vibrationPattern = String(document.getElementById('sys-notify-vibration-pattern').value || 'medium').trim() || 'medium';
+    await persistShellNotifySettingsState();
+    safeStorageSet('shell_notify_app_name', shellNotifySettingsState.appName);
+    dirty = false;
+    renderApiPresetList();
+    showToast('设置已保存');
+    try{
+      window.parent.postMessage({
+        type: 'SETTINGS_SAVED',
+        payload: {
+          provider: curProvider,
+          apiSettings: apiSettingsRecord,
+          aiBgEnabled: document.getElementById('ai-bg-switch').classList.contains('on'),
+          aiBgIntervalMin: aiBgInterval,
+          shellNotifySettings: Object.assign({}, shellNotifySettingsState)
+        }
+      }, '*');
+    }catch(err){}
+  }catch(err){
+    console.error(err);
+    showToast('保存失败，请检查存储空间');
+  }
+}
+
+window.saveAll = saveAll;
+window.confirmFormat = confirmFormat;
+window.triggerImportAllData = triggerImportAllData;
+window.checkAndUpdateLatestVersion = checkAndUpdateLatestVersion;
+window.refreshLatestVersionFromSettings = refreshLatestVersionFromSettings;
+
+bindTextNormalization();
+window.addEventListener('storage', function(evt){
+  if(evt.key === 'backend_runtime_logs_v1') renderMobileConsole();
+});
+window.addEventListener('message', function(evt){
+  var data = evt.data || {};
+  if(data.type === 'BACKEND_LOG_UPDATED') renderMobileConsole();
+});
+setInterval(renderMobileConsole, 1500);
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,3285 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>朋友圈</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+<script src="../chatStorage.js?v=2026-05-03T01:28:00Z"></script>
+<script src="../assetStore.js?v=2026-05-03T01:28:00Z"></script>
+<script src="../accountManager.js?v=2026-05-03T01:28:00Z"></script>
+<script src="../metadataStore.js?v=2026-05-03T01:28:00Z"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --b:#0a0a0a;--w:#fff;--off:#f7f7f7;--g:#6f6f6f;
+  --bd:2px solid #0a0a0a;--sh:2px 2px 0 #0a0a0a;
+  --font:'Quicksand',sans-serif;--fontd:'Nunito',sans-serif;
+  --safe-top:max(env(safe-area-inset-top),0px);
+  --safe-bottom:max(env(safe-area-inset-bottom),0px);
+}
+html,body{width:100%;max-width:100%;height:100%}
+body{font-family:var(--font);background:var(--off);color:var(--b);min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
+button,input,textarea{font-family:inherit;color:inherit}
+button{-webkit-appearance:none;appearance:none;-webkit-touch-callout:none}
+
+.main{position:relative;flex:1;min-height:0;overflow:hidden}
+
+.hero{position:absolute;left:12px;right:12px;top:calc(-1px + var(--safe-top));z-index:10;min-height:250px;border:3px solid #111;background:#fff;box-shadow:3px 3px 0 rgba(0,0,0,.12),0 0 0 5px rgba(255,255,255,.88) inset;overflow:hidden}
+.moments-hero{position:relative;height:250px;padding:9px 10px;background:linear-gradient(180deg,#fff,#f7f7f7);overflow:hidden}
+.moment-hero-prompt{position:relative;height:74px;border:2px solid #111;background:#111;color:#fff;padding:9px 16px;display:flex;flex-direction:column;justify-content:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+.moment-hero-kicker{font-family:var(--fontd);font-size:15px;font-weight:900;line-height:1;letter-spacing:.04em}
+.moment-hero-target{align-self:flex-start;margin-top:6px;border:none;background:transparent;color:#fff;font-family:'ZCOOL KuaiLe','Nunito',sans-serif;font-size:27px;font-weight:900;line-height:1;letter-spacing:.06em;cursor:pointer;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-thickness:3px;text-underline-offset:6px;text-decoration-color:rgba(255,255,255,.72)}
+.moment-hero-target:focus{outline:none;text-decoration-style:solid}
+.moment-hero-sub{display:none}
+.moment-hero-grid{display:flex;gap:7px;margin-top:8px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.moment-hero-grid::-webkit-scrollbar{display:none}
+.moment-hero-tile{position:relative;flex:0 0 calc((100% - 14px) / 3);height:116px;border:2px solid #111;background:center/cover no-repeat #e9e9e9;cursor:pointer;overflow:hidden;box-shadow:1px 1px 0 #111;scroll-snap-align:start}
+.moment-hero-tile::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.18),transparent 45%,rgba(0,0,0,.14));mix-blend-mode:multiply;pointer-events:none}
+.moment-hero-tile::after{content:"";position:absolute;left:5px;top:5px;width:13px;height:13px;border:2px solid rgba(255,255,255,.92);background:rgba(0,0,0,.18);box-shadow:0 0 0 1px rgba(0,0,0,.34)}
+.moment-hero-dots{display:flex;align-items:center;justify-content:center;gap:6px;height:12px;margin-top:3px}
+.moment-hero-dot{width:6px;height:6px;border:1.5px solid #111;border-radius:999px;background:#fff}
+.moment-hero-dot.active{background:#111}
+.moment-hero-controls{display:flex;align-items:flex-start;justify-content:space-between;margin-top:-4px}
+.moment-hero-icons{display:flex;align-items:center;gap:14px;color:#111}
+.moment-hero-icon{width:26px;height:26px;display:grid;place-items:center;border:0;background:transparent;padding:0;cursor:pointer}
+.moment-hero-icon img{width:23px;height:23px;object-fit:contain;display:block;filter:grayscale(1) contrast(1.2)}
+.moment-hero-icon:nth-child(2) img{width:20px;height:20px}
+.moment-hero-icon:active{transform:translate(1px,1px)}
+.moment-hero-verify{min-width:48px;height:24px;margin-top:-2px;border:1.5px solid #111;border-radius:4px;background:#111;color:#fff;box-shadow:none;font-family:var(--fontd);font-size:12px;font-weight:900;letter-spacing:.04em;cursor:pointer}
+.moment-hero-verify:active{transform:translateY(1px);box-shadow:none}
+.moment-action-toolbar{position:absolute;right:12px;bottom:10px;z-index:20;display:flex;gap:6px}
+.tiny-btn{border:2px solid #111;background:#fff;border-radius:999px;box-shadow:2px 2px 0 rgba(8,8,8,.88);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tiny-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #0a0a0a}
+.tiny-btn img{width:16px;height:16px;object-fit:contain;display:block;filter:brightness(0) contrast(1.4)}
+.tiny-btn.plus-btn{background:#fff;color:#111;border-color:#111;font-family:var(--fontd);font-size:22px;font-weight:900;line-height:1;box-shadow:2px 2px 0 rgba(8,8,8,.88)}
+.tiny-btn.delete-active{background:#111}
+.tiny-btn.delete-active img{filter:brightness(0) invert(1)}
+.tiny-btn.confirm-delete-mode{width:auto;min-width:82px;padding:0 12px;border-radius:999px;background:#111;color:#fff;font-family:var(--fontd);font-size:10px;font-weight:900;white-space:nowrap}
+.tiny-btn.confirm-delete-mode:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #111}
+@media (max-width:360px){
+  .hero{left:8px;right:8px}
+  .moments-hero{height:246px;padding:8px}
+  .moment-hero-prompt{height:72px;padding:9px 14px}
+  .moment-hero-target{font-size:25px}
+  .moment-hero-grid{gap:6px;margin-top:8px}
+  .moment-hero-tile{flex-basis:calc((100% - 12px) / 3);height:112px}
+  .moment-hero-controls{margin-top:-4px}
+  .moment-hero-icons{gap:12px}
+}
+
+.feed-wrap{position:absolute;left:12px;right:12px;top:calc(257px + var(--safe-top));bottom:0;overflow:auto;padding-bottom:calc(108px + var(--safe-bottom))}
+
+.feed{display:flex;flex-direction:column;gap:0}
+.post{width:100%;margin:0 auto;border:none;border-radius:0;background:#fff;box-shadow:none;padding:20px 10px 22px;display:flex;flex-direction:column;gap:14px;position:relative}
+.post + .post{border-top:3px dashed #555;padding-top:22px;position:relative}
+.post + .post::before{content:'';position:absolute;left:-1px;top:-11px;width:32px;height:20px;background:#fff;z-index:1}
+.post + .post::after{content:'';position:absolute;left:1px;top:-14px;width:26px;height:26px;background:url('assets/小剪刀.png') center/contain no-repeat;filter:grayscale(1) brightness(.58) contrast(1.05);opacity:.86;z-index:2}
+.post.delete-mode{position:relative;padding-left:44px}
+.post-select{position:absolute;left:12px;top:14px;width:22px;height:22px;border-radius:999px;border:var(--bd);background:#fff;box-shadow:1px 1px 0 #0a0a0a;font-family:var(--fontd);font-size:12px;font-weight:900;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.post-select.selected{background:#d73c3c;color:#fff}
+.post-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.post-left{display:flex;align-items:center;gap:12px;min-width:0}
+.post-av{position:relative;width:50px;height:50px;border:1px solid rgba(17,17,17,.82);border-radius:999px;background:center/cover no-repeat #111;box-shadow:0 0 0 3px #fff,0 12px 26px rgba(0,0,0,.12);flex-shrink:0;color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--fontd);font-size:15px;font-weight:900;letter-spacing:.04em;overflow:hidden;filter:none}
+.post-av::before{content:'';position:absolute;inset:3px;border:1px solid rgba(255,255,255,.72);border-radius:999px;pointer-events:none;z-index:1}
+.post-av::after{display:none}
+.post-av span{position:relative;z-index:1}
+.post-name{font-family:var(--fontd);font-size:17px;font-weight:900;letter-spacing:0}
+.post-time{margin-top:2px;font-size:12px;color:#8a8a8a;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+.post-text{font-size:20px;font-weight:500;line-height:1.55;white-space:pre-wrap;word-break:break-word;color:#111;letter-spacing:0}
+.post-edit-btn{width:28px;height:28px;border:none;border-radius:999px;background:transparent;padding:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.post-edit-btn:focus,.post-edit-btn:focus-visible{outline:none}
+.post-edit-btn img{width:18px;height:18px;object-fit:contain;display:block;filter:grayscale(1) brightness(0)}
+.post-edit-card{border:none;border-radius:0 18px 18px 0;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(240,240,240,.3)),linear-gradient(180deg,rgba(17,17,17,.14) 0%,rgba(17,17,17,.88) 24%,rgba(17,17,17,.88) 76%,rgba(17,17,17,.14) 100%);background-repeat:no-repeat,no-repeat;background-position:0 0,0 0;background-size:100% 100%,3px 100%;backdrop-filter:blur(26px) saturate(130%);-webkit-backdrop-filter:blur(26px) saturate(130%);padding:9px 12px 9px 16px;display:flex;flex-direction:column;gap:7px;box-shadow:none}
+.post-edit-card:focus-within{background-size:100% 100%,4px 100%}
+.post-edit-input{width:100%;height:52px;min-height:52px;max-height:52px;border:none;background:transparent;resize:none;outline:none;font-size:15px;font-weight:700;line-height:1.5;color:#111;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-color:rgba(109,109,109,.45);text-decoration-thickness:1.2px;text-underline-offset:4px}
+.post-edit-actions{display:flex;justify-content:flex-end;gap:8px}
+.post-edit-done{border:2px solid #111;border-radius:999px;background:#111;color:#fff;padding:5px 14px;font-family:var(--fontd);font-size:12px;font-weight:900;cursor:pointer}
+.post-edit-cancel{border:2px solid #111;border-radius:999px;background:#fff;color:#111;padding:5px 12px;font-family:var(--fontd);font-size:12px;font-weight:900;cursor:pointer}
+.moment-translate-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.moment-translate-btn{min-width:0;height:26px;padding:0;border:none;border-radius:0;background:transparent;color:#6d6d6d;font-family:var(--fontd);font-size:13px;font-weight:900;letter-spacing:0;box-shadow:none;cursor:pointer}
+.moment-translate-btn:active{transform:translate(1px,1px);box-shadow:0 0 0}
+.moment-translate-btn:disabled{opacity:.58;cursor:default}
+.moment-translation-card{width:100%;margin-top:4px;padding:4px 0 4px 18px;border:none;border-left:3px solid #e4e4e4;border-radius:0;background:transparent;color:#5f5f5f;box-shadow:none}
+.moment-translation-kicker{display:none}
+.moment-translation-pill{display:none}
+.moment-translation-sub{display:none}
+.moment-translation-body{padding-top:0;border-top:0;font-size:15px;font-weight:500;line-height:1.65;color:#666;white-space:pre-wrap;word-break:break-word}
+.post-action-row{display:flex;align-items:center;justify-content:flex-start;gap:22px;color:#555}
+.like-text{display:none}
+.like-btn,.comment-jump-btn,.share-btn{border:none;border-radius:0;background:transparent;box-shadow:none;padding:0;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:#555;font-size:15px;font-weight:700;-webkit-tap-highlight-color:transparent;outline:none}
+.like-btn:focus,.like-btn:focus-visible,.comment-jump-btn:focus,.comment-jump-btn:focus-visible,.share-btn:focus,.share-btn:focus-visible{outline:none;box-shadow:none}
+.like-btn:active{transform:none;box-shadow:none}
+.like-btn svg,.comment-jump-btn svg,.share-btn svg{width:24px;height:24px;display:block;fill:none;stroke:#666;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.comment-paw-icon{width:23px;height:23px;display:block;object-fit:contain;filter:grayscale(1) brightness(.42) contrast(1.16);opacity:.86}
+.like-btn.liked svg{fill:#d83b3b;stroke:#d83b3b}
+.like-btn.liked svg,.like-btn.cat-liked .like-cat-icon{animation:qqLikePop .52s cubic-bezier(.2,1.55,.36,1)}
+.like-cat-icon{width:26px;height:26px;object-fit:contain;display:block;filter:grayscale(1) contrast(1.16)}
+@keyframes qqLikePop{
+  0%{transform:scale(.45) rotate(-12deg);opacity:.45}
+  45%{transform:scale(1.42) rotate(8deg);opacity:1}
+  68%{transform:scale(.88) rotate(-4deg)}
+  84%{transform:scale(1.12) rotate(2deg)}
+  100%{transform:scale(1) rotate(0)}
+}
+.image-card-button{width:138px;height:138px;border:var(--bd);border-radius:22px;background:center/contain no-repeat url('assets/樱花.jpg');background-color:#fff;box-shadow:var(--sh);cursor:pointer;position:relative;overflow:hidden}
+.image-card-button::after{content:'查看';position:absolute;right:10px;bottom:10px;padding:4px 8px;border:1.5px solid var(--b);border-radius:999px;background:rgba(255,255,255,.92);font-family:var(--fontd);font-size:10px;font-weight:900;line-height:1;color:var(--b)}
+.post-image-button{width:100%;border:none;border-radius:8px;background:#f1f1f1;box-shadow:none;padding:0;cursor:pointer;overflow:hidden;position:relative}
+.post-image-button:active{transform:translateY(1px);box-shadow:none}
+.post-image-real{display:block;width:100%;aspect-ratio:1/1;max-height:310px;object-fit:cover;background:#f2f2f2;filter:grayscale(.18) saturate(.74) contrast(.98)}
+.post-image-button.contain .post-image-real{object-fit:contain}
+.post-image-button::after{display:none}
+.post-image-stack{display:flex;gap:0;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 18px 18px 2px;margin-right:-8px;-webkit-overflow-scrolling:touch}
+.post-image-stack::-webkit-scrollbar{height:3px}
+.post-image-stack::-webkit-scrollbar-thumb{background:#111;border-radius:999px}
+.post-image-stack .post-image-button{flex:0 0 76%;max-width:292px;border-radius:16px;scroll-snap-align:start;box-shadow:0 12px 28px rgba(0,0,0,.16);border:1.5px solid #111;background:#fff}
+.post-image-stack .post-image-button + .post-image-button{margin-left:-18px}
+.post-image-stack .post-image-button:nth-child(2n){transform:translateY(7px) rotate(1.1deg)}
+.post-image-stack .post-image-button:nth-child(3n){transform:translateY(2px) rotate(-1deg)}
+.post-image-stack .post-image-real{aspect-ratio:1/1;max-height:300px}
+.post-image-stack.count-1{padding-right:0;overflow:hidden}
+.post-image-stack.count-1 .post-image-button{flex-basis:82%;max-width:300px}
+.text-image-real{display:block;width:100%;aspect-ratio:1/1;background:center/cover no-repeat url('assets/樱花.jpg');position:relative}
+.text-image-real::after{content:'查看';position:absolute;right:10px;bottom:10px;padding:4px 8px;border:1.5px solid #111;border-radius:999px;background:rgba(255,255,255,.92);font-family:var(--fontd);font-size:10px;font-weight:900;line-height:1;color:#111}
+.comment-box{border-top:0;padding:18px 14px;display:flex;flex-direction:column;gap:12px;background:#f7f7f7;border-radius:22px;box-shadow:0 12px 28px rgba(0,0,0,.04)}
+.comment-list{display:flex;flex-direction:column;gap:14px}
+.comment-item{background:transparent;border:none;border-radius:0;padding:0;font-size:14px;font-weight:500;line-height:1.5;cursor:pointer;display:flex;align-items:flex-start;gap:10px;color:#222}
+.comment-item.reply-comment{margin-left:40px}
+.comment-item:active{transform:translate(1px,1px)}
+.comment-av{width:30px;height:30px;border:none;border-radius:999px;background:center/cover no-repeat #777;box-shadow:none;flex-shrink:0;color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--fontd);font-size:10px;font-weight:900}
+.comment-main{min-width:0;flex:1}
+.comment-main strong{font-size:14px;font-weight:900}
+.comment-del{width:20px;height:20px;border:none;border-radius:999px;background:transparent;color:#999;box-shadow:none;display:flex;align-items:center;justify-content:center;font-family:var(--fontd);font-size:12px;font-weight:900;line-height:1;flex-shrink:0;cursor:pointer}
+.comment-del:active{transform:translate(1px,1px);box-shadow:none}
+.name-accent{color:#111;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-thickness:2px;text-underline-offset:4px;text-decoration-color:#111}
+.reply-word{color:#888;font-weight:700;margin:0 2px}
+.comment-compose{display:flex;flex-direction:column;gap:6px}
+.comment-input-row{display:flex;gap:6px}
+.comment-input{flex:1;border:none;border-bottom:1.5px solid #d6d6d6;border-radius:0;padding:8px 0;background:transparent;font-size:13px;font-weight:600;outline:none}
+.comment-btn{border:none;border-radius:999px;background:#111;color:#fff;box-shadow:none;width:38px;height:34px;padding:6px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.comment-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #0a0a0a}
+.comment-submit-paw{width:22px;height:22px;display:block;object-fit:contain;filter:brightness(0) invert(1);opacity:.95}
+.reply-preview{display:flex;align-items:center;gap:9px;border:none;border-radius:0 16px 16px 0;background:linear-gradient(180deg,rgba(255,255,255,.76),rgba(238,238,238,.5)),linear-gradient(180deg,rgba(17,17,17,.18) 0%,rgba(17,17,17,.86) 24%,rgba(17,17,17,.86) 76%,rgba(17,17,17,.18) 100%);background-repeat:no-repeat,no-repeat;background-size:100% 100%,3px 100%;box-shadow:0 10px 24px rgba(0,0,0,.08);padding:8px 9px 8px 15px}
+.reply-preview::before{content:'REPLY';flex:0 0 auto;font-family:var(--fontd);font-size:9px;font-weight:900;letter-spacing:.18em;color:#111;border-bottom:2px dashed rgba(17,17,17,.72);line-height:1.2}
+.reply-preview-text{flex:1;min-width:0;font-size:12px;font-weight:900;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reply-preview-close{width:22px;height:22px;border:1.5px solid #111;border-radius:999px;background:#111;color:#fff;box-shadow:none;font-family:var(--fontd);font-size:13px;font-weight:900;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
+.reply-preview-close:active{transform:translateY(1px);box-shadow:none}
+.empty{width:calc(100% - 6px);margin:0 auto;border:none;background:transparent;padding:16px;text-align:center;color:#111;font-size:14px;font-weight:900;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-thickness:4px;text-underline-offset:6px;text-decoration-color:#111}
+
+.share-modal{width:min(326px,calc(100vw - 42px));border:1.5px solid #111;border-radius:0;background:linear-gradient(180deg,#fff,#f5f5f5);box-shadow:0 24px 55px rgba(0,0,0,.28);padding:16px;gap:14px}
+.share-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:3px double #111;padding-bottom:10px}
+.share-title{font-family:var(--fontd);font-size:18px;font-weight:900;letter-spacing:.02em}
+.share-close{width:28px;height:28px;border:1.5px solid #111;border-radius:999px;background:#111;color:#fff;box-shadow:none;font-family:var(--fontd);font-size:15px;font-weight:900;line-height:1;cursor:pointer}
+.share-preview{border:none;border-radius:0 18px 18px 0;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(238,238,238,.44)),linear-gradient(180deg,rgba(17,17,17,.16) 0%,rgba(17,17,17,.84) 24%,rgba(17,17,17,.84) 76%,rgba(17,17,17,.16) 100%);background-repeat:no-repeat,no-repeat;background-size:100% 100%,3px 100%;padding:11px 12px 10px 17px;box-shadow:none}
+.share-preview-kicker{font-family:var(--fontd);font-size:10px;font-weight:900;letter-spacing:.16em;color:#777;text-transform:uppercase}
+.share-preview-text{margin-top:5px;font-size:13px;font-weight:900;line-height:1.55;color:#111;white-space:pre-wrap;word-break:break-word;max-height:72px;overflow:hidden}
+.schedule-picker-strip{display:flex;gap:10px;overflow:auto;padding:2px 2px 8px;-webkit-overflow-scrolling:touch}
+.schedule-picker-strip::-webkit-scrollbar{display:none}
+.schedule-picker-chip{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px}
+.schedule-picker-chip-btn{width:62px;height:62px;border:2px solid #111;border-radius:18px;background:linear-gradient(180deg,#fff 0%,#f2f2f2 100%);box-shadow:5px 5px 0 rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}
+.schedule-picker-chip-btn:active{transform:translate(1px,1px);box-shadow:3px 3px 0 rgba(0,0,0,.16)}
+.schedule-picker-chip-btn img,.schedule-picker-chip-avatar{width:100%;height:100%;object-fit:cover}
+.schedule-picker-chip-avatar{display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;background:#fff;color:#111;font-family:var(--fontd)}
+.schedule-picker-chip-label{max-width:68px;font-size:10px;font-weight:900;line-height:1.2;text-align:center;word-break:break-word}
+.share-empty{border:2px dashed rgba(17,17,17,.42);border-radius:14px;padding:14px;text-align:center;font-size:12px;font-weight:900;color:#666}
+
+.qq-bottom-nav{position:fixed;left:12px;right:12px;bottom:calc(10px + var(--safe-bottom));z-index:90;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.qq-bottom-btn > span:not(.nav-icon){display:none}
+.qq-bottom-btn{gap:0;font-size:0}
+.qq-bottom-btn{border:none;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#7a7a80;font-family:var(--fontd);font-size:10px;font-weight:900;cursor:pointer}
+.qq-bottom-btn:active{transform:translateY(1px)}
+.qq-bottom-btn .nav-icon{width:46px;height:46px;border:2px solid #111;border-radius:999px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 20px rgba(0,0,0,.12)}
+.qq-bottom-btn .nav-icon img{width:28px;height:28px;object-fit:contain;display:block;filter:brightness(0)}
+.qq-bottom-btn.active{color:#111}
+.qq-bottom-btn.active .nav-icon{background:#111}
+.qq-bottom-btn.active .nav-icon img{filter:brightness(0) invert(1)}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.44);display:none;align-items:center;justify-content:center;padding:20px;z-index:120;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.overlay.open{display:flex}
+.modal{width:min(330px,100%);border:var(--bd);border-radius:20px;background:#fff;box-shadow:5px 5px 0 #0a0a0a;padding:14px;display:flex;flex-direction:column;gap:10px}
+.modal.publish-modal{width:min(306px,calc(100vw - 56px));border:1.5px solid #111;border-radius:0;background:linear-gradient(180deg,#fff 0%,#f7f7f7 100%);box-shadow:0 24px 55px rgba(0,0,0,.28);padding:18px 16px 16px;gap:14px}
+.modal-title{font-family:var(--fontd);font-size:16px;font-weight:900}
+.publish-modal .modal-title{font-size:18px;letter-spacing:.02em;text-transform:uppercase;border-bottom:3px double #111;padding-bottom:10px}
+.modal-sub{font-size:12px;font-weight:700;color:#666;line-height:1.5}
+.mode-actions{display:flex;align-items:center;justify-content:center;gap:10px}
+.mode-btn{border:1.5px solid #111;border-radius:999px;background:#fff;box-shadow:none;padding:8px 18px;font-family:var(--fontd);font-size:12px;font-weight:900;letter-spacing:.08em;cursor:pointer}
+.mode-btn.black{background:#111;color:#fff}
+.mode-btn:active{transform:translateY(1px);box-shadow:none}
+.modal textarea{width:100%;min-height:84px;resize:none;border:var(--bd);border-radius:12px;background:var(--off);padding:10px 12px;font-size:13px;font-weight:700;outline:none}
+.publish-modal textarea{border:none;border-radius:0 18px 18px 0;background:linear-gradient(180deg,rgba(255,255,255,.74),rgba(238,238,238,.42)),linear-gradient(180deg,rgba(17,17,17,.12) 0%,rgba(17,17,17,.82) 25%,rgba(17,17,17,.82) 75%,rgba(17,17,17,.12) 100%);background-repeat:no-repeat,no-repeat;background-position:0 0,0 0;background-size:100% 100%,3px 100%;padding:12px 13px 10px 18px;box-shadow:none;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-color:rgba(85,85,85,.42);text-decoration-thickness:1.2px;text-underline-offset:4px;line-height:1.7}
+.publish-modal textarea:focus{background-size:100% 100%,4px 100%}
+.publish-textarea{height:92px;min-height:92px;max-height:92px}
+.helper-row{display:flex;justify-content:flex-start;align-items:center;gap:8px;flex-wrap:wrap}
+.add-image-btn{border:1.5px solid #111;border-radius:999px;background:#fff;color:#111;box-shadow:none;padding:7px 12px;font-family:var(--fontd);font-size:11px;font-weight:900;letter-spacing:.04em;cursor:pointer}
+.add-image-btn.black{background:#111;color:#fff}
+.add-image-btn:active{transform:translateY(1px);box-shadow:none}
+.image-preview-wrap{display:none;flex-direction:column;gap:9px}
+.image-preview-wrap.show{display:flex}
+.image-stack{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 7px;scroll-snap-type:x mandatory}
+.image-stack::-webkit-scrollbar{height:3px}
+.image-stack::-webkit-scrollbar-thumb{background:#111}
+.image-preview-thumb{flex:0 0 72px;width:72px;height:88px;border:1.5px solid #111;border-radius:14px;background:center/cover no-repeat #eee;box-shadow:0 8px 18px rgba(0,0,0,.12);position:relative;overflow:hidden;cursor:pointer;scroll-snap-align:start}
+.image-preview-thumb:nth-child(2n){transform:translateY(5px) rotate(1.2deg)}
+.image-preview-thumb:nth-child(3n){transform:translateY(1px) rotate(-1.2deg)}
+.image-preview-thumb::after{content:attr(data-index);position:absolute;right:5px;bottom:5px;background:rgba(255,255,255,.92);border:1px solid #111;border-radius:999px;padding:1px 5px;font-size:9px;font-family:var(--fontd);font-weight:900}
+.image-preview-thumb.text-thumb{background:center/cover no-repeat url('assets/樱花.jpg')}
+.image-preview-thumb.text-thumb span{display:none}
+.image-preview-text{font-size:11px;font-weight:800;line-height:1.45;color:#555;white-space:pre-wrap;word-break:break-word;max-height:84px;overflow:auto;border-left:2px solid #111;padding-left:9px}
+.footer-actions{display:flex;gap:8px;justify-content:flex-end}
+.footer-btn{flex:0 0 auto;min-width:64px;border:1.5px solid #111;border-radius:999px;background:#fff;color:#111;box-shadow:none;padding:8px 14px;font-family:var(--fontd);font-size:12px;font-weight:900;cursor:pointer}
+.footer-btn.black{background:#111;color:#fff}
+.footer-btn:active{transform:translateY(1px);box-shadow:none}
+
+.image-view-overlay{position:fixed;inset:0;background:rgba(0,0,0,.52);display:none;align-items:center;justify-content:center;z-index:140;padding:18px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.image-view-overlay.open{display:flex}
+.image-view-card{width:min(306px,calc(100vw - 56px));max-height:min(78vh,620px);background:linear-gradient(180deg,#fff,#f4f4f4);border:1.5px solid #111;border-radius:0;box-shadow:0 24px 55px rgba(0,0,0,.34);padding:16px;display:flex;flex-direction:column;gap:12px}
+.image-view-header{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:3px double #111;padding-bottom:9px}
+.image-view-title{font-family:var(--fontd);font-size:15px;font-weight:900;letter-spacing:.04em}
+.image-view-close{width:28px;height:28px;border-radius:999px;border:1.5px solid #111;background:#111;color:#fff;box-shadow:none;font-size:16px;font-weight:900;cursor:pointer}
+.image-view-close:active{transform:translateY(1px);box-shadow:none}
+.image-view-content{display:flex;flex-direction:column;gap:11px;min-height:0;overflow:auto;padding-right:2px}
+.image-view-real-wrap{display:none;border:1.5px solid #111;border-radius:16px;background:#fff;box-shadow:0 10px 24px rgba(0,0,0,.12);overflow:hidden}
+.image-view-real-wrap.show{display:block}
+.image-view-real-wrap.text-card{aspect-ratio:1/1;background:center/cover no-repeat url('assets/樱花.jpg');position:relative}
+.image-view-real-wrap.text-card::after{content:'查看';position:absolute;right:10px;bottom:10px;padding:4px 8px;border:1.5px solid #111;border-radius:999px;background:rgba(255,255,255,.92);font-family:var(--fontd);font-size:10px;font-weight:900;line-height:1;color:#111}
+.image-view-real{display:block;width:100%;aspect-ratio:1/1;max-height:min(45vh,330px);object-fit:contain;background:#f4f4f4}
+.image-view-paper{border:none;border-radius:0 18px 18px 0;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(238,238,238,.44)),linear-gradient(180deg,rgba(17,17,17,.16) 0%,rgba(17,17,17,.84) 24%,rgba(17,17,17,.84) 76%,rgba(17,17,17,.16) 100%);background-repeat:no-repeat,no-repeat;background-size:100% 100%,3px 100%;padding:13px 13px 11px 18px;box-shadow:none}
+.image-view-text{font-size:13px;font-weight:800;line-height:1.75;color:#111;white-space:pre-wrap;word-break:break-word;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-color:rgba(85,85,85,.42);text-decoration-thickness:1.2px;text-underline-offset:4px}
+.image-view-translate-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.image-view-translation-body .moment-translation-body{max-height:min(28vh,220px);overflow:auto;padding-right:2px}
+
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%) translateY(10px);background:#0a0a0a;color:#fff;padding:8px 14px;border-radius:999px;font-size:12px;font-weight:800;opacity:0;transition:all .2s;pointer-events:none;z-index:160}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.char-profile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.28);display:none;z-index:150;align-items:stretch;justify-content:flex-start}
+.char-profile-overlay.open{display:flex}
+.char-profile-panel{width:min(372px,92vw);height:100%;background:#fff;border-right:3px solid #111;box-shadow:8px 0 0 rgba(0,0,0,.22);overflow:auto;display:flex;flex-direction:column}
+.char-profile-top{position:relative;min-height:242px;border-bottom:var(--bd);background:#f4f4f4;overflow:hidden}
+.char-profile-cover{height:154px;background:center/cover no-repeat linear-gradient(135deg,#f8f8f8,#dcdcdc);border-bottom:var(--bd);cursor:pointer}
+.char-profile-back{position:absolute;left:12px;top:calc(12px + var(--safe-top));width:34px;height:34px;border:var(--bd);border-radius:999px;background:#fff;box-shadow:var(--sh);font-size:20px;font-weight:900;line-height:1;z-index:2}
+.char-profile-avatar{position:absolute;left:50%;top:104px;transform:translateX(-50%);width:92px;height:92px;border:var(--bd);border-radius:999px;background:center/cover no-repeat #eee;box-shadow:0 0 0 7px #fff,4px 4px 0 #111}
+.char-profile-info{padding:54px 18px 16px;text-align:center}
+.char-profile-name{font-family:var(--fontd);font-size:22px;font-weight:900;letter-spacing:.01em}
+.char-profile-sign{margin-top:6px;font-size:12px;font-weight:800;color:#666;line-height:1.45}
+.char-profile-stats{display:flex;justify-content:center;gap:34px;margin-top:14px}
+.char-profile-stat{font-family:var(--fontd);font-size:18px;font-weight:900}
+.char-profile-stat span{display:block;margin-top:2px;font-size:9px;font-weight:900;letter-spacing:.22em;color:#aaa}
+.char-profile-section{padding:16px 16px 26px;display:flex;flex-direction:column;gap:12px}
+.char-profile-kicker{font-family:var(--fontd);font-size:11px;font-weight:900;letter-spacing:.18em;color:#888;text-transform:uppercase}
+.char-profile-card{border:var(--bd);border-radius:0;background:#fff;box-shadow:var(--sh);padding:12px;display:flex;flex-direction:column;gap:8px}
+.char-profile-card-text{font-size:13px;font-weight:800;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.char-profile-empty{border:var(--bd);border-radius:0;background:#f9f9f9;box-shadow:var(--sh);padding:18px;text-align:center;font-size:12px;font-weight:800;color:#777}
+.char-profile-image{display:block;width:100%;max-height:260px;object-fit:cover;border:2px solid #111;background:#eee}
+#heroBgInput,#heroAvatarInput,#momentImageInput,#charProfileCoverInput,.moment-header-input{display:none}
+</style>
+</head>
+<body>
+  <div class="main">
+    <section class="hero" aria-label="朋友圈顶栏">
+      <div class="moments-hero">
+        <div class="moment-hero-prompt">
+          <div class="moment-hero-kicker">今日切片</div>
+          <div class="moment-hero-target" id="momentHeaderTarget" contenteditable="true" role="textbox" aria-label="封面标题" spellcheck="false" oninput="saveHeaderTargetInline()" onblur="saveHeaderTargetInline()" onkeydown="handleHeaderTargetKey(event)" onpaste="pasteHeaderTargetPlainText(event)">小猫</div>
+          <div class="moment-hero-sub"></div>
+          <div class="moment-action-toolbar">
+            <button class="tiny-btn plus-btn" type="button" aria-label="发布朋友圈" title="发布朋友圈" onclick="openPublishMode(event)">+</button>
+            <button class="tiny-btn" id="deleteFab" type="button" aria-label="删除朋友圈" title="删除朋友圈">
+              <img src="assets/Recycle-Bin-2--Streamline-Sharp.png" alt="">
+            </button>
+          </div>
+        </div>
+        <div class="moment-hero-grid" aria-label="封面图片">
+          <button class="moment-hero-tile" id="momentHeaderTile1" type="button" aria-label="上传封面图片 1" onclick="pickHeaderImage('tile1', event)"></button>
+          <button class="moment-hero-tile" id="momentHeaderTile2" type="button" aria-label="上传封面图片 2" onclick="pickHeaderImage('tile2', event)"></button>
+          <button class="moment-hero-tile" id="momentHeaderTile3" type="button" aria-label="上传封面图片 3" onclick="pickHeaderImage('tile3', event)"></button>
+          <button class="moment-hero-tile" id="momentHeaderTile4" type="button" aria-label="上传封面图片 4" onclick="pickHeaderImage('tile4', event)"></button>
+          <button class="moment-hero-tile" id="momentHeaderTile5" type="button" aria-label="上传封面图片 5" onclick="pickHeaderImage('tile5', event)"></button>
+          <button class="moment-hero-tile" id="momentHeaderTile6" type="button" aria-label="上传封面图片 6" onclick="pickHeaderImage('tile6', event)"></button>
+        </div>
+        <div class="moment-hero-dots" aria-hidden="true">
+          <span class="moment-hero-dot active" id="momentHeroDot1"></span>
+          <span class="moment-hero-dot" id="momentHeroDot2"></span>
+        </div>
+        <div class="moment-hero-controls">
+          <div class="moment-hero-icons" aria-hidden="true">
+            <button class="moment-hero-icon" type="button" aria-label="恢复默认封面图片" onclick="resetMomentHeroImages(event)"><img src="assets/重试.svg" alt=""></button>
+            <span class="moment-hero-icon"><img src="assets/耳机.png" alt=""></span>
+            <span class="moment-hero-icon"><img src="assets/信息.svg" alt=""></span>
+          </div>
+          <button class="moment-hero-verify" type="button" onclick="showToast('已保存')">保存</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="feed-wrap">
+      <section class="feed" id="feedList"></section>
+    </div>
+  </div>
+
+  <div class="overlay" id="publishOverlay">
+    <div class="modal publish-modal" id="publishModal"></div>
+  </div>
+  <div class="overlay" id="signatureOverlay">
+    <div class="modal">
+      <div class="modal-title" id="signatureModalTitle">编辑顶栏文字</div>
+      <textarea id="signatureInput" maxlength="50" placeholder="输入个性签名..."></textarea>
+      <div class="footer-actions">
+        <button class="footer-btn" type="button" onclick="closeSignatureEditor()">取消</button>
+        <button class="footer-btn black" type="button" onclick="confirmSignature()">确定</button>
+      </div>
+    </div>
+  </div>
+  <div class="overlay" id="bubbleNameOverlay">
+    <div class="modal">
+      <div class="modal-title">编辑气泡名字</div>
+      <textarea id="bubbleNameInput" maxlength="22" placeholder="输入昵称..."></textarea>
+      <div class="footer-actions">
+        <button class="footer-btn" type="button" onclick="closeBubbleNameEditor()">取消</button>
+        <button class="footer-btn black" type="button" onclick="confirmBubbleName()">确定</button>
+      </div>
+    </div>
+  </div>
+  <div class="overlay" id="deleteConfirmOverlay">
+    <div class="modal" id="deleteConfirmModal">
+      <div class="modal-title" id="deleteConfirmText">确定清除 0 条朋友圈？</div>
+      <div class="footer-actions">
+        <button class="footer-btn" id="deleteConfirmCancelBtn" type="button" onclick="return handleDeleteConfirmCancel(event)">取消</button>
+        <button class="footer-btn black" id="deleteConfirmOkBtn" type="button" onclick="return handleDeletePostsConfirm(event)">确认</button>
+      </div>
+    </div>
+  </div>
+  <div class="overlay" id="deleteCommentConfirmOverlay">
+    <div class="modal" id="deleteCommentConfirmModal">
+      <div class="modal-title">删除评论？</div>
+      <div class="footer-actions">
+        <button class="footer-btn" id="deleteCommentCancelBtn" type="button" onclick="return handleDeleteCommentCancel(event)">取消</button>
+        <button class="footer-btn black" id="deleteCommentOkBtn" type="button" onclick="return handleDeleteCommentConfirm(event)">确认</button>
+      </div>
+    </div>
+  </div>
+  <div class="overlay" id="shareOverlay">
+    <div class="modal share-modal" id="shareModal"></div>
+  </div>
+
+  <div class="image-view-overlay" id="imageViewOverlay">
+    <div class="image-view-card">
+      <div class="image-view-header">
+        <div class="image-view-title">图片内容</div>
+        <button class="image-view-close" type="button" onclick="closeImageViewer()">×</button>
+      </div>
+      <div class="image-view-content">
+        <div class="image-view-real-wrap" id="imageViewRealWrap">
+          <img class="image-view-real" id="imageViewReal" alt="">
+        </div>
+        <div class="image-view-paper">
+          <div class="image-view-text" id="imageViewText"></div>
+        </div>
+        <div class="image-view-translate-wrap" id="imageViewTranslateWrap" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <input id="heroBgInput" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg">
+  <input id="heroAvatarInput" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg">
+  <input class="moment-header-input" id="momentHeaderTile1Input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg,.avif">
+  <input class="moment-header-input" id="momentHeaderTile2Input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg,.avif">
+  <input class="moment-header-input" id="momentHeaderTile3Input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg,.avif">
+  <input class="moment-header-input" id="momentHeaderTile4Input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg,.avif">
+  <input class="moment-header-input" id="momentHeaderTile5Input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg,.avif">
+  <input class="moment-header-input" id="momentHeaderTile6Input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg,.avif">
+  <input id="momentImageInput" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg" multiple>
+  <input id="charProfileCoverInput" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg">
+  <div class="char-profile-overlay" id="charProfileOverlay">
+    <aside class="char-profile-panel" id="charProfilePanel"></aside>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="qq-bottom-nav">
+    <button class="qq-bottom-btn" type="button" aria-label="聊天" title="聊天" onclick="openChatHub()">
+      <span class="nav-icon"><img src="assets/聊天图标.png" alt=""></span>
+      <span>聊天</span>
+    </button>
+    <button class="qq-bottom-btn active" type="button" aria-label="发现" title="发现">
+      <span class="nav-icon"><img src="assets/moments-icon.svg" alt=""></span>
+      <span>发现</span>
+    </button>
+    <button class="qq-bottom-btn" type="button" aria-label="档案馆" title="档案馆" onclick="openArchivePage()">
+      <span class="nav-icon"><img src="assets/Chat-Bubble-Heart--Streamline-Sharp.png" alt=""></span>
+      <span>档案馆</span>
+    </button>
+    <button class="qq-bottom-btn" type="button" aria-label="自己" title="自己" onclick="openProfileCenter()">
+      <span class="nav-icon"><img src="assets/User-Story--Streamline-Sharp.png" alt=""></span>
+      <span>自己</span>
+    </button>
+  </div>
+<script>
+const STORAGE_POSTS = 'qq_moments_posts';
+const STORAGE_POSTS_ALT = 'moments_posts';
+const STORAGE_POSTS_BRIDGE = 'qq_moments_bridge_posts';
+const STORAGE_BG = 'qq_moments_hero_bg';
+const STORAGE_AVATAR = 'qq_moments_hero_avatar';
+const STORAGE_SIGN = 'qq_moments_signature';
+const STORAGE_HEADER_LEFT = 'qq_moments_header_left';
+const STORAGE_HEADER_FRAME = 'qq_moments_header_frame';
+const STORAGE_HEADER_RIGHT = 'qq_moments_header_right';
+const STORAGE_HEADER_TEXT_LEFT = 'qq_moments_header_text_left';
+const STORAGE_HEADER_TEXT_RIGHT = 'qq_moments_header_text_right';
+const STORAGE_HEADER_TILE_4 = 'qq_moments_header_tile_4';
+const STORAGE_HEADER_TILE_5 = 'qq_moments_header_tile_5';
+const STORAGE_HEADER_TILE_6 = 'qq_moments_header_tile_6';
+const STORAGE_BUBBLE_NAME = 'qq_moments_bubble_name';
+const STORAGE_POST_RECORD_PREFIX = 'qq_moments_post_record_';
+const DEFAULT_BUBBLE_NAME = '我哥天下第一好';
+const STORAGE_BG_ASSET = 'qq_moments_hero_bg_asset';
+const STORAGE_AVATAR_ASSET = 'qq_moments_hero_avatar_asset';
+const STORAGE_HEADER_LEFT_ASSET = 'qq_moments_header_left_asset';
+const STORAGE_HEADER_FRAME_ASSET = 'qq_moments_header_frame_asset';
+const STORAGE_HEADER_RIGHT_ASSET = 'qq_moments_header_right_asset';
+const STORAGE_HEADER_TILE_4_ASSET = 'qq_moments_header_tile_4_asset';
+const STORAGE_HEADER_TILE_5_ASSET = 'qq_moments_header_tile_5_asset';
+const STORAGE_HEADER_TILE_6_ASSET = 'qq_moments_header_tile_6_asset';
+const STORAGE_PROFILE_CHAR = 'qq_moments_profile_char_id';
+const IMAGE_CARD_BG = 'https://files.catbox.moe/6ruu03.jpeg';
+const DEFAULT_HEADER_TEXT_LEFT = '小猫';
+const DEFAULT_HEADER_TEXT_RIGHT = '唯有爱是谜底';
+const DEFAULT_HEADER_IMAGES = {
+  tile1: 'assets/小猫背影.jpg',
+  tile2: 'assets/雨伞都市.jpg',
+  tile3: 'assets/爪印斑马线.jpg',
+  tile4: 'assets/星星锁链.jpg',
+  tile5: 'assets/黑白城市.jpg',
+  tile6: 'assets/小猫爪.jpg'
+};
+
+let toastTimer = null;
+let currentHeroAvatarSrc = '';
+let currentHeroBgSrc = '';
+let heroBgObjectUrl = '';
+let heroAvatarObjectUrl = '';
+const transientAssets = {};
+let hydratedPostsCache = [];
+let publishState = {
+  mode: '',
+  text: '',
+  imageText: '',
+  imagePreviewSrc: '',
+  imageFileName: '',
+  imageFile: null,
+  images: []
+};
+let deleteMode = false;
+let deleteSelection = [];
+let deleteConfirmBusy = false;
+let deleteConfirmOpenedAt = 0;
+let replyTarget = {};
+let editingPostId = '';
+let pendingDeleteComment = { postId:'', commentId:'' };
+let currentImageViewerPostId = '';
+let currentImageViewerImageIndex = 0;
+let currentProfileCharId = '';
+let currentHeaderTextTarget = 'left';
+let pendingSharePostId = '';
+let momentShareCharacterCache = [];
+let momentsAccountReadyPromise = null;
+let pendingPostsSavePromise = Promise.resolve();
+let momentsSelfMemoryWriteQueue = Promise.resolve();
+
+const REPLY_LANGUAGE_OPTIONS = {
+  zh:{ value:'zh', label:'中文', nativeLabel:'简体中文' },
+  en:{ value:'en', label:'英语', nativeLabel:'English' },
+  fr:{ value:'fr', label:'法语', nativeLabel:'Francais' },
+  ja:{ value:'ja', label:'日语', nativeLabel:'日本语' },
+  ko:{ value:'ko', label:'韩语', nativeLabel:'한국어' },
+  yue:{ value:'yue', label:'粤语', nativeLabel:'广东话' },
+  de:{ value:'de', label:'德语', nativeLabel:'Deutsch' }
+};
+
+function scopedKey(base){
+  if(window.AccountManager){
+    window.AccountManager.ensure();
+    return window.AccountManager.scopedKey(base);
+  }
+  return base;
+}
+function getAccountIdCandidates(){
+  const ids = [];
+  try{
+    if(window.AccountManager){
+      window.AccountManager.ensure();
+      const active = window.AccountManager.getActive ? window.AccountManager.getActive() : null;
+      const defaultId = window.AccountManager.getDefaultId ? window.AccountManager.getDefaultId() : '';
+      if(active && active.id) ids.push(String(active.id));
+      if(defaultId) ids.push(String(defaultId));
+      const accounts = window.AccountManager.loadAccounts ? window.AccountManager.loadAccounts() : [];
+      if(Array.isArray(accounts)){
+        accounts.forEach((account)=>{
+          if(account && account.id) ids.push(String(account.id));
+        });
+      }
+    }
+  }catch(e){}
+  return Array.from(new Set(ids.filter(Boolean)));
+}
+function storageKeyCandidates(base){
+  const raw = String(base || '').trim();
+  const keys = raw ? [raw] : [];
+  getAccountIdCandidates().forEach((id)=>{
+    if(raw) keys.push(raw + '__acct_' + id);
+  });
+  if(raw) keys.unshift(scopedKey(raw));
+  return Array.from(new Set(keys.filter(Boolean)));
+}
+function avatarStorageBases(){
+  return [
+    STORAGE_AVATAR_ASSET,
+    STORAGE_AVATAR,
+    'qq_profile_avatar_asset',
+    'user_avatar'
+  ];
+}
+function avatarStorageKeyCandidates(){
+  const keys = [];
+  avatarStorageBases().forEach((base)=>{
+    storageKeyCandidates(base).forEach((key)=>keys.push(key));
+  });
+  return Array.from(new Set(keys.filter(Boolean)));
+}
+function readExactStorageString(key){
+  try{ return String(localStorage.getItem(key) || '').trim(); }catch(e){ return ''; }
+}
+function getSyncAvatarFromStorageCandidates(){
+  const keys = avatarStorageKeyCandidates();
+  for(const key of keys){
+    const value = readExactStorageString(key);
+    if(isStableAvatarSource(value)) return value;
+  }
+  return '';
+}
+function lsGet(base){
+  return localStorage.getItem(scopedKey(base));
+}
+function lsSet(base, val){
+  localStorage.setItem(scopedKey(base), val);
+}
+function lsRemove(base){
+  localStorage.removeItem(scopedKey(base));
+}
+function activeProfile(){
+  if(window.AccountManager){
+    window.AccountManager.ensure();
+    return window.AccountManager.getActive();
+  }
+  return { name: DEFAULT_BUBBLE_NAME, avatar: '' };
+}
+function ensureMomentsAccountReady(){
+  if(momentsAccountReadyPromise) return momentsAccountReadyPromise;
+  if(window.AccountManager && typeof window.AccountManager.hydrateFromStorage === 'function'){
+    momentsAccountReadyPromise = window.AccountManager.hydrateFromStorage().catch(()=>false);
+  }else{
+    momentsAccountReadyPromise = Promise.resolve(false);
+  }
+  return momentsAccountReadyPromise;
+}
+
+function esc(s){
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s){ return esc(s).replace(/'/g,'&#39;'); }
+function isRenderableAssetSource(src){
+  return /^(data:|https?:|blob:|\/|\.\.?\/|assets\/|apps\/assets\/)/i.test(String(src || '').trim());
+}
+function isBlobAssetSource(src){
+  return /^blob:/i.test(String(src || '').trim());
+}
+function isStableAvatarSource(src){
+  return isRenderableAssetSource(src) && !isBlobAssetSource(src);
+}
+function sanitizeAvatarForStorage(src){
+  const safe = String(src || '').trim();
+  return isStableAvatarSource(safe) ? safe : '';
+}
+function cssAvatarUrl(src){
+  const safe = String(src || '').trim();
+  return isRenderableAssetSource(safe) ? ('url(&quot;' + escAttr(safe) + '&quot;)') : 'none';
+}
+function getProfileAvatarForStorage(){
+  const profileAvatar = String((activeProfile() && activeProfile().avatar) || '').trim();
+  if(isStableAvatarSource(profileAvatar)) return profileAvatar;
+  const legacy = String(lsGet(STORAGE_AVATAR) || '').trim();
+  if(isStableAvatarSource(legacy)) return legacy;
+  return getSyncAvatarFromStorageCandidates();
+}
+function getCurrentMomentAvatarForRender(){
+  const current = String(currentHeroAvatarSrc || '').trim();
+  if(isRenderableAssetSource(current)) return current;
+  return getProfileAvatarForStorage();
+}
+function getCurrentMomentAvatarForStorage(){
+  return getProfileAvatarForStorage();
+}
+
+function normalizeReplyLanguage(value){
+  const safe = String(value || 'zh').trim().toLowerCase();
+  return REPLY_LANGUAGE_OPTIONS[safe] ? safe : 'zh';
+}
+function normalizeTranslationMode(value){
+  return String(value || '').trim().toLowerCase() === 'prefetch' ? 'prefetch' : 'ondemand';
+}
+
+function getReplyLanguageOption(value){
+  return REPLY_LANGUAGE_OPTIONS[normalizeReplyLanguage(value)];
+}
+
+function getStoredCharactersSnapshot(){
+  try{
+    const list = JSON.parse(localStorage.getItem('characters') || '[]');
+    return Array.isArray(list) ? list : [];
+  }catch(e){
+    return [];
+  }
+}
+
+async function getMomentsShareCharacters(){
+  const merged = [];
+  const seen = Object.create(null);
+  const pushList = (list)=>{
+    (Array.isArray(list) ? list : []).forEach((char)=>{
+      if(!char || !char.id) return;
+      const id = String(char.id || '').trim();
+      if(!id || seen[id]) return;
+      seen[id] = true;
+      merged.push(char);
+    });
+  };
+  pushList(getStoredCharactersSnapshot());
+  if(window.MetadataStore && typeof window.MetadataStore.loadCharacters === 'function'){
+    try{ pushList(await window.MetadataStore.loadCharacters(true)); }catch(e){}
+  }
+  try{
+    const shell = getParentShell();
+    if(shell && typeof shell.getStoredCharactersSnapshot === 'function') pushList(shell.getStoredCharactersSnapshot());
+    if(shell && shell.MetadataStore && typeof shell.MetadataStore.loadCharacters === 'function'){
+      pushList(await shell.MetadataStore.loadCharacters(true));
+    }
+    if(shell && typeof shell.getActiveCharacterData === 'function') pushList([shell.getActiveCharacterData()]);
+  }catch(e){}
+  return merged.filter((char)=>!!(char && char.id));
+}
+
+function momentChatStorageKey(charId){
+  return scopedKey('chat_' + String(charId || '').trim());
+}
+
+function normalizeMomentChatHistoryRecord(raw){
+  if(!raw) return [];
+  if(Array.isArray(raw)) return raw.slice();
+  if(raw && typeof raw === 'object'){
+    if(Array.isArray(raw.history)) return raw.history.slice();
+    if(Array.isArray(raw.messages)) return raw.messages.slice();
+  }
+  return [];
+}
+
+function makeMomentCardChatEntry(post, targetChar){
+  const resolved = resolveMomentAuthorMeta(post || {});
+  const comments = Array.isArray(resolved.comments) ? resolved.comments : [];
+  const likes = Array.isArray(resolved.likes) ? resolved.likes : [];
+  const images = getPostImages(resolved).map((item, index)=>({
+    index: index + 1,
+    kind: String((item && item.kind) || 'image'),
+    fileName: String((item && item.fileName) || ''),
+    description: String((item && item.description) || '').trim()
+  }));
+  const payload = {
+    type: 'moment_card',
+    postId: String(resolved.id || ''),
+    postType: String(resolved.type || ''),
+    authorName: String(resolved.authorName || getCurrentBubbleName()),
+    text: String(resolved.text || ''),
+    imageText: String(resolved.imageText || ''),
+    images: images,
+    likeNames: likes.slice(0, 20),
+    comments: comments.slice(0, 20).map((c)=>({
+      name: String((c && c.name) || DEFAULT_BUBBLE_NAME),
+      replyToName: String((c && c.replyToName) || ''),
+      text: String(typeof c === 'string' ? c : ((c && c.text) || ''))
+    })),
+    createdAt: Number(resolved.createdAt || Date.now()) || Date.now(),
+    sentAt: Date.now(),
+    targetCharId: String((targetChar && targetChar.id) || '')
+  };
+  return {
+    id: 'm_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8),
+    role: 'user',
+    type: 'moment_card',
+    content: JSON.stringify(payload),
+    replyToId: null,
+    sentAt: Date.now(),
+    readAt: null
+  };
+}
+
+function momentCardPreviewText(post){
+  const text = String((post && post.text) || '').trim();
+  const imageText = String((post && post.imageText) || '').trim();
+  const fallback = imageText || getPostImages(post).map((item)=>String((item && item.description) || '').trim()).filter(Boolean).join(' / ');
+  return text || fallback || '一条朋友圈动态';
+}
+
+async function appendMomentCardToChat(post, targetChar){
+  if(!post || !targetChar || !targetChar.id) throw new Error('missing post or target');
+  const shell = getParentShell();
+  if(!shell || !shell.ScheduleShell || typeof shell.ScheduleShell.sendMomentCard !== 'function') throw new Error('share bridge unavailable');
+  const entry = makeMomentCardChatEntry(post, targetChar);
+  const card = JSON.parse(entry.content || '{}');
+  const ok = await shell.ScheduleShell.sendMomentCard({
+    charId: String(targetChar.id || ''),
+    card: card
+  });
+  if(!ok) throw new Error('share bridge failed');
+}
+
+function getActiveAccountId(){
+  try{
+    if(window.AccountManager){
+      window.AccountManager.ensure();
+      const active = window.AccountManager.getActive ? window.AccountManager.getActive() : null;
+      return String((active && active.id) || '').trim();
+    }
+  }catch(e){}
+  return '';
+}
+
+function accountScopedRawKey(base){
+  const accountId = getActiveAccountId();
+  return accountId ? (String(base || '') + '__acct_' + accountId) : String(base || '');
+}
+
+function getParentShell(){
+  try{ return window.parent && window.parent !== window ? window.parent : window; }catch(e){}
+  return window;
+}
+
+function getShellResolvedCharacter(charId){
+  const shell = getParentShell();
+  const safeId = String(charId || '').trim();
+  if(!safeId) return null;
+  try{
+    if(shell && typeof shell.resolveShellCharacterById === 'function'){
+      const fallback = shell && typeof shell.getActiveCharacterData === 'function' ? shell.getActiveCharacterData() : null;
+      const resolved = shell.resolveShellCharacterById(safeId, fallback);
+      if(resolved && resolved.id) return resolved;
+    }
+  }catch(e){}
+  try{
+    if(shell && typeof shell.getActiveCharacterData === 'function'){
+      const active = shell.getActiveCharacterData();
+      if(active && String(active.id || '') === safeId) return active;
+    }
+  }catch(e){}
+  try{
+    if(shell && typeof shell.getCurrentForegroundCharacter === 'function'){
+      const live = shell.getCurrentForegroundCharacter();
+      if(live && String(live.id || '') === safeId) return live;
+    }
+  }catch(e){}
+  return null;
+}
+
+function getLiveChatAvatarSrcFromShell(charId){
+  const shell = getParentShell();
+  const safeId = String(charId || '').trim();
+  try{
+    const frame = shell && shell.document ? shell.document.getElementById('app-iframe') : null;
+    const win = frame && frame.contentWindow ? frame.contentWindow : null;
+    if(!win || !win.document) return '';
+    const liveChar = win.character;
+    if(safeId && liveChar && String(liveChar.id || '') && String(liveChar.id || '') !== safeId) return '';
+    const selectors = ['#hdrAvatar img', '#csCharAvatar img', '#idcAvatar img', '#chatExportIdcAvatar img'];
+    for(let i = 0; i < selectors.length; i += 1){
+      const node = win.document.querySelector(selectors[i]);
+      const src = String((node && node.getAttribute && node.getAttribute('src')) || (node && node.src) || '').trim();
+      if(isRenderableAssetSource(src)) return src;
+    }
+  }catch(e){}
+  return '';
+}
+
+function getShellAvatarSrc(charId){
+  const shell = getParentShell();
+  const safeId = String(charId || '').trim();
+  if(!safeId) return '';
+  try{
+    if(shell && typeof shell.getCharacterAvatarForBg === 'function'){
+      const resolved = getShellResolvedCharacter(safeId);
+      const src = String(shell.getCharacterAvatarForBg(resolved || { id:safeId }) || '').trim();
+      if(isRenderableAssetSource(src)) return src;
+    }
+  }catch(e){}
+  return '';
+}
+
+function getCharacterById(charId){
+  const id = String(charId || '').trim();
+  if(!id) return null;
+  const activeAccountId = getActiveAccountId();
+  const roster = getStoredCharactersSnapshot();
+  return roster.find((item)=>{
+    if(!item || String(item.id || '').trim() !== id) return false;
+    const owner = String(item.ownerAccountId || '').trim();
+    return !activeAccountId || !owner || owner === activeAccountId;
+  }) || roster.find((item)=>item && String(item.id || '').trim() === id) || getShellResolvedCharacter(id) || null;
+}
+
+function getActiveChatCharacter(){
+  const idKeys = [
+    scopedKey('activeChatCharacterId'),
+    'activeChatCharacterId',
+    scopedKey(STORAGE_PROFILE_CHAR),
+    STORAGE_PROFILE_CHAR
+  ];
+  for(const key of idKeys){
+    try{
+      const id = String(localStorage.getItem(key) || '').trim();
+      const found = getCharacterById(id);
+      if(found) return found;
+    }catch(e){}
+  }
+  const rawKeys = [scopedKey('activeCharacter'), 'activeCharacter'];
+  for(const key of rawKeys){
+    try{
+      const parsed = JSON.parse(localStorage.getItem(key) || 'null');
+      const found = parsed && parsed.id ? getCharacterById(parsed.id) : null;
+      if(found) return found;
+    }catch(e){}
+  }
+  return null;
+}
+
+function getCharacterDisplayName(char){
+  return String((char && (char.nickname || char.name)) || '').trim() || 'CHAR';
+}
+
+function getCharacterAvatarSource(char){
+  return String((char && (char.imageData || char.avatar || char.avatarUrl || char.photo || char.icon)) || '').trim();
+}
+
+async function resolveCharacterAvatarSource(char){
+  const id = String((char && char.id) || '').trim();
+  const shellResolved = id ? getShellResolvedCharacter(id) : null;
+  const shellDirect = getCharacterAvatarSource(shellResolved);
+  if(isRenderableAssetSource(shellDirect)) return shellDirect;
+  const liveSrc = id ? getLiveChatAvatarSrcFromShell(id) : '';
+  if(isRenderableAssetSource(liveSrc)) return liveSrc;
+  const shellSrc = id ? getShellAvatarSrc(id) : '';
+  if(isRenderableAssetSource(shellSrc)) return shellSrc;
+  const direct = getCharacterAvatarSource(char);
+  if(isRenderableAssetSource(direct)) return direct;
+  const keys = [];
+  if(id){
+    keys.push('char_avatar_' + id);
+    keys.push(accountScopedRawKey('char_avatar_' + id));
+  }
+  keys.push(String((char && (char.avatarAssetKey || char.assetKey || char.imageAssetKey)) || '').trim());
+  for(const key of Array.from(new Set(keys.filter(Boolean)))){
+    try{
+      const scopedValue = await loadStoredAsset(key);
+      if(isRenderableAssetSource(scopedValue)) return scopedValue;
+    }catch(e){}
+    try{
+      const rawValue = localStorage.getItem(key) || '';
+      if(isRenderableAssetSource(rawValue)) return rawValue;
+    }catch(e2){}
+  }
+  return isRenderableAssetSource(direct) ? direct : '';
+}
+
+function avatarVisionEnabledForChar(charId){
+  const raw = 'avatar_vision_enabled_' + String(charId || '').trim();
+  const keys = [scopedKey(raw), accountScopedRawKey(raw), raw];
+  for(const key of Array.from(new Set(keys.filter(Boolean)))){
+    try{
+      const value = localStorage.getItem(key);
+      if(value === '1') return true;
+      if(value === '0') return false;
+    }catch(e){}
+  }
+  return false;
+}
+
+function resolveMomentAuthorMeta(post){
+  const next = Object.assign({}, post || {});
+  const charId = String(next.charId || '').trim();
+  const authorName = String(next.authorName || '').trim();
+  let translationEnabled = next.translationEnabled != null ? !!next.translationEnabled : false;
+  let replyLanguage = normalizeReplyLanguage(next.replyLanguage || 'zh');
+  let translationMode = normalizeTranslationMode(next.translationMode || 'ondemand');
+  const activeAccountId = (()=>{ try{ return String(((window.AccountManager && window.AccountManager.getActive && window.AccountManager.getActive()) || {}).id || '').trim(); }catch(e){ return ''; } })();
+  const roster = getStoredCharactersSnapshot();
+  let found = null;
+  if(charId){
+    found = roster.find((item)=>{
+      if(!item || String(item.id || '').trim() !== charId) return false;
+      const owner = String(item.ownerAccountId || '').trim();
+      return !activeAccountId || !owner || owner === activeAccountId;
+    }) || roster.find((item)=> item && String(item.id || '').trim() === charId) || null;
+  }
+  if(!found && authorName){
+    found = roster.find((item)=>{
+      if(!item) return false;
+      const owner = String(item.ownerAccountId || '').trim();
+      if(activeAccountId && owner && owner !== activeAccountId) return false;
+      const names = [item.nickname, item.name].map((value)=>String(value || '').trim()).filter(Boolean);
+      return names.indexOf(authorName) !== -1;
+    }) || null;
+  }
+  if(found){
+    next.charId = String(next.charId || found.id || '');
+    translationEnabled = found.translationEnabled != null ? !!found.translationEnabled : translationEnabled;
+    replyLanguage = normalizeReplyLanguage(found.replyLanguage || found.language || replyLanguage);
+    translationMode = normalizeTranslationMode(found.translationMode || translationMode);
+  }
+  next.translationEnabled = !!translationEnabled;
+  next.replyLanguage = replyLanguage;
+  next.translationMode = translationMode;
+  return next;
+}
+
+function shouldOfferMomentTranslation(post){
+  const resolved = resolveMomentAuthorMeta(post);
+  return !!(resolved.translationEnabled && normalizeReplyLanguage(resolved.replyLanguage) !== 'zh');
+}
+function shouldPrefetchMomentTranslation(post){
+  const resolved = resolveMomentAuthorMeta(post);
+  return !!(resolved.translationEnabled && normalizeReplyLanguage(resolved.replyLanguage) !== 'zh' && normalizeTranslationMode(resolved.translationMode) === 'prefetch');
+}
+
+function getMomentTranslationState(post){
+  const resolved = resolveMomentAuthorMeta(post);
+  const translation = resolved.translation && typeof resolved.translation === 'object' ? resolved.translation : {};
+  return {
+    post: resolved,
+    translation: translation,
+    option: getReplyLanguageOption(resolved.replyLanguage)
+  };
+}
+
+function buildMomentTranslationCardHtml(text, sourceLabel, extraClass){
+  const safeText = String(text || '').trim();
+  if(!safeText) return '';
+  return '<div class="moment-translation-card' + (extraClass ? (' ' + extraClass) : '') + '">'
+    + '<div class="moment-translation-kicker"><span class="moment-translation-pill">TRANSLATION</span><span class="moment-translation-sub">' + esc(sourceLabel || '简体中文') + '</span></div>'
+    + '<div class="moment-translation-body">' + esc(safeText) + '</div>'
+    + '</div>';
+}
+
+function getMomentsAiHost(){
+  const hosts = [];
+  try{ if(window.parent && window.parent !== window) hosts.push(window.parent); }catch(e){}
+  try{ if(window.top && window.top !== window && hosts.indexOf(window.top) === -1) hosts.push(window.top); }catch(e){}
+  for(const host of hosts){
+    try{
+      if(host && typeof host.getBackgroundProviderConfig === 'function' && typeof host.callAiForBackground === 'function'){
+        return host;
+      }
+    }catch(e){}
+  }
+  return null;
+}
+
+async function callMomentsAi(systemPrompt, userPrompt){
+  const host = getMomentsAiHost();
+  if(!host) throw new Error('no ai host');
+  const cfg = host.getBackgroundProviderConfig();
+  if(!cfg) throw new Error('missing provider config');
+  return host.callAiForBackground(cfg, systemPrompt, userPrompt);
+}
+
+function parseMomentTranslationResult(raw){
+  let text = String(raw || '').trim();
+  if(!text) return '';
+  if(text.startsWith('```')){
+    text = text.replace(/^```[a-zA-Z]*\s*/, '');
+    if(text.endsWith('```')) text = text.slice(0, -3);
+    text = text.trim();
+  }
+  try{
+    const obj = JSON.parse(text);
+    if(obj && typeof obj === 'object'){
+      return String(obj.translation || obj.text || obj.content || '').trim();
+    }
+  }catch(e){}
+  return text.replace(/^["'“”‘’]+|["'“”‘’]+$/g, '').trim();
+}
+
+const momentTranslationPrefetchQueue = Object.create(null);
+async function requestMomentTranslation(postId, field, options){
+  const posts = getPosts();
+  const idx = posts.findIndex((item)=>String(item && item.id || '') === String(postId || ''));
+  if(idx === -1) return;
+  const post = resolveMomentAuthorMeta(posts[idx]);
+  const opts = options || {};
+  if(!shouldOfferMomentTranslation(post)) return;
+  const sourceText = String(field === 'imageText' ? post.imageText : post.text || '').trim();
+  if(!sourceText) return;
+  const translation = Object.assign({}, post.translation || {});
+  if(field === 'imageText') translation.imageLoading = true;
+  else translation.textLoading = true;
+  if(field === 'imageText') translation.imageVisible = opts.showOnReady !== false;
+  else translation.textVisible = opts.showOnReady !== false;
+  post.translation = translation;
+  posts[idx] = post;
+  savePosts(posts);
+  renderFeed();
+  renderImageViewer();
+  try{
+    const option = getReplyLanguageOption(post.replyLanguage);
+    const systemPrompt = [
+      '你是翻译器，只把原文翻成自然简体中文。',
+      '只返回 JSON：{"translation":"..."}，不要解释，不要 markdown，不要括号前后缀。'
+    ].join('\n');
+    const userPrompt = JSON.stringify({
+      sourceLanguage: option && option.nativeLabel ? option.nativeLabel : post.replyLanguage,
+      field: field === 'imageText' ? '动态图片描述' : '朋友圈正文',
+      text: sourceText
+    });
+    const translated = parseMomentTranslationResult(await callMomentsAi(systemPrompt, userPrompt));
+    if(!translated) throw new Error('empty translation');
+    const latestPosts = getPosts();
+    const latestIdx = latestPosts.findIndex((item)=>String(item && item.id || '') === String(postId || ''));
+    if(latestIdx === -1) return;
+    const latestPost = resolveMomentAuthorMeta(latestPosts[latestIdx]);
+    const nextTranslation = Object.assign({}, latestPost.translation || {}, { sourceLanguage: post.replyLanguage });
+    if(field === 'imageText'){
+      nextTranslation.imageText = translated;
+      nextTranslation.imageLoading = false;
+      nextTranslation.imageVisible = opts.showOnReady !== false;
+    }else{
+      nextTranslation.text = translated;
+      nextTranslation.textLoading = false;
+      nextTranslation.textVisible = opts.showOnReady !== false;
+    }
+    latestPost.translation = nextTranslation;
+    latestPosts[latestIdx] = latestPost;
+    savePosts(latestPosts);
+  }catch(e){
+    const latestPosts = getPosts();
+    const latestIdx = latestPosts.findIndex((item)=>String(item && item.id || '') === String(postId || ''));
+    if(latestIdx !== -1){
+      const latestPost = resolveMomentAuthorMeta(latestPosts[latestIdx]);
+      const nextTranslation = Object.assign({}, latestPost.translation || {});
+      if(field === 'imageText'){
+        nextTranslation.imageLoading = false;
+        nextTranslation.imageVisible = false;
+      }else{
+        nextTranslation.textLoading = false;
+        nextTranslation.textVisible = false;
+      }
+      latestPost.translation = nextTranslation;
+      latestPosts[latestIdx] = latestPost;
+      savePosts(latestPosts);
+    }
+    if(!opts.silent) showToast('翻译失败');
+  }
+  renderFeed();
+  renderImageViewer();
+}
+function queueMomentTranslationPrefetch(postId, field){
+  const safePostId = String(postId || '').trim();
+  const safeField = field === 'imageText' ? 'imageText' : 'text';
+  const key = safePostId + '::' + safeField;
+  if(!safePostId || momentTranslationPrefetchQueue[key]) return;
+  const posts = getPosts();
+  const idx = posts.findIndex((item)=>String(item && item.id || '') === safePostId);
+  if(idx === -1) return;
+  const post = resolveMomentAuthorMeta(posts[idx]);
+  if(!shouldPrefetchMomentTranslation(post)) return;
+  const translation = Object.assign({}, post.translation || {});
+  const hasText = safeField === 'imageText'
+    ? String(translation.imageText || '').trim()
+    : String(translation.text || '').trim();
+  const isLoading = safeField === 'imageText' ? !!translation.imageLoading : !!translation.textLoading;
+  if(hasText || isLoading) return;
+  momentTranslationPrefetchQueue[key] = true;
+  Promise.resolve().then(()=>{
+    return requestMomentTranslation(safePostId, safeField, { silent:true, showOnReady:false });
+  }).catch(()=>{})
+    .finally(()=>{
+      delete momentTranslationPrefetchQueue[key];
+    });
+}
+function primeMomentTranslations(posts){
+  (Array.isArray(posts) ? posts : getPosts()).slice(0, 5).forEach((item)=>{
+    const post = resolveMomentAuthorMeta(item);
+    if(!shouldPrefetchMomentTranslation(post)) return;
+    if(String(post.text || '').trim()) queueMomentTranslationPrefetch(post.id, 'text');
+    if(String(post.imageText || '').trim()) queueMomentTranslationPrefetch(post.id, 'imageText');
+  });
+}
+
+function toggleMomentTranslation(postId, field){
+  const posts = getPosts();
+  const idx = posts.findIndex((item)=>String(item && item.id || '') === String(postId || ''));
+  if(idx === -1) return;
+  const post = resolveMomentAuthorMeta(posts[idx]);
+  if(!shouldOfferMomentTranslation(post)) return;
+  const translation = Object.assign({}, post.translation || {});
+  const hasText = field === 'imageText'
+    ? String(translation.imageText || '').trim()
+    : String(translation.text || '').trim();
+  if(!hasText){
+    requestMomentTranslation(postId, field).catch(()=>{});
+    return;
+  }
+  if(field === 'imageText'){
+    translation.imageLoading = false;
+    translation.imageVisible = !translation.imageVisible;
+  }else{
+    translation.textLoading = false;
+    translation.textVisible = !translation.textVisible;
+  }
+  post.translation = translation;
+  posts[idx] = post;
+  savePosts(posts);
+  renderFeed();
+  renderImageViewer();
+}
+
+function renderMomentCaptionTranslation(post){
+  if(!shouldOfferMomentTranslation(post) || !String(post.text || '').trim()) return '';
+  const state = getMomentTranslationState(post);
+  const translation = state.translation || {};
+  const isOpen = !!(translation.textVisible && String(translation.text || '').trim());
+  const label = translation.textLoading ? 'Translating...' : (isOpen ? 'Hide translation' : 'Translate to English');
+  return '<div class="moment-translate-wrap">'
+    + '<button class="moment-translate-btn" type="button" onclick="toggleMomentTranslation(\'' + esc(post.id) + '\',\'text\')"' + (translation.textLoading ? ' disabled' : '') + '>' + esc(label) + '</button>'
+    + (isOpen ? buildMomentTranslationCardHtml(String(translation.text || '').trim(), '简体中文') : '')
+    + '</div>';
+}
+
+function showToast(text){
+  const t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = text || '';
+  t.classList.add('show');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1500);
+}
+
+function tapCall(evt, fnName){
+  if(evt && evt.preventDefault) evt.preventDefault();
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  try{
+    if(fnName && typeof window[fnName] === 'function') window[fnName]();
+  }catch(e){}
+  return false;
+}
+
+function bindTap(element, handler){
+  if(!element || typeof handler !== 'function' || element.dataset.tapBound === '1') return;
+  element.dataset.tapBound = '1';
+  let lastHandledAt = 0;
+  let lastHandledType = '';
+  const blockDuplicate = (evt)=>{
+    if(evt && evt.preventDefault) evt.preventDefault();
+    if(evt && evt.stopPropagation) evt.stopPropagation();
+    if(evt && evt.stopImmediatePropagation) evt.stopImmediatePropagation();
+  };
+  ['pointerup','click','touchend'].forEach((eventName)=>{
+    element.addEventListener(eventName, (evt)=>{
+      const now = Date.now();
+      if(lastHandledType && now - lastHandledAt < 700){
+        blockDuplicate(evt);
+        return;
+      }
+      lastHandledAt = now;
+      lastHandledType = eventName;
+      setTimeout(()=>{ lastHandledType = ''; }, 720);
+      if(evt && evt.preventDefault) evt.preventDefault();
+      if(evt && evt.stopPropagation) evt.stopPropagation();
+      if(evt && evt.stopImmediatePropagation) evt.stopImmediatePropagation();
+      handler(evt);
+    }, { passive:false });
+  });
+}
+
+function handleDeletePostsConfirm(evt){
+  if(evt && evt.preventDefault) evt.preventDefault();
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  if(evt && evt.stopImmediatePropagation) evt.stopImmediatePropagation();
+  if(deleteConfirmBusy) return false;
+  deleteConfirmBusy = true;
+  confirmDeletePosts();
+  setTimeout(()=>{ deleteConfirmBusy = false; }, 360);
+  return false;
+}
+
+function handleDeleteConfirmCancel(evt){
+  if(evt && evt.preventDefault) evt.preventDefault();
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  if(evt && evt.stopImmediatePropagation) evt.stopImmediatePropagation();
+  closeDeleteConfirm();
+  return false;
+}
+
+function handleDeleteCommentConfirm(evt){
+  if(evt && evt.preventDefault) evt.preventDefault();
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  confirmDeleteComment();
+  return false;
+}
+
+function handleDeleteCommentCancel(evt){
+  if(evt && evt.preventDefault) evt.preventDefault();
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  closeDeleteCommentConfirm();
+  return false;
+}
+
+function goBackQQ(evt){
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  window.location.href = 'qq.html';
+}
+
+function openChatHub(){ window.location.href = 'qq.html'; }
+function openArchivePage(){ showToast('蕾蕾在赶工^^'); }
+function openProfileCenter(){ window.location.href = 'qq_profile.html?__ts=' + encodeURIComponent(String(Date.now())); }
+
+function getPosts(){
+  try{
+    if(Array.isArray(hydratedPostsCache)){
+      return hydratedPostsCache.slice();
+    }
+    const orderedCandidates = [
+      scopedKey(STORAGE_POSTS_BRIDGE),
+      STORAGE_POSTS_BRIDGE,
+      scopedKey(STORAGE_POSTS),
+      scopedKey(STORAGE_POSTS_ALT),
+      STORAGE_POSTS,
+      STORAGE_POSTS_ALT
+    ].concat(storageKeyCandidates(STORAGE_POSTS)).concat(storageKeyCandidates(STORAGE_POSTS_ALT));
+    for(const key of Array.from(new Set(orderedCandidates.filter(Boolean)))){
+      try{
+        const raw = localStorage.getItem(key);
+        if(!raw) continue;
+        const posts = JSON.parse(raw);
+        if(Array.isArray(posts)){
+          hydratedPostsCache = posts.slice();
+          return posts.slice();
+        }
+      }catch(ignoreErr){}
+    }
+    return [];
+  }catch(e){
+    return [];
+  }
+}
+
+function writePostsToStorageKey(key, payload){
+  try{
+    if(key) localStorage.setItem(key, payload);
+  }catch(ignoreErr){}
+}
+
+function writePostsToAllLocalStores(payload){
+  const keys = [
+    STORAGE_POSTS,
+    STORAGE_POSTS_ALT,
+    STORAGE_POSTS_BRIDGE,
+    scopedKey(STORAGE_POSTS),
+    scopedKey(STORAGE_POSTS_ALT),
+    scopedKey(STORAGE_POSTS_BRIDGE)
+  ].concat(storageKeyCandidates(STORAGE_POSTS)).concat(storageKeyCandidates(STORAGE_POSTS_ALT)).concat(storageKeyCandidates(STORAGE_POSTS_BRIDGE));
+  Array.from(new Set(keys.filter(Boolean))).forEach((key)=>{
+    writePostsToStorageKey(key, payload);
+  });
+}
+
+function savePosts(posts){
+  const safePosts = Array.isArray(posts) ? posts.map(sanitizeMomentPostForStorage) : [];
+  const payload = JSON.stringify(safePosts);
+  hydratedPostsCache = safePosts.slice();
+  writePostsToAllLocalStores(payload);
+  const writes = [];
+  if(window.PhoneStorage && typeof window.PhoneStorage.putJson === 'function'){
+    const phoneKeys = [
+      scopedKey(STORAGE_POSTS),
+      scopedKey(STORAGE_POSTS_ALT),
+      STORAGE_POSTS,
+      STORAGE_POSTS_ALT
+    ];
+    Array.from(new Set(phoneKeys.filter(Boolean))).forEach((key)=>{
+      if(!key) return;
+      try{
+        writes.push(window.PhoneStorage.putJson(key, safePosts).catch(()=>null));
+      }catch(ignorePhoneErr){}
+    });
+  }
+  safePosts.forEach((post)=>{
+    writes.push(saveMomentPostRecord(post).catch(()=>null));
+  });
+  pendingPostsSavePromise = Promise.all(writes).then(()=>safePosts).catch(()=>safePosts);
+  return pendingPostsSavePromise;
+}
+
+function momentPostRecordKeys(postId){
+  const id = String(postId || '').trim();
+  if(!id) return [];
+  return Array.from(new Set([
+    scopedKey(STORAGE_POST_RECORD_PREFIX + id),
+    STORAGE_POST_RECORD_PREFIX + id
+  ].filter(Boolean)));
+}
+
+function saveMomentPostRecord(post){
+  if(!(post && post.id) || !(window.PhoneStorage && typeof window.PhoneStorage.putJson === 'function')){
+    return Promise.resolve(null);
+  }
+  const safePost = sanitizeMomentPostForStorage(post);
+  return Promise.all(momentPostRecordKeys(safePost.id).map((key)=>{
+    return window.PhoneStorage.putJson(key, safePost).catch(()=>null);
+  })).then(()=>safePost);
+}
+
+function removeMomentPostRecords(postIds){
+  if(!(window.PhoneStorage && typeof window.PhoneStorage.removeJson === 'function')){
+    return Promise.resolve(null);
+  }
+  const ids = Array.from(new Set((Array.isArray(postIds) ? postIds : []).map((id)=>String(id || '').trim()).filter(Boolean)));
+  const tasks = [];
+  ids.forEach((id)=>{
+    momentPostRecordKeys(id).forEach((key)=>{
+      tasks.push(window.PhoneStorage.removeJson(key).catch(()=>null));
+    });
+  });
+  return Promise.all(tasks).then(()=>null).catch(()=>null);
+}
+
+function mergeMomentPostLists(base, incoming){
+  const map = new Map();
+  (Array.isArray(base) ? base : []).forEach((post)=>{
+    if(post && post.id) map.set(String(post.id), sanitizeMomentPostForStorage(post));
+  });
+  (Array.isArray(incoming) ? incoming : []).forEach((post)=>{
+    if(!(post && post.id)) return;
+    const id = String(post.id);
+    const current = map.get(id);
+    const next = sanitizeMomentPostForStorage(post);
+    if(!current || getPostActivityStamp(next) >= getPostActivityStamp(current)){
+      map.set(id, next);
+    }
+  });
+  return Array.from(map.values()).sort((a,b)=> (Number(b.createdAt || 0) || 0) - (Number(a.createdAt || 0) || 0));
+}
+
+async function loadMomentPostRecordsFromPhoneStorage(){
+  if(!(window.PhoneStorage && typeof window.PhoneStorage.list === 'function')) return [];
+  try{
+    const records = await window.PhoneStorage.list('kv');
+    if(!Array.isArray(records)) return [];
+    return records.map((record)=>{
+      const id = String(record && record.id || '');
+      const data = record && Object.prototype.hasOwnProperty.call(record, 'data') ? record.data : null;
+      return id.indexOf(STORAGE_POST_RECORD_PREFIX) !== -1 && data && data.id ? data : null;
+    }).filter(Boolean);
+  }catch(e){
+    return [];
+  }
+}
+
+async function hydratePostsFromLargeStore(){
+  if(!(window.PhoneStorage && typeof window.PhoneStorage.getJson === 'function')) return;
+  try{
+    const preferredCandidates = [
+      scopedKey(STORAGE_POSTS_BRIDGE),
+      scopedKey(STORAGE_POSTS),
+      scopedKey(STORAGE_POSTS_ALT),
+      STORAGE_POSTS_BRIDGE,
+      STORAGE_POSTS,
+      STORAGE_POSTS_ALT
+    ].concat(storageKeyCandidates(STORAGE_POSTS)).concat(storageKeyCandidates(STORAGE_POSTS_ALT)).concat(storageKeyCandidates(STORAGE_POSTS_BRIDGE));
+    for(const key of Array.from(new Set(preferredCandidates.filter(Boolean)))){
+      let stored = null;
+      try{
+        stored = await window.PhoneStorage.getJson(key);
+      }catch(ignoreErr){}
+      if(Array.isArray(stored)){
+        const current = Array.isArray(hydratedPostsCache) ? hydratedPostsCache.slice() : getPosts();
+        const postRecords = await loadMomentPostRecordsFromPhoneStorage();
+        const mergedStored = mergeMomentPostLists(stored, postRecords);
+        const safeStored = mergeMomentPostLists(current, mergedStored).map(sanitizeMomentPostForStorage);
+        hydratedPostsCache = safeStored.slice();
+        writePostsToAllLocalStores(JSON.stringify(safeStored));
+        savePosts(safeStored);
+        return;
+      }
+    }
+    if(typeof window.PhoneStorage.list === 'function'){
+      try{
+        const records = await window.PhoneStorage.list('kv');
+        if(Array.isArray(records)){
+          let matched = [];
+          let postRecords = [];
+          records.forEach((record)=>{
+            const id = String(record && record.id || '');
+            const data = record && Object.prototype.hasOwnProperty.call(record, 'data') ? record.data : null;
+            if(id.indexOf(STORAGE_POST_RECORD_PREFIX) !== -1 && data && data.id){
+              postRecords.push(data);
+              return;
+            }
+            if(!/moments_posts/i.test(id)) return;
+            if(Array.isArray(data) && !matched.length){
+              matched = data;
+            }
+          });
+          if((Array.isArray(matched) && matched.length) || (Array.isArray(postRecords) && postRecords.length)){
+            const current = Array.isArray(hydratedPostsCache) ? hydratedPostsCache.slice() : getPosts();
+            const mergedIncoming = mergeMomentPostLists(matched, postRecords);
+            const safeMatched = mergeMomentPostLists(current, mergedIncoming).map(sanitizeMomentPostForStorage);
+            hydratedPostsCache = safeMatched.slice();
+            writePostsToAllLocalStores(JSON.stringify(safeMatched));
+            savePosts(safeMatched);
+          }
+        }
+      }catch(ignoreListErr){}
+    }
+  }catch(e){}
+}
+
+function hydratePostsFromBridge(){
+  try{
+    const bridgeKeys = [
+      scopedKey(STORAGE_POSTS_BRIDGE),
+      STORAGE_POSTS_BRIDGE
+    ].concat(storageKeyCandidates(STORAGE_POSTS_BRIDGE));
+    let raw = '';
+    for(const key of Array.from(new Set(bridgeKeys.filter(Boolean)))){
+      raw = localStorage.getItem(key) || '';
+      if(raw) break;
+    }
+    if(!raw) return false;
+    const posts = JSON.parse(raw);
+    if(!Array.isArray(posts)) return false;
+    const mergedPosts = mergeMomentPostLists(getPosts(), posts);
+    hydratedPostsCache = mergedPosts.slice();
+    writePostsToAllLocalStores(JSON.stringify(mergedPosts));
+    if(window.PhoneStorage && typeof window.PhoneStorage.putJson === 'function'){
+      [
+        scopedKey(STORAGE_POSTS_BRIDGE),
+        scopedKey(STORAGE_POSTS),
+        scopedKey(STORAGE_POSTS_ALT),
+        STORAGE_POSTS_BRIDGE,
+        STORAGE_POSTS,
+        STORAGE_POSTS_ALT
+      ].forEach((key)=>{
+        try{
+          window.PhoneStorage.putJson(key, mergedPosts).catch(()=>{});
+        }catch(ignorePhoneErr){}
+      });
+    }
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function getPostActivityStamp(post){
+  const item = post && typeof post === 'object' ? post : {};
+  let stamp = Math.max(Number(item.updatedAt || 0) || 0, Number(item.createdAt || 0) || 0);
+  (Array.isArray(item.comments) ? item.comments : []).forEach((comment)=>{
+    stamp = Math.max(stamp, Number((comment && comment.at) || 0) || 0);
+  });
+  return stamp;
+}
+
+function getPostsActivityStamp(posts){
+  return (Array.isArray(posts) ? posts : []).reduce((max, post)=>Math.max(max, getPostActivityStamp(post)), 0);
+}
+
+function getPostsRichness(posts){
+  return (Array.isArray(posts) ? posts : []).reduce((sum, post)=>{
+    const comments = Array.isArray(post && post.comments) ? post.comments.length : 0;
+    const likes = Array.isArray(post && post.likes) ? post.likes.length : 0;
+    return sum + 1 + comments * 3 + likes;
+  }, 0);
+}
+
+function shouldKeepCurrentPostsOverHydrated(current, incoming){
+  if(!Array.isArray(current) || !current.length) return false;
+  if(!Array.isArray(incoming) || !incoming.length) return true;
+  const currentStamp = getPostsActivityStamp(current);
+  const incomingStamp = getPostsActivityStamp(incoming);
+  if(currentStamp > incomingStamp) return true;
+  if(currentStamp === incomingStamp && getPostsRichness(current) > getPostsRichness(incoming)) return true;
+  return false;
+}
+
+function sanitizeMomentPostForStorage(post){
+  const next = Object.assign({}, post || {});
+  next.authorAvatar = sanitizeAvatarForStorage(next.authorAvatar);
+  next.comments = (Array.isArray(next.comments) ? next.comments : []).map((comment)=>{
+    if(typeof comment === 'string') return comment;
+    const copy = Object.assign({}, comment || {});
+    copy.avatar = sanitizeAvatarForStorage(copy.avatar);
+    return copy;
+  });
+  return next;
+}
+
+function fmtTime(ts){
+  try{
+    const d = new Date(ts);
+    if(Number.isNaN(d.getTime())) return '';
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    const h = String(d.getHours()).padStart(2,'0');
+    const min = String(d.getMinutes()).padStart(2,'0');
+    return y + '-' + m + '-' + day + ' ' + h + ':' + min;
+  }catch(e){
+    return '';
+  }
+}
+
+function getCurrentBubbleName(){
+  const profile = activeProfile();
+  return String(profile.name || DEFAULT_BUBBLE_NAME).trim() || DEFAULT_BUBBLE_NAME;
+}
+
+function truncateMomentMemoryText(text, max){
+  const clean = String(text || '').replace(/\s+/g, ' ').trim();
+  const limit = Math.max(8, Number(max || 80) || 80);
+  return clean.length > limit ? (clean.slice(0, limit - 1) + '…') : clean;
+}
+
+function getMomentPostBriefForMemory(post){
+  const item = post && typeof post === 'object' ? post : {};
+  const parts = [];
+  const text = String(item.text || '').replace(/\s+/g, ' ').trim();
+  const imageText = String(item.imageText || '').replace(/\s+/g, ' ').trim();
+  if(text) parts.push('正文「' + truncateMomentMemoryText(text, 64) + '」');
+  if(imageText) parts.push('配图「' + truncateMomentMemoryText(imageText, 54) + '」');
+  const images = Array.isArray(item.images) ? item.images : [];
+  if(!imageText && images.length){
+    const desc = images.map((image)=>String((image && (image.description || image.text || image.caption)) || '').replace(/\s+/g, ' ').trim()).filter(Boolean).slice(0, 2).join(' / ');
+    if(desc) parts.push('配图「' + truncateMomentMemoryText(desc, 54) + '」');
+  }
+  return parts.join('，') || '无正文内容';
+}
+
+function normalizeMomentsSelfMemoryStore(store){
+  const source = store && typeof store === 'object' ? store : {};
+  const seen = Array.isArray(source.seenKeys) ? source.seenKeys : [];
+  const items = Array.isArray(source.items) ? source.items : [];
+  return {
+    seenKeys: seen.map((key)=>String(key || '').trim()).filter(Boolean).slice(-500),
+    items: items.map((item)=>{
+      if(!item || typeof item !== 'object') return null;
+      const text = truncateMomentMemoryText(item.text || '', 120);
+      if(!text) return null;
+      return {
+        key: String(item.key || '').trim() || ('moment_' + Date.now().toString(36)),
+        at: Number(item.at || 0) || Date.now(),
+        kind: String(item.kind || '').trim(),
+        text: text
+      };
+    }).filter(Boolean).sort((a, b)=>(Number(b.at || 0) || 0) - (Number(a.at || 0) || 0)).slice(0, 120)
+  };
+}
+
+function momentsSelfMemoryStorageId(charId){
+  return scopedKey('moments_self_memory_' + String(charId || '').trim());
+}
+
+async function loadMomentsSelfMemoryForChar(charId){
+  const key = momentsSelfMemoryStorageId(charId);
+  if(window.PhoneStorage && typeof window.PhoneStorage.getJson === 'function'){
+    try{
+      const stored = await window.PhoneStorage.getJson(key);
+      if(stored && typeof stored === 'object') return normalizeMomentsSelfMemoryStore(stored);
+    }catch(e){}
+  }
+  try{
+    return normalizeMomentsSelfMemoryStore(JSON.parse(localStorage.getItem(key) || localStorage.getItem('moments_self_memory_' + String(charId || '').trim()) || '{}'));
+  }catch(e){
+    return normalizeMomentsSelfMemoryStore({});
+  }
+}
+
+function saveMomentsSelfMemoryForChar(charId, store){
+  const key = momentsSelfMemoryStorageId(charId);
+  const next = normalizeMomentsSelfMemoryStore(store);
+  if(window.PhoneStorage && typeof window.PhoneStorage.putJson === 'function'){
+    return window.PhoneStorage.putJson(key, next).catch(()=>null).then(()=>{
+      try{ localStorage.removeItem(key); }catch(e){}
+      return next;
+    });
+  }
+  try{ localStorage.setItem(key, JSON.stringify(next)); }catch(e){}
+  return Promise.resolve(next);
+}
+
+function resolveMomentAuthorCharacter(post){
+  const item = resolveMomentAuthorMeta(post || {});
+  const charId = String((item && item.charId) || '').trim();
+  if(charId) return getCharacterById(charId) || { id: charId, name: item.authorName || '' };
+  const author = String((item && item.authorName) || '').trim();
+  if(!author) return null;
+  return getStoredCharactersSnapshot().find((char)=>{
+    if(!char || !char.id) return false;
+    const names = [char.nickname, char.name].map((value)=>String(value || '').trim()).filter(Boolean);
+    return names.indexOf(author) !== -1;
+  }) || null;
+}
+
+function rememberUserMomentReactionForAuthor(kind, post, payload){
+  const authorChar = resolveMomentAuthorCharacter(post);
+  if(!authorChar || !authorChar.id) return;
+  const actor = String((payload && payload.actor) || getCurrentBubbleName()).trim() || DEFAULT_BUBBLE_NAME;
+  const authorName = String((authorChar && (authorChar.nickname || authorChar.name)) || (post && post.authorName) || '').trim();
+  if(authorName && actor === authorName) return;
+  const postId = String((post && post.id) || '').trim();
+  const at = Number((payload && payload.at) || Date.now()) || Date.now();
+  const commentText = String((payload && payload.commentText) || '').replace(/\s+/g, ' ').trim();
+  const replyToName = String((payload && payload.replyToName) || '').replace(/\s+/g, ' ').trim();
+  const key = String((payload && payload.key) || (kind + ':' + postId + ':' + actor + ':' + (payload && payload.commentId || ''))).trim();
+  const brief = getMomentPostBriefForMemory(post);
+  let text = '';
+  if(kind === 'reaction-like'){
+    text = actor + ' 给你的朋友圈点过赞：' + brief;
+  }else if(replyToName){
+    text = actor + ' 在你的朋友圈回复了 ' + replyToName + '：「' + truncateMomentMemoryText(commentText, 58) + '」';
+  }else{
+    text = actor + ' 在你的朋友圈留言：「' + truncateMomentMemoryText(commentText, 58) + '」';
+  }
+  momentsSelfMemoryWriteQueue = momentsSelfMemoryWriteQueue.then(async ()=>{
+    const store = await loadMomentsSelfMemoryForChar(authorChar.id);
+    const seen = new Set(store.seenKeys || []);
+    if(seen.has(key)) return store;
+    seen.add(key);
+    const items = [{ key: key, at: at, kind: kind, text: truncateMomentMemoryText(text, 120) }].concat(store.items || []);
+    return saveMomentsSelfMemoryForChar(authorChar.id, {
+      seenKeys: Array.from(seen).slice(-500),
+      items: items
+    });
+  }).catch(()=>null);
+}
+
+function formatLikeText(names){
+  const list = Array.isArray(names) ? names.filter(Boolean) : [];
+  if(!list.length) return '';
+  if(list.length === 1) return list[0] + '觉得很赞';
+  return list.join('、') + '都觉得很赞';
+}
+
+function getActorName(post){
+  return (post && post.authorName) || '我';
+}
+
+function getInitials(name){
+  const text = String(name || '').trim();
+  if(!text) return 'ME';
+  const ascii = text.match(/[A-Za-z0-9]/g);
+  if(ascii && ascii.length) return ascii.slice(0, 2).join('').toUpperCase();
+  return text.slice(0, 2);
+}
+
+function getPostAvatarStyleValue(post){
+  const src = (post && post.authorAvatar) || '';
+  if(isStableAvatarSource(src)) return cssAvatarUrl(src);
+  if(post && post.charId) return 'none';
+  const fallback = getCurrentMomentAvatarForRender();
+  return fallback ? cssAvatarUrl(fallback) : 'none';
+}
+
+function getCommentAvatarStyleValue(comment){
+  const src = (comment && comment.avatar) || '';
+  if(isStableAvatarSource(src)) return cssAvatarUrl(src);
+  const name = String((comment && comment.name) || '').trim();
+  if(name && name === getCurrentBubbleName()){
+    const fallback = getCurrentMomentAvatarForRender();
+    return fallback ? cssAvatarUrl(fallback) : 'none';
+  }
+  return 'none';
+}
+
+async function resolveMomentPostAvatarSource(post){
+  const resolved = resolveMomentAuthorMeta(post || {});
+  const saved = String((resolved && resolved.authorAvatar) || '').trim();
+  if(isStableAvatarSource(saved)) return saved;
+  const charId = String((resolved && resolved.charId) || '').trim();
+  if(charId){
+    const char = getCharacterById(charId);
+    const charAvatar = await resolveCharacterAvatarSource(char || { id: charId }).catch(()=> '');
+    if(isRenderableAssetSource(charAvatar)) return charAvatar;
+  }
+  return getCurrentMomentAvatarForRender();
+}
+
+function setMomentAvatarNode(node, src, fallbackName){
+  if(!node) return;
+  const safe = String(src || '').trim();
+  if(isRenderableAssetSource(safe)){
+    node.style.backgroundImage = 'url("' + safe.replace(/"/g, '\\"') + '")';
+    node.textContent = '';
+    return;
+  }
+  node.style.backgroundImage = 'none';
+  node.innerHTML = '<span>' + esc(getInitials(fallbackName || DEFAULT_BUBBLE_NAME)) + '</span>';
+}
+
+function hydrateMomentAvatarElements(root){
+  const host = root || document;
+  const nodes = host.querySelectorAll ? host.querySelectorAll('[data-moment-post-avatar-id]') : [];
+  const posts = getPosts().map((post)=>resolveMomentAuthorMeta(post));
+  nodes.forEach((node)=>{
+    const postId = String(node.getAttribute('data-moment-post-avatar-id') || '').trim();
+    if(!postId || node.dataset.avatarHydrating === '1') return;
+    const post = posts.find((item)=>String(item && item.id || '') === postId);
+    if(!post) return;
+    node.dataset.avatarHydrating = '1';
+    resolveMomentPostAvatarSource(post).then((src)=>{
+      setMomentAvatarNode(node, src, getActorName(post));
+    }).catch(()=>{}).finally(()=>{
+      delete node.dataset.avatarHydrating;
+    });
+  });
+}
+
+function focusCommentInput(postId){
+  const input = document.getElementById('comment-' + String(postId || ''));
+  if(input && typeof input.focus === 'function') input.focus();
+}
+
+function hasCatLikeEasterEgg(post){
+  const text = String((post && post.text) || '') + '\n' + String((post && post.imageText) || '');
+  return /#0615\b/i.test(text);
+}
+
+function buildLikeButtonInner(post, likes, isLiked){
+  const useCatLike = isLiked && hasCatLikeEasterEgg(post);
+  const icon = useCatLike
+    ? '<img class="like-cat-icon" src="assets/小黑猫点赞特效.png" alt="">'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg>';
+  return icon + '<span>' + esc(String((likes && likes.length) || 0)) + '</span>';
+}
+
+function applyLikeButtonState(btn, post, likes, isLiked){
+  if(!btn) return;
+  btn.classList.toggle('liked', !!isLiked);
+  btn.classList.toggle('cat-liked', !!(isLiked && hasCatLikeEasterEgg(post)));
+  btn.innerHTML = buildLikeButtonInner(post, likes, isLiked);
+}
+
+function renderPostContentEditor(post){
+  return '<div class="post-edit-card">'
+    + '<textarea class="post-edit-input" id="postEditInput-' + esc(post.id) + '" placeholder="编辑这条内容...">' + esc(post && post.text || '') + '</textarea>'
+    + '<div class="post-edit-actions">'
+    + '<button class="post-edit-cancel" type="button" onclick="cancelEditPost()">取消</button>'
+    + '<button class="post-edit-done" type="button" onclick="saveEditPost(\'' + esc(post.id) + '\')">完成</button>'
+    + '</div>'
+    + '</div>';
+}
+
+function openShareMoment(postId){
+  if(deleteMode) return;
+  pendingSharePostId = String(postId || '');
+  const overlay = document.getElementById('shareOverlay');
+  const modal = document.getElementById('shareModal');
+  if(!overlay || !modal) return;
+  const post = getPosts().find((item)=>String(item && item.id || '') === pendingSharePostId);
+  if(!post){
+    showToast('这条朋友圈没找到');
+    return;
+  }
+  modal.innerHTML = '<div class="share-head"><div><div class="share-title">发送给谁</div><div class="modal-sub">这会作为朋友圈小卡片进入聊天</div></div><button class="share-close" type="button" onclick="closeShareMoment()">×</button></div>'
+    + '<div class="share-preview"><div class="share-preview-kicker">MOMENT CARD</div><div class="share-preview-text">' + esc(momentCardPreviewText(post)) + '</div></div>'
+    + '<div class="share-char-row" id="shareCharRow"><div class="share-empty">正在读取角色...</div></div>';
+  overlay.classList.add('open');
+  renderShareCharacterRow();
+}
+
+function closeShareMoment(){
+  pendingSharePostId = '';
+  const overlay = document.getElementById('shareOverlay');
+  if(overlay) overlay.classList.remove('open');
+}
+
+async function renderShareCharacterRow(){
+  const row = document.getElementById('shareCharRow');
+  if(!row) return;
+  const chars = await getMomentsShareCharacters();
+  momentShareCharacterCache = chars.slice();
+  if(!chars.length){
+    row.innerHTML = '<div class="share-empty">还没有可以发送的角色。</div>';
+    return;
+  }
+  row.innerHTML = '<div class="schedule-picker-strip is-chat-share">' + chars.map((char)=>{
+    const id = String(char && char.id || '');
+    const name = getCharacterDisplayName(char);
+    const avatar = getCharacterAvatarSource(char);
+    return '<div class="schedule-picker-chip"><button class="schedule-picker-chip-btn" type="button" data-share-char-id="' + escAttr(id) + '">'
+      + (isRenderableAssetSource(avatar) ? ('<img src="' + escAttr(avatar) + '" alt="">') : ('<div class="schedule-picker-chip-avatar">' + esc(getInitials(name)) + '</div>'))
+      + '</button><div class="schedule-picker-chip-label">' + esc(name) + '</div></div>';
+  }).join('') + '</div>';
+  row.querySelectorAll('[data-share-char-id]').forEach((btn)=>{
+    btn.addEventListener('click', (evt)=>{
+      evt.preventDefault();
+      evt.stopPropagation();
+      sendMomentToChar(String(btn.getAttribute('data-share-char-id') || ''));
+    });
+  });
+  chars.forEach((char)=>{
+    resolveCharacterAvatarSource(char).then((src)=>{
+      src = String(src || '').trim();
+      if(!isRenderableAssetSource(src)) return;
+      const btn = Array.prototype.find.call(row.querySelectorAll('[data-share-char-id]'), (node)=>String(node.getAttribute('data-share-char-id') || '') === String(char && char.id || ''));
+      if(btn) btn.innerHTML = '<img src="' + escAttr(src) + '" alt="">';
+    }).catch(()=>{});
+  });
+  row.scrollLeft = 0;
+}
+
+async function sendMomentToChar(charId){
+  const id = String(charId || '').trim();
+  const post = getPosts().find((item)=>String(item && item.id || '') === String(pendingSharePostId || ''));
+  const target = momentShareCharacterCache.find((char)=>String(char && char.id || '') === id) || getCharacterById(id);
+  if(!post || !target){
+    showToast('发送失败，目标不见了');
+    return;
+  }
+  try{
+    await appendMomentCardToChat(post, target);
+    closeShareMoment();
+    try{
+      if(window.parent) window.parent.postMessage({ type:'OPEN_CHAT_WITH', payload: target }, '*');
+    }catch(e){}
+    showToast('已发送给' + getCharacterDisplayName(target));
+  }catch(err){
+    console.error('send moment card failed', err);
+    showToast('发送失败');
+  }
+}
+
+function renderPostImages(post){
+  const images = getPostImages(post);
+  if(!images.length) return '';
+  const count = Math.max(1, Math.min(images.length, 4));
+  return '<div class="post-image-stack count-' + esc(String(count)) + '">'
+    + images.slice(0, 8).map((image, index)=>{
+      const isTextImage = String(image && image.kind || '') === 'text';
+      const inner = isTextImage
+        ? '<div class="text-image-real" aria-label="查看图片内容"></div>'
+        : '<img class="post-image-real" data-moment-image-id="' + esc(post.id) + '" data-moment-image-index="' + esc(String(index)) + '" alt="">';
+      return '<button class="post-image-button" type="button" data-post-id="' + esc(post.id) + '" data-image-index="' + esc(String(index)) + '">' + inner + '</button>';
+    }).join('')
+    + '</div>';
+}
+
+function startEditPost(postId){
+  if(deleteMode) return;
+  editingPostId = String(postId || '');
+  renderFeed();
+  setTimeout(()=>{
+    const input = document.getElementById('postEditInput-' + editingPostId);
+    if(input && typeof input.focus === 'function') input.focus();
+  }, 0);
+}
+
+function cancelEditPost(){
+  editingPostId = '';
+  renderFeed();
+}
+
+function saveEditPost(postId){
+  const id = String(postId || '');
+  const input = document.getElementById('postEditInput-' + id);
+  const next = input ? String(input.value || '').trim() : '';
+  if(!next){
+    showToast('内容不能为空');
+    return;
+  }
+  const posts = getPosts();
+  const idx = posts.findIndex((item)=>String(item && item.id || '') === id);
+  if(idx === -1) return;
+  posts[idx].text = next;
+  posts[idx].updatedAt = Date.now();
+  savePosts(posts);
+  editingPostId = '';
+  renderFeed();
+  showToast('已保存');
+}
+
+function renderFeed(){
+  const host = document.getElementById('feedList');
+  if(!host) return;
+  const posts = getPosts().map((post)=>resolveMomentAuthorMeta(post)).sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
+  if(!posts.length){
+    host.innerHTML = '<div class="empty">还没有朋友圈，点击加号发布吧^^</div>';
+    return;
+  }
+  host.innerHTML = posts.map((post)=>{
+    const comments = Array.isArray(post.comments) ? post.comments : [];
+    const likes = Array.isArray(post.likes) ? post.likes : [];
+    const isSelected = deleteSelection.indexOf(String(post && post.id || '')) !== -1;
+    const actorName = getActorName(post);
+    const postAvatarStyle = getPostAvatarStyleValue(post);
+    const currentLikeName = getCurrentBubbleName();
+    const isLiked = likes.indexOf(currentLikeName) !== -1;
+    const isEditing = String(editingPostId || '') === String(post && post.id || '');
+    return '<article class="post' + (deleteMode ? ' delete-mode' : '') + '">'
+      + (deleteMode ? '<button class="post-select' + (isSelected ? ' selected' : '') + '" type="button" data-delete-post="' + esc(post.id) + '">' + (isSelected ? '✓' : '') + '</button>' : '')
+      + '<div class="post-head">'
+      + '<div class="post-left">'
+      + '<div class="post-av" data-moment-post-avatar-id="' + escAttr(post.id) + '" style="background-image:' + postAvatarStyle + ';background-size:cover;background-position:center;background-repeat:no-repeat;">' + (postAvatarStyle === 'none' ? '<span>' + esc(getInitials(actorName)) + '</span>' : '') + '</div>'
+      + '<div><div class="post-name">' + esc(actorName) + '</div><div class="post-time">' + esc(fmtTime(post.createdAt)) + '</div></div>'
+      + '</div>'
+      + (!deleteMode ? '<button class="post-edit-btn" type="button" aria-label="编辑内容" onclick="startEditPost(\'' + esc(post.id) + '\')"><img src="assets/编辑.png" alt=""></button>' : '')
+      + '</div>'
+      + (post.type === 'dynamic' && hasMomentRealImage(post) ? renderPostImages(post) : '')
+      + (post.type === 'dynamic' && !hasMomentRealImage(post) && post.imageText ? '<button class="image-card-button" type="button" data-post-id="' + esc(post.id) + '"></button>' : '')
+      + (isEditing ? renderPostContentEditor(post) : (post.text ? '<div class="post-text">' + esc(post.text) + '</div>' : ''))
+      + (isEditing ? '' : renderMomentCaptionTranslation(post))
+      + '<div class="post-action-row">'
+      + '<div class="like-text">' + esc(formatLikeText(likes)) + '</div>'
+      + '<button class="like-btn' + (isLiked ? ' liked' : '') + (isLiked && hasCatLikeEasterEgg(post) ? ' cat-liked' : '') + '" type="button" data-like-post="' + esc(post.id) + '" onclick="togglePostLike(\'' + esc(post.id) + '\')">'
+      + buildLikeButtonInner(post, likes, isLiked)
+      + '</button>'
+      + '<button class="comment-jump-btn" type="button" onclick="focusCommentInput(\'' + esc(post.id) + '\')">' + (hasCatLikeEasterEgg(post) ? '<img class="comment-paw-icon" src="assets/小狗爪.png" alt="" aria-hidden="true">' : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path></svg>') + '<span>' + esc(String(comments.length || 0)) + '</span></button>'
+      + '<button class="share-btn" type="button" onclick="openShareMoment(\'' + esc(post.id) + '\')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"></path><path d="m22 2-7 20-4-9-9-4z"></path></svg></button>'
+      + '</div>'
+      + '<div class="comment-box">'
+      + '<div class="comment-list">'
+      + (comments.length ? comments.map((c)=>{
+          const name = esc((c && c.name) || DEFAULT_BUBBLE_NAME);
+          const text = esc(typeof c === 'string' ? c : ((c && c.text) || ''));
+          const replyName = c && c.replyToName ? esc(c.replyToName) : '';
+          const cid = esc((c && c.id) || '');
+          const commentAvatarStyle = getCommentAvatarStyleValue(c);
+          const whoHtml = replyName
+            ? ('<span class="reply-word">回复</span><span class="name-accent">' + replyName + '</span>')
+            : ('<span class="name-accent">' + name + '</span>');
+          return '<div class="comment-item' + (replyName ? ' reply-comment' : '') + '" data-reply-post="' + esc(post.id) + '" data-reply-comment="' + cid + '"><div class="comment-av" style="background-image:' + commentAvatarStyle + ';background-size:cover;background-position:center;background-repeat:no-repeat;">' + (commentAvatarStyle === 'none' ? '<span>' + esc(getInitials((c && c.name) || DEFAULT_BUBBLE_NAME)) + '</span>' : '') + '</div><div class="comment-main"><strong>' + whoHtml + '</strong> ' + text + '</div><button class="comment-del" type="button" data-delete-comment-post="' + esc(post.id) + '" data-delete-comment-id="' + cid + '" title="删除评论">×</button></div>';
+        }).join('') : '<div class="comment-item"><div class="comment-main">还没有评论，快来抢沙发。</div></div>')
+      + '</div>'
+      + '<div class="comment-compose">'
+      + (replyTarget[post.id] ? '<div class="reply-preview"><div class="reply-preview-text">' + esc(replyTarget[post.id]) + '</div><button class="reply-preview-close" type="button" onclick="clearReplyTarget(\'' + esc(post.id) + '\')">×</button></div>' : '')
+      + '<div class="comment-input-row">'
+      + '<input class="comment-input" id="comment-' + esc(post.id) + '" maxlength="120" placeholder="写评论...">'
+      + '<button class="comment-btn" type="button" onclick="addComment(\'' + esc(post.id) + '\')" aria-label="发送评论"><img class="comment-submit-paw" src="assets/小狗爪.png" alt="" aria-hidden="true"></button>'
+      + '</div>'
+      + '</div>'
+      + '</div>'
+      + '</article>';
+  }).join('');
+
+  hydrateMomentAvatarElements(host);
+  host.querySelectorAll('.image-card-button[data-post-id], .post-image-button[data-post-id]').forEach((btn)=>{
+    btn.addEventListener('click', ()=>{
+      if(deleteMode) return;
+      const id = btn.getAttribute('data-post-id');
+      const imageIndex = Math.max(0, Number(btn.getAttribute('data-image-index') || 0) || 0);
+      const post = getPosts().find((p)=>String(p && p.id || '') === String(id || ''));
+      openImageViewer(post || null, imageIndex);
+    });
+  });
+  hydrateMomentImageElements(host);
+  primeMomentTranslations(posts);
+}
+
+function prepareReply(postId, commentId){
+  const posts = getPosts();
+  const post = posts.find((p)=>String(p && p.id || '') === String(postId || ''));
+  if(!post || !Array.isArray(post.comments)) return;
+  const c = post.comments.find((x)=>String(x && x.id || '') === String(commentId || ''));
+  if(!c) return;
+  replyTarget[postId] = c.name || DEFAULT_BUBBLE_NAME;
+  renderFeed();
+}
+
+function clearReplyTarget(postId){
+  if(postId && replyTarget[postId]) delete replyTarget[postId];
+  renderFeed();
+}
+
+function openDeleteCommentConfirm(evt, postId, commentId){
+  if(evt && evt.preventDefault) evt.preventDefault();
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  pendingDeleteComment = { postId: String(postId || ''), commentId: String(commentId || '') };
+  const overlay = document.getElementById('deleteCommentConfirmOverlay');
+  if(overlay) overlay.classList.add('open');
+}
+
+function closeDeleteCommentConfirm(){
+  pendingDeleteComment = { postId:'', commentId:'' };
+  const overlay = document.getElementById('deleteCommentConfirmOverlay');
+  if(overlay) overlay.classList.remove('open');
+}
+
+function confirmDeleteComment(){
+  const postId = pendingDeleteComment.postId;
+  const commentId = pendingDeleteComment.commentId;
+  if(!postId || !commentId){
+    showToast('没有选中要删除的评论');
+    closeDeleteCommentConfirm();
+    return;
+  }
+  const posts = getPosts();
+  const idx = posts.findIndex((p)=>String(p && p.id || '') === String(postId || ''));
+  if(idx === -1){
+    showToast('这条评论对应的朋友圈没找到');
+    closeDeleteCommentConfirm();
+    return;
+  }
+  const comments = Array.isArray(posts[idx].comments) ? posts[idx].comments : [];
+  posts[idx].comments = comments.filter((c)=>String((c && c.id) || '') !== commentId);
+  posts[idx].updatedAt = Date.now();
+  savePosts(posts);
+  closeDeleteCommentConfirm();
+  renderFeed();
+  showToast('评论已删除');
+}
+
+function togglePostLike(postId){
+  if(deleteMode) return;
+  const name = getCurrentBubbleName();
+  const posts = getPosts();
+  const idx = posts.findIndex((p)=>String(p && p.id || '') === String(postId || ''));
+  if(idx === -1) return;
+  const likes = Array.isArray(posts[idx].likes) ? posts[idx].likes : [];
+  const hit = likes.indexOf(name);
+  if(hit === -1) likes.push(name);
+  else likes.splice(hit, 1);
+  posts[idx].likes = likes;
+  posts[idx].updatedAt = Date.now();
+  if(hit === -1){
+    rememberUserMomentReactionForAuthor('reaction-like', posts[idx], {
+      actor: name,
+      key: 'reaction-like:' + String(postId || '') + ':' + name,
+      at: posts[idx].updatedAt
+    });
+  }
+  savePosts(posts);
+  const btn = Array.from(document.querySelectorAll('[data-like-post]')).find((node)=>String(node.getAttribute('data-like-post') || '') === String(postId || ''));
+  applyLikeButtonState(btn, posts[idx], likes, hit === -1);
+}
+
+function toggleDeleteMode(){
+  if(!deleteMode){
+    deleteMode = true;
+    deleteSelection = [];
+    renderFeed();
+    syncDeleteConfirmFab();
+    showToast('选择要删除的朋友圈');
+    return;
+  }
+  if(!deleteSelection.length){
+    deleteMode = false;
+    replyTarget = {};
+    renderFeed();
+    syncDeleteConfirmFab();
+    showToast('已退出删除模式');
+    return;
+  }
+  openDeleteConfirm();
+}
+
+function handleDeleteFabTap(evt){
+  if(evt && evt.preventDefault) evt.preventDefault();
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  if(evt && evt.stopImmediatePropagation) evt.stopImmediatePropagation();
+  if(deleteMode && deleteSelection.length){
+    openDeleteConfirm();
+    return false;
+  }
+  toggleDeleteMode();
+  return false;
+}
+
+function syncDeleteConfirmFab(){
+  const btn = document.getElementById('deleteFab');
+  if(!btn) return;
+  const count = deleteSelection.length;
+  if(deleteMode && count){
+    btn.classList.add('confirm-delete-mode');
+    btn.classList.add('delete-active');
+    btn.textContent = '确认删除 ' + count;
+    btn.setAttribute('aria-label', '确认删除 ' + count + ' 条朋友圈');
+    btn.setAttribute('title', '确认删除');
+    return;
+  }
+  btn.classList.remove('confirm-delete-mode');
+  btn.classList.toggle('delete-active', !!deleteMode);
+  btn.innerHTML = '<img src="assets/Recycle-Bin-2--Streamline-Sharp.png" alt="">';
+  btn.setAttribute('aria-label', deleteMode ? '退出删除模式' : '删除朋友圈');
+  btn.setAttribute('title', deleteMode ? '退出删除模式' : '删除朋友圈');
+}
+
+function toggleDeletePost(postId){
+  const normalizedId = String(postId || '');
+  const idx = deleteSelection.indexOf(normalizedId);
+  if(idx === -1) deleteSelection.push(normalizedId);
+  else deleteSelection.splice(idx, 1);
+  renderFeed();
+  syncDeleteConfirmFab();
+}
+
+function openDeleteConfirm(){
+  const overlay = document.getElementById('deleteConfirmOverlay');
+  const text = document.getElementById('deleteConfirmText');
+  if(text) text.textContent = '确定清除 ' + deleteSelection.length + ' 条朋友圈？';
+  deleteConfirmBusy = false;
+  deleteConfirmOpenedAt = Date.now();
+  if(overlay) overlay.classList.add('open');
+}
+
+function closeDeleteConfirm(){
+  const overlay = document.getElementById('deleteConfirmOverlay');
+  if(overlay) overlay.classList.remove('open');
+  deleteConfirmBusy = false;
+  deleteMode = false;
+  deleteSelection = [];
+  replyTarget = {};
+  renderFeed();
+  syncDeleteConfirmFab();
+}
+
+function confirmDeletePosts(){
+  if(!deleteSelection.length){
+    showToast('还没有选中要删除的朋友圈');
+    closeDeleteConfirm();
+    return;
+  }
+  const selected = new Set(deleteSelection.map((id)=>String(id || '')));
+  getPosts().forEach((post)=>{
+    if(!selected.has(String(post && post.id || ''))) return;
+    getPostImages(post).forEach((image)=>{
+      const assetKey = String((image && image.assetKey) || '').trim();
+      if(assetKey) removeStoredAsset(assetKey).catch(()=>{});
+    });
+  });
+  const next = getPosts().filter((post)=>!selected.has(String(post && post.id || '')));
+  savePosts(next);
+  removeMomentPostRecords(Array.from(selected));
+  const overlay = document.getElementById('deleteConfirmOverlay');
+  if(overlay) overlay.classList.remove('open');
+  deleteMode = false;
+  deleteSelection = [];
+  replyTarget = {};
+  renderFeed();
+  syncDeleteConfirmFab();
+  showToast('已删除');
+}
+
+function addComment(postId){
+  const input = document.getElementById('comment-' + postId);
+  const text = input ? (input.value || '').trim() : '';
+  if(!text){
+    showToast('评论不能为空');
+    return;
+  }
+  const posts = getPosts();
+  const idx = posts.findIndex((p)=>String(p && p.id || '') === String(postId || ''));
+  if(idx === -1) return;
+  const comments = Array.isArray(posts[idx].comments) ? posts[idx].comments : [];
+  const bubbleName = getCurrentBubbleName();
+  const replyTo = replyTarget[postId] || '';
+  const now = Date.now();
+  const commentId = 'c_' + now;
+  comments.push({ id: commentId, name: bubbleName, avatar: getCurrentMomentAvatarForStorage(), replyToName: replyTo, text: text, at: now });
+  delete replyTarget[postId];
+  posts[idx].comments = comments;
+  posts[idx].updatedAt = now;
+  rememberUserMomentReactionForAuthor('reaction-comment', posts[idx], {
+    actor: bubbleName,
+    commentId: commentId,
+    commentText: text,
+    replyToName: replyTo,
+    key: 'reaction-comment:' + String(postId || '') + ':' + commentId,
+    at: now
+  });
+  savePosts(posts);
+  if(input) input.value = '';
+  renderFeed();
+}
+
+async function publishCurrent(){
+  const text = (publishState.text || '').trim();
+  const imageText = (publishState.imageText || '').trim();
+  const publishImages = Array.isArray(publishState.images) ? publishState.images : [];
+  const hasRealImage = publishImages.length > 0 || !!(publishState.imageFile || publishState.imagePreviewSrc);
+  if(publishState.mode === 'say'){
+    if(!text){ showToast('请输入说说内容'); return; }
+  }
+  if(publishState.mode === 'dynamic'){
+    if(!text && !imageText && !hasRealImage){ showToast('请输入动态内容或图片'); return; }
+  }
+  const posts = getPosts();
+  const postId = 'post_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  let imageAssetKey = '';
+  const savedImages = [];
+  if(publishState.mode === 'dynamic' && hasRealImage){
+    const imageList = publishImages.length ? publishImages : [{ file:publishState.imageFile, previewSrc:publishState.imagePreviewSrc, fileName:publishState.imageFileName, description:imageText }];
+    for(let i = 0; i < imageList.length; i++){
+      const item = imageList[i] || {};
+      const key = momentImageAssetKeyAt(postId, i);
+      if(String(item.kind || '') === 'text'){
+        savedImages.push({
+          kind: 'text',
+          fileName: String(item.fileName || '文字图片'),
+          description: String(item.description || '').trim()
+        });
+      }else{
+        try{
+          const savedImage = await saveStoredAsset(key, item.file || item.previewSrc || item.src);
+          if(savedImage === false) throw new Error('moment image save returned false');
+          if(!i) imageAssetKey = key;
+          savedImages.push({
+            kind: 'image',
+            assetKey: key,
+            fileName: String(item.fileName || (item.file && item.file.name) || '图片'),
+            description: String(item.description || '').trim()
+          });
+        }catch(e){
+          showToast('图片保存失败，换一张小一点的试试');
+          return;
+        }
+      }
+    }
+  }
+  const targetChar = getActiveChatCharacter();
+  const targetCharId = targetChar && targetChar.id ? String(targetChar.id) : '';
+  posts.push({
+    id: postId,
+    type: publishState.mode === 'dynamic' ? 'dynamic' : 'say',
+    text: text,
+    imageText: publishState.mode === 'dynamic' ? (imageText || savedImages.map((item)=>item.description).filter(Boolean).join('\n')) : '',
+    imageAssetKey: imageAssetKey,
+    images: savedImages,
+    imageFileName: publishState.mode === 'dynamic' ? String(publishState.imageFileName || (savedImages[0] && savedImages[0].fileName) || '') : '',
+    imageContextMode: savedImages.length && targetCharId ? (avatarVisionEnabledForChar(targetCharId) ? 'vision' : 'description') : '',
+    targetCharId: targetCharId,
+    authorName: getCurrentBubbleName(),
+    authorAvatar: getCurrentMomentAvatarForStorage(),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    comments: []
+  });
+  try{
+    await savePosts(posts);
+  }catch(e){
+    showToast('保存失败，请再试一次');
+    return;
+  }
+  closePublishOverlay();
+  renderFeed();
+  showToast('已发布');
+}
+
+function openPublishMode(evt){
+  if(evt && evt.preventDefault) evt.preventDefault();
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  publishState = { mode: '', text: '', imageText: '', imagePreviewSrc: '', imageFileName: '', imageFile: null, images: [] };
+  renderModePicker();
+  const overlay = document.getElementById('publishOverlay');
+  if(overlay) overlay.classList.add('open');
+}
+
+function closePublishOverlay(){
+  const overlay = document.getElementById('publishOverlay');
+  if(overlay) overlay.classList.remove('open');
+}
+
+function headerTextConfig(target){
+  const safe = String(target || '').trim();
+  if(safe === 'right') return { key:STORAGE_HEADER_TEXT_RIGHT, fallback:DEFAULT_HEADER_TEXT_RIGHT, title:'编辑验证文字' };
+  return { key:STORAGE_HEADER_TEXT_LEFT, fallback:DEFAULT_HEADER_TEXT_LEFT, title:'编辑封面标题' };
+}
+
+function openHeaderTextEditor(target){
+  currentHeaderTextTarget = String(target || '').trim() === 'right' ? 'right' : 'target';
+  const overlay = document.getElementById('signatureOverlay');
+  const input = document.getElementById('signatureInput');
+  const title = document.getElementById('signatureModalTitle');
+  const cfg = headerTextConfig(currentHeaderTextTarget);
+  const current = lsGet(cfg.key) || cfg.fallback;
+  if(title) title.textContent = cfg.title;
+  if(input) input.value = current;
+  if(overlay) overlay.classList.add('open');
+}
+
+function readHeaderTargetInline(){
+  const node = document.getElementById('momentHeaderTarget');
+  return node ? String(node.textContent || '').replace(/\s+/g, ' ').trim() : '';
+}
+
+function saveHeaderTargetInline(){
+  const next = readHeaderTargetInline();
+  if(next) lsSet(STORAGE_HEADER_TEXT_LEFT, next);
+}
+
+function handleHeaderTargetKey(evt){
+  if(!evt) return;
+  if(evt.key === 'Enter'){
+    evt.preventDefault();
+    saveHeaderTargetInline();
+    const node = document.getElementById('momentHeaderTarget');
+    if(node && typeof node.blur === 'function') node.blur();
+  }
+}
+
+function pasteHeaderTargetPlainText(evt){
+  if(!evt) return;
+  evt.preventDefault();
+  const text = evt.clipboardData ? String(evt.clipboardData.getData('text/plain') || '') : '';
+  if(!text) return;
+  if(document.queryCommandSupported && document.queryCommandSupported('insertText')){
+    document.execCommand('insertText', false, text);
+  }else{
+    const node = document.getElementById('momentHeaderTarget');
+    if(node) node.textContent += text;
+  }
+  saveHeaderTargetInline();
+}
+
+function openSignatureEditor(){
+  openHeaderTextEditor('left');
+}
+
+function openBubbleNameEditor(evt){
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  showToast('请到个人中心修改名字');
+}
+
+function closeBubbleNameEditor(){
+  const overlay = document.getElementById('bubbleNameOverlay');
+  if(overlay) overlay.classList.remove('open');
+}
+
+function confirmBubbleName(){
+  const input = document.getElementById('bubbleNameInput');
+  const next = input ? String(input.value || '').trim() : '';
+  lsSet(STORAGE_BUBBLE_NAME, next || DEFAULT_BUBBLE_NAME);
+  renderHero();
+  closeBubbleNameEditor();
+}
+
+function closeSignatureEditor(){
+  const overlay = document.getElementById('signatureOverlay');
+  if(overlay) overlay.classList.remove('open');
+}
+
+function confirmSignature(){
+  const input = document.getElementById('signatureInput');
+  const next = input ? String(input.value || '').trim() : '';
+  const cfg = headerTextConfig(currentHeaderTextTarget);
+  lsSet(cfg.key, next || cfg.fallback);
+  renderHero();
+  closeSignatureEditor();
+}
+
+function renderModePicker(){
+  const modal = document.getElementById('publishModal');
+  if(!modal) return;
+  modal.innerHTML = ''
+    + '<div class="modal-title">您要发布...</div>'
+    + '<div class="mode-actions">'
+    + '<button class="mode-btn" type="button" onclick="openSayForm()">说说</button>'
+    + '<button class="mode-btn black" type="button" onclick="openDynamicForm()">动态</button>'
+    + '</div>'
+    + '<div class="footer-actions">'
+    + '<button class="footer-btn" type="button" onclick="closePublishOverlay()">取消</button>'
+    + '</div>';
+}
+
+function openSayForm(){
+  publishState.mode = 'say';
+  renderSayForm();
+}
+
+function renderSayForm(){
+  const modal = document.getElementById('publishModal');
+  if(!modal) return;
+  modal.innerHTML = ''
+    + '<div class="modal-title">发布说说</div>'
+    + '<textarea class="publish-textarea" id="sayText" maxlength="400" placeholder="请输入文字...">' + esc(publishState.text) + '</textarea>'
+    + '<div class="footer-actions">'
+    + '<button class="footer-btn" type="button" onclick="renderModePicker()">取消</button>'
+    + '<button class="footer-btn black" type="button" onclick="submitSay()">发布</button>'
+    + '</div>';
+}
+
+function submitSay(){
+  const input = document.getElementById('sayText');
+  publishState.text = input ? input.value : '';
+  publishCurrent();
+}
+
+function openDynamicForm(){
+  publishState.mode = 'dynamic';
+  renderDynamicForm();
+}
+
+function renderDynamicForm(){
+  const modal = document.getElementById('publishModal');
+  if(!modal) return;
+  const images = Array.isArray(publishState.images) ? publishState.images : [];
+  const hasImage = !!((publishState.imageText && publishState.imageText.trim()) || images.length || publishState.imagePreviewSrc || publishState.imageFile);
+  const imageSummary = images.length
+    ? images.map((item, index)=>String(index + 1) + '. ' + (String(item.description || '').trim() || String(item.fileName || '图片'))).join('\n')
+    : (publishState.imageText || publishState.imageFileName || '');
+  modal.innerHTML = ''
+    + '<div class="modal-title">发布动态</div>'
+    + '<textarea class="publish-textarea" id="dynamicText" maxlength="400" placeholder="请输入文字...">' + esc(publishState.text) + '</textarea>'
+    + '<div class="helper-row">'
+    + '<button class="add-image-btn black" type="button" onclick="pickMomentImage()">上传图片</button>'
+    + '<button class="add-image-btn" type="button" onclick="openImageTextForm()">文字图片</button>'
+    + '</div>'
+    + '<div class="image-preview-wrap' + (hasImage ? ' show' : '') + '">'
+    + (images.length ? '<div class="image-stack">' + images.map(renderPublishPreviewThumb).join('') + '</div>' : '')
+    + (!images.length && publishState.imagePreviewSrc ? '<div class="image-stack"><button class="image-preview-thumb" type="button" data-index="1" onclick="openPublishImageDescription(0)" style="background-image:url(' + esc(publishState.imagePreviewSrc) + ')"></button></div>' : '')
+    + '<div class="image-preview-text">' + esc(imageSummary || '点击图片可添加描述；即使未开启识图，也会把描述交给角色。') + '</div>'
+    + '</div>'
+    + '<div class="footer-actions">'
+    + '<button class="footer-btn" type="button" onclick="renderModePicker()">取消</button>'
+    + '<button class="footer-btn black" type="button" onclick="submitDynamic()">发布</button>'
+    + '</div>';
+}
+
+function renderPublishPreviewThumb(item, index){
+  const isTextImage = String(item && item.kind || '') === 'text';
+  const bg = isTextImage ? '' : (' style="background-image:url(' + esc(item && item.previewSrc || '') + ')"');
+  const text = isTextImage ? '<span>' + esc(String((item && item.description) || '文字图片')) + '</span>' : '';
+  return '<button class="image-preview-thumb' + (isTextImage ? ' text-thumb' : '') + '" type="button" data-index="' + esc(String(index + 1)) + '" onclick="openPublishImageDescription(' + index + ')"' + bg + '>' + text + '</button>';
+}
+
+function openImageTextForm(){
+  const txt = document.getElementById('dynamicText');
+  if(txt) publishState.text = txt.value || '';
+  const modal = document.getElementById('publishModal');
+  if(!modal) return;
+  modal.innerHTML = ''
+    + '<div class="modal-title">文字图片</div>'
+    + '<textarea class="publish-textarea" id="imageTextInput" maxlength="280" placeholder="请输入文字...">' + esc(publishState.imageText) + '</textarea>'
+    + '<div class="footer-actions">'
+    + '<button class="footer-btn" type="button" onclick="renderDynamicForm()">取消</button>'
+    + '<button class="footer-btn black" type="button" onclick="confirmImageText()">确定</button>'
+    + '</div>';
+}
+
+function confirmImageText(){
+  const input = document.getElementById('imageTextInput');
+  const next = input ? (input.value || '') : '';
+  if(next.trim()){
+    const images = Array.isArray(publishState.images) ? publishState.images.slice() : [];
+    images.push({ kind:'text', fileName:'文字图片', description:next });
+    publishState.images = images;
+    publishState.imageText = images.map((item)=>String(item.description || '').trim()).filter(Boolean).join('\n');
+  }
+  renderDynamicForm();
+}
+
+function openPublishImageDescription(index){
+  const txt = document.getElementById('dynamicText');
+  if(txt) publishState.text = txt.value || '';
+  const images = Array.isArray(publishState.images) ? publishState.images : [];
+  if(!images.length && publishState.imagePreviewSrc){
+    publishState.images = [{ file:publishState.imageFile, previewSrc:publishState.imagePreviewSrc, fileName:publishState.imageFileName || '图片', description:publishState.imageText || '' }];
+  }
+  const safeIndex = Math.max(0, Number(index) || 0);
+  const item = (publishState.images || [])[safeIndex];
+  if(!item) return;
+  const modal = document.getElementById('publishModal');
+  if(!modal) return;
+  modal.innerHTML = ''
+    + '<div class="modal-title">图片描述</div>'
+    + '<div class="image-preview-wrap show"><div class="image-stack">' + renderPublishPreviewThumb(item, safeIndex) + '</div></div>'
+    + '<textarea class="publish-textarea" id="publishImageDescInput" maxlength="280" placeholder="' + (String(item.kind || '') === 'text' ? '请输入文字...' : '请输入图片描述...') + '">' + esc(item.description || '') + '</textarea>'
+    + '<div class="footer-actions">'
+    + '<button class="footer-btn" type="button" onclick="renderDynamicForm()">取消</button>'
+    + '<button class="footer-btn black" type="button" onclick="confirmPublishImageDescription(' + safeIndex + ')">确定</button>'
+    + '</div>';
+}
+
+function confirmPublishImageDescription(index){
+  const images = Array.isArray(publishState.images) ? publishState.images : [];
+  const safeIndex = Math.max(0, Number(index) || 0);
+  if(!images[safeIndex]) return renderDynamicForm();
+  const input = document.getElementById('publishImageDescInput');
+  images[safeIndex].description = input ? (input.value || '') : '';
+  publishState.images = images;
+  publishState.imageText = images.map((item)=>String(item.description || '').trim()).filter(Boolean).join('\n');
+  renderDynamicForm();
+}
+
+function pickMomentImage(){
+  const txt = document.getElementById('dynamicText');
+  if(txt) publishState.text = txt.value || '';
+  const input = document.getElementById('momentImageInput');
+  if(input) input.click();
+}
+
+function submitDynamic(){
+  const txt = document.getElementById('dynamicText');
+  publishState.text = txt ? txt.value : '';
+  publishCurrent();
+}
+
+function renderImageViewer(){
+  const overlay = document.getElementById('imageViewOverlay');
+  const textEl = document.getElementById('imageViewText');
+  const realWrap = document.getElementById('imageViewRealWrap');
+  const realImg = document.getElementById('imageViewReal');
+  const wrap = document.getElementById('imageViewTranslateWrap');
+  const post = getPosts().map((item)=>resolveMomentAuthorMeta(item)).find((item)=>String(item && item.id || '') === String(currentImageViewerPostId || '')) || null;
+  const imageItem = post ? (getPostImages(post)[currentImageViewerImageIndex] || null) : null;
+  const isTextImage = String(imageItem && imageItem.kind || '') === 'text';
+  const imageDescription = String((imageItem && imageItem.description) || (post && post.imageText) || '').trim();
+  if(textEl) textEl.textContent = imageDescription || '无图片描述';
+  if(realWrap && realImg){
+    realImg.removeAttribute('src');
+    realImg.style.display = '';
+    realWrap.classList.remove('text-card');
+    realWrap.classList.toggle('show', !!(post && hasMomentRealImage(post)));
+    if(post && hasMomentRealImage(post) && isTextImage){
+      realWrap.classList.add('text-card');
+      realImg.style.display = 'none';
+    }else if(post && hasMomentRealImage(post)){
+      resolveMomentImageSource(imageItem || post).then((src)=>{
+        if(!src || String(currentImageViewerPostId || '') !== String(post.id || '')) return;
+        realImg.src = src;
+        revokeObjectUrlLater(src);
+      }).catch(()=>{});
+    }
+  }
+  if(wrap){
+    if(post && shouldOfferMomentTranslation(post) && imageDescription){
+      const state = getMomentTranslationState(post);
+      const translation = state.translation || {};
+      const isOpen = !!(translation.imageVisible && String(translation.imageText || '').trim());
+      const label = translation.imageLoading ? '译中' : (isOpen ? '收起' : '译');
+      wrap.innerHTML = '<button class="moment-translate-btn" type="button" onclick="toggleMomentTranslation(\'' + esc(post.id) + '\',\'imageText\')"' + (translation.imageLoading ? ' disabled' : '') + '>' + esc(label) + '</button>'
+        + (isOpen ? buildMomentTranslationCardHtml(String(translation.imageText || '').trim(), '简体中文', 'image-view-translation-body') : '');
+      wrap.style.display = '';
+    }else{
+      wrap.innerHTML = '';
+      wrap.style.display = 'none';
+    }
+  }
+  if(overlay && currentImageViewerPostId) overlay.classList.add('open');
+}
+
+function openImageViewer(post){
+  currentImageViewerPostId = String(post && post.id || '').trim();
+  currentImageViewerImageIndex = Math.max(0, Number(arguments.length > 1 ? arguments[1] : 0) || 0);
+  renderImageViewer();
+}
+
+function closeImageViewer(){
+  const overlay = document.getElementById('imageViewOverlay');
+  currentImageViewerPostId = '';
+  currentImageViewerImageIndex = 0;
+  if(overlay) overlay.classList.remove('open');
+}
+
+function getProfileMeta(char){
+  const charId = String((char && char.id) || '').trim();
+  let stored = {};
+  try{
+    stored = JSON.parse(localStorage.getItem(scopedKey('moments_social_state_' + charId)) || localStorage.getItem('moments_social_state_' + charId) || '{}');
+  }catch(e){ stored = {}; }
+  const baseName = getCharacterDisplayName(char);
+  const screenName = String(stored.screenName || stored.nickname || baseName || 'CHAR').trim();
+  const signature = String(stored.signature || stored.bio || '今天也把一点心事放在这里').trim();
+  return { screenName, signature };
+}
+
+async function resolveCharProfileCover(charId){
+  try{
+    const assetVal = await loadStoredAsset(charProfileCoverAssetKey(charId));
+    if(assetVal instanceof Blob) return URL.createObjectURL(assetVal);
+    if(typeof assetVal === 'string' && assetVal) return assetVal;
+  }catch(e){}
+  return '';
+}
+
+function openCharProfile(charId){
+  const id = String(charId || '').trim();
+  const found = getCharacterById(id);
+  if(!found){
+    showToast('没有找到这个角色');
+    return;
+  }
+  currentProfileCharId = id;
+  try{ localStorage.setItem(scopedKey(STORAGE_PROFILE_CHAR), id); }catch(e){}
+  try{ localStorage.setItem(STORAGE_PROFILE_CHAR, id); }catch(e){}
+  const overlay = document.getElementById('charProfileOverlay');
+  if(overlay) overlay.classList.add('open');
+  renderCharProfile();
+}
+
+function closeCharProfile(){
+  const overlay = document.getElementById('charProfileOverlay');
+  if(overlay) overlay.classList.remove('open');
+  currentProfileCharId = '';
+  try{ localStorage.removeItem(scopedKey(STORAGE_PROFILE_CHAR)); }catch(e){}
+  try{ localStorage.removeItem(STORAGE_PROFILE_CHAR); }catch(e){}
+}
+
+function pickCharProfileCover(){
+  const input = document.getElementById('charProfileCoverInput');
+  if(input) input.click();
+}
+
+function renderProfilePostCard(post){
+  const hasImage = hasMomentRealImage(post);
+  return '<article class="char-profile-card">'
+    + (hasImage ? '<img class="char-profile-image" data-moment-image-id="' + esc(post.id) + '" alt="">' : '')
+    + (post.text ? '<div class="char-profile-card-text">' + esc(post.text) + '</div>' : '')
+    + (post.imageText ? '<div class="char-profile-card-text">' + esc(post.imageText) + '</div>' : '')
+    + '<div class="post-time">' + esc(fmtTime(post.createdAt)) + '</div>'
+    + '</article>';
+}
+
+function renderCharProfile(){
+  if(!currentProfileCharId) return;
+  const panel = document.getElementById('charProfilePanel');
+  const char = getCharacterById(currentProfileCharId);
+  if(!panel || !char) return;
+  const meta = getProfileMeta(char);
+  const avatar = getCharacterAvatarSource(char);
+  const posts = getPosts().map((post)=>resolveMomentAuthorMeta(post))
+    .filter((post)=>String((post && post.charId) || (post && post.targetCharId) || '') === String(currentProfileCharId))
+    .sort((a,b)=>(b.createdAt || 0) - (a.createdAt || 0));
+  panel.innerHTML = ''
+    + '<section class="char-profile-top">'
+    + '<button class="char-profile-back" type="button" onclick="closeCharProfile()">‹</button>'
+    + '<div class="char-profile-cover" id="charProfileCover" onclick="pickCharProfileCover()"></div>'
+    + '<div class="char-profile-avatar" style="background-image:' + (avatar ? ('url(' + esc(avatar) + ')') : 'none') + '"></div>'
+    + '<div class="char-profile-info">'
+    + '<div class="char-profile-name">' + esc(meta.screenName) + '</div>'
+    + '<div class="char-profile-sign">' + esc(meta.signature) + '</div>'
+    + '<div class="char-profile-stats"><div class="char-profile-stat">' + posts.length + '<span>POSTS</span></div><div class="char-profile-stat">' + (avatarVisionEnabledForChar(currentProfileCharId) ? 'ON' : 'OFF') + '<span>VISION</span></div></div>'
+    + '</div>'
+    + '</section>'
+    + '<section class="char-profile-section">'
+    + '<div class="char-profile-kicker">Pinned Memories</div>'
+    + (posts.length ? posts.map(renderProfilePostCard).join('') : '<div class="char-profile-empty">这里还没有动态，等他自己留下些什么</div>')
+    + '</section>';
+  hydrateMomentImageElements(panel);
+  resolveCharProfileCover(currentProfileCharId).then((src)=>{
+    const cover = document.getElementById('charProfileCover');
+    if(!cover || !src || currentProfileCharId !== String((char && char.id) || '')) return;
+    cover.style.backgroundImage = 'url(' + src + ')';
+    revokeObjectUrlLater(src);
+  }).catch(()=>{});
+}
+
+function getAvatarStyleValue(){
+  const src = currentHeroAvatarSrc || activeProfile().avatar || lsGet(STORAGE_AVATAR) || '';
+  return src ? ('url(' + src + ') center/cover no-repeat') : '#eee';
+}
+
+function headerImageConfig(slot){
+  const safe = String(slot || '').trim();
+  if(safe === 'tile1') return { legacyKey:STORAGE_HEADER_LEFT, assetKey:STORAGE_HEADER_LEFT_ASSET, inputId:'momentHeaderTile1Input', nodeId:'momentHeaderTile1', fallback:DEFAULT_HEADER_IMAGES.tile1 };
+  if(safe === 'tile2') return { legacyKey:STORAGE_HEADER_FRAME, assetKey:STORAGE_HEADER_FRAME_ASSET, inputId:'momentHeaderTile2Input', nodeId:'momentHeaderTile2', fallback:DEFAULT_HEADER_IMAGES.tile2 };
+  if(safe === 'tile3') return { legacyKey:STORAGE_HEADER_RIGHT, assetKey:STORAGE_HEADER_RIGHT_ASSET, inputId:'momentHeaderTile3Input', nodeId:'momentHeaderTile3', fallback:DEFAULT_HEADER_IMAGES.tile3 };
+  if(safe === 'tile4') return { legacyKey:STORAGE_HEADER_TILE_4, assetKey:STORAGE_HEADER_TILE_4_ASSET, inputId:'momentHeaderTile4Input', nodeId:'momentHeaderTile4', fallback:DEFAULT_HEADER_IMAGES.tile4 };
+  if(safe === 'tile5') return { legacyKey:STORAGE_HEADER_TILE_5, assetKey:STORAGE_HEADER_TILE_5_ASSET, inputId:'momentHeaderTile5Input', nodeId:'momentHeaderTile5', fallback:DEFAULT_HEADER_IMAGES.tile5 };
+  if(safe === 'tile6') return { legacyKey:STORAGE_HEADER_TILE_6, assetKey:STORAGE_HEADER_TILE_6_ASSET, inputId:'momentHeaderTile6Input', nodeId:'momentHeaderTile6', fallback:DEFAULT_HEADER_IMAGES.tile6 };
+  return null;
+}
+
+function setBackgroundImage(node, src){
+  if(!node) return;
+  const safe = String(src || '').trim();
+  node.style.backgroundImage = safe ? ('url("' + safe.replace(/"/g, '\\"') + '")') : 'none';
+}
+
+function setHeaderSlotBackground(cfg, src){
+  if(!cfg) return;
+  setBackgroundImage(document.getElementById(cfg.nodeId), src);
+  (cfg.extraNodeIds || []).forEach((id)=>{
+    setBackgroundImage(document.getElementById(id), src);
+  });
+}
+
+async function resolveHeaderImage(slot){
+  const cfg = headerImageConfig(slot);
+  if(!cfg) return '';
+  const src = await resolveHeroSource(cfg.legacyKey, cfg.assetKey);
+  return src || cfg.fallback || '';
+}
+
+function pickHeaderImage(slot, evt){
+  if(evt && evt.preventDefault) evt.preventDefault();
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  const cfg = headerImageConfig(slot);
+  if(!cfg) return;
+  const input = document.getElementById(cfg.inputId);
+  if(input) input.click();
+}
+
+async function resetMomentHeroImages(evt){
+  if(evt && evt.preventDefault) evt.preventDefault();
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  const slots = ['tile1', 'tile2', 'tile3', 'tile4', 'tile5', 'tile6'];
+  await Promise.all(slots.map((slot)=>{
+    const cfg = headerImageConfig(slot);
+    if(!cfg) return Promise.resolve();
+    lsRemove(cfg.legacyKey);
+    return removeStoredAsset(cfg.assetKey).catch(()=>null);
+  }));
+  renderHero();
+  updateMomentHeroDots();
+  showToast('已恢复默认封面图片');
+}
+
+function loadStoredAsset(key){
+  const scoped = scopedKey(key);
+  if(window.assetStore) return window.assetStore.load(scoped);
+  try{
+    const shell = getParentShell();
+    if(shell && shell !== window && typeof shell.loadStoredAsset === 'function'){
+      return shell.loadStoredAsset(key).then((src)=>src || '');
+    }
+  }catch(e){}
+  try{ return Promise.resolve(localStorage.getItem(scoped) || ''); }catch(e){ return Promise.resolve(''); }
+}
+
+async function loadStoredAssetExact(key){
+  const exact = String(key || '').trim();
+  if(!exact) return '';
+  if(window.assetStore && typeof window.assetStore.load === 'function'){
+    try{
+      const stored = await window.assetStore.load(exact);
+      if(stored) return stored;
+    }catch(e){}
+  }
+  return readExactStorageString(exact);
+}
+
+async function resolveAvatarFromStorageCandidates(){
+  const keys = avatarStorageKeyCandidates();
+  for(const key of keys){
+    try{
+      const value = await loadStoredAssetExact(key);
+      if(value instanceof Blob) return URL.createObjectURL(value);
+      if(typeof value === 'string' && isRenderableAssetSource(value)) return value;
+    }catch(e){}
+  }
+  return '';
+}
+
+function saveStoredAsset(key, data){
+  const scoped = scopedKey(key);
+  if(window.assetStore) return window.assetStore.saveOrFallback(scoped, data);
+  try{
+    localStorage.setItem(scoped, data);
+    return Promise.resolve();
+  }catch(e){
+    return Promise.reject(e);
+  }
+}
+
+function removeStoredAsset(key){
+  const scoped = scopedKey(key);
+  if(window.assetStore && typeof window.assetStore.remove === 'function') return window.assetStore.remove(scoped);
+  try{ localStorage.removeItem(scoped); }catch(e){}
+  return Promise.resolve();
+}
+
+function momentImageAssetKey(postId){
+  return 'qq_moment_image_' + String(postId || '').trim();
+}
+
+function momentImageAssetKeyAt(postId, index){
+  const safeIndex = Math.max(0, Number(index) || 0);
+  return safeIndex ? (momentImageAssetKey(postId) + '_' + safeIndex) : momentImageAssetKey(postId);
+}
+
+function getPostImages(post){
+  const rawImages = Array.isArray(post && post.images) ? post.images : [];
+  const images = rawImages.map((item, index)=>{
+    const next = Object.assign({}, item || {});
+    next.index = index;
+    next.kind = String(next.kind || '').trim();
+    next.description = String(next.description || next.imageText || '').trim();
+    return next;
+  }).filter((item)=>item && (item.kind === 'text' || item.assetKey || item.src || item.imageSrc || item.imageData || item.previewSrc));
+  if(images.length) return images;
+  if(post && (post.imageAssetKey || post.imageSrc || post.imageData || post.imagePreviewSrc)){
+    return [{
+      index: 0,
+      assetKey: String((post && post.imageAssetKey) || '').trim(),
+      src: String((post && (post.imageSrc || post.imageData || post.imagePreviewSrc)) || '').trim(),
+      fileName: String((post && post.imageFileName) || '').trim(),
+      description: String((post && post.imageText) || '').trim()
+    }];
+  }
+  if(post && post.type === 'dynamic' && post.charId && String(post.imageText || '').trim()){
+    return [{
+      index: 0,
+      kind: 'text',
+      description: String(post.imageText || '').trim()
+    }];
+  }
+  return [];
+}
+
+function charProfileCoverAssetKey(charId){
+  return 'qq_moment_profile_cover_' + String(charId || '').trim();
+}
+
+function revokeObjectUrlLater(src){
+  if(typeof src !== 'string' || !src.startsWith('blob:')) return;
+  setTimeout(()=>{ try{ URL.revokeObjectURL(src); }catch(e){} }, 30000);
+}
+
+async function resolveMomentImageSource(post){
+  const assetKey = String((post && (post.assetKey || post.imageAssetKey)) || '').trim();
+  if(assetKey){
+    try{
+      const assetVal = await loadStoredAsset(assetKey);
+      if(assetVal instanceof Blob) return URL.createObjectURL(assetVal);
+      if(typeof assetVal === 'string' && assetVal) return assetVal;
+    }catch(e){}
+  }
+  return String((post && (post.src || post.imageSrc || post.imageData || post.previewSrc || post.imagePreviewSrc)) || '').trim();
+}
+
+async function hydrateMomentImageElements(root){
+  const host = root || document;
+  const nodes = host.querySelectorAll ? host.querySelectorAll('[data-moment-image-id]') : [];
+  const posts = getPosts();
+  nodes.forEach((node)=>{
+    const id = String(node.getAttribute('data-moment-image-id') || '').trim();
+    const post = posts.find((item)=>String(item && item.id || '') === id);
+    if(!post || node.dataset.imageHydrating === '1') return;
+    const imageIndex = Math.max(0, Number(node.getAttribute('data-moment-image-index') || 0) || 0);
+    const imageItem = getPostImages(post)[imageIndex] || null;
+    node.dataset.imageHydrating = '1';
+    resolveMomentImageSource(imageItem || post).then((src)=>{
+      if(!src) return;
+      if(node.tagName === 'IMG') node.src = src;
+      else node.style.backgroundImage = 'url(' + src + ')';
+      revokeObjectUrlLater(src);
+    }).catch(()=>{}).finally(()=>{
+      delete node.dataset.imageHydrating;
+    });
+  });
+}
+
+function hasMomentRealImage(post){
+  return getPostImages(post).length > 0;
+}
+
+async function resolveHeroSource(legacyKey, assetKey){
+  const cacheKey = scopedKey(assetKey);
+  if(transientAssets[cacheKey]) return transientAssets[cacheKey];
+  const candidateKeys = Array.from(new Set([
+    ...storageKeyCandidates(assetKey),
+    ...storageKeyCandidates(legacyKey)
+  ].filter(Boolean)));
+  for(const key of candidateKeys){
+    const assetVal = await loadStoredAssetExact(key);
+    if(assetVal instanceof Blob){
+      return URL.createObjectURL(assetVal);
+    }
+    if(typeof assetVal === 'string' && isRenderableAssetSource(assetVal)) return assetVal;
+  }
+  return '';
+}
+
+async function resolveMomentsUserAvatarSource(storedHeroAvatar, profile){
+  await ensureMomentsAccountReady();
+  const savedHero = String(storedHeroAvatar || '').trim();
+  if(isRenderableAssetSource(savedHero)) return savedHero;
+  const hydratedProfile = profile || activeProfile();
+  const profileAvatar = String((hydratedProfile && hydratedProfile.avatar) || '').trim();
+  if(isRenderableAssetSource(profileAvatar)) return profileAvatar;
+  const storedAvatar = await resolveAvatarFromStorageCandidates();
+  if(isRenderableAssetSource(storedAvatar)) return storedAvatar;
+  return getSyncAvatarFromStorageCandidates();
+}
+
+async function persistHeroUpload(legacyKey, assetKey, file, src){
+  const cacheKey = scopedKey(assetKey);
+  try{
+    if(file) await saveStoredAsset(assetKey, file);
+    else await saveStoredAsset(assetKey, src);
+    delete transientAssets[cacheKey];
+    lsRemove(legacyKey);
+    return true;
+  }catch(e){
+    if(!src) return false;
+    try{
+      lsSet(legacyKey, src);
+      delete transientAssets[cacheKey];
+      return true;
+    }catch(err){
+      transientAssets[cacheKey] = src;
+      showToast('图片较大，仅本次会话可用');
+      return true;
+    }
+  }
+}
+
+async function renderHero(){
+  await ensureMomentsAccountReady();
+  const profile = activeProfile();
+  const storedHeroAvatar = await resolveHeroSource(STORAGE_AVATAR, STORAGE_AVATAR_ASSET);
+  const avSrc = await resolveMomentsUserAvatarSource(storedHeroAvatar, profile);
+  if(heroAvatarObjectUrl && heroAvatarObjectUrl !== avSrc){
+    URL.revokeObjectURL(heroAvatarObjectUrl);
+    heroAvatarObjectUrl = '';
+  }
+  if(typeof avSrc === 'string' && avSrc.startsWith('blob:')) heroAvatarObjectUrl = avSrc;
+  currentHeroAvatarSrc = avSrc || '';
+  const tileSrcs = await Promise.all(['tile1','tile2','tile3','tile4','tile5','tile6'].map(resolveHeaderImage));
+  tileSrcs.forEach((src, index)=>{
+    setHeaderSlotBackground(headerImageConfig('tile' + (index + 1)), src);
+  });
+  tileSrcs.forEach(revokeObjectUrlLater);
+  const targetText = document.getElementById('momentHeaderTarget');
+  if(targetText && targetText !== document.activeElement) targetText.textContent = lsGet(STORAGE_HEADER_TEXT_LEFT) || DEFAULT_HEADER_TEXT_LEFT;
+  renderFeed();
+}
+
+function readFileAsDataUrl(file, cb){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>cb(typeof reader.result === 'string' ? reader.result : '');
+  reader.readAsDataURL(file);
+}
+
+function readFileAsDataUrlPromise(file){
+  return new Promise((resolve)=>{
+    if(!file) return resolve('');
+    readFileAsDataUrl(file, resolve);
+  });
+}
+
+function pickHeroBg(){
+  const input = document.getElementById('heroBgInput');
+  if(input) input.click();
+}
+
+function pickHeroAvatar(evt){
+  if(evt && evt.stopPropagation) evt.stopPropagation();
+  showToast('请到个人中心修改头像');
+}
+
+function bindInputs(){
+  const bgInput = document.getElementById('heroBgInput');
+  const avInput = document.getElementById('heroAvatarInput');
+  const headerInputs = ['tile1', 'tile2', 'tile3', 'tile4', 'tile5', 'tile6'].map((slot)=>{
+    const cfg = headerImageConfig(slot);
+    return cfg ? { slot, cfg, input:document.getElementById(cfg.inputId) } : null;
+  }).filter(Boolean);
+  const momentInput = document.getElementById('momentImageInput');
+  const profileCoverInput = document.getElementById('charProfileCoverInput');
+  if(bgInput){
+    bgInput.addEventListener('change', (evt)=>{
+      const file = evt.target && evt.target.files ? evt.target.files[0] : null;
+      readFileAsDataUrl(file, async (src)=>{
+        if(!src) return;
+        const ok = await persistHeroUpload(STORAGE_BG, STORAGE_BG_ASSET, file, src);
+        evt.target.value = '';
+        if(ok) renderHero();
+      });
+    });
+  }
+  if(avInput){
+    avInput.addEventListener('change', (evt)=>{ evt.target.value = ''; });
+  }
+  headerInputs.forEach(({ cfg, input })=>{
+    if(!input) return;
+    input.addEventListener('change', (evt)=>{
+      const file = evt.target && evt.target.files ? evt.target.files[0] : null;
+      readFileAsDataUrl(file, async (src)=>{
+        evt.target.value = '';
+        if(!src) return;
+        const ok = await persistHeroUpload(cfg.legacyKey, cfg.assetKey, file, src);
+        if(ok) renderHero();
+      });
+    });
+  });
+  if(momentInput){
+    momentInput.addEventListener('change', async (evt)=>{
+      const files = evt.target && evt.target.files ? Array.from(evt.target.files) : [];
+      evt.target.value = '';
+      if(!files.length) return;
+      const nextImages = Array.isArray(publishState.images) ? publishState.images.slice() : [];
+      for(const file of files){
+        const src = await readFileAsDataUrlPromise(file);
+        if(!src) continue;
+        nextImages.push({ file:file || null, previewSrc:src, fileName:file && file.name ? file.name : '图片', description:'' });
+      }
+      if(!nextImages.length) return;
+      publishState.images = nextImages;
+      publishState.imageFile = nextImages[0].file || null;
+      publishState.imagePreviewSrc = nextImages[0].previewSrc || '';
+      publishState.imageFileName = nextImages[0].fileName || '图片';
+      renderDynamicForm();
+    });
+  }
+  if(profileCoverInput){
+    profileCoverInput.addEventListener('change', (evt)=>{
+      const file = evt.target && evt.target.files ? evt.target.files[0] : null;
+      const charId = currentProfileCharId;
+      readFileAsDataUrl(file, async (src)=>{
+        evt.target.value = '';
+        if(!src || !charId) return;
+        try{
+          await saveStoredAsset(charProfileCoverAssetKey(charId), file || src);
+          showToast('封面已保存');
+          renderCharProfile();
+        }catch(e){
+          showToast('封面保存失败');
+        }
+      });
+    });
+  }
+
+  const publishOverlay = document.getElementById('publishOverlay');
+  if(publishOverlay){
+    publishOverlay.addEventListener('click', (evt)=>{
+      if(evt.target === evt.currentTarget) closePublishOverlay();
+    });
+  }
+  const signatureOverlay = document.getElementById('signatureOverlay');
+  if(signatureOverlay){
+    signatureOverlay.addEventListener('click', (evt)=>{
+      if(evt.target === evt.currentTarget) closeSignatureEditor();
+    });
+  }
+  const bubbleNameOverlay = document.getElementById('bubbleNameOverlay');
+  if(bubbleNameOverlay){
+    bubbleNameOverlay.addEventListener('click', (evt)=>{
+      if(evt.target === evt.currentTarget) closeBubbleNameEditor();
+    });
+  }
+  const deleteConfirmOverlay = document.getElementById('deleteConfirmOverlay');
+  if(deleteConfirmOverlay){
+    deleteConfirmOverlay.addEventListener('click', (evt)=>{
+      if(Date.now() - deleteConfirmOpenedAt < 360){
+        if(evt && evt.preventDefault) evt.preventDefault();
+        if(evt && evt.stopPropagation) evt.stopPropagation();
+        return;
+      }
+      if(evt.target === evt.currentTarget) closeDeleteConfirm();
+    });
+  }
+  const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+  if(deleteConfirmModal){
+    ['click','touchend'].forEach((eventName)=>{
+      deleteConfirmModal.addEventListener(eventName, (evt)=>{
+        evt.stopPropagation();
+      }, { passive:false });
+    });
+  }
+  bindTap(document.getElementById('deleteConfirmOkBtn'), handleDeletePostsConfirm);
+  bindTap(document.getElementById('deleteConfirmCancelBtn'), handleDeleteConfirmCancel);
+  const deleteCommentOverlay = document.getElementById('deleteCommentConfirmOverlay');
+  if(deleteCommentOverlay){
+    deleteCommentOverlay.addEventListener('click', (evt)=>{
+      if(evt.target === evt.currentTarget) closeDeleteCommentConfirm();
+    });
+  }
+  const deleteCommentModal = document.getElementById('deleteCommentConfirmModal');
+  if(deleteCommentModal){
+    ['click','touchend'].forEach((eventName)=>{
+      deleteCommentModal.addEventListener(eventName, (evt)=>{
+        evt.stopPropagation();
+      }, { passive:false });
+    });
+  }
+  const shareOverlay = document.getElementById('shareOverlay');
+  if(shareOverlay){
+    shareOverlay.addEventListener('click', (evt)=>{
+      if(evt.target === evt.currentTarget) closeShareMoment();
+    });
+  }
+  const deleteFab = document.getElementById('deleteFab');
+  bindTap(deleteFab, handleDeleteFabTap);
+  const heroToolbar = document.querySelector('.hero-toolbar');
+  if(heroToolbar && heroToolbar.dataset.stopHeroBubble !== '1'){
+    heroToolbar.dataset.stopHeroBubble = '1';
+    ['pointerdown','pointerup','click','touchstart','touchend'].forEach((eventName)=>{
+      heroToolbar.addEventListener(eventName, (evt)=>{
+        if(evt && evt.stopPropagation) evt.stopPropagation();
+      }, { passive:false });
+    });
+  }
+  const feed = document.getElementById('feedList');
+  if(feed && feed.dataset.boundActions !== '1'){
+    feed.dataset.boundActions = '1';
+    let feedLastHandledAt = 0;
+    const handleFeedTap = (evt)=>{
+      const now = Date.now();
+      if(now - feedLastHandledAt < 220) return;
+      feedLastHandledAt = now;
+      const delBtn = evt.target && evt.target.closest ? evt.target.closest('[data-delete-comment-post][data-delete-comment-id]') : null;
+      if(delBtn){
+        if(evt && evt.preventDefault) evt.preventDefault();
+        if(evt && evt.stopPropagation) evt.stopPropagation();
+        openDeleteCommentConfirm(evt, delBtn.getAttribute('data-delete-comment-post') || '', delBtn.getAttribute('data-delete-comment-id') || '');
+        return;
+      }
+      const selBtn = evt.target && evt.target.closest ? evt.target.closest('[data-delete-post]') : null;
+      if(selBtn){
+        if(evt && evt.preventDefault) evt.preventDefault();
+        if(evt && evt.stopPropagation) evt.stopPropagation();
+        toggleDeletePost(selBtn.getAttribute('data-delete-post') || '');
+        return;
+      }
+      const replyNode = evt.target && evt.target.closest ? evt.target.closest('[data-reply-post][data-reply-comment]') : null;
+      if(replyNode){
+        if(evt && evt.preventDefault) evt.preventDefault();
+        if(evt && evt.stopPropagation) evt.stopPropagation();
+        prepareReply(replyNode.getAttribute('data-reply-post') || '', replyNode.getAttribute('data-reply-comment') || '');
+      }
+    };
+    ['pointerup','click','touchend'].forEach((eventName)=>{
+      feed.addEventListener(eventName, handleFeedTap, { passive:false });
+    });
+  }
+
+  const imageOverlay = document.getElementById('imageViewOverlay');
+  if(imageOverlay){
+    imageOverlay.addEventListener('click', (evt)=>{
+      if(evt.target === evt.currentTarget) closeImageViewer();
+    });
+  }
+  const profileOverlay = document.getElementById('charProfileOverlay');
+  if(profileOverlay){
+    profileOverlay.addEventListener('click', (evt)=>{
+      if(evt.target === evt.currentTarget) closeCharProfile();
+    });
+  }
+}
+
+function updateMomentHeroDots(){
+  const grid = document.querySelector('.moment-hero-grid');
+  const dot1 = document.getElementById('momentHeroDot1');
+  const dot2 = document.getElementById('momentHeroDot2');
+  if(!grid || !dot1 || !dot2) return;
+  const page = grid.scrollLeft > grid.clientWidth * 0.35 ? 2 : 1;
+  dot1.classList.toggle('active', page === 1);
+  dot2.classList.toggle('active', page === 2);
+}
+
+function bindMomentHeroCarousel(){
+  const grid = document.querySelector('.moment-hero-grid');
+  if(!grid || grid.dataset.bound === '1') return;
+  grid.dataset.bound = '1';
+  grid.addEventListener('scroll', updateMomentHeroDots, { passive:true });
+  updateMomentHeroDots();
+}
+
+function hideParentTopbar(){
+  const docs = [];
+  try{
+    if(window.parent && window.parent !== window && window.parent.document) docs.push(window.parent.document);
+  }catch(e){}
+  try{
+    if(window.top && window.top !== window && window.top.document) docs.push(window.top.document);
+  }catch(e){}
+  docs.forEach((doc)=>{
+    try{
+      const bar = doc.querySelector('.app-topbar');
+      if(bar){
+        bar.dataset.prevDisplay = bar.style.display || '';
+        bar.style.display = 'none';
+      }
+      const frame = doc.getElementById('app-iframe');
+      if(frame){
+        frame.dataset.prevMarginTop = frame.style.marginTop || '';
+        frame.style.marginTop = '0';
+      }
+    }catch(err){}
+  });
+}
+
+function restoreParentTopbar(){
+  const docs = [];
+  try{
+    if(window.parent && window.parent !== window && window.parent.document) docs.push(window.parent.document);
+  }catch(e){}
+  try{
+    if(window.top && window.top !== window && window.top.document) docs.push(window.top.document);
+  }catch(e){}
+  docs.forEach((doc)=>{
+    try{
+      const bar = doc.querySelector('.app-topbar');
+      if(bar) bar.style.display = bar.dataset.prevDisplay || '';
+      const frame = doc.getElementById('app-iframe');
+      if(frame) frame.style.marginTop = frame.dataset.prevMarginTop || '';
+    }catch(err){}
+  });
+}
+
+bindInputs();
+bindMomentHeroCarousel();
+hideParentTopbar();
+window.persistAppBeforeLeave = function(){
+  return pendingPostsSavePromise || Promise.resolve();
+};
+function getMaxMomentsPostCreatedAt(){
+  try{
+    return getPosts().reduce((max, post)=>Math.max(max, Number(post && post.createdAt || 0) || 0), 0);
+  }catch(err){
+    return 0;
+  }
+}
+function notifyMomentsSeen(){
+  try{
+    const maxCreatedAt = getMaxMomentsPostCreatedAt();
+    window.parent.postMessage({ type:'MOMENTS_SEEN', payload:{ at: Math.max(Date.now(), maxCreatedAt + 1), maxCreatedAt } }, '*');
+    window.parent.postMessage({ type:'QQ_BADGE_SYNC', payload:{ momentsUnread: 0 } }, '*');
+  }catch(err){}
+}
+notifyMomentsSeen();
+window.addEventListener('beforeunload', restoreParentTopbar);
+window.addEventListener('pagehide', restoreParentTopbar);
+hydratePostsFromBridge();
+ensureMomentsAccountReady().then(function(){
+  return renderHero();
+}).finally(function(){
+  hydratePostsFromLargeStore().then(function(){
+    notifyMomentsSeen();
+    renderFeed();
+    let queryProfileChar = '';
+    try{ queryProfileChar = String(new URLSearchParams(location.search).get('char') || '').trim(); }catch(e){}
+    const storedProfileChar = queryProfileChar || String(localStorage.getItem(scopedKey(STORAGE_PROFILE_CHAR)) || localStorage.getItem(STORAGE_PROFILE_CHAR) || '').trim();
+    if(storedProfileChar && getCharacterById(storedProfileChar)){
+      openCharProfile(storedProfileChar);
+    }else if(storedProfileChar){
+      try{ localStorage.removeItem(scopedKey(STORAGE_PROFILE_CHAR)); }catch(e){}
+      try{ localStorage.removeItem(STORAGE_PROFILE_CHAR); }catch(e2){}
+    }
+  }).catch(function(){
+    renderFeed();
+  });
+});
+if(window.MetadataStore && typeof window.MetadataStore.init === 'function'){
+  window.MetadataStore.init().then(function(){
+    renderHero();
+    renderFeed();
+    renderImageViewer();
+    renderCharProfile();
+  }).catch(function(){});
+}
+if(window.MetadataStore && typeof window.MetadataStore.subscribe === 'function'){
+  window.MetadataStore.subscribe(function(topic){
+    if(topic !== 'characters') return;
+    renderHero();
+    renderFeed();
+    renderImageViewer();
+    renderCharProfile();
+  });
+}
+</script>
+</body>
+</html>

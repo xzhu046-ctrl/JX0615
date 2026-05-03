@@ -1,0 +1,275 @@
+(function(){
+  var DB_NAME = 'phone_asset_store';
+  var STORE_NAME = 'assets';
+  var MARKER = '__asset__';
+  var dbPromise = null;
+
+  function openDb(){
+    if(dbPromise) return dbPromise;
+    dbPromise = new Promise(function(resolve, reject){
+      try{
+        var req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = function(){
+          var db = req.result;
+          if(!db.objectStoreNames.contains(STORE_NAME)){
+            db.createObjectStore(STORE_NAME);
+          }
+        };
+        req.onsuccess = function(){ resolve(req.result); };
+        req.onerror = function(){ reject(req.error); };
+      }catch(err){
+        reject(err);
+      }
+    });
+    return dbPromise;
+  }
+
+  function withStore(mode, runner){
+    return openDb().then(function(db){
+      return new Promise(function(resolve, reject){
+        var tx = db.transaction(STORE_NAME, mode);
+        var store = tx.objectStore(STORE_NAME);
+        var request = runner(store);
+        tx.oncomplete = function(){ resolve(request && request.result); };
+        tx.onerror = function(){ reject(tx.error || (request && request.error)); };
+        tx.onabort = function(){ reject(tx.error || new Error('asset transaction aborted')); };
+      });
+    });
+  }
+
+  function safeStorageGet(key){
+    try{ return localStorage.getItem(key) || ''; }catch(err){ return ''; }
+  }
+
+  function safeStorageSet(key, value){
+    try{ localStorage.setItem(key, value); }catch(err){}
+  }
+
+  function safeStorageRemove(key){
+    try{ localStorage.removeItem(key); }catch(err){}
+  }
+
+  function looksLikeAsset(value){
+    return typeof value === 'string' && (value.startsWith('data:') || value.startsWith('http'));
+  }
+
+  function shouldOptimizeImage(value){
+    var text = String(value || '');
+    if(!/^data:image\//i.test(text)) return false;
+    if(/^data:image\/(?:gif|svg\+xml)/i.test(text)) return false;
+    return text.length > 900000;
+  }
+
+  function optimizeImageDataUrl(value){
+    var source = String(value || '');
+    if(!shouldOptimizeImage(source)) return Promise.resolve(value);
+    return new Promise(function(resolve){
+      try{
+        var img = new Image();
+        img.onload = function(){
+          try{
+            var maxSide = 1800;
+            var width = Number(img.naturalWidth || img.width || 0) || 0;
+            var height = Number(img.naturalHeight || img.height || 0) || 0;
+            if(!width || !height){
+              resolve(value);
+              return;
+            }
+            var scale = Math.min(1, maxSide / Math.max(width, height));
+            var outW = Math.max(1, Math.round(width * scale));
+            var outH = Math.max(1, Math.round(height * scale));
+            var canvas = document.createElement('canvas');
+            canvas.width = outW;
+            canvas.height = outH;
+            var ctx = canvas.getContext('2d');
+            if(!ctx){
+              resolve(value);
+              return;
+            }
+            ctx.drawImage(img, 0, 0, outW, outH);
+            var out = canvas.toDataURL('image/jpeg', 0.84);
+            if(out.length > 1800000){
+              maxSide = 1400;
+              scale = Math.min(1, maxSide / Math.max(width, height));
+              canvas.width = Math.max(1, Math.round(width * scale));
+              canvas.height = Math.max(1, Math.round(height * scale));
+              ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              out = canvas.toDataURL('image/jpeg', 0.78);
+            }
+            if(out.length > 3000000){
+              maxSide = 1100;
+              scale = Math.min(1, maxSide / Math.max(width, height));
+              canvas.width = Math.max(1, Math.round(width * scale));
+              canvas.height = Math.max(1, Math.round(height * scale));
+              ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              out = canvas.toDataURL('image/jpeg', 0.72);
+            }
+            resolve(out && out.length < source.length ? out : value);
+          }catch(drawErr){
+            resolve(value);
+          }
+        };
+        img.onerror = function(){ resolve(value); };
+        img.src = source;
+      }catch(err){
+        resolve(value);
+      }
+    });
+  }
+
+  function phoneAssetId(key){
+    return 'asset_store_v1__' + String(key || '');
+  }
+
+  function getPhoneStorage(){
+    try{
+      if(window.PhoneStorage && typeof window.PhoneStorage.get === 'function' && typeof window.PhoneStorage.put === 'function'){
+        return window.PhoneStorage;
+      }
+    }catch(err){}
+    try{
+      if(window.parent && window.parent !== window && window.parent.PhoneStorage && typeof window.parent.PhoneStorage.get === 'function' && typeof window.parent.PhoneStorage.put === 'function'){
+        return window.parent.PhoneStorage;
+      }
+    }catch(err2){}
+    return null;
+  }
+
+  function phoneGet(key){
+    var storage = getPhoneStorage();
+    if(!(storage && typeof storage.get === 'function')) return Promise.resolve('');
+    return storage.get('kv', phoneAssetId(key)).then(function(record){
+      if(!record) return '';
+      if(Object.prototype.hasOwnProperty.call(record, 'value')) return record.value || '';
+      if(Object.prototype.hasOwnProperty.call(record, 'data')) return record.data || '';
+      return '';
+    }).catch(function(){ return ''; });
+  }
+
+  function phoneSet(key, value){
+    var storage = getPhoneStorage();
+    if(!(storage && typeof storage.put === 'function')) return Promise.reject(new Error('PhoneStorage unavailable'));
+    return storage.put('kv', { id:phoneAssetId(key), value:value, updatedAt:Date.now() }).then(function(){ return value; });
+  }
+
+  function phoneRemove(key){
+    var storage = getPhoneStorage();
+    if(storage && typeof storage.remove === 'function'){
+      return storage.remove('kv', phoneAssetId(key)).catch(function(){});
+    }
+    return Promise.resolve();
+  }
+
+  window.assetStore = {
+    marker: MARKER,
+
+    get: function(key){
+      return withStore('readonly', function(store){ return store.get(key); }).then(function(result){
+        return result || '';
+      }).catch(function(){
+        return phoneGet(key);
+      });
+    },
+
+    set: function(key, value){
+      return optimizeImageDataUrl(value).then(function(prepared){
+        value = prepared;
+        return withStore('readwrite', function(store){ return store.put(value, key); });
+      }).then(function(){
+        safeStorageRemove(key);
+        return value;
+      }).catch(function(idbErr){
+        var text = String(value || '');
+        return phoneSet(key, value).then(function(saved){
+          safeStorageRemove(key);
+          return saved;
+        }).catch(function(phoneErr){
+        if(text && !looksLikeAsset(text) && text.length <= 4096) safeStorageSet(key, text);
+          else safeStorageRemove(key);
+          if(text && !looksLikeAsset(text) && text.length <= 4096) return value;
+          throw phoneErr || idbErr || new Error('asset save failed');
+        });
+      });
+    },
+
+    optimizeImageDataUrl: optimizeImageDataUrl,
+
+    remove: function(key){
+      return withStore('readwrite', function(store){ return store.delete(key); }).catch(function(){}).then(function(){
+        return phoneRemove(key);
+      }).then(function(){
+        safeStorageRemove(key);
+      });
+    },
+
+    clearAll: function(){
+      return withStore('readwrite', function(store){ return store.clear(); }).catch(function(){}).then(function(){
+        try{
+          Object.keys(localStorage).forEach(function(key){
+            if(localStorage.getItem(key) === MARKER) localStorage.removeItem(key);
+          });
+        }catch(err){}
+      });
+    },
+
+    load: function(key){
+      var legacy = safeStorageGet(key);
+      if(looksLikeAsset(legacy)){
+        this.set(key, legacy);
+        return Promise.resolve(legacy);
+      }
+      if(legacy && legacy !== MARKER){
+        return Promise.resolve(legacy);
+      }
+      return this.get(key).then(function(value){
+        if(value) safeStorageRemove(key);
+        if(value) return value;
+        return phoneGet(key);
+      }).then(function(value){
+        return value || '';
+      });
+    },
+
+    listAll: function(){
+      return withStore('readonly', function(store){
+        return new Promise(function(resolve, reject){
+          var items = {};
+          if(typeof store.openCursor !== 'function'){
+            resolve(items);
+            return;
+          }
+          var req = store.openCursor();
+          req.onsuccess = function(event){
+            var cursor = event.target.result;
+            if(!cursor){
+              resolve(items);
+              return;
+            }
+            items[cursor.key] = cursor.value;
+            cursor.continue();
+          };
+          req.onerror = function(event){
+            reject((event.target && event.target.error) || new Error('asset list failed'));
+          };
+        });
+      }).then(function(result){
+        return result && typeof result.then === 'function' ? result : (result || {});
+      }).catch(function(){
+        return {};
+      });
+    },
+
+    saveOrFallback: function(key, value){
+      if(!value){
+        return this.remove(key).then(function(){ return true; });
+      }
+      return this.set(key, value).then(function(){ return true; }).catch(function(err){
+        console.error('asset save failed:', key, err);
+        safeStorageRemove(key);
+        return false;
+      });
+    }
+  };
+})();
