@@ -52,10 +52,10 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-03T18:06:42Z';
+const APP_BUILD_ID = '2026-05-03T18:33:56Z';
 const APP_UPDATE_NOTES = [
-  '修复手机端角色卡读取失败',
-  '导入角色卡不再依赖隐藏页面读文件',
+  '顶栏状态只听角色自己更新',
+  '不再用关键词猜状态词',
   '同步更新私有版缓存'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
