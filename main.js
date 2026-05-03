@@ -52,10 +52,10 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-03T19:42:12Z';
+const APP_BUILD_ID = '2026-05-03T20:48:23Z';
 const APP_UPDATE_NOTES = [
-  '修复线下自动总结漏触发',
-  '忙碌时新消息会补跑总结',
+  '优化主屏幕左右滑动',
+  '修正输入框首次聚焦高度',
   '同步更新私有版缓存'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
@@ -5580,6 +5580,8 @@ let pagerStartX = 0;
 let pagerStartY = 0;
 let pagerDragging = false;
 let pagerPointerId = null;
+let pagerOffsetRaf = 0;
+let pagerPendingOffset = 0;
 let activeBondBubble = 1;
 
 function getHomePageWidth(){
@@ -5603,8 +5605,18 @@ function getHomePageStep(){
 function setHomePagesOffset(pages, offsetPx){
   if(!pages) return;
   var snapped = Math.round(Number(offsetPx) || 0);
-  pages.style.transform = 'none';
-  pages.style.marginLeft = snapped + 'px';
+  pages.style.marginLeft = '0px';
+  pages.style.transform = 'translate3d(' + snapped + 'px, 0, 0)';
+}
+
+function queueHomePagesOffset(pages, offsetPx){
+  if(!pages) return;
+  pagerPendingOffset = Number(offsetPx) || 0;
+  if(pagerOffsetRaf) return;
+  pagerOffsetRaf = requestAnimationFrame(function(){
+    pagerOffsetRaf = 0;
+    setHomePagesOffset(pages, pagerPendingOffset);
+  });
 }
 
 function inferHomeToastKind(text){
@@ -6495,6 +6507,10 @@ function renderHomePages(immediate){
   if(immediate){
     const prev = pages.style.transition;
     pages.style.transition = 'none';
+    if(pagerOffsetRaf){
+      cancelAnimationFrame(pagerOffsetRaf);
+      pagerOffsetRaf = 0;
+    }
     setHomePagesOffset(pages, -offsetPx);
     renderHomePageIndicator();
     pages.offsetHeight;
@@ -6545,15 +6561,20 @@ function bindHomePager(){
       surface.setPointerCapture(evt.pointerId);
     }
     evt.preventDefault();
-    const offset = -(homePageIndex * getHomePageStep()) + dx;
+    const edgeResistance = (homePageIndex === 0 && dx > 0) || (homePageIndex === 1 && dx < 0) ? 0.34 : 1;
+    const offset = -(homePageIndex * getHomePageStep()) + (dx * edgeResistance);
     pages.style.transition = 'none';
-    setHomePagesOffset(pages, offset);
+    queueHomePagesOffset(pages, offset);
   });
   const finish = (evt)=>{
     if(pagerPointerId !== evt.pointerId) return;
     const dx = evt.clientX - pagerStartX;
     const width = getHomePageWidth();
     if(pagerDragging){
+      if(pagerOffsetRaf){
+        cancelAnimationFrame(pagerOffsetRaf);
+        pagerOffsetRaf = 0;
+      }
       pages.style.transition = '';
       const passed = Math.abs(dx) > Math.min(90, width * 0.18);
       if(passed){

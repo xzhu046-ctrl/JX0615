@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-03T19:42:12Z"></script>
-<script src="../chatStorage.js?v=2026-05-03T19:42:12Z"></script>
-<script src="../metadataStore.js?v=2026-05-03T19:42:12Z"></script>
-<script src="../promptManager.js?v=2026-05-03T19:42:12Z"></script>
-<script src="../accountManager.js?v=2026-05-03T19:42:12Z"></script>
-<script src="../scheduleShared.js?v=2026-05-03T19:42:12Z"></script>
-<script src="../presenceShared.js?v=2026-05-03T19:42:12Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-03T19:42:12Z"></script>
+<script src="../assetStore.js?v=2026-05-03T20:48:23Z"></script>
+<script src="../chatStorage.js?v=2026-05-03T20:48:23Z"></script>
+<script src="../metadataStore.js?v=2026-05-03T20:48:23Z"></script>
+<script src="../promptManager.js?v=2026-05-03T20:48:23Z"></script>
+<script src="../accountManager.js?v=2026-05-03T20:48:23Z"></script>
+<script src="../scheduleShared.js?v=2026-05-03T20:48:23Z"></script>
+<script src="../presenceShared.js?v=2026-05-03T20:48:23Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-03T20:48:23Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -7466,6 +7466,8 @@ var parentOfflineKeyboardInset = 0;
 var lastKnownOfflineKeyboardInset = 0;
 var appliedOfflineKeyboardInset = 0;
 var offlineKeyboardFocusStartedAt = 0;
+var offlineKeyboardStableCandidate = 0;
+var offlineKeyboardStableCandidateAt = 0;
 function isIOSOfflineRuntime(){
   var ua = String(navigator && navigator.userAgent || '');
   return /iPhone|iPad|iPod/i.test(ua) || (navigator && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -7491,7 +7493,7 @@ function syncOfflineViewport(){
   var confirmedKeyboard = inputFocused && measuredRaw > 140;
   var focusAge = offlineKeyboardFocusStartedAt ? (Date.now() - offlineKeyboardFocusStartedAt) : 9999;
   if(inputFocused && !confirmedKeyboard && focusAge >= 0 && focusAge < 520){
-    measuredRaw = appliedOfflineKeyboardInset > 120 ? appliedOfflineKeyboardInset : estimateOfflineKeyboardInset();
+    measuredRaw = appliedOfflineKeyboardInset > 120 ? appliedOfflineKeyboardInset : 0;
   }else if(inputFocused && !confirmedKeyboard){
     measuredRaw = (isIOSOfflineRuntime() || /Android/i.test(String(navigator && navigator.userAgent || '')))
       ? Math.max(appliedOfflineKeyboardInset, lastKnownOfflineKeyboardInset, estimateOfflineKeyboardInset())
@@ -7499,7 +7501,7 @@ function syncOfflineViewport(){
   }else if(inputFocused && confirmedKeyboard && lastKnownOfflineKeyboardInset > 120 && measuredRaw > 120 && measuredRaw < (lastKnownOfflineKeyboardInset - 64)){
     measuredRaw = lastKnownOfflineKeyboardInset;
   }
-  var keyboardInset = inputFocused ? clampOfflineKeyboardInset(measuredRaw) : 0;
+  var keyboardInset = resolveStableOfflineKeyboardInset(measuredRaw, inputFocused);
   if(inputFocused && confirmedKeyboard && appliedOfflineKeyboardInset > 120 && keyboardInset > 120){
     var delta = keyboardInset - appliedOfflineKeyboardInset;
     if(delta > 44) keyboardInset = appliedOfflineKeyboardInset + 44;
@@ -7516,6 +7518,39 @@ function syncOfflineViewport(){
   document.documentElement.style.setProperty('--offline-app-height', appHeight + 'px');
   document.documentElement.style.setProperty('--offline-keyboard-inset', keyboardInset + 'px');
   syncOfflineComposerMetrics();
+}
+function resolveStableOfflineKeyboardInset(rawInset, inputFocused){
+  if(!inputFocused){
+    offlineKeyboardStableCandidate = 0;
+    offlineKeyboardStableCandidateAt = 0;
+    return 0;
+  }
+  var next = clampOfflineKeyboardInset(rawInset);
+  if(next <= 120){
+    offlineKeyboardStableCandidate = 0;
+    offlineKeyboardStableCandidateAt = 0;
+    return 0;
+  }
+  var focusAge = offlineKeyboardFocusStartedAt ? (Date.now() - offlineKeyboardFocusStartedAt) : 9999;
+  var mobileRuntime = isIOSOfflineRuntime() || /Android/i.test(String(navigator && navigator.userAgent || ''));
+  if(!mobileRuntime || focusAge > 560){
+    offlineKeyboardStableCandidate = next;
+    offlineKeyboardStableCandidateAt = Date.now();
+    return next;
+  }
+  if(focusAge < 90){
+    return appliedOfflineKeyboardInset > 120 ? appliedOfflineKeyboardInset : 0;
+  }
+  if(!offlineKeyboardStableCandidate || Math.abs(next - offlineKeyboardStableCandidate) > 38){
+    offlineKeyboardStableCandidate = next;
+    offlineKeyboardStableCandidateAt = Date.now();
+    return appliedOfflineKeyboardInset > 120 ? appliedOfflineKeyboardInset : 0;
+  }
+  if(Date.now() - offlineKeyboardStableCandidateAt < 90){
+    return appliedOfflineKeyboardInset > 120 ? appliedOfflineKeyboardInset : 0;
+  }
+  offlineKeyboardStableCandidate = Math.round((offlineKeyboardStableCandidate + next) / 2);
+  return offlineKeyboardStableCandidate;
 }
 function keepOfflineComposerVisible(){
   var list = document.getElementById('storyList');
@@ -15128,10 +15163,6 @@ window.addEventListener('orientationchange', syncOfflineViewport);
 window.addEventListener('focusin', function(e){
   if(e.target && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')){
     offlineKeyboardFocusStartedAt = Date.now();
-    if(appliedOfflineKeyboardInset <= 120){
-      appliedOfflineKeyboardInset = clampOfflineKeyboardInset(estimateOfflineKeyboardInset());
-      document.documentElement.style.setProperty('--offline-keyboard-inset', appliedOfflineKeyboardInset + 'px');
-    }
     keepOfflineComposerVisible();
     syncOfflineViewport();
   }
@@ -15145,6 +15176,8 @@ window.addEventListener('focusout', function(e){
       offlineKeyboardFocusStartedAt = 0;
       parentOfflineKeyboardInset = 0;
       appliedOfflineKeyboardInset = 0;
+      offlineKeyboardStableCandidate = 0;
+      offlineKeyboardStableCandidateAt = 0;
       document.documentElement.style.setProperty('--offline-keyboard-inset', '0px');
       syncOfflineViewport();
     }, 40);
