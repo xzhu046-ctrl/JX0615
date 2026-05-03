@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-03T10:00:00Z';
+const APP_BUILD_ID = '2026-05-03T17:33:46Z';
 const APP_UPDATE_NOTES = [
-  '主页小条编辑弹窗移到屏幕中央',
-  '减少编辑时被键盘遮挡',
-  '同步更新缓存版本'
+  '分页小圆点回到底栏上方',
+  '底栏不再盖住分页点',
+  '同步更新私有版缓存'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';

@@ -1600,14 +1600,22 @@ html.ios-device .phone-outer.frame-off .app-grid-dock {
   position: fixed;
   left: 50%;
   right: auto;
-  bottom: max(12px, env(safe-area-inset-bottom));
+  bottom: var(--home-dock-bottom, max(12px, env(safe-area-inset-bottom)));
   width: min(340px, calc(100vw - 40px));
   margin: 0;
   transform: translate3d(-50%, 0, 0);
   z-index: 80;
 }
+html.android-device .phone-outer.frame-off,
+html.ios-device .phone-outer.frame-off {
+  --home-dock-bottom: max(12px, env(safe-area-inset-bottom));
+  --home-dock-stack-height: 104px;
+}
 html.ios-device .phone-outer.frame-off .app-grid-dock {
-  bottom: calc(max(12px, env(safe-area-inset-bottom)) + 34px);
+  bottom: var(--home-dock-bottom);
+}
+html.ios-device .phone-outer.frame-off {
+  --home-dock-bottom: calc(max(12px, env(safe-area-inset-bottom)) + 34px);
 }
 html.android-device .phone-outer.frame-off.app-open .phone-frame {
   position: fixed;
@@ -1663,6 +1671,18 @@ html.android-device .phone-outer.frame-off.app-open .phone-frame {
   overflow: hidden;
   backface-visibility: hidden;
   transform: translate3d(0,-20px,0);
+}
+html.android-device .phone-outer.frame-off .home-page-indicator,
+html.ios-device .phone-outer.frame-off .home-page-indicator {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--home-dock-bottom, max(12px, env(safe-area-inset-bottom))) + var(--home-dock-stack-height, 104px));
+  z-index: 82;
+  margin: 0;
+  transform: translate3d(-50%, 0, 0);
+}
+.phone-outer.frame-off.app-open .home-page-indicator {
+  display: none;
 }
 .home-page-dot {
   width: 6px;
