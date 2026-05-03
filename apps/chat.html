@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-03T21:14:09Z"></script>
-<script src="../chatStorage.js?v=2026-05-03T21:14:09Z"></script>
-<script src="../assetStore.js?v=2026-05-03T21:14:09Z"></script>
-<script src="../accountManager.js?v=2026-05-03T21:14:09Z"></script>
-<script src="../metadataStore.js?v=2026-05-03T21:14:09Z"></script>
-<script src="../scheduleShared.js?v=2026-05-03T21:14:09Z"></script>
-<script src="../presenceShared.js?v=2026-05-03T21:14:09Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-03T21:14:09Z"></script>
-<script src="../sunnySupport.js?v=2026-05-03T21:14:09Z"></script>
-<script src="offlineInvite.js?v=2026-05-03T21:14:09Z"></script>
+<script src="../promptManager.js?v=2026-05-03T21:28:06Z"></script>
+<script src="../chatStorage.js?v=2026-05-03T21:28:06Z"></script>
+<script src="../assetStore.js?v=2026-05-03T21:28:06Z"></script>
+<script src="../accountManager.js?v=2026-05-03T21:28:06Z"></script>
+<script src="../metadataStore.js?v=2026-05-03T21:28:06Z"></script>
+<script src="../scheduleShared.js?v=2026-05-03T21:28:06Z"></script>
+<script src="../presenceShared.js?v=2026-05-03T21:28:06Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-03T21:28:06Z"></script>
+<script src="../sunnySupport.js?v=2026-05-03T21:28:06Z"></script>
+<script src="offlineInvite.js?v=2026-05-03T21:28:06Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -10946,6 +10946,13 @@ function normalizeChatThemeCssText(cssText){
   text = text.replace(/^\uFEFF/, '').trim();
   text = text.replace(/^```(?:css)?\s*/i, '').replace(/```\s*$/i, '').trim();
   text = text.replace(/^(?:css|CSS)\s*[:：]\s*/, '').trim();
+  text = text.replace(/^[\s，,。；;：:、）)\]】]+/, '').replace(/[\s，,。；;：:、（(\[【]+$/, '').trim();
+  var firstRule = text.search(/(?:\/\*|@|:root\b|html\b|body\b|[.#][a-zA-Z0-9_\-\u4e00-\u9fa5])/);
+  if(firstRule > 0) text = text.slice(firstRule).trim();
+  var lastBrace = text.lastIndexOf('}');
+  if(lastBrace >= 0 && /[^\s）)\]】,，。；;：:、]*$/.test(text.slice(lastBrace + 1))){
+    text = text.slice(0, lastBrace + 1).trim();
+  }
   if((text.charAt(0) === '【' && text.charAt(text.length - 1) === '】')
     || (text.charAt(0) === '[' && text.charAt(text.length - 1) === ']')
     || (text.charAt(0) === '(' && text.charAt(text.length - 1) === ')')

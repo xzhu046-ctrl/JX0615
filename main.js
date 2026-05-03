@@ -52,7 +52,7 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-03T21:14:09Z';
+const APP_BUILD_ID = '2026-05-03T21:28:06Z';
 const APP_UPDATE_NOTES = [
   '恢复主屏幕第二页显示',
   '稳定聊天输入框键盘位置',
