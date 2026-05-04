@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-04T21:12:30Z';
+const APP_BUILD_ID = '2026-05-04T21:30:00Z';
 const APP_UPDATE_NOTES = [
-  '重做通话页面布局',
-  '通话改为手动触发回复',
-  '拨出电话先等角色接听'
+  '修复部分设备打开 app 卡加载',
+  '减少旧缓存和新页面混用',
+  '头像资源加载后自动补回'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -1732,6 +1732,20 @@ async function clearHostedUpdateCaches(){
       }).map(function(name){ return caches.delete(name).catch(function(){ return null; }); }));
     }catch(e){}
   }
+}
+
+async function clearStaleHostedCodeCaches(){
+  if(typeof caches === 'undefined' || !caches || typeof caches.keys !== 'function') return;
+  try{
+    var keepName = 'phone-shell-' + APP_BUILD_ID;
+    var names = await caches.keys();
+    await Promise.all((Array.isArray(names) ? names : []).filter(function(name){
+      name = String(name || '');
+      return name.indexOf('phone-shell-') === 0 && name !== keepName;
+    }).map(function(name){
+      return caches.delete(name).catch(function(){ return null; });
+    }));
+  }catch(e){}
 }
 
 function buildHostedHardRefreshUrl(targetBuild){
@@ -9904,6 +9918,7 @@ var shellLoadingHideTimer = 0;
 var shellLoadingForceTimer = 0;
 var appFrameLoadWatchdogTimer = 0;
 var appFrameLoadWatchdogNonce = 0;
+var appFrameLoadHandlersBound = false;
 function setChatHardCutMode(enabled){
   var outer = document.querySelector('.phone-outer');
   if(outer) outer.classList.toggle('chat-hard-cut', !!enabled);
@@ -9952,6 +9967,65 @@ function clearAppFrameLoadWatchdog(){
     clearTimeout(appFrameLoadWatchdogTimer);
     appFrameLoadWatchdogTimer = 0;
   }
+}
+
+function handleAppFrameLoaded(frame){
+  frame = frame || document.getElementById('app-iframe');
+  if(!frame) return;
+  var src = String(frame.currentSrc || frame.src || '');
+  var now = Date.now();
+  if(frame.dataset && frame.dataset.loadHandledSrc === src && now - (Number(frame.dataset.loadHandledAt || 0) || 0) < 1200){
+    return;
+  }
+  if(frame.dataset){
+    frame.dataset.loadHandledSrc = src;
+    frame.dataset.loadHandledAt = String(now);
+  }
+  clearAppFrameLoadWatchdog();
+  try{ frame.style.opacity = '1'; }catch(err){}
+  applyIframeSafeAreaOverrides();
+  try{ installBackendLogBridge(frame.contentWindow, currentApp || 'app'); }catch(bridgeErr){}
+  pushBackendLogEntry({
+    level: 'info',
+    app: currentApp || 'app',
+    source: 'app.load',
+    message: '页面已加载'
+  });
+  setTimeout(applyIframeSafeAreaOverrides, 120);
+  hideShellLoadingOverlay(currentApp === 'chat' ? 360 : (currentApp ? 260 : 2000));
+}
+
+function handleAppFrameLoadError(frame){
+  frame = frame || document.getElementById('app-iframe');
+  clearAppFrameLoadWatchdog();
+  try{ if(frame) frame.style.opacity = '1'; }catch(err){}
+  hideShellLoadingOverlay(0);
+}
+
+function bindAppFrameLoadHandlers(){
+  if(appFrameLoadHandlersBound) return;
+  var frame = document.getElementById('app-iframe');
+  if(!frame) return;
+  appFrameLoadHandlersBound = true;
+  frame.addEventListener('load', function(){
+    handleAppFrameLoaded(frame);
+  });
+  frame.addEventListener('error', function(){
+    handleAppFrameLoadError(frame);
+  });
+}
+
+function settleAlreadyLoadedAppFrame(frame, appId){
+  if(!frame || !appId) return;
+  setTimeout(function(){
+    if(currentApp !== appId) return;
+    try{
+      var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+      if(doc && doc.readyState === 'complete' && String(frame.src || '').trim()){
+        handleAppFrameLoaded(frame);
+      }
+    }catch(err){}
+  }, 90);
 }
 
 function armAppFrameLoadWatchdog(frame, appId, attempt){
@@ -10029,8 +10103,16 @@ function renderApp(id){
   }
   showShellLoadingOverlay('app');
   var appFrame = document.getElementById('app-iframe');
-  appFrame.src = buildAppFrameUrl(a.src);
-  armAppFrameLoadWatchdog(appFrame, id, 0);
+  bindAppFrameLoadHandlers();
+  if(appFrame && appFrame.dataset){
+    appFrame.dataset.loadHandledSrc = '';
+    appFrame.dataset.loadHandledAt = '0';
+  }
+  if(appFrame){
+    appFrame.src = buildAppFrameUrl(a.src);
+    armAppFrameLoadWatchdog(appFrame, id, 0);
+    settleAlreadyLoadedAppFrame(appFrame, id);
+  }
   if(id === 'chat'){
     pendingOpenChatCharId = '';
     pendingOpenChatNonce = '';
@@ -12092,9 +12174,11 @@ function restoreState(){
   if(safeAreaCover) safeAreaCover.remove();
   compactCharKey('activeCharacter');
   compactCharKey('pendingChatChar');
+  bindAppFrameLoadHandlers();
   bindTextNormalization();
   renderOfflineMiniLauncher();
   bindHostedServiceWorker();
+  clearStaleHostedCodeCaches();
   requestAppPersistentStorage();
   syncAppHeight();
   applyPhoneFrameVisibility(getPhoneFrameVisibility(), false);
@@ -12212,27 +12296,7 @@ window.addEventListener('load', ()=>{
     showHostedUpdateCard();
   }
   var frame = document.getElementById('app-iframe');
-  if(frame){
-    frame.addEventListener('load', function(){
-      clearAppFrameLoadWatchdog();
-      try{ frame.style.opacity = '1'; }catch(err){}
-      applyIframeSafeAreaOverrides();
-      installBackendLogBridge(frame.contentWindow, currentApp || 'app');
-      pushBackendLogEntry({
-        level: 'info',
-        app: currentApp || 'app',
-        source: 'app.load',
-        message: '页面已加载'
-      });
-      setTimeout(applyIframeSafeAreaOverrides, 120);
-      hideShellLoadingOverlay(currentApp === 'chat' ? 360 : (currentApp ? 260 : 2000));
-    });
-    frame.addEventListener('error', function(){
-      clearAppFrameLoadWatchdog();
-      try{ frame.style.opacity = '1'; }catch(err){}
-      hideShellLoadingOverlay(0);
-    });
-  }
+  if(frame) bindAppFrameLoadHandlers();
   var notifyCard = document.getElementById('app-notify-card');
   if(notifyCard){
     notifyCard.addEventListener('click', function(evt){
