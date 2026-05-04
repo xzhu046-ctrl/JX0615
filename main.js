@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-04T02:19:17Z';
+const APP_BUILD_ID = '2026-05-04T02:34:13Z';
 const APP_UPDATE_NOTES = [
-  '恢复主屏幕第二页显示',
-  '稳定聊天输入框键盘位置',
-  '同步更新私有版缓存'
+  '强化主屏幕更新接管',
+  '修正更新日志显示',
+  '保留数据只刷新应用壳'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -1604,7 +1604,7 @@ async function buildHostedPagesFingerprint(){
 function getRequestedHostedBuild(){
   try{
     var url = new URL(window.location.href);
-    var asked = String(url.searchParams.get('__appBuild') || '').trim();
+    var asked = String(url.searchParams.get('__appBuild') || url.searchParams.get('refreshBuild') || '').trim();
     if(asked && compareHostedBuildIds(asked, APP_BUILD_ID) > 0){
       return asked;
     }
@@ -1693,6 +1693,17 @@ async function unregisterHostedServiceWorkers(){
   try{
     var registrations = await navigator.serviceWorker.getRegistrations();
     await Promise.all((Array.isArray(registrations) ? registrations : []).map(function(reg){
+      try{
+        if(reg && reg.waiting && reg.waiting.postMessage){
+          reg.waiting.postMessage({ type:'SKIP_WAITING' });
+        }
+        if(reg && reg.installing && reg.installing.postMessage){
+          reg.installing.postMessage({ type:'SKIP_WAITING' });
+        }
+      }catch(e){}
+      return reg && typeof reg.update === 'function' ? reg.update().catch(function(){ return null; }) : null;
+    }));
+    await Promise.all((Array.isArray(registrations) ? registrations : []).map(function(reg){
       return reg && typeof reg.unregister === 'function' ? reg.unregister().catch(function(){ return false; }) : false;
     }));
   }catch(e){}
@@ -1702,8 +1713,25 @@ async function clearHostedUpdateCaches(){
   if(typeof caches !== 'undefined' && caches && typeof caches.keys === 'function'){
     try{
       var names = await caches.keys();
-      await Promise.all(names.map(function(name){ return caches.delete(name).catch(function(){ return null; }); }));
+      await Promise.all(names.filter(function(name){
+        return String(name || '').indexOf('phone-shell') === 0;
+      }).map(function(name){ return caches.delete(name).catch(function(){ return null; }); }));
     }catch(e){}
+  }
+}
+
+function buildHostedHardRefreshUrl(targetBuild){
+  try{
+    var url = new URL(window.location.href);
+    var build = String(targetBuild || APP_BUILD_ID || '').trim() || APP_BUILD_ID;
+    var stamp = String(Date.now());
+    url.searchParams.set('__appBuild', build);
+    url.searchParams.set('refreshBuild', build);
+    url.searchParams.set('__force', stamp);
+    url.searchParams.set('__ts', stamp);
+    return url.toString();
+  }catch(err){
+    return '';
   }
 }
 
@@ -1772,13 +1800,16 @@ function bindHostedServiceWorker(){
         try{ sessionStorage.setItem(REFRESH_RECALC_FLAG_KEY, '1'); }catch(e){}
         hideHostedUpdateCard();
         try{
-          var nextUrl = new URL(window.location.href);
-          nextUrl.searchParams.set('__appBuild', targetBuild);
-          nextUrl.searchParams.set('__ts', String(Date.now()));
-          window.location.replace(nextUrl.toString());
+          var nextUrl = buildHostedHardRefreshUrl(targetBuild);
+          if(nextUrl){
+            window.location.replace(nextUrl);
+            return;
+          }
+        }catch(err){}
+        try{
+          window.location.reload();
           return;
         }catch(err){}
-        window.location.reload();
       }
     });
     return reg;
@@ -1924,13 +1955,16 @@ function refreshInstalledApp(evt){
     try{ sessionStorage.setItem(REFRESH_RECALC_FLAG_KEY, '1'); }catch(e){}
     hideHostedUpdateCard();
     try{
-      var url = new URL(window.location.href);
-      url.searchParams.set('__appBuild', String(targetBuild || APP_BUILD_ID));
-      url.searchParams.set('__ts', String(Date.now()));
-      window.location.replace(url.toString());
+      var url = buildHostedHardRefreshUrl(targetBuild);
+      if(url){
+        window.location.replace(url);
+        return;
+      }
+    }catch(err){}
+    try{
+      window.location.reload();
       return;
     }catch(err){}
-    window.location.reload();
   };
   Promise.resolve()
     .then(function(){
@@ -1981,9 +2015,14 @@ window.checkForHostedUpdate = checkForHostedUpdate;
 function clearHostedRefreshParams(){
   try{
     var url = new URL(window.location.href);
-    var hadRefreshParams = url.searchParams.has('__appBuild') || url.searchParams.has('__ts');
+    var hadRefreshParams = url.searchParams.has('__appBuild')
+      || url.searchParams.has('refreshBuild')
+      || url.searchParams.has('__force')
+      || url.searchParams.has('__ts');
     if(!hadRefreshParams) return;
     url.searchParams.delete('__appBuild');
+    url.searchParams.delete('refreshBuild');
+    url.searchParams.delete('__force');
     url.searchParams.delete('__ts');
     window.history.replaceState({}, document.title, url.toString());
   }catch(err){}
