@@ -1,0 +1,18 @@
+Third-Party Notices
+===================
+
+This private, noncommercial build includes adapted ideas and implementation
+patterns from open-source projects. The app UI does not display these notices,
+but the repository keeps them here for license compliance.
+
+PolyForm Noncommercial License 1.0.0
+------------------------------------
+License terms: https://polyformproject.org/licenses/noncommercial/1.0.0
+
+Required Notice: Copyright (c) 2024-2026 NMJ (SullyOS / 手抓糯米机)
+
+MIT Licensed Components
+-----------------------
+Some referenced implementation patterns come from a project whose package
+metadata declares the MIT license. Any adapted code remains subject to the MIT
+license terms where applicable.

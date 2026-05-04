@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-04T20:11:27Z"></script>
-<script src="../chatStorage.js?v=2026-05-04T20:11:27Z"></script>
-<script src="../assetStore.js?v=2026-05-04T20:11:27Z"></script>
-<script src="../accountManager.js?v=2026-05-04T20:11:27Z"></script>
-<script src="../metadataStore.js?v=2026-05-04T20:11:27Z"></script>
-<script src="../scheduleShared.js?v=2026-05-04T20:11:27Z"></script>
-<script src="../presenceShared.js?v=2026-05-04T20:11:27Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-04T20:11:27Z"></script>
-<script src="../sunnySupport.js?v=2026-05-04T20:11:27Z"></script>
-<script src="offlineInvite.js?v=2026-05-04T20:11:27Z"></script>
+<script src="../promptManager.js?v=2026-05-04T20:22:35Z"></script>
+<script src="../chatStorage.js?v=2026-05-04T20:22:35Z"></script>
+<script src="../assetStore.js?v=2026-05-04T20:22:35Z"></script>
+<script src="../accountManager.js?v=2026-05-04T20:22:35Z"></script>
+<script src="../metadataStore.js?v=2026-05-04T20:22:35Z"></script>
+<script src="../scheduleShared.js?v=2026-05-04T20:22:35Z"></script>
+<script src="../presenceShared.js?v=2026-05-04T20:22:35Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-04T20:22:35Z"></script>
+<script src="../sunnySupport.js?v=2026-05-04T20:22:35Z"></script>
+<script src="offlineInvite.js?v=2026-05-04T20:22:35Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -26840,14 +26840,17 @@ function buildVoiceCallPrompt(userText){
     memoryPrompt,
     worldbookEntries ? ('【世界书】\n' + worldbookEntries) : '',
     replyLangPrompt,
-	    '【当前模式】',
-	    '这是一通语音电话。双方只能听到声音，看不到动作、表情和画面。',
-	    '界面把通话内容显示成文字，但你要像真的在电话里接话。',
-	    '只允许输出两类：text 是角色真正说出口的话；narrator 是非常短的听觉/停顿氛围。',
-	    '禁止输出 voice、meme、image、money、transfer、rich_html、schedule、emoji、表情包、转账、语音消息。',
-	    '禁止动作描写、视觉描写、时间戳、指令标签和解释说明。',
-	    'text 要短，最好不超过 20 个字；像真人通话，不要长段独白。',
-	    '默认返回 JSON 数组，每项格式：{"type":"text","content":"..."} 或 {"type":"narrator","content":"..."}。1 到 4 条，至少 1 条 text。',
+    '【当前模式】',
+    '这是一通正在进行的语音电话，不是普通文字聊天。',
+    '你只能听到对方的声音、停顿、语气和背景里的细小声响；看不到动作、表情和画面。',
+    '回复要像贴着手机自然接话：会停顿、会犹豫、会被对方的情绪带动，不要像客服或作文。',
+    '不要每次都套同一种结构，不要总结式回答，不要解释自己在遵守规则。',
+    '只允许输出两类：text 是角色真正说出口的话；narrator 是很短的听觉/停顿氛围。',
+    'narrator 只能写声音、呼吸、沉默、信号、电流、环境声等听觉信息；禁止视觉动作描写。',
+    '禁止输出 voice、meme、image、money、transfer、rich_html、schedule、emoji、表情包、转账、语音消息。',
+    '禁止视觉描写、时间戳、指令标签和解释说明。',
+    'text 必须短，最好不超过 20 个字；宁可拆成几句短话，也不要长段独白。',
+    '默认返回 JSON 数组，每项格式：{"type":"text","content":"..."} 或 {"type":"narrator","content":"..."}。1 到 4 条，至少 1 条 text。',
     '每条都要直接接住对方刚刚说的东西，不要自说自话。',
     settings.tone ? ('【通话氛围】\n' + settings.tone) : ''
   ].filter(Boolean).join('\n\n');
