@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-04T21:49:00Z"></script>
-<script src="../chatStorage.js?v=2026-05-04T21:49:00Z"></script>
-<script src="../assetStore.js?v=2026-05-04T21:49:00Z"></script>
-<script src="../accountManager.js?v=2026-05-04T21:49:00Z"></script>
-<script src="../metadataStore.js?v=2026-05-04T21:49:00Z"></script>
-<script src="../scheduleShared.js?v=2026-05-04T21:49:00Z"></script>
-<script src="../presenceShared.js?v=2026-05-04T21:49:00Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-04T21:49:00Z"></script>
-<script src="../sunnySupport.js?v=2026-05-04T21:49:00Z"></script>
-<script src="offlineInvite.js?v=2026-05-04T21:49:00Z"></script>
+<script src="../promptManager.js?v=2026-05-04T22:27:00Z"></script>
+<script src="../chatStorage.js?v=2026-05-04T22:27:00Z"></script>
+<script src="../assetStore.js?v=2026-05-04T22:27:00Z"></script>
+<script src="../accountManager.js?v=2026-05-04T22:27:00Z"></script>
+<script src="../metadataStore.js?v=2026-05-04T22:27:00Z"></script>
+<script src="../scheduleShared.js?v=2026-05-04T22:27:00Z"></script>
+<script src="../presenceShared.js?v=2026-05-04T22:27:00Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-04T22:27:00Z"></script>
+<script src="../sunnySupport.js?v=2026-05-04T22:27:00Z"></script>
+<script src="offlineInvite.js?v=2026-05-04T22:27:00Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -2054,10 +2054,10 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .voice-call-top{height:50px;display:grid;grid-template-columns:46px minmax(0,1fr)44px;gap:10px;align-items:start;flex:0 0 auto}
 .voice-call-headcopy{display:none}
 .voice-call-ticket,.voice-call-sub{display:none}
-.voice-call-side-actions{display:flex;flex-direction:column;gap:9px;align-items:flex-end;justify-content:flex-start;z-index:6}
+.voice-call-side-actions{grid-column:3;justify-self:end;display:flex;flex-direction:column;gap:9px;align-items:flex-end;justify-content:flex-start;z-index:6}
 .voice-call-mini-btn,.voice-call-menu-btn{width:44px;height:44px;border:1px solid rgba(17,17,17,.12);border-radius:18px;background:rgba(255,255,255,.48);color:#111;box-shadow:0 12px 26px rgba(0,0,0,.12),inset 0 0 0 1px rgba(255,255,255,.72);backdrop-filter:blur(24px) saturate(132%);-webkit-backdrop-filter:blur(24px) saturate(132%)}
 .voice-call-mini-btn svg,.voice-call-menu-btn svg{width:21px;height:21px}
-.voice-call-stage{min-height:170px;padding:0 62px 4px 34px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:11px;flex:0 0 auto}
+.voice-call-stage{min-height:170px;padding:0 0 4px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:11px;flex:0 0 auto}
 .voice-call-duo{position:relative;display:flex;align-items:flex-start;justify-content:center;margin-top:-2px;min-height:108px}
 .voice-call-person{position:relative;display:flex;flex-direction:column;align-items:center;gap:0}
 .voice-call-person.user{margin-left:-12px;margin-top:0}
@@ -2073,18 +2073,26 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .voice-call-centerpulse::before{width:8px;height:8px;background:#18ad61;margin-right:0;box-shadow:0 0 0 6px rgba(24,173,97,.12)}
 .voice-call-centerpulse strong{font-size:15px;font-weight:900;letter-spacing:.04em}
 .voice-call-livehint{max-width:190px;min-height:24px;padding:0 12px;border:1px solid rgba(17,17,17,.08);border-radius:999px;background:rgba(255,255,255,.35);color:rgba(17,17,17,.48);font-size:11px;font-weight:900;box-shadow:none;text-shadow:none;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.voice-call-livehint.hidden,.voice-call-livehint:empty{display:none}
 .voice-call-feed{flex:1 1 auto;gap:14px;padding:12px 4px calc(118px + var(--voice-call-keyboard-inset));scroll-behavior:smooth;touch-action:pan-y;overscroll-behavior:contain}
 .voice-call-line{display:flex;align-items:flex-end;gap:9px;min-height:0}
 .voice-call-line.user{justify-content:flex-end}
 .voice-call-line.ai{justify-content:flex-start}
 .voice-call-line.narrator,.voice-call-line.system{justify-content:center;padding:7px 0}
 .voice-call-line.narrator{margin:6px 0 14px}
+.voice-call-line.narrator.ai-narrator{justify-content:flex-start;padding-left:43px;padding-right:0}
+.voice-call-line.narrator.user-narrator{justify-content:flex-end;padding-left:0;padding-right:43px}
 .voice-call-bubble{max-width:min(76%,306px);padding:9px 13px;border:1px solid rgba(17,17,17,.10);border-radius:19px;background:rgba(255,255,255,.46);color:#111;font-size:15px;font-weight:820;line-height:1.56;box-shadow:0 10px 26px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.52);backdrop-filter:blur(24px) saturate(132%);-webkit-backdrop-filter:blur(24px) saturate(132%)}
 .voice-call-line.ai .voice-call-bubble{background:rgba(255,255,255,.52);border-top-left-radius:8px}
 .voice-call-line.user .voice-call-bubble{background:rgba(12,12,12,.82);color:#fff;border-color:rgba(255,255,255,.08);border-top-right-radius:8px;box-shadow:0 12px 28px rgba(0,0,0,.16),inset 0 0 0 1px rgba(255,255,255,.08)}
 .voice-call-line.narrator .voice-call-bubble{max-width:min(88%,350px);padding:0;background:transparent;border:none;box-shadow:none;color:#111;text-shadow:none}
 .voice-call-line.narrator .voice-call-narrator-card{max-width:min(350px,calc(100vw - 58px));background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(238,238,238,.26));backdrop-filter:blur(30px) saturate(138%);-webkit-backdrop-filter:blur(30px) saturate(138%)}
-.voice-call-line.system .voice-call-bubble{max-width:min(78%,292px);background:rgba(255,255,255,.34);border:1px dashed rgba(17,17,17,.22);color:rgba(17,17,17,.50);font-size:12px;text-align:center;box-shadow:none}
+.voice-call-line.user-narrator .narrator-card{padding:12px 20px 12px 16px;border-radius:22px 0 0 22px}
+.voice-call-line.user-narrator .narrator-card .narrator-rail{left:auto;right:10px}
+.voice-call-line.user-narrator .narrator-card .narrator-copy{padding:6px 10px 4px 6px;text-align:right}
+.voice-call-line.user-narrator .narrator-card .narrator-mark.open{left:8px;right:auto}
+.voice-call-line.user-narrator .narrator-card .narrator-mark.close{right:16px;left:auto;bottom:-37px}
+.voice-call-line.system .voice-call-bubble{max-width:min(86%,320px);padding:2px 8px;background:transparent;border:none;border-radius:0;color:rgba(17,17,17,.54);font-family:var(--fontcute);font-size:13px;font-weight:900;line-height:1.35;text-align:center;box-shadow:none;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-thickness:2px;text-decoration-color:rgba(17,17,17,.34);text-underline-offset:5px;backdrop-filter:none;-webkit-backdrop-filter:none}
 .voice-call-line-avatar{flex:0 0 auto;width:34px;height:34px;border:1px solid rgba(255,255,255,.70);border-radius:13px;background:rgba(255,255,255,.40);color:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 8px 18px rgba(0,0,0,.14),inset 0 0 0 1px rgba(255,255,255,.62);font-size:10px;font-weight:900;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 .voice-call-line-avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .voice-call-line.ai:not(.has-avatar){padding-left:43px}
@@ -2112,7 +2120,7 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
   .voice-call-shell{padding-left:14px;padding-right:14px}
   .voice-call-top{grid-template-columns:44px minmax(0,1fr)42px;gap:8px}
   .voice-call-mini-btn,.voice-call-menu-btn{width:42px;height:42px;border-radius:15px}
-  .voice-call-stage{min-height:164px;padding-left:30px;padding-right:72px}
+  .voice-call-stage{min-height:164px;padding-left:0;padding-right:0}
   .voice-call-portrait{width:98px;height:98px;border-radius:999px}
   .voice-call-person.user{margin-left:-11px;margin-top:0}
   .voice-call-feed{gap:13px;padding-top:10px;padding-bottom:calc(116px + var(--voice-call-keyboard-inset))}
@@ -8168,12 +8176,16 @@ function normalizeVoiceCallTranscriptLine(raw){
   role = role === 'user' ? 'user' : (role === 'system' ? 'system' : (role === 'narrator' ? 'narrator' : 'assistant'));
   var text = String(item.text || '').trim();
   if(!text) return null;
-  return {
+  var line = {
     id: String(item.id || ('call_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7))),
     role: role,
     text: text,
     at: Number(item.at || Date.now()) || Date.now()
   };
+  if(role === 'narrator'){
+    line.speaker = normalizeVoiceCallNarratorSpeaker(item.speaker || item.owner || item.side || item.from);
+  }
+  return line;
 }
 
 function normalizeVoiceCallSessionSnapshot(raw){
@@ -26635,6 +26647,15 @@ function getVoiceCallPhaseLabel(state){
   return '轮到你说';
 }
 
+function shouldShowVoiceCallLiveHint(state){
+  var s = state || ensureVoiceCallState();
+  if(s.incoming || s.phase === 'ringing') return true;
+  if(s.awaitingAnswer || s.phase === 'connecting') return true;
+  if(voiceCallSpeechListening) return true;
+  if(s.awaitingReply || s.phase === 'thinking' || s.phase === 'speaking' || s.phase === 'error') return true;
+  return false;
+}
+
 function syncVoiceCallIdentityUi(){
   var userName = currentVoiceCallUserName();
   var charName = currentVoiceCallCharName();
@@ -26678,7 +26699,11 @@ function syncVoiceCallSettingsUi(){
     speechBtn.disabled = inputMode !== 'speech';
     speechBtn.style.opacity = inputMode === 'speech' ? '1' : '.45';
   }
-  if(liveHint) liveHint.textContent = getVoiceCallPhaseLabel(state);
+  if(liveHint){
+    var showLiveHint = shouldShowVoiceCallLiveHint(state);
+    liveHint.textContent = showLiveHint ? getVoiceCallPhaseLabel(state) : '';
+    liveHint.classList.toggle('hidden', !showLiveHint);
+  }
   if(ticketSub) ticketSub.textContent = state.awaitingAnswer || state.phase === 'connecting' ? '等待接听' : '文字电话 / 电话中';
   if(modeHint) modeHint.textContent = voiceCallComposerMode === 'narrator' ? '动作' : '消息';
   if(replyBtn){
@@ -26796,9 +26821,17 @@ function formatVoiceCallDuration(ms){
   return String(min).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
 }
 
-function getVoiceCallRoleLabel(role){
+function normalizeVoiceCallNarratorSpeaker(value){
+  return String(value || '').trim().toLowerCase() === 'user' ? 'user' : 'assistant';
+}
+
+function getVoiceCallRoleLabel(role, item){
   if(role === 'user') return currentVoiceCallUserName();
-  if(role === 'narrator') return '旁白';
+  if(role === 'narrator'){
+    return normalizeVoiceCallNarratorSpeaker(item && item.speaker) === 'user'
+      ? currentVoiceCallUserName() + '旁白'
+      : currentVoiceCallCharName() + '旁白';
+  }
   if(role === 'system') return '系统';
   return currentVoiceCallCharName();
 }
@@ -26818,7 +26851,7 @@ function syncVoiceCallFloating(){
 
 function buildVoiceCallRecordPreviewLine(item){
   if(!item) return '';
-  var speaker = getVoiceCallRoleLabel(item.role);
+  var speaker = getVoiceCallRoleLabel(item.role, item);
   return speaker + '：' + String(item.text || '').trim();
 }
 
@@ -26854,11 +26887,12 @@ function renderVoiceCallFeed(){
   if(!host) return;
   var items = Array.isArray(state.transcript) ? state.transcript : [];
   if(!items.length){
-    host.innerHTML = '<div class="voice-call-line system"><div class="voice-call-bubble">电话接通了。</div></div>';
+    host.innerHTML = '<div class="voice-call-line system"><div class="voice-call-bubble">电话接通了</div></div>';
     return;
   }
   host.innerHTML = items.map(function(item, idx){
-    var cls = item.role === 'user' ? 'user' : (item.role === 'system' ? 'system' : (item.role === 'narrator' ? 'narrator' : 'ai'));
+    var narratorSpeaker = item.role === 'narrator' ? normalizeVoiceCallNarratorSpeaker(item.speaker) : '';
+    var cls = item.role === 'user' ? 'user' : (item.role === 'system' ? 'system' : (item.role === 'narrator' ? ('narrator ' + (narratorSpeaker === 'user' ? 'user-narrator' : 'ai-narrator')) : 'ai'));
     var next = items[idx + 1] || null;
     var nextRole = next && next.role;
     var showAvatar = (item.role === 'user' || item.role === 'assistant') && nextRole !== item.role;
@@ -26889,7 +26923,7 @@ function tickVoiceCallTimer(){
   syncVoiceCallFloating();
 }
 
-function appendVoiceCallLine(role, text){
+function appendVoiceCallLine(role, text, speaker){
   var state = ensureVoiceCallState();
   var normalizedRole = role === 'user' ? 'user' : (role === 'system' ? 'system' : (role === 'narrator' ? 'narrator' : 'assistant'));
   var line = {
@@ -26899,6 +26933,9 @@ function appendVoiceCallLine(role, text){
     text: String(text || '').trim(),
     at: Date.now()
   };
+  if(normalizedRole === 'narrator'){
+    line.speaker = normalizeVoiceCallNarratorSpeaker(speaker);
+  }
   if(!line.text) return null;
   state.transcript.push(line);
   renderVoiceCallFeed();
@@ -27013,7 +27050,7 @@ function buildVoiceCallTranscriptLines(){
   return (Array.isArray(state.transcript) ? state.transcript : []).filter(function(item){
     return item && item.role !== 'system';
   }).slice(-18).map(function(item){
-    var speaker = getVoiceCallRoleLabel(item.role);
+    var speaker = getVoiceCallRoleLabel(item.role, item);
     var label = item.role === 'narrator' ? '通话旁白' : '通话';
     return '[' + label + '] ' + speaker + '：' + String(item.text || '').trim();
   }).join('\n');
@@ -27071,7 +27108,7 @@ async function triggerVoiceCallAssistantTurn(userText){
     var parts = extractVoiceCallReplyParts(raw).filter(function(part){ return part && part.text; });
     if(!parts.length) throw new Error('empty_call_reply');
     parts.forEach(function(part){
-      appendVoiceCallLine(part.type === 'narrator' ? 'narrator' : 'assistant', part.text);
+      appendVoiceCallLine(part.type === 'narrator' ? 'narrator' : 'assistant', part.text, part.type === 'narrator' ? 'assistant' : '');
     });
     state.phase = 'listening';
 	    return true;
@@ -27079,7 +27116,7 @@ async function triggerVoiceCallAssistantTurn(userText){
 	    console.error('voice call reply failed', err);
     state.phase = 'listening';
     var hasUserTurn = (Array.isArray(state.transcript) ? state.transcript : []).some(function(line){ return line && line.role === 'user'; });
-	    appendVoiceCallLine('system', hasUserTurn ? '刚刚没听清，可以再说一次。' : '电话已经接通，你先说也可以。');
+	    appendVoiceCallLine('system', hasUserTurn ? '刚刚没听清，可以再说一次' : '电话已经接通，你先说也可以');
 	    return false;
 	  }finally{
 	    state.awaitingReply = false;
@@ -27100,9 +27137,9 @@ function getVoiceCallPendingUserTurnText(){
     }
   }
   return lines.slice(start).filter(function(line){
-    return line && (line.role === 'user' || line.role === 'narrator') && String(line.text || '').trim();
+    return line && (line.role === 'user' || (line.role === 'narrator' && normalizeVoiceCallNarratorSpeaker(line.speaker) === 'user')) && String(line.text || '').trim();
   }).map(function(line){
-    if(line.role === 'narrator') return '通话旁白：' + String(line.text || '').trim();
+    if(line.role === 'narrator') return currentVoiceCallUserName() + '通话旁白：' + String(line.text || '').trim();
     return currentVoiceCallUserName() + '：' + String(line.text || '').trim();
   }).join('\n');
 }
@@ -27227,7 +27264,7 @@ function connectOutgoingVoiceCall(openingText){
   state.phase = 'listening';
   state.connectedAt = Date.now();
   closeVoiceCallRecordViewer();
-  appendVoiceCallLine('system', '电话接通了。');
+  appendVoiceCallLine('system', '电话接通了');
   if(String(openingText || '').trim()){
     appendVoiceCallLine('assistant', openingText);
   }
@@ -27264,7 +27301,7 @@ async function resolveOutgoingVoiceCallAnswer(){
   }catch(err){
     console.warn('voice call answer decision failed', err);
     if(voiceCallState && (voiceCallState.phase === 'connecting' || voiceCallState.awaitingAnswer)){
-      appendVoiceCallLine('system', '电话没有接通，稍后再打一次。');
+      appendVoiceCallLine('system', '电话没有接通，稍后再打一次');
       voiceCallState.awaitingAnswer = false;
       voiceCallState.phase = 'error';
       syncVoiceCallSettingsUi();
@@ -27328,7 +27365,7 @@ async function sendVoiceCallMessage(){
 	  }
   syncVoiceCallKeyboardInset();
   state.phase = 'listening';
-  appendVoiceCallLine(voiceCallComposerMode === 'narrator' ? 'narrator' : 'user', text);
+  appendVoiceCallLine(voiceCallComposerMode === 'narrator' ? 'narrator' : 'user', text, voiceCallComposerMode === 'narrator' ? 'user' : '');
   closeVoiceCallComposer();
   syncVoiceCallSettingsUi();
   persistVoiceCallSession();
@@ -27401,7 +27438,7 @@ function toggleVoiceCallSpeechInput(){
 function normalizeCallRecordItem(raw){
   var item = raw && typeof raw === 'object' ? raw : {};
   return {
-    id: String(item.id || ('callrec_' + Date.now().toString(36))),
+	    id: String(item.id || ('callrec_' + Date.now().toString(36))),
     sessionId: String(item.sessionId || item.id || '').trim(),
     charId: String(item.charId || (character && character.id) || ''),
     startedAt: Number(item.startedAt || Date.now()) || Date.now(),
@@ -27410,16 +27447,18 @@ function normalizeCallRecordItem(raw){
     durationLabel: String(item.durationLabel || '').trim(),
     title: String(item.title || '').trim(),
     summary: String(item.summary || '').trim(),
-	    transcript: Array.isArray(item.transcript) ? item.transcript.map(function(line){
-	      var role = String(line && line.role || '').trim();
-	      role = role === 'user' ? 'user' : (role === 'system' ? 'system' : (role === 'narrator' ? 'narrator' : 'assistant'));
-	      return {
-	        role: role,
-	        text: String(line && line.text || '').trim(),
-	        at: Number(line && line.at || Date.now()) || Date.now()
-	      };
-    }).filter(function(line){ return !!line.text; }) : []
-  };
+		    transcript: Array.isArray(item.transcript) ? item.transcript.map(function(line){
+		      var role = String(line && line.role || '').trim();
+		      role = role === 'user' ? 'user' : (role === 'system' ? 'system' : (role === 'narrator' ? 'narrator' : 'assistant'));
+		      var normalized = {
+		        role: role,
+		        text: String(line && line.text || '').trim(),
+		        at: Number(line && line.at || Date.now()) || Date.now()
+		      };
+          if(role === 'narrator') normalized.speaker = normalizeVoiceCallNarratorSpeaker(line && (line.speaker || line.owner || line.side || line.from));
+          return normalized;
+	    }).filter(function(line){ return !!line.text; }) : []
+	  };
 }
 
 function saveCallRecordItem(record){
@@ -27443,7 +27482,7 @@ function getCallRecordItem(recordId){
 async function summarizeVoiceCallRecord(record){
 	  var item = normalizeCallRecordItem(record);
 		  var lines = item.transcript.map(function(line){
-		    var speaker = getVoiceCallRoleLabel(line.role);
+			    var speaker = getVoiceCallRoleLabel(line.role, line);
 		    return speaker + '：' + String(line.text || '').trim();
 	  }).join('\n');
   var sys = [
@@ -27515,7 +27554,7 @@ function openVoiceCallRecordViewer(recordId){
   if(summary) summary.textContent = item.summary || '这通电话已经被好好收起来了。';
 	  if(list){
 	    list.innerHTML = (item.transcript || []).map(function(line){
-	      var speaker = getVoiceCallRoleLabel(line.role);
+		      var speaker = getVoiceCallRoleLabel(line.role, line);
 	      return '<div class="voice-call-record-row"><div class="voice-call-record-role">' + esc(speaker) + '</div><div class="voice-call-record-text">' + esc(String(line.text || '').trim()) + '</div></div>';
 	    }).join('');
 	  }
@@ -27553,7 +27592,7 @@ async function endVoiceCallSession(){
   var state = ensureVoiceCallState();
   if(!state.active){
     if(state.awaitingAnswer || state.phase === 'connecting'){
-      appendVoiceCallLine('system', '已挂断。');
+      appendVoiceCallLine('system', '已挂断');
       voiceCallState = defaultVoiceCallState();
       voiceCallMinimized = false;
       voiceCallRecordOpenId = '';
@@ -27644,7 +27683,7 @@ function acceptIncomingVoiceCall(){
   state.phase = 'listening';
 	  state.connectedAt = Date.now();
   document.getElementById('voiceCallIncomingDrawer')?.classList.remove('open');
-  appendVoiceCallLine('system', '你接起了这通电话。');
+  appendVoiceCallLine('system', '你接起了这通电话');
   persistVoiceCallSession();
   var starter = normalizeVoiceCallStarter(state.draftStarter || getVoiceCallSettings().starter);
 	  if(starter !== 'user'){
