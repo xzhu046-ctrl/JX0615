@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-04T02:34:13Z';
+const APP_BUILD_ID = '2026-05-04T03:16:21Z';
 const APP_UPDATE_NOTES = [
-  '强化主屏幕更新接管',
-  '修正更新日志显示',
-  '保留数据只刷新应用壳'
+  '收紧后台活动触发',
+  '后台消息遵守间隔',
+  '过滤无关聊天联动'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -2367,6 +2367,11 @@ async function resolveShellSelectedAvatarFromBundle(charId, role, bundle, accoun
 
 function isGlobalAiBgEnabled(){
   try{
+    if(shellApiSettingsCache && Object.prototype.hasOwnProperty.call(shellApiSettingsCache, 'aiBgEnabled')){
+      return !!shellApiSettingsCache.aiBgEnabled;
+    }
+  }catch(e){}
+  try{
     return localStorage.getItem(AI_BG_ENABLED_KEY) === '1';
   }catch(e){}
   return false;
@@ -2405,6 +2410,12 @@ function hasAnyAiBgActivityEnabled(accountId){
     var override = c && c.id ? getCharBgOverride(c.id, accountId) : null;
     return !!(c && c.id && ownerId === accountId && override !== false);
   });
+}
+
+function isAiBgActivityGloballyEnabled(){
+  var defaultId = getDefaultAccountId();
+  if(!defaultId) return isGlobalAiBgEnabled();
+  return hasAnyAiBgActivityEnabled(defaultId);
 }
 
 function getDefaultAccountId(){
@@ -2716,18 +2727,26 @@ function normalizeApiSettingsRecord(raw){
   };
 }
 
+function mirrorShellApiSettingsToLegacyStorage(record){
+  if(!record || typeof record !== 'object') return;
+  try{ localStorage.setItem(AI_BG_ENABLED_KEY, record.aiBgEnabled ? '1' : '0'); }catch(e){}
+  try{ localStorage.setItem(AI_BG_INTERVAL_KEY, String(record.aiBgIntervalMin || '6')); }catch(e){}
+}
+
 async function hydrateShellApiSettingsFromStorage(){
   if(!(window.PhoneStorage && typeof window.PhoneStorage.get === 'function')) return shellApiSettingsCache;
   var record = await window.PhoneStorage.get('kv', API_SETTINGS_KV_ID).catch(function(){ return null; });
   var value = record && (record.value || record.data || record.settings);
   if(value && typeof value === 'object'){
     shellApiSettingsCache = normalizeApiSettingsRecord(value);
+    mirrorShellApiSettingsToLegacyStorage(shellApiSettingsCache);
   }
   return shellApiSettingsCache;
 }
 
 function applyShellApiSettingsRecord(record){
   shellApiSettingsCache = normalizeApiSettingsRecord(record);
+  mirrorShellApiSettingsToLegacyStorage(shellApiSettingsCache);
   if(window.PhoneStorage && typeof window.PhoneStorage.put === 'function'){
     return window.PhoneStorage.put('kv', {
       id: API_SETTINGS_KV_ID,
@@ -4889,6 +4908,7 @@ async function runAiBackgroundActivity(){
 
   var history = (await readBackgroundChatHistory(character.id, defaultId)).slice(-8);
   var convoState = summarizeBgConversationState(history);
+  if(convoState.unreadAssistantCount > 0 && !convoState.waitingForReply) return false;
   var shortHistory = history.map(function(m){
     var role = m && m.role === 'user' ? 'User' : 'Char';
     var content = String((m && m.content) || '').replace(/\s+/g, ' ').trim();
@@ -5304,6 +5324,21 @@ async function generateScheduleThoughtActions(payload){
   return { actions: actions };
 }
 
+function hasScheduleChatContextCue(text, speaker){
+  var raw = String(text || '').replace(/\s+/g, ' ').trim();
+  if(!raw) return false;
+  var lower = raw.toLowerCase();
+  if(/(日程|待办|备忘|备忘录|行程|计划|安排|提醒|闹钟|时间表|calendar|schedule|todo|memo|留言|评论|进度|完成|做完|划掉|删除)/i.test(lower)) return true;
+  if(/(记一下|记一笔|帮我记|提醒我|别忘|放进|写进|加一条|补一条|删掉|推迟|提前|取消)/.test(raw)) return true;
+  var hasTimeCue = /(\d{1,2}[:：]\d{2}|早上|上午|中午|下午|傍晚|晚上|今晚|明天|后天|周[一二三四五六日天]|星期[一二三四五六日天])/.test(raw);
+  var hasPlanVerb = /(要|得|准备|打算|可能|会|去|来|见|吃|上课|开会|考试|学习|工作|值班|复习|睡|起床|出门|回家|到|开始|结束)/.test(raw);
+  if(hasTimeCue && hasPlanVerb) return true;
+  if(String(speaker || '').toLowerCase() === 'assistant'){
+    return /(我(帮你|替你).{0,12}(记|安排|提醒|补|改|删)|我(记下|记住|安排好了|提醒你|补上了)|日程里|待办里|备忘录里)/.test(raw);
+  }
+  return false;
+}
+
 async function syncScheduleActivityFromChat(payload){
   payload = payload && typeof payload === 'object' ? payload : {};
   var charId = String(payload.charId || '').trim();
@@ -5312,7 +5347,10 @@ async function syncScheduleActivityFromChat(payload){
   if(!charId || !userText) return { changed:false, messages:0 };
   var accountId = getActiveAccountId() || getDefaultAccountId();
   await loadShellChatSettingsBundleForChar(charId, accountId);
+  if(!isAiBgActivityGloballyEnabled()) return { changed:false, messages:0, disabled:true };
   if(!isCharBgEnabled(charId, accountId)) return { changed:false, messages:0 };
+  if(!hasScheduleChatContextCue(userText, speaker)) return { changed:false, messages:0, skipped:true };
+  if(!canRunAiBgSideEffect(false)) return { changed:false, messages:0, throttled:true };
   var shared = getScheduleSharedApi();
   if(!shared) return { changed:false, messages:0 };
   var chars = getStoredCharactersSnapshot();
@@ -5569,7 +5607,7 @@ async function syncScheduleActivityFromChat(payload){
       targets: burstTargets,
       actions: actionNotes.concat(String(plan && plan.chatContext || '').trim() ? [String(plan.chatContext || '').trim()] : []).join('\n')
     }).catch(function(){ return []; });
-    burstMessages = Array.isArray(burstMessages) ? burstMessages.map(function(text){ return String(text || '').trim(); }).filter(Boolean) : [];
+    burstMessages = Array.isArray(burstMessages) ? burstMessages.map(function(text){ return String(text || '').trim(); }).filter(Boolean).slice(0, 1) : [];
   }
   for(var msgIndex = 0; msgIndex < burstMessages.length; msgIndex += 1){
     await appendScheduleChatMessage({
@@ -5577,6 +5615,9 @@ async function syncScheduleActivityFromChat(payload){
       role: 'assistant',
       text: burstMessages[msgIndex]
     }).catch(function(){});
+  }
+  if(changed || burstMessages.length){
+    markAiBgSideEffectRun();
   }
   return { changed: changed, messages: burstMessages.length };
 }
@@ -5590,6 +5631,7 @@ window.ScheduleShell = {
   appendChatMessage: appendScheduleChatMessage,
   generateInlineComment: generateScheduleInlineComment,
   generateThoughtActions: generateScheduleThoughtActions,
+  isAiBgActivityEnabled: isAiBgActivityGloballyEnabled,
   syncChatBackground: syncScheduleActivityFromChat
 };
 
@@ -11833,10 +11875,30 @@ let aiBgRunning = false;
 let scheduleReminderRunning = false;
 
 function getAiBgIntervalMs(){
-  var min = parseInt(localStorage.getItem(AI_BG_INTERVAL_KEY) || '6', 10);
+  var raw = shellApiSettingsCache && shellApiSettingsCache.aiBgIntervalMin ? shellApiSettingsCache.aiBgIntervalMin : '';
+  if(!raw){
+    try{ raw = localStorage.getItem(AI_BG_INTERVAL_KEY) || '6'; }catch(e){ raw = '6'; }
+  }
+  var min = parseInt(raw || '6', 10);
   if(Number.isNaN(min)) min = 6;
   min = Math.max(1, Math.min(120, min));
   return min * 60 * 1000;
+}
+
+function getAiBgLastAt(){
+  try{
+    return parseInt(localStorage.getItem(AI_BG_LAST_AT_KEY) || '0', 10) || 0;
+  }catch(e){}
+  return 0;
+}
+
+function canRunAiBgSideEffect(force){
+  if(force) return true;
+  return Date.now() - getAiBgLastAt() >= getAiBgIntervalMs();
+}
+
+function markAiBgSideEffectRun(){
+  try{ localStorage.setItem(AI_BG_LAST_AT_KEY, String(Date.now())); }catch(e){}
 }
 
 function getScheduleSharedApi(){
@@ -11855,7 +11917,9 @@ async function maybeRunOfflineInviteReminders(){
 }
 
 async function maybeRunScheduleTodoReminders(){
+  if(!isAiBgActivityGloballyEnabled()) return;
   if(scheduleReminderRunning) return;
+  if(!canRunAiBgSideEffect(false)) return;
   var shared = getScheduleSharedApi();
   if(!shared) return;
   scheduleReminderRunning = true;
@@ -11863,6 +11927,7 @@ async function maybeRunScheduleTodoReminders(){
     var state = await shared.loadState();
     state = shared.normalizeState(state || null);
     var changed = false;
+    var emitted = false;
     var chars = getStoredCharactersSnapshot();
     for(const charId of Object.keys(state.chars || {})){
       if(!shared.isTimeAwarenessEnabled(state, charId)) continue;
@@ -11912,6 +11977,7 @@ async function maybeRunScheduleTodoReminders(){
             role: 'assistant',
             text: text
           }).catch(function(){});
+          emitted = true;
         }
         todo.remindedAt = Date.now();
         todo.remindedDate = dateKey;
@@ -11927,6 +11993,9 @@ async function maybeRunScheduleTodoReminders(){
     if(changed){
       await shared.saveState(state);
     }
+    if(emitted){
+      markAiBgSideEffectRun();
+    }
   }catch(err){
     console.error('[schedule-reminder] failed:', err);
   }finally{
@@ -11939,14 +12008,12 @@ async function maybeRunAiBgTick(force){
   var defaultId = getDefaultAccountId();
   if(!defaultId) return;
   if(!hasAnyAiBgActivityEnabled(defaultId)) return;
-  var now = Date.now();
-  var lastAt = parseInt(localStorage.getItem(AI_BG_LAST_AT_KEY) || '0', 10);
-  if(!force && now - lastAt < getAiBgIntervalMs()) return;
+  if(!canRunAiBgSideEffect(force)) return;
   aiBgRunning = true;
   try{
     var ok = await runAiBackgroundActivity();
     if(ok){
-      localStorage.setItem(AI_BG_LAST_AT_KEY, String(Date.now()));
+      markAiBgSideEffectRun();
     }
   }catch(err){
     console.error('[ai-bg] run failed:', err);
