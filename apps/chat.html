@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-04T20:22:35Z"></script>
-<script src="../chatStorage.js?v=2026-05-04T20:22:35Z"></script>
-<script src="../assetStore.js?v=2026-05-04T20:22:35Z"></script>
-<script src="../accountManager.js?v=2026-05-04T20:22:35Z"></script>
-<script src="../metadataStore.js?v=2026-05-04T20:22:35Z"></script>
-<script src="../scheduleShared.js?v=2026-05-04T20:22:35Z"></script>
-<script src="../presenceShared.js?v=2026-05-04T20:22:35Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-04T20:22:35Z"></script>
-<script src="../sunnySupport.js?v=2026-05-04T20:22:35Z"></script>
-<script src="offlineInvite.js?v=2026-05-04T20:22:35Z"></script>
+<script src="../promptManager.js?v=2026-05-04T20:34:52Z"></script>
+<script src="../chatStorage.js?v=2026-05-04T20:34:52Z"></script>
+<script src="../assetStore.js?v=2026-05-04T20:34:52Z"></script>
+<script src="../accountManager.js?v=2026-05-04T20:34:52Z"></script>
+<script src="../metadataStore.js?v=2026-05-04T20:34:52Z"></script>
+<script src="../scheduleShared.js?v=2026-05-04T20:34:52Z"></script>
+<script src="../presenceShared.js?v=2026-05-04T20:34:52Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-04T20:34:52Z"></script>
+<script src="../sunnySupport.js?v=2026-05-04T20:34:52Z"></script>
+<script src="offlineInvite.js?v=2026-05-04T20:34:52Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -26739,6 +26739,14 @@ function sanitizeVoiceCallAssistantOutput(raw){
   return String(t || '').replace(/\n{3,}/g, '\n\n').trim();
 }
 
+function normalizeVoiceCallSpokenText(raw){
+  var t = sanitizeVoiceCallAssistantOutput(raw);
+  if(!t) return '';
+  return String(t || '')
+    .replace(/[。．｡.]+$/g, '')
+    .trim();
+}
+
 function parseVoiceCallReplyJson(raw){
   var parsed = maybeParseReplyJson(raw);
   if(parsed) return parsed;
@@ -26761,9 +26769,11 @@ function extractVoiceCallReplyParts(raw){
   var parsed = parseVoiceCallReplyJson(raw);
   var items = [];
   function pushPart(type, v){
-    var text = sanitizeVoiceCallAssistantOutput(String(v || '').trim());
     var safeType = normalizeMessageType(type || 'text');
     if(safeType !== 'narrator') safeType = 'text';
+    var text = safeType === 'text'
+      ? normalizeVoiceCallSpokenText(String(v || '').trim())
+      : sanitizeVoiceCallAssistantOutput(String(v || '').trim());
     if(text) items.push({ type: safeType, text: text });
   }
   if(Array.isArray(parsed)){
@@ -26850,6 +26860,7 @@ function buildVoiceCallPrompt(userText){
     '禁止输出 voice、meme、image、money、transfer、rich_html、schedule、emoji、表情包、转账、语音消息。',
     '禁止视觉描写、时间戳、指令标签和解释说明。',
     'text 必须短，最好不超过 20 个字；宁可拆成几句短话，也不要长段独白。',
+    'text 禁用句号收尾，不要用“。”或“.”把话写成书面完整句。优先问号、省略号、语气词或自然收住。',
     '默认返回 JSON 数组，每项格式：{"type":"text","content":"..."} 或 {"type":"narrator","content":"..."}。1 到 4 条，至少 1 条 text。',
     '每条都要直接接住对方刚刚说的东西，不要自说自话。',
     settings.tone ? ('【通话氛围】\n' + settings.tone) : ''
@@ -27200,6 +27211,29 @@ function closeVoiceCallRecordViewer(){
   document.getElementById('voiceCallRecordOverlay')?.classList.remove('open');
 }
 
+async function finishVoiceCallRecordInBackground(recordId, entryId){
+  var record = getCallRecordItem(recordId);
+  if(!record) return;
+  try{
+    record.summary = await summarizeVoiceCallRecord(record);
+    record = saveCallRecordItem(record);
+    var target = Array.isArray(chatLog) ? chatLog.find(function(item){
+      return item && String(item.id || '') === String(entryId || '');
+    }) : null;
+    if(target){
+      target.content = buildVoiceCallRecordPayload(record);
+    }
+    await appendVoiceCallSummaryToMemory(record.summary);
+    await saveChat(true);
+    if(String(voiceCallRecordOpenId || '') === String(record.id || '')){
+      openVoiceCallRecordViewer(record.id);
+    }
+    if(target) renderChatLog(true);
+  }catch(err){
+    console.warn('finish voice call record failed', err);
+  }
+}
+
 async function endVoiceCallSession(){
   var state = ensureVoiceCallState();
   if(!state.active) return;
@@ -27220,15 +27254,12 @@ async function endVoiceCallSession(){
     durationMs: Math.max(0, Date.now() - (state.connectedAt || state.startedAt || Date.now())),
     durationLabel: formatVoiceCallDuration(Date.now() - (state.connectedAt || state.startedAt || Date.now())),
     title: currentVoiceCallCharName() + ' 的语音通话',
+    summary: '通话记录整理中',
 	    transcript: recordTranscript
 	  });
-  record.summary = await summarizeVoiceCallRecord(record);
-  record = saveCallRecordItem(record);
   var entry = makeChatEntry('system', buildVoiceCallRecordPayload(record), 'call_record');
   chatLog.push(entry);
   addMessage('system', entry.content, true, 'call_record', entry.id);
-  await appendVoiceCallSummaryToMemory(record.summary);
-  await saveChat(true);
   voiceCallState = defaultVoiceCallState();
 	  voiceCallMinimized = false;
 	  voiceCallRecordOpenId = record.id;
@@ -27236,6 +27267,11 @@ async function endVoiceCallSession(){
 	  closeVoiceCallOverlay();
 	  syncVoiceCallFloating();
 	  openVoiceCallRecordViewer(record.id);
+  Promise.resolve(saveChat(true)).catch(function(err){
+    console.warn('save call record card failed', err);
+  }).then(function(){
+    finishVoiceCallRecordInBackground(record.id, entry.id);
+  });
 	}
 
 function openIncomingVoiceCallRequest(text){

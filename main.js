@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-04T20:22:35Z';
+const APP_BUILD_ID = '2026-05-04T20:34:52Z';
 const APP_UPDATE_NOTES = [
-  '补充开源许可说明',
-  '通话回复更像真实电话',
-  '继续压短通话句子'
+  '挂断通话更快返回',
+  '通话整理改到后台',
+  '通话正文减少句号'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
