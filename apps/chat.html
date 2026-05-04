@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-03T21:28:06Z"></script>
-<script src="../chatStorage.js?v=2026-05-03T21:28:06Z"></script>
-<script src="../assetStore.js?v=2026-05-03T21:28:06Z"></script>
-<script src="../accountManager.js?v=2026-05-03T21:28:06Z"></script>
-<script src="../metadataStore.js?v=2026-05-03T21:28:06Z"></script>
-<script src="../scheduleShared.js?v=2026-05-03T21:28:06Z"></script>
-<script src="../presenceShared.js?v=2026-05-03T21:28:06Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-03T21:28:06Z"></script>
-<script src="../sunnySupport.js?v=2026-05-03T21:28:06Z"></script>
-<script src="offlineInvite.js?v=2026-05-03T21:28:06Z"></script>
+<script src="../promptManager.js?v=2026-05-04T02:19:17Z"></script>
+<script src="../chatStorage.js?v=2026-05-04T02:19:17Z"></script>
+<script src="../assetStore.js?v=2026-05-04T02:19:17Z"></script>
+<script src="../accountManager.js?v=2026-05-04T02:19:17Z"></script>
+<script src="../metadataStore.js?v=2026-05-04T02:19:17Z"></script>
+<script src="../scheduleShared.js?v=2026-05-04T02:19:17Z"></script>
+<script src="../presenceShared.js?v=2026-05-04T02:19:17Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-04T02:19:17Z"></script>
+<script src="../sunnySupport.js?v=2026-05-04T02:19:17Z"></script>
+<script src="offlineInvite.js?v=2026-05-04T02:19:17Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -10283,6 +10283,11 @@ function setLiveStyleText(node, cssText){
       node.setAttribute('data-applied-at', String(Date.now()));
     }catch(fallbackErr){}
   }
+  try{
+    fresh.disabled = true;
+    fresh.offsetHeight;
+    fresh.disabled = false;
+  }catch(reflowErr){}
   return fresh;
 }
 
@@ -10936,7 +10941,9 @@ function composeScopedChatBubblePreviewCss(cssText){
 }
 
 function refreshEffectiveChatThemeStyle(){
-  setLiveStyleText(ensureEffectiveChatThemeStyleNode(), composeEffectiveChatThemeCss());
+  var css = composeEffectiveChatThemeCss();
+  setLiveStyleText(ensureEffectiveChatThemeStyleNode(), css);
+  applyChatThemeCssVariablesToTarget(css, document.documentElement);
   syncChatThemeStyleOrder();
 }
 
@@ -10946,11 +10953,11 @@ function normalizeChatThemeCssText(cssText){
   text = text.replace(/^\uFEFF/, '').trim();
   text = text.replace(/^```(?:css)?\s*/i, '').replace(/```\s*$/i, '').trim();
   text = text.replace(/^(?:css|CSS)\s*[:：]\s*/, '').trim();
-  text = text.replace(/^[\s，,。；;：:、）)\]】]+/, '').replace(/[\s，,。；;：:、（(\[【]+$/, '').trim();
+  text = text.replace(/^[\s，,。；;：:、（(【\[]+/, '').replace(/[\s，,。；;：:、）)\]】]+$/, '').trim();
   var firstRule = text.search(/(?:\/\*|@|:root\b|html\b|body\b|[.#][a-zA-Z0-9_\-\u4e00-\u9fa5])/);
   if(firstRule > 0) text = text.slice(firstRule).trim();
   var lastBrace = text.lastIndexOf('}');
-  if(lastBrace >= 0 && /[^\s）)\]】,，。；;：:、]*$/.test(text.slice(lastBrace + 1))){
+  if(lastBrace >= 0 && String(text.slice(lastBrace + 1) || '').trim()){
     text = text.slice(0, lastBrace + 1).trim();
   }
   if((text.charAt(0) === '【' && text.charAt(text.length - 1) === '】')
@@ -10964,6 +10971,26 @@ function normalizeChatThemeCssText(cssText){
     text = text.slice(1, -1).trim();
   }
   return text;
+}
+
+function applyChatThemeCssVariablesToTarget(cssText, target){
+  if(!target || !target.style) return;
+  var css = String(cssText || '');
+  [
+    'chat-user-bubble-bg',
+    'chat-user-bubble-color',
+    'chat-user-bubble-shadow',
+    'chat-user-bubble-border',
+    'chat-ai-bubble-bg',
+    'chat-ai-bubble-color',
+    'chat-ai-bubble-shadow',
+    'chat-ai-bubble-border',
+    'chat-bubble-radius',
+    'chat-font-size'
+  ].forEach(function(name){
+    var value = extractChatCssVariableValue(css, name);
+    if(value) target.style.setProperty('--' + name, value);
+  });
 }
 
 function syncActiveChatThemePartDraftFromInput(){
@@ -11027,6 +11054,7 @@ function renderChatBubbleCssPreview(){
       + '<div class="msg ai"><div class="msg-avatar">' + aiAvatar + '</div><div class="msg-main"><div class="msg-bubble voice"><div class="voice-stack"><div class="voice-row ai-row"><div class="voice-waves"><span class="voice-wave"></span><span class="voice-wave"></span><span class="voice-wave"></span></div><div class="voice-duration">8\'\'</div></div></div></div><div class="msg-read">已读 14:31</div></div></div>';
   }
   host.innerHTML = '<div class="chat-bubble-preview-stage">' + body + '</div>';
+  applyChatThemeCssVariablesToTarget(getActiveChatThemePartCss(), host);
 }
 
 function applyChatBubblePreviewCss(cssText){
