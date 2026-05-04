@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-04T15:49:47Z"></script>
-<script src="../chatStorage.js?v=2026-05-04T15:49:47Z"></script>
-<script src="../assetStore.js?v=2026-05-04T15:49:47Z"></script>
-<script src="../accountManager.js?v=2026-05-04T15:49:47Z"></script>
-<script src="../metadataStore.js?v=2026-05-04T15:49:47Z"></script>
-<script src="../scheduleShared.js?v=2026-05-04T15:49:47Z"></script>
-<script src="../presenceShared.js?v=2026-05-04T15:49:47Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-04T15:49:47Z"></script>
-<script src="../sunnySupport.js?v=2026-05-04T15:49:47Z"></script>
-<script src="offlineInvite.js?v=2026-05-04T15:49:47Z"></script>
+<script src="../promptManager.js?v=2026-05-04T19:25:33Z"></script>
+<script src="../chatStorage.js?v=2026-05-04T19:25:33Z"></script>
+<script src="../assetStore.js?v=2026-05-04T19:25:33Z"></script>
+<script src="../accountManager.js?v=2026-05-04T19:25:33Z"></script>
+<script src="../metadataStore.js?v=2026-05-04T19:25:33Z"></script>
+<script src="../scheduleShared.js?v=2026-05-04T19:25:33Z"></script>
+<script src="../presenceShared.js?v=2026-05-04T19:25:33Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-04T19:25:33Z"></script>
+<script src="../sunnySupport.js?v=2026-05-04T19:25:33Z"></script>
+<script src="offlineInvite.js?v=2026-05-04T19:25:33Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -1943,115 +1943,81 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 #imageCardOverlay .voice-btn{border-radius:4px;box-shadow:3px 3px 0 rgba(17,17,17,.82);background:#fff;color:#111}
 #imageCardOverlay .voice-btn.primary{background:#111;color:#fff}
 #imageCardOverlay .voice-btn.image-real{grid-column:1 / -1;background:#111;color:#fff}
-.voice-call-overlay{position:fixed;inset:0;z-index:350;background:#0b0b0b;display:none;overflow:hidden;color:#fff;--voice-call-keyboard-inset:0px}
+.voice-call-overlay{position:fixed;inset:0;z-index:350;background:#050505;display:none;overflow:hidden;color:#fff;--voice-call-keyboard-inset:0px}
 .voice-call-overlay.open{display:block}
 .voice-call-bg{position:absolute;inset:0;background:
-  linear-gradient(180deg,#191919 0%,#0d0d0d 44%,#050505 100%),
-  radial-gradient(circle at 78% 16%,rgba(255,255,255,.12),rgba(255,255,255,0) 30%),
-  radial-gradient(circle at 18% 70%,rgba(255,255,255,.08),rgba(255,255,255,0) 34%)}
-.voice-call-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,.32))}
-.voice-call-shell{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;padding:calc(var(--safe-top) + 12px) 16px calc(var(--safe-bottom) + 12px);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue","PingFang SC",sans-serif}
-.voice-call-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:46px}
-.voice-call-top-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
-.voice-call-mini-btn{width:42px;height:42px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.10);box-shadow:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;color:#fff;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-.voice-call-mini-btn img{width:18px;height:18px;object-fit:contain;display:block}
-.voice-call-mini-btn svg{width:20px;height:20px;display:block}
-.voice-call-mini-btn:active{transform:scale(.94)}
-.voice-call-hangup-top{height:42px;padding:0 16px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:#fff;color:#111;box-shadow:none;font-family:inherit;font-size:13px;font-weight:800;letter-spacing:0;display:flex;align-items:center;justify-content:center;cursor:pointer;white-space:nowrap}
-.voice-call-hangup-top:active{transform:scale(.96)}
-.voice-call-headcopy{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px;padding-top:0}
-.voice-call-ticket{display:inline-flex;align-items:center;justify-content:center;min-height:30px;max-width:100%;padding:0 14px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(255,255,255,.06);box-shadow:none;font-size:15px;font-weight:800;letter-spacing:0;text-align:center;color:#fff;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.voice-call-sub{font-size:12px;font-weight:600;color:rgba(255,255,255,.62);text-align:center;line-height:1.45}
-.voice-call-sub strong{color:#fff}
-.voice-call-hero{position:relative;display:flex;justify-content:center;align-items:center;gap:16px;padding:18px 0 10px;min-height:134px}
-.voice-call-avatar-stack{display:flex;align-items:flex-end;gap:10px}
-.voice-call-portrait{position:relative;width:92px;height:92px;border:1.5px solid rgba(255,255,255,.72);border-radius:26px;background:linear-gradient(180deg,#fff,#e5e5e5);box-shadow:0 14px 28px rgba(0,0,0,.24);overflow:hidden;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
-.voice-call-portrait.small{width:76px;height:76px;border-radius:22px}
+  radial-gradient(circle at 22% 18%,rgba(255,255,255,.10),transparent 25%),
+  radial-gradient(circle at 82% 78%,rgba(255,255,255,.08),transparent 28%),
+  linear-gradient(180deg,#151515 0%,#070707 56%,#020202 100%)}
+.voice-call-bg::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px);background-size:100% 31px;opacity:.24}
+.voice-call-shell{position:relative;z-index:1;height:100%;min-height:100dvh;box-sizing:border-box;display:flex;flex-direction:column;padding:calc(var(--safe-top) + 12px) 14px 0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue","PingFang SC",sans-serif;overflow:hidden}
+.voice-call-top{height:48px;display:grid;grid-template-columns:46px minmax(0,1fr)64px;align-items:center;gap:10px;flex:0 0 auto}
+.voice-call-mini-btn,.voice-call-hangup-top,.voice-call-actionbtn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.voice-call-mini-btn{width:42px;height:42px;border-radius:999px;padding:0}
+.voice-call-mini-btn svg,.voice-call-actionbtn svg{width:20px;height:20px;display:block}
+.voice-call-mini-btn:active,.voice-call-hangup-top:active,.voice-call-actionbtn:active,.voice-call-end-strip:active{transform:scale(.96)}
+.voice-call-hangup-top{height:42px;border-radius:999px;background:#fff;color:#111;font-size:13px;font-weight:800;letter-spacing:0;white-space:nowrap}
+.voice-call-headcopy{min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px}
+.voice-call-ticket{max-width:100%;padding:0 13px;min-height:30px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(255,255,255,.055);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.voice-call-sub{max-width:100%;font-size:11px;font-weight:650;color:rgba(255,255,255,.58);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.voice-call-hero{padding:16px 0 10px;display:grid;grid-template-columns:minmax(70px,1fr)96px minmax(70px,1fr);align-items:center;gap:10px;flex:0 0 auto}
+.voice-call-person{min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.voice-call-portrait{width:86px;height:86px;border-radius:28px;border:1.5px solid rgba(255,255,255,.78);background:#fff;color:#111;font-size:20px;font-weight:900;box-shadow:0 15px 28px rgba(0,0,0,.28);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.voice-call-portrait.small{width:76px;height:76px;border-radius:24px}
 .voice-call-portrait img{width:100%;height:100%;object-fit:cover;display:block}
-.voice-call-portrait-fallback{font-size:24px;font-weight:800;color:#111}
-.voice-call-nameplate{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:0 9px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(0,0,0,.52);box-shadow:none;font-size:10px;font-weight:700;white-space:nowrap;max-width:104px;overflow:hidden;text-overflow:ellipsis;color:#fff;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.voice-call-centerpulse{display:flex;align-items:center;justify-content:center;min-width:86px;height:34px;padding:0 13px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.06);box-shadow:none;font-size:15px;font-weight:800;color:#fff;position:relative;overflow:hidden;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-variant-numeric:tabular-nums}
-.voice-call-centerpulse::before{content:'';width:8px;height:8px;border-radius:999px;background:#39d074;box-shadow:0 0 0 5px rgba(57,208,116,.12);margin-right:10px;flex:0 0 auto}
-.voice-call-status-strip{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;padding-top:6px}
-.voice-call-pill{display:inline-flex;align-items:center;justify-content:center;min-height:23px;padding:0 10px;border:1px solid rgba(255,255,255,.11);border-radius:999px;background:rgba(255,255,255,.06);box-shadow:none;font-size:10px;font-weight:700;letter-spacing:0;color:rgba(255,255,255,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-.voice-call-layout{position:relative;flex:1;min-height:0;display:flex;align-items:stretch;justify-content:center}
-.voice-call-feed{flex:1;min-height:0;overflow:auto;padding:14px 0 calc(146px + var(--voice-call-keyboard-inset));display:flex;flex-direction:column;gap:10px;scrollbar-width:none}
+.voice-call-portrait-fallback{font-size:20px;font-weight:900;color:#111}
+.voice-call-nameplate{max-width:110px;min-height:22px;padding:0 10px;border:1px solid rgba(255,255,255,.15);border-radius:999px;background:rgba(255,255,255,.07);font-size:10px;font-weight:750;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.voice-call-center{display:flex;flex-direction:column;align-items:center;gap:8px}
+.voice-call-centerpulse{min-width:86px;height:34px;padding:0 13px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;color:#fff}
+.voice-call-centerpulse::before{content:'';width:8px;height:8px;border-radius:999px;background:#47d46c;margin-right:9px;box-shadow:0 0 0 5px rgba(71,212,108,.12)}
+.voice-call-livehint{max-width:100%;min-height:25px;padding:0 11px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(255,255,255,.05);font-size:11px;font-weight:700;color:rgba(255,255,255,.62);display:flex;align-items:center;justify-content:center;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.voice-call-feed{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:10px;padding:9px 2px calc(132px + var(--voice-call-keyboard-inset));scrollbar-width:none;overscroll-behavior:contain}
 .voice-call-feed::-webkit-scrollbar{display:none}
-.voice-call-line{display:flex;gap:8px;align-items:flex-start}
+.voice-call-line{display:flex;align-items:flex-start}
 .voice-call-line.user{justify-content:flex-end}
 .voice-call-line.ai{justify-content:flex-start}
-.voice-call-bubble{max-width:min(78%,292px);padding:10px 13px;border:1px solid rgba(255,255,255,.09);border-radius:20px;background:rgba(255,255,255,.07);color:#fff;box-shadow:none;font-size:14px;font-weight:600;line-height:1.55;white-space:pre-wrap;word-break:break-word;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.voice-call-line.user .voice-call-bubble{background:rgba(255,255,255,.9);color:#111;border-color:rgba(255,255,255,.28);border-top-right-radius:8px}
-.voice-call-line.ai .voice-call-bubble{border-top-left-radius:8px}
-.voice-call-line.narrator{justify-content:center}
-.voice-call-line.narrator .voice-call-bubble{max-width:min(82%,310px);background:transparent;border:none;box-shadow:none;color:rgba(255,255,255,.64);font-size:12px;font-weight:800;font-style:italic;text-align:center;letter-spacing:.04em;padding:8px 10px;text-shadow:0 1px 8px rgba(0,0,0,.28)}
-.voice-call-line.system .voice-call-bubble{max-width:100%;margin:0 auto;background:rgba(255,255,255,.12);color:rgba(255,255,255,.72);border-style:dashed;border-color:rgba(255,255,255,.16);box-shadow:none;text-align:center}
-.voice-call-transcript-dock{position:absolute;left:0;bottom:calc(98px + var(--voice-call-keyboard-inset));width:min(42vw,160px);max-height:152px;border:1px solid rgba(255,255,255,.10);border-radius:18px;background:rgba(255,255,255,.07);box-shadow:none;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;flex-direction:column;overflow:hidden}
-.voice-call-transcript-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px 8px;border-bottom:1px solid rgba(255,255,255,.12)}
-.voice-call-transcript-title{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#fff}
-.voice-call-transcript-open{border:none;background:transparent;padding:0;font-size:10px;font-weight:900;color:rgba(255,255,255,.72);cursor:pointer}
-.voice-call-transcript-list{padding:9px 10px 12px;overflow:auto;display:flex;flex-direction:column;gap:8px}
-.voice-call-transcript-item{display:flex;flex-direction:column;gap:2px}
-.voice-call-transcript-role{font-size:9px;font-weight:900;letter-spacing:.06em;color:rgba(255,255,255,.52)}
-.voice-call-transcript-text{font-size:10px;font-weight:800;line-height:1.5;color:rgba(255,255,255,.86);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.voice-call-controls{position:absolute;left:0;right:0;bottom:calc(var(--safe-bottom) + 2px + var(--voice-call-keyboard-inset));padding:0 0 2px;background:linear-gradient(180deg,rgba(5,5,5,0),rgba(5,5,5,.56) 36%,rgba(5,5,5,.92) 100%);transition:bottom .18s ease}
-.voice-call-inputcard{border:1px solid rgba(255,255,255,.12);border-radius:24px;background:rgba(22,22,22,.88);box-shadow:0 14px 28px rgba(0,0,0,.22);padding:10px;display:flex;flex-direction:column;gap:8px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-.voice-call-modebar{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.voice-call-modechips{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.voice-call-chip{min-height:26px;padding:0 12px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.06);box-shadow:none;font-size:12px;font-weight:700;color:rgba(255,255,255,.72);cursor:pointer}
-.voice-call-chip.active{background:#fff;color:#111}
-.voice-call-chip:disabled{opacity:.42;box-shadow:none;cursor:default}
-.voice-call-livehint{min-width:0;font-size:12px;font-weight:600;color:rgba(255,255,255,.56);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.voice-call-inputrow{display:grid;grid-template-columns:40px minmax(0,1fr)44px;align-items:end;gap:8px}
-.voice-call-textarea{width:100%;min-height:42px;max-height:108px;border:none;background:transparent;outline:none;resize:none;font-family:inherit;font-size:15px;font-weight:500;line-height:1.45;color:#fff;-webkit-text-fill-color:#fff}
-.voice-call-textarea::placeholder{color:rgba(255,255,255,.42)}
-.voice-call-textwrap{min-width:0;min-height:42px;display:flex;align-items:center;padding:0 2px}
-.voice-call-actionbtn{width:40px;height:40px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(255,255,255,.10);box-shadow:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;padding:0;color:#fff}
-.voice-call-actionbtn.primary{background:#fff;color:#111}
-.voice-call-actionbtn.danger{display:none}
-.voice-call-actionbtn img{width:20px;height:20px;object-fit:contain;display:block}
-.voice-call-actionbtn svg{width:20px;height:20px;display:block}
-.voice-call-actionbtn:active{transform:scale(.94)}
-.voice-call-end-strip{width:100%;min-height:34px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:#fff;color:#111;box-shadow:none;font-family:inherit;font-size:12px;font-weight:800;letter-spacing:0;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
-.voice-call-end-strip::before{content:'';width:8px;height:8px;border-radius:999px;background:#111}
-.voice-call-end-strip:active{transform:scale(.985)}
-.voice-call-drawer{position:absolute;top:0;right:0;width:min(312px,calc(100vw - 18px));height:100%;padding:0;transform:translateX(106%);transition:transform .28s ease;z-index:4}
-.voice-call-drawer.open{transform:translateX(0)}
-.voice-call-drawer-shell{height:100%;border-left:1px solid rgba(255,255,255,.18);background:rgba(7,7,7,.82);box-shadow:-10px 18px 34px rgba(0,0,0,.28);display:flex;flex-direction:column;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-.voice-call-drawer-head{position:relative;padding:18px 16px 14px;border-bottom:1.5px solid rgba(16,16,16,.12);background:
- linear-gradient(180deg,rgba(255,255,255,0) 0%,rgba(0,0,0,.2) 100%),
- linear-gradient(180deg,rgba(0,0,0,.26) 0%,rgba(0,0,0,0) 42%),
- linear-gradient(180deg,rgba(255,255,255,0) 56%,rgba(0,0,0,.62) 100%),
- url('assets/%E6%A8%B1%E8%8A%B1%E5%9C%A8%E6%B0%B4%E9%87%8C.jpg') center top/cover no-repeat}
-.voice-call-drawer-title{display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:0 9px;border-radius:2px;background:#fff;color:#111;font-family:var(--fontcute);font-size:12px;font-weight:900;box-shadow:none}
-.voice-call-drawer-sub{margin-top:8px;font-size:11px;font-weight:800;color:rgba(255,255,255,.68);line-height:1.55}
-.voice-call-drawer-close,.voice-call-drawer-save{position:absolute;top:14px;width:34px;height:34px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.12);box-shadow:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;color:#fff}
-.voice-call-drawer-close{left:14px;font-size:18px;font-weight:900}
-.voice-call-drawer-save{right:14px}
-.voice-call-drawer-save img{width:18px;height:18px;object-fit:contain}
-.voice-call-drawer-body{padding:14px 14px calc(var(--safe-bottom) + 22px);overflow:auto;display:flex;flex-direction:column;gap:14px}
-.voice-call-setting-card{border:1px solid rgba(255,255,255,.12);border-radius:4px;background:rgba(255,255,255,.08);padding:12px}
-.voice-call-drawer .cs-textarea{width:100%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;-webkit-text-fill-color:#fff;border-radius:10px;box-shadow:none}
-.voice-call-drawer .cs-textarea::placeholder{color:rgba(255,255,255,.42)}
-.voice-call-setting-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-.voice-call-setting-title{display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:0 9px;border-radius:2px;background:#fff;color:#111;font-family:var(--fontcute);font-size:12px;font-weight:900;box-shadow:none}
-.voice-call-setting-sub{font-size:10px;font-weight:800;color:rgba(255,255,255,.64);line-height:1.5}
-.voice-call-choice-row{display:flex;gap:8px;flex-wrap:wrap}
-.voice-call-choice-btn{min-height:34px;padding:0 12px;border:1px solid rgba(255,255,255,.14);border-radius:2px;background:rgba(255,255,255,.1);box-shadow:none;font-family:var(--fontcute);font-size:11px;font-weight:900;color:#fff;cursor:pointer}
-.voice-call-choice-btn.active{background:#fff;color:#111}
-.voice-call-choice-btn:active{transform:scale(.96)}
-.voice-call-record-overlay{position:fixed;inset:0;z-index:362;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(17,17,17,.16);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.voice-call-line.narrator,.voice-call-line.system{justify-content:center}
+.voice-call-bubble{max-width:min(82%,310px);padding:9px 12px;border:1px solid rgba(255,255,255,.12);border-radius:19px;background:rgba(255,255,255,.075);color:#fff;font-size:14px;font-weight:600;line-height:1.55;white-space:pre-wrap;word-break:break-word;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.voice-call-line.user .voice-call-bubble{background:#fff;color:#111;border-color:#fff;border-top-right-radius:7px}
+.voice-call-line.ai .voice-call-bubble{border-top-left-radius:7px}
+.voice-call-line.narrator .voice-call-bubble{background:transparent;border:none;color:rgba(255,255,255,.56);font-size:12px;font-style:italic;text-align:center;box-shadow:none}
+.voice-call-line.system .voice-call-bubble{background:rgba(255,255,255,.05);border-style:dashed;color:rgba(255,255,255,.5);font-size:12px;text-align:center}
+.voice-call-controls{position:fixed;left:12px;right:12px;bottom:calc(var(--safe-bottom) + 10px + var(--voice-call-keyboard-inset));z-index:5;transition:bottom .16s ease}
+.voice-call-inputcard{border:1px solid rgba(255,255,255,.14);border-radius:24px;background:rgba(18,18,18,.92);box-shadow:0 18px 42px rgba(0,0,0,.38);padding:10px;display:flex;flex-direction:column;gap:8px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.voice-call-modebar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.voice-call-modechips{display:flex;gap:7px}
+.voice-call-chip{min-height:25px;padding:0 12px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.68);font-size:12px;font-weight:750}
+.voice-call-chip.active{background:#fff;color:#111;border-color:#fff}
+.voice-call-inputrow{display:grid;grid-template-columns:40px minmax(0,1fr)42px;align-items:end;gap:8px}
+.voice-call-textwrap{min-width:0;min-height:42px;display:flex;align-items:center;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.055);padding:0 12px}
+.voice-call-textarea{width:100%;min-height:40px;max-height:96px;border:none;background:transparent;outline:none;resize:none;font-family:inherit;font-size:15px;font-weight:500;line-height:1.45;color:#fff;-webkit-text-fill-color:#fff;padding:9px 0}
+.voice-call-textarea::placeholder{color:rgba(255,255,255,.38)}
+.voice-call-actionbtn{width:40px;height:40px;border-radius:999px;padding:0}
+.voice-call-actionbtn.primary{background:#fff;color:#111;border-color:#fff}
+.voice-call-actionbtn:disabled{opacity:.38}
+.voice-call-end-strip{width:100%;min-height:34px;border:none;border-radius:999px;background:#fff;color:#111;font-family:inherit;font-size:12px;font-weight:800;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.voice-call-end-strip::before{content:'';width:7px;height:7px;border-radius:999px;background:#111}
+.voice-call-incoming{position:absolute;inset:0;z-index:8;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.voice-call-incoming.open{display:flex}
+.voice-call-incoming-card{width:min(300px,92vw);border:1px solid rgba(255,255,255,.18);border-radius:28px;background:rgba(17,17,17,.94);padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 20px 44px rgba(0,0,0,.42)}
+.voice-call-incoming-title{font-size:17px;font-weight:850;color:#fff;text-align:center}
+.voice-call-incoming-sub{font-size:12px;font-weight:650;color:rgba(255,255,255,.58);text-align:center;line-height:1.6}
+.voice-call-ringing-actions{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:4px}
+.voice-call-ringing-btn{width:62px;height:62px;border-radius:999px;border:1px solid rgba(255,255,255,.18);font-size:12px;font-weight:850;cursor:pointer}
+.voice-call-ringing-btn.accept{background:#fff;color:#111}
+.voice-call-ringing-btn.reject{background:rgba(255,255,255,.08);color:#fff}
+.voice-call-record-overlay{position:fixed;inset:0;z-index:362;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.26);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .voice-call-record-overlay.open{display:flex}
-.voice-call-record-card{width:min(100%,356px);max-height:min(84vh,720px);border:2px solid #111;border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.992),rgba(243,243,243,.975));box-shadow:8px 9px 0 rgba(0,0,0,.9);display:flex;flex-direction:column;overflow:hidden}
-.voice-call-record-head{padding:14px;border-bottom:1.5px solid rgba(17,17,17,.14);display:flex;align-items:center;justify-content:space-between;gap:10px}
-.voice-call-record-title{font-family:var(--fontcute);font-size:14px;font-weight:900;color:#111}
+.voice-call-record-card{width:min(100%,360px);max-height:min(84vh,720px);border:2px solid #111;border-radius:22px;background:#fff;color:#111;box-shadow:7px 8px 0 rgba(0,0,0,.88);display:flex;flex-direction:column;overflow:hidden}
+.voice-call-record-head{padding:14px 15px;border-bottom:1px solid rgba(17,17,17,.13);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.voice-call-record-title{font-size:15px;font-weight:900;color:#111}
 .voice-call-record-close{width:34px;height:34px;border:2px solid #111;border-radius:999px;background:#fff;box-shadow:3px 3px 0 rgba(0,0,0,.82);font-size:18px;font-weight:900}
 .voice-call-record-body{padding:14px;overflow:auto;display:flex;flex-direction:column;gap:12px}
-.voice-call-record-summary{padding:12px 13px;border:2px solid #111;border-radius:18px;background:#fff;box-shadow:3px 3px 0 rgba(0,0,0,.82);font-size:12px;font-weight:800;line-height:1.6;color:#111;white-space:pre-wrap}
+.voice-call-record-summary{padding:12px 13px;border:2px solid #111;border-radius:16px;background:#f7f7f7;font-size:12px;font-weight:760;line-height:1.65;color:#111;white-space:pre-wrap}
 .voice-call-record-list{display:flex;flex-direction:column;gap:9px}
-.voice-call-record-row{display:flex;flex-direction:column;gap:4px;padding:10px 11px;border:2px solid rgba(17,17,17,.12);border-radius:18px;background:rgba(255,255,255,.88)}
+.voice-call-record-row{display:flex;flex-direction:column;gap:4px;padding:10px 11px;border:1px solid rgba(17,17,17,.13);border-radius:14px;background:#fff}
 .voice-call-record-role{font-size:9px;font-weight:900;letter-spacing:.08em;color:#666;text-transform:uppercase}
-.voice-call-record-text{font-size:12px;font-weight:800;line-height:1.58;color:#111;white-space:pre-wrap;word-break:break-word}
+.voice-call-record-text{font-size:12px;font-weight:760;line-height:1.58;color:#111;white-space:pre-wrap;word-break:break-word}
 .call-record-shell{padding:0 !important;background:transparent !important;border:none !important;box-shadow:none !important;min-height:0;overflow:visible}
 .call-record-card{width:min(100%,294px);border:2px solid #111;border-radius:24px;background:linear-gradient(180deg,#fff,#f3f3f3);box-shadow:5px 6px 0 rgba(0,0,0,.9);padding:12px 12px 11px;display:flex;flex-direction:column;gap:9px;cursor:pointer}
 .call-record-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
@@ -2061,23 +2027,17 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .call-record-summary{font-size:12px;font-weight:800;line-height:1.58;color:#111;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .call-record-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;font-weight:900;color:#666}
 .call-record-meta strong{color:#111}
-.voice-call-ringing-copy{display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;flex:1;padding:18px 0 12px}
-.voice-call-ringing-actions{display:flex;align-items:center;justify-content:center;gap:18px;padding-bottom:26px}
-.voice-call-ringing-btn{width:62px;height:62px;border:1px solid rgba(255,255,255,.18);border-radius:999px;box-shadow:0 14px 28px rgba(0,0,0,.24);display:flex;align-items:center;justify-content:center;font-family:var(--fontcute);font-size:12px;font-weight:900;cursor:pointer}
-.voice-call-ringing-btn.accept{background:#fff;color:#111}
-.voice-call-ringing-btn.reject{background:#ff4a4a;color:#fff}
 .voice-call-floating{position:fixed;right:18px;bottom:calc(var(--safe-bottom) + 92px);z-index:80;display:none;align-items:center;gap:8px;min-height:38px;padding:0 13px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(0,0,0,.72);color:#fff;font-family:var(--fontcute);font-size:12px;font-weight:900;box-shadow:0 14px 32px rgba(0,0,0,.24);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .voice-call-floating.show{display:flex}
 .voice-call-floating-dot{width:8px;height:8px;border-radius:999px;background:#39d074;box-shadow:0 0 0 5px rgba(57,208,116,.16)}
 @media (max-width: 420px){
-  .voice-call-shell{padding-left:14px;padding-right:14px}
-  .voice-call-transcript-dock{display:none}
-  .voice-call-portrait{width:84px;height:84px;border-radius:24px}
-  .voice-call-portrait.small{width:70px;height:70px;border-radius:21px}
-  .voice-call-hero{gap:12px;min-height:118px;padding-top:14px}
+  .voice-call-shell{padding-left:12px;padding-right:12px}
+  .voice-call-hero{grid-template-columns:minmax(64px,1fr)82px minmax(64px,1fr);gap:8px;padding-top:12px}
+  .voice-call-portrait{width:78px;height:78px;border-radius:25px}
+  .voice-call-portrait.small{width:70px;height:70px;border-radius:23px}
   .voice-call-centerpulse{min-width:78px;height:32px;font-size:14px}
-  .voice-call-status-strip{gap:6px}
-  .voice-call-pill{max-width:30vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .voice-call-feed{padding-bottom:calc(128px + var(--voice-call-keyboard-inset))}
+  .voice-call-controls{left:10px;right:10px}
 }
 .voice-btn{flex:1;padding:10px;border:var(--bd);border-radius:12px;font-family:var(--fontd);font-size:12px;font-weight:900;cursor:pointer;box-shadow:var(--sh);background:var(--w);transition:transform .12s,box-shadow .12s}
 .voice-btn.primary{background:var(--b);color:var(--w)}
@@ -2389,109 +2349,52 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
       </button>
       <div class="voice-call-headcopy">
-        <div class="voice-call-ticket" id="voiceCallTicket">VOICE CALL</div>
-        <div class="voice-call-sub" id="voiceCallSub">你们正在通话里慢慢说话</div>
+        <div class="voice-call-ticket" id="voiceCallTicket">语音通话</div>
+        <div class="voice-call-sub" id="voiceCallSub">只用文字和语音转文字说话</div>
       </div>
-      <div class="voice-call-top-actions">
-        <button class="voice-call-mini-btn" type="button" onclick="openVoiceCallSettingsPanel()" aria-label="通话设置">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h14"></path></svg>
-        </button>
-        <button class="voice-call-hangup-top" type="button" onclick="endVoiceCallSession()">挂断</button>
-      </div>
+      <button class="voice-call-hangup-top" type="button" onclick="endVoiceCallSession()">挂断</button>
     </div>
     <div class="voice-call-hero">
-      <div class="voice-call-portrait" id="voiceCallCharAvatar"><span class="voice-call-portrait-fallback">CH</span></div>
-      <div class="voice-call-centerpulse" id="voiceCallPulse">00:00</div>
-      <div class="voice-call-portrait small" id="voiceCallUserAvatar"><span class="voice-call-portrait-fallback">US</span></div>
-    </div>
-    <div class="voice-call-status-strip">
-      <span class="voice-call-pill" id="voiceCallInputPill">输入：文字</span>
-      <span class="voice-call-pill" id="voiceCallStarterPill">接通后：角色先说</span>
-      <span class="voice-call-pill" id="voiceCallLanguagePill">语言：简体中文</span>
-    </div>
-    <div class="voice-call-layout">
-      <div class="voice-call-feed" id="voiceCallFeed"></div>
-      <div class="voice-call-transcript-dock">
-        <div class="voice-call-transcript-head">
-          <div class="voice-call-transcript-title">Transcript</div>
-          <button class="voice-call-transcript-open" type="button" onclick="openVoiceCallRecordViewer()">记录</button>
-        </div>
-        <div class="voice-call-transcript-list" id="voiceCallTranscriptList"></div>
+      <div class="voice-call-person">
+        <div class="voice-call-portrait" id="voiceCallCharAvatar"><span class="voice-call-portrait-fallback">CH</span></div>
+        <div class="voice-call-nameplate" id="voiceCallCharLabel">CHAR</div>
       </div>
-      <div class="voice-call-controls">
-        <div class="voice-call-inputcard">
-          <div class="voice-call-modebar">
-            <div class="voice-call-modechips">
-              <button class="voice-call-chip" id="voiceCallModeTextBtn" type="button" onclick="setVoiceCallInputMode('text')">消息</button>
-              <button class="voice-call-chip" id="voiceCallModeSpeechBtn" type="button" onclick="setVoiceCallInputMode('speech')">说话</button>
-            </div>
-            <div class="voice-call-livehint" id="voiceCallLiveHint">轮到你说啦</div>
-          </div>
-          <div class="voice-call-inputrow">
-            <button class="voice-call-actionbtn" id="voiceCallSpeechBtn" type="button" onclick="toggleVoiceCallSpeechInput()" aria-label="语音转文字">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2a3.9 3.9 0 0 0-3.9 3.9v5.5a3.9 3.9 0 1 0 7.8 0V6.1A3.9 3.9 0 0 0 12 2.2Z"></path><path d="M6 10.8a1 1 0 1 0-2 0 8 8 0 0 0 7 7.92V21H8.4a1 1 0 1 0 0 2h7.2a1 1 0 1 0 0-2H13v-2.28a8 8 0 0 0 7-7.92 1 1 0 1 0-2 0 6 6 0 0 1-12 0Z"></path></svg>
-            </button>
-            <div class="voice-call-textwrap"><textarea class="voice-call-textarea" id="voiceCallInput" rows="1" placeholder="把这一刻想说的话轻轻说出来…" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendVoiceCallMessage();}"></textarea></div>
-            <button class="voice-call-actionbtn primary" type="button" onclick="sendVoiceCallMessage()" aria-label="发送通话消息">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.4 19.6 20.6 12 5.4 4.4 4 10.7l8.4 1.3L4 13.3l1.4 6.3Z"></path></svg>
-            </button>
-            <button class="voice-call-actionbtn danger" type="button" onclick="endVoiceCallSession()" aria-label="结束通话">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.4 15.9c4.17-3.37 9.03-3.37 13.2 0 .44.35 1.08.29 1.44-.14l1.35-1.62c.35-.42.32-1.03-.08-1.41C15.82 7.5 8.18 7.5 2.69 12.73c-.4.38-.43.99-.08 1.41l1.35 1.62c.36.43 1 .49 1.44.14Z"></path></svg>
-            </button>
-          </div>
-          <button class="voice-call-end-strip" type="button" onclick="endVoiceCallSession()">结束通话 / END CALL</button>
-        </div>
+      <div class="voice-call-center">
+        <div class="voice-call-centerpulse" id="voiceCallPulse">00:00</div>
+        <div class="voice-call-livehint" id="voiceCallLiveHint">正在接通</div>
+      </div>
+      <div class="voice-call-person">
+        <div class="voice-call-portrait small" id="voiceCallUserAvatar"><span class="voice-call-portrait-fallback">US</span></div>
+        <div class="voice-call-nameplate" id="voiceCallUserLabel">USER</div>
       </div>
     </div>
-    <div class="voice-call-drawer" id="voiceCallSettingsDrawer">
-      <div class="voice-call-drawer-shell">
-        <div class="voice-call-drawer-head">
-          <button class="voice-call-drawer-close" type="button" onclick="closeVoiceCallSettingsPanel()" aria-label="关闭">×</button>
-          <button class="voice-call-drawer-save" type="button" onclick="saveVoiceCallSettings()" aria-label="保存"><img src="assets/保存.png" alt=""></button>
-          <div class="voice-call-drawer-title">CALL SETTING</div>
-          <div class="voice-call-drawer-sub">这里只决定通话里的输入和接通方式。</div>
+    <div class="voice-call-feed" id="voiceCallFeed"></div>
+    <div class="voice-call-controls">
+      <div class="voice-call-inputcard">
+        <div class="voice-call-modebar">
+          <div class="voice-call-modechips">
+            <button class="voice-call-chip active" id="voiceCallModeTextBtn" type="button" onclick="setVoiceCallInputMode('text')">消息</button>
+            <button class="voice-call-chip" id="voiceCallModeSpeechBtn" type="button" onclick="setVoiceCallInputMode('speech')">说话</button>
+          </div>
+          <button class="voice-call-chip" type="button" onclick="openVoiceCallRecordViewer()">记录</button>
         </div>
-        <div class="voice-call-drawer-body">
-          <div class="voice-call-setting-card">
-            <div class="voice-call-setting-head">
-              <div class="voice-call-setting-title">输入方式</div>
-              <div class="voice-call-setting-sub">文字或语音转文字</div>
-            </div>
-            <div class="voice-call-choice-row">
-              <button class="voice-call-choice-btn" id="voiceCallDrawerTextBtn" type="button" onclick="setVoiceCallInputMode('text', true)">消息</button>
-              <button class="voice-call-choice-btn" id="voiceCallDrawerSpeechBtn" type="button" onclick="setVoiceCallInputMode('speech', true)">说话</button>
-            </div>
-          </div>
-          <div class="voice-call-setting-card">
-            <div class="voice-call-setting-head">
-              <div class="voice-call-setting-title">接通后</div>
-              <div class="voice-call-setting-sub">谁先开口</div>
-            </div>
-            <div class="voice-call-choice-row">
-              <button class="voice-call-choice-btn" id="voiceCallStarterCharBtn" type="button" onclick="setVoiceCallStarter('char')">角色先说</button>
-              <button class="voice-call-choice-btn" id="voiceCallStarterUserBtn" type="button" onclick="setVoiceCallStarter('user')">我先说</button>
-              <button class="voice-call-choice-btn" id="voiceCallStarterAutoBtn" type="button" onclick="setVoiceCallStarter('auto')">自然决定</button>
-            </div>
-          </div>
-          <div class="voice-call-setting-card">
-            <div class="voice-call-setting-head">
-              <div class="voice-call-setting-title">氛围</div>
-              <div class="voice-call-setting-sub">可留空</div>
-            </div>
-            <textarea class="cs-textarea" id="voiceCallToneInput" rows="4" placeholder="比如：深夜、很小声、像怕吵醒别人"></textarea>
-          </div>
+        <div class="voice-call-inputrow">
+          <button class="voice-call-actionbtn" id="voiceCallSpeechBtn" type="button" onclick="toggleVoiceCallSpeechInput()" aria-label="语音转文字">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2a3.9 3.9 0 0 0-3.9 3.9v5.5a3.9 3.9 0 1 0 7.8 0V6.1A3.9 3.9 0 0 0 12 2.2Z"></path><path d="M6 10.8a1 1 0 1 0-2 0 8 8 0 0 0 7 7.92V21H8.4a1 1 0 1 0 0 2h7.2a1 1 0 1 0 0-2H13v-2.28a8 8 0 0 0 7-7.92 1 1 0 1 0-2 0 6 6 0 0 1-12 0Z"></path></svg>
+          </button>
+          <div class="voice-call-textwrap"><textarea class="voice-call-textarea" id="voiceCallInput" rows="1" placeholder="想说什么？" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendVoiceCallMessage();}"></textarea></div>
+          <button class="voice-call-actionbtn primary" type="button" onclick="sendVoiceCallMessage()" aria-label="发送通话消息">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.4 19.6 20.6 12 5.4 4.4 4 10.7l8.4 1.3L4 13.3l1.4 6.3Z"></path></svg>
+          </button>
         </div>
+        <button class="voice-call-end-strip" type="button" onclick="endVoiceCallSession()">结束通话</button>
       </div>
     </div>
-    <div class="voice-call-drawer" id="voiceCallIncomingDrawer">
-      <div class="voice-call-drawer-shell">
-        <div class="voice-call-drawer-head">
-          <div class="voice-call-drawer-title" id="voiceCallIncomingTitle">来电</div>
-          <div class="voice-call-drawer-sub" id="voiceCallIncomingSub">想和你打一通电话</div>
-        </div>
-        <div class="voice-call-ringing-copy">
-          <div class="voice-call-portrait" id="voiceCallIncomingAvatar"><span class="voice-call-portrait-fallback">CH</span></div>
-        </div>
+    <div class="voice-call-incoming" id="voiceCallIncomingDrawer">
+      <div class="voice-call-incoming-card">
+        <div class="voice-call-portrait" id="voiceCallIncomingAvatar"><span class="voice-call-portrait-fallback">CH</span></div>
+        <div class="voice-call-incoming-title" id="voiceCallIncomingTitle">来电</div>
+        <div class="voice-call-incoming-sub" id="voiceCallIncomingSub">想和你打一通电话</div>
         <div class="voice-call-ringing-actions">
           <button class="voice-call-ringing-btn reject" type="button" onclick="rejectIncomingVoiceCall()">挂掉</button>
           <button class="voice-call-ringing-btn accept" type="button" onclick="acceptIncomingVoiceCall()">接听</button>
@@ -26612,29 +26515,6 @@ function ensureVoiceCallState(){
   return voiceCallState;
 }
 
-function getVoiceCallInputModeLabel(mode){
-  return normalizeVoiceCallInputMode(mode) === 'speech' ? '直接说话' : '打字';
-}
-
-function getVoiceCallStarterLabel(mode){
-  var safe = normalizeVoiceCallStarter(mode);
-  if(safe === 'user') return 'USER 先开口';
-  if(safe === 'auto') return '看当下氛围';
-  return 'CHAR 先开口';
-}
-
-function getVoiceCallPhaseLabel(state, inputMode){
-  var s = state || ensureVoiceCallState();
-  if(s.incoming || s.phase === 'ringing') return currentVoiceCallCharName() + ' 正在来电';
-  if(voiceCallSpeechListening) return '正在听你说话…';
-  if(s.awaitingReply || s.phase === 'thinking') return currentVoiceCallCharName() + ' 正在接话…';
-  if(s.phase === 'connecting') return currentVoiceCallCharName() + ' 正在接听…';
-  if(s.phase === 'speaking') return currentVoiceCallCharName() + ' 正在说话…';
-  if(s.phase === 'error') return '刚刚没接稳，可以再说一次';
-  if(s.phase === 'ended') return '通话已结束';
-  return normalizeVoiceCallInputMode(inputMode) === 'speech' ? '点麦克风直接说话' : '轮到你说啦';
-}
-
 function currentVoiceCallUserName(){
   return String(getCurrentUserDisplayName() || 'USER').trim() || 'USER';
 }
@@ -26643,40 +26523,30 @@ function currentVoiceCallCharName(){
   return String((character && (character.nickname || character.name)) || 'CHAR').trim() || 'CHAR';
 }
 
+function getVoiceCallPhaseLabel(state){
+  var s = state || ensureVoiceCallState();
+  if(s.incoming || s.phase === 'ringing') return currentVoiceCallCharName() + ' 来电中';
+  if(voiceCallSpeechListening) return '正在听你说话';
+  if(s.awaitingReply || s.phase === 'thinking') return currentVoiceCallCharName() + ' 正在接话';
+  if(s.phase === 'connecting') return '正在接通';
+  if(s.phase === 'speaking') return currentVoiceCallCharName() + ' 正在说话';
+  if(s.phase === 'error') return '刚刚没接稳';
+  if(s.phase === 'ended') return '通话已结束';
+  return '轮到你说';
+}
+
 function syncVoiceCallIdentityUi(){
   var userName = currentVoiceCallUserName();
   var charName = currentVoiceCallCharName();
-  var userNode = document.getElementById('voiceCallUserAvatar');
-  var charNode = document.getElementById('voiceCallCharAvatar');
-  var incomingNode = document.getElementById('voiceCallIncomingAvatar');
+  setAvatarNodeFromSource(document.getElementById('voiceCallUserAvatar'), currentVisibleUserAvatarSrc(), userName.slice(0, 2), false);
+  setAvatarNodeFromSource(document.getElementById('voiceCallCharAvatar'), currentVisibleCharAvatarSrc(), charName.slice(0, 2), false);
+  setAvatarNodeFromSource(document.getElementById('voiceCallIncomingAvatar'), currentVisibleCharAvatarSrc(), charName.slice(0, 2), false);
+  var userLabel = document.getElementById('voiceCallUserLabel');
+  var charLabel = document.getElementById('voiceCallCharLabel');
   var ticket = document.getElementById('voiceCallTicket');
   var incomingTitle = document.getElementById('voiceCallIncomingTitle');
-  var userSrc = currentVisibleUserAvatarSrc();
-  var charSrc = currentVisibleCharAvatarSrc();
-  setAvatarNodeFromSource(userNode, userSrc, userName.slice(0,2), false);
-  setAvatarNodeFromSource(charNode, charSrc, charName.slice(0,2), false);
-  setAvatarNodeFromSource(incomingNode, charSrc, charName.slice(0,2), false);
-  if(userNode && !userNode.querySelector('.voice-call-nameplate')){
-    var userLabel = document.createElement('div');
-    userLabel.className = 'voice-call-nameplate';
-    userNode.appendChild(userLabel);
-  }
-  if(charNode && !charNode.querySelector('.voice-call-nameplate')){
-    var charLabel = document.createElement('div');
-    charLabel.className = 'voice-call-nameplate';
-    charNode.appendChild(charLabel);
-  }
-  if(incomingNode && !incomingNode.querySelector('.voice-call-nameplate')){
-    var inLabel = document.createElement('div');
-    inLabel.className = 'voice-call-nameplate';
-    incomingNode.appendChild(inLabel);
-  }
-  var userLabelNode = userNode && userNode.querySelector('.voice-call-nameplate');
-  var charLabelNode = charNode && charNode.querySelector('.voice-call-nameplate');
-  var incomingLabelNode = incomingNode && incomingNode.querySelector('.voice-call-nameplate');
-  if(userLabelNode) userLabelNode.textContent = userName;
-  if(charLabelNode) charLabelNode.textContent = charName;
-  if(incomingLabelNode) incomingLabelNode.textContent = charName;
+  if(userLabel) userLabel.textContent = userName;
+  if(charLabel) charLabel.textContent = charName;
   if(ticket) ticket.textContent = userName + ' × ' + charName;
   if(incomingTitle) incomingTitle.textContent = charName + ' 来电';
 }
@@ -26684,52 +26554,23 @@ function syncVoiceCallIdentityUi(){
 function syncVoiceCallSettingsUi(){
   var state = ensureVoiceCallState();
   var inputMode = normalizeVoiceCallInputMode(state.draftInputMode || getVoiceCallSettings().inputMode);
-  var starter = normalizeVoiceCallStarter(state.draftStarter || getVoiceCallSettings().starter);
-  var tone = String(state.draftTone != null ? state.draftTone : getVoiceCallSettings().tone);
   var liveHint = document.getElementById('voiceCallLiveHint');
   var ticketSub = document.getElementById('voiceCallSub');
-  var inputPill = document.getElementById('voiceCallInputPill');
-  var starterPill = document.getElementById('voiceCallStarterPill');
-  var langPill = document.getElementById('voiceCallLanguagePill');
-  var toneInput = document.getElementById('voiceCallToneInput');
   var callInput = document.getElementById('voiceCallInput');
   var speechBtn = document.getElementById('voiceCallSpeechBtn');
-  [
-    ['voiceCallModeTextBtn', inputMode === 'text'],
-    ['voiceCallModeSpeechBtn', inputMode === 'speech'],
-    ['voiceCallDrawerTextBtn', inputMode === 'text'],
-    ['voiceCallDrawerSpeechBtn', inputMode === 'speech'],
-    ['voiceCallStarterCharBtn', starter === 'char'],
-    ['voiceCallStarterUserBtn', starter === 'user'],
-    ['voiceCallStarterAutoBtn', starter === 'auto']
-  ].forEach(function(pair){
-    var node = document.getElementById(pair[0]);
-    if(node) node.classList.toggle('active', !!pair[1]);
-  });
-  if(inputPill) inputPill.textContent = '输入：' + getVoiceCallInputModeLabel(inputMode);
-  if(starterPill) starterPill.textContent = '接通后：' + getVoiceCallStarterLabel(starter);
-  if(langPill){
-    var langOpt = getReplyLanguageOption(getCharacterReplyLanguage());
-    langPill.textContent = '语言：' + ((langOpt && (langOpt.nativeLabel || langOpt.label)) || '简体中文');
-  }
-  if(toneInput && toneInput.value !== tone) toneInput.value = tone;
+  var textBtn = document.getElementById('voiceCallModeTextBtn');
+  var speechModeBtn = document.getElementById('voiceCallModeSpeechBtn');
+  if(textBtn) textBtn.classList.toggle('active', inputMode === 'text');
+  if(speechModeBtn) speechModeBtn.classList.toggle('active', inputMode === 'speech');
   if(callInput){
-    callInput.placeholder = inputMode === 'speech'
-      ? '点右边的小麦克风，直接把你说的话送进通话里…'
-      : '把这一刻想说的话轻轻说出来…';
+    callInput.placeholder = inputMode === 'speech' ? '点麦克风说话' : '想说什么？';
   }
   if(speechBtn){
-    speechBtn.style.opacity = inputMode === 'speech' ? '1' : '.42';
     speechBtn.disabled = inputMode !== 'speech';
+    speechBtn.style.opacity = inputMode === 'speech' ? '1' : '.45';
   }
-	  if(liveHint){
-	    liveHint.textContent = getVoiceCallPhaseLabel(state, inputMode);
-	  }
-	  if(ticketSub){
-	    ticketSub.innerHTML = tone
-	      ? ('这通电话会更像：<strong>' + esc(tone) + '</strong>')
-	      : '你们正在用文字和语音转文字慢慢说话';
-	  }
+  if(liveHint) liveHint.textContent = getVoiceCallPhaseLabel(state);
+  if(ticketSub) ticketSub.textContent = '只用文字和语音转文字说话';
   syncVoiceCallKeyboardInset();
 }
 
@@ -26741,61 +26582,42 @@ function isVoiceCallOverlayOpen(){
 function syncVoiceCallKeyboardInset(){
   var overlay = document.getElementById('voiceCallOverlay');
   if(!overlay) return;
-  var active = document.activeElement;
-  var focused = !!(active && active.id === 'voiceCallInput');
+  var focused = !!(document.activeElement && document.activeElement.id === 'voiceCallInput');
   var inset = 0;
   if(isVoiceCallOverlayOpen() && focused && window.visualViewport){
     var vv = window.visualViewport;
-    var innerH = Math.round(window.innerHeight || document.documentElement.clientHeight || 0) || 0;
-    var viewportH = Math.round(vv.height || innerH) || innerH;
-    var offsetTop = Math.round(Math.max(0, vv.offsetTop || 0));
-    var obscured = Math.max(0, innerH - viewportH - offsetTop);
-    if(obscured > 80) inset = Math.min(430, Math.round(obscured));
+    var layoutH = Math.round(window.innerHeight || document.documentElement.clientHeight || 0) || 0;
+    var visualBottom = Math.round((vv.height || layoutH) + Math.max(0, vv.offsetTop || 0));
+    var covered = Math.max(0, layoutH - visualBottom);
+    if(covered > 80) inset = Math.min(430, covered);
   }
   overlay.style.setProperty('--voice-call-keyboard-inset', inset + 'px');
 }
 
 function openVoiceCallSettingsPanel(){
-  document.getElementById('voiceCallSettingsDrawer')?.classList.add('open');
   syncVoiceCallSettingsUi();
 }
 
-function closeVoiceCallSettingsPanel(){
-  document.getElementById('voiceCallSettingsDrawer')?.classList.remove('open');
-}
+function closeVoiceCallSettingsPanel(){}
 
-function setVoiceCallInputMode(mode, keepDrawer){
+function setVoiceCallInputMode(mode){
   var state = ensureVoiceCallState();
   state.draftInputMode = normalizeVoiceCallInputMode(mode);
   syncVoiceCallSettingsUi();
-  if(!keepDrawer) closeVoiceCallSettingsPanel();
+  persistVoiceCallSession();
+  if(state.draftInputMode === 'speech') toggleVoiceCallSpeechInput();
 }
 
 function setVoiceCallStarter(mode){
   var state = ensureVoiceCallState();
   state.draftStarter = normalizeVoiceCallStarter(mode);
   syncVoiceCallSettingsUi();
+  persistVoiceCallSession();
 }
 
 async function saveVoiceCallSettings(){
-  if(!character) return;
-  var state = ensureVoiceCallState();
-  character.voiceCallInputMode = normalizeVoiceCallInputMode(state.draftInputMode || 'text');
-  character.voiceCallStarter = normalizeVoiceCallStarter(state.draftStarter || 'char');
-  character.voiceCallTone = String((document.getElementById('voiceCallToneInput') || {}).value || '').trim().slice(0, 320);
-  state.draftTone = character.voiceCallTone;
-  try{
-    await saveChatSettingsPatch(character.id, buildChatSettingsPatchFromCharacter(character));
-  }catch(err){
-    console.warn('save voice call patch failed', err);
-  }
-  await persistCharacter().catch(function(err){
-    console.warn('persist voice call settings failed', err);
-  });
-  syncVoiceCallSettingsUi();
-  closeVoiceCallSettingsPanel();
   persistVoiceCallSession();
-  toast('通话设置已保存');
+  syncVoiceCallSettingsUi();
 }
 
 function formatVoiceCallDuration(ms){
@@ -26831,20 +26653,7 @@ function buildVoiceCallRecordPreviewLine(item){
   return speaker + '：' + String(item.text || '').trim();
 }
 
-function renderVoiceCallTranscriptDock(){
-  var state = ensureVoiceCallState();
-  var host = document.getElementById('voiceCallTranscriptList');
-  if(!host) return;
-  var items = Array.isArray(state.transcript) ? state.transcript.slice(-8) : [];
-  if(!items.length){
-    host.innerHTML = '<div class="voice-call-transcript-item"><div class="voice-call-transcript-role">刚接通</div><div class="voice-call-transcript-text">这一通电话的来回话语，会慢慢落在这里。</div></div>';
-    return;
-  }
-  host.innerHTML = items.map(function(item){
-    var role = getVoiceCallRoleLabel(item.role);
-    return '<div class="voice-call-transcript-item"><div class="voice-call-transcript-role">' + esc(role) + '</div><div class="voice-call-transcript-text">' + esc(String(item.text || '').trim()) + '</div></div>';
-  }).join('');
-}
+function renderVoiceCallTranscriptDock(){}
 
 function renderVoiceCallFeed(){
   var state = ensureVoiceCallState();
@@ -26852,7 +26661,7 @@ function renderVoiceCallFeed(){
   if(!host) return;
   var items = Array.isArray(state.transcript) ? state.transcript : [];
   if(!items.length){
-    host.innerHTML = '<div class="voice-call-line system"><div class="voice-call-bubble">电话刚刚接通。等这一句先落下来。</div></div>';
+    host.innerHTML = '<div class="voice-call-line system"><div class="voice-call-bubble">电话接通了。</div></div>';
     return;
   }
   host.innerHTML = items.map(function(item){
@@ -27008,14 +26817,13 @@ function buildVoiceCallPrompt(userText){
     worldbookEntries ? ('【世界书】\n' + worldbookEntries) : '',
     replyLangPrompt,
 	    '【当前模式】',
-	    '你正在和 ' + currentVoiceCallUserName() + ' 进行一通语音电话，但界面会把说话内容显示成文字。',
-	    '这不是普通聊天窗口：你要像真的接着电话，能感觉到对方刚刚说完话后的停顿、呼吸和语气。',
-	    '这是电话界面。只允许输出两类：text 是角色真正说出口的话；narrator 是屏幕旁白/很轻的动作氛围。',
+	    '这是一通语音电话。双方只能听到声音，看不到动作、表情和画面。',
+	    '界面把通话内容显示成文字，但你要像真的在电话里接话。',
+	    '只允许输出两类：text 是角色真正说出口的话；narrator 是非常短的听觉/停顿氛围。',
 	    '禁止输出 voice、meme、image、money、transfer、rich_html、schedule、emoji、表情包、转账、语音消息。',
-	    '禁止输出 [通话]、[聊天]、[约会]、时间戳、动作指令标签；那些只是上下文来源，不是回复内容。',
-	    'text 要像真人打电话一样自然。每句尽量短，最好不超过 20 个字，不要一整坨复句。',
-	    '可以有很短的停顿、轻笑、迟疑，但不要写成长段小说旁白；旁白只能补氛围，不能替代正文。',
-	    '默认返回 JSON 数组，每项格式：{"type":"text","content":"..."} 或 {"type":"narrator","content":"..."}。1 到 4 条就够了，至少 1 条 text。',
+	    '禁止动作描写、视觉描写、时间戳、指令标签和解释说明。',
+	    'text 要短，最好不超过 20 个字；像真人通话，不要长段独白。',
+	    '默认返回 JSON 数组，每项格式：{"type":"text","content":"..."} 或 {"type":"narrator","content":"..."}。1 到 4 条，至少 1 条 text。',
     '每条都要直接接住对方刚刚说的东西，不要自说自话。',
     settings.tone ? ('【通话氛围】\n' + settings.tone) : ''
   ].filter(Boolean).join('\n\n');
@@ -27024,7 +26832,7 @@ function buildVoiceCallPrompt(userText){
     '【这通电话里已经说过的话】\n' + (buildVoiceCallTranscriptLines() || '刚刚接通，还没有正式说话。'),
     userText
       ? ('【对方刚刚在电话里说】\n' + currentVoiceCallUserName() + '：' + String(userText || '').trim())
-      : '【现在请自然开场】\n请由你先轻轻开口，像刚接通电话那样说第一句。'
+      : '【现在请自然开场】\n请像电话刚接通那样先说第一句。'
   ].join('\n\n');
   return { system: base, user: user };
 }
@@ -27039,11 +26847,11 @@ async function triggerVoiceCallAssistantTurn(userText){
   try{
     var prompt = buildVoiceCallPrompt(userText);
     var raw = await callAIWithCustomPrompts(prompt.system, prompt.user);
-    var parts = extractVoiceCallReplyParts(raw);
-    if(!parts.length) return false;
-	    parts.forEach(function(part){
-	      appendVoiceCallLine(part.type === 'narrator' ? 'narrator' : 'assistant', part.text);
-	    });
+    var parts = extractVoiceCallReplyParts(raw).filter(function(part){ return part && part.text; });
+    if(!parts.length) throw new Error('empty_call_reply');
+    parts.forEach(function(part){
+      appendVoiceCallLine(part.type === 'narrator' ? 'narrator' : 'assistant', part.text);
+    });
     state.phase = 'listening';
 	    return true;
 	  }catch(err){
@@ -27466,7 +27274,6 @@ function rejectIncomingVoiceCall(){
 
 if(window.visualViewport){
   window.visualViewport.addEventListener('resize', syncVoiceCallKeyboardInset);
-  window.visualViewport.addEventListener('scroll', syncVoiceCallKeyboardInset);
 }
 window.addEventListener('resize', syncVoiceCallKeyboardInset);
 document.addEventListener('focusin', function(evt){
