@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-04T05:09:48Z';
+const APP_BUILD_ID = '2026-05-04T06:08:53Z';
 const APP_UPDATE_NOTES = [
-  '减少聊天页全局重绘',
-  '滑动和点击更轻快',
-  '保留轻量点击高亮优化'
+  '新增语音通话页面',
+  '通话记录可展开回看',
+  '通话记忆并入聊天记忆'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -3673,6 +3673,38 @@ async function appendBackgroundAiMessage(character, accountId, content){
   return true;
 }
 
+async function appendBackgroundVoiceCallRequest(character, accountId, content){
+  if(!character || !character.id) return false;
+  await loadShellChatSettingsBundleForChar(character.id, accountId || getDefaultAccountId());
+  if(!isCharBgEnabled(character.id, accountId || getDefaultAccountId())) return false;
+  var history = await readBackgroundChatHistory(character.id, accountId);
+  var now = Date.now();
+  var entry = {
+    id: 'm_' + now.toString(36) + '_' + Math.random().toString(36).slice(2,8),
+    role: 'assistant',
+    content: String(content || '').trim() || '想听听你的声音。',
+    type: 'voicecallrequest',
+    replyToId: null,
+    sentAt: now,
+    readAt: null
+  };
+  history.push(entry);
+  await writeBackgroundChatHistory(character.id, accountId, history);
+  renderHomeDockBadges();
+  try{
+    var f = document.getElementById('app-iframe');
+    if(f && f.contentWindow){
+      f.contentWindow.postMessage({ type:'BACKGROUND_AI_MESSAGE', payload:{ charId: character.id, entry: entry } }, '*');
+    }
+  }catch(e){}
+  maybeShowShellActivityNotification({
+    kind:'chat',
+    charId: character.id,
+    text: String(entry.content || '').trim()
+  });
+  return true;
+}
+
 async function appendBackgroundMoment(character, accountId, action, content, imageText){
   if(!character || !character.id) return false;
   await loadShellChatSettingsBundleForChar(character.id, accountId || getDefaultAccountId());
@@ -4962,7 +4994,7 @@ async function runAiBackgroundActivity(){
     convoState.unreadAssistantCount > 0
       ? ('你这边已经累计有 ' + convoState.unreadAssistantCount + ' 条未读主动消息了，别一直刷屏。')
       : '目前没有你发出后还没被对方看到的主动消息。',
-    '请像真人一样在这三种动作里选一个最自然的：主动聊天 / 发说说 / 发动态。',
+    '请像真人一样在这四种动作里选一个最自然的：主动聊天 / 发说说 / 发动态 / 主动来电。',
     '要求：不要机械，不要复读用户原话，不要出现“我是AI/不能发朋友圈”等元话；如果选 message，要有一点“主动来找对方”的感觉。',
     buildBackgroundReplyLanguagePrompt(character) || ''
   ].join('\n\n');
@@ -4975,7 +5007,9 @@ async function runAiBackgroundActivity(){
   if(parsed.action !== 'message' && parsed.action !== 'call' && loadShellCharMomentsFreq(character.id, defaultId) === 'low'){
     return false;
   }
-  if(parsed.action === 'call') parsed.action = 'message';
+  if(parsed.action === 'call'){
+    return await appendBackgroundVoiceCallRequest(character, defaultId, parsed.content);
+  }
   if(parsed.action === 'message'){
     return await appendBackgroundAiMessage(character, defaultId, parsed.content);
   }else{
