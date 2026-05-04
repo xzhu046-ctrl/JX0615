@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-04T19:25:33Z"></script>
-<script src="../chatStorage.js?v=2026-05-04T19:25:33Z"></script>
-<script src="../assetStore.js?v=2026-05-04T19:25:33Z"></script>
-<script src="../accountManager.js?v=2026-05-04T19:25:33Z"></script>
-<script src="../metadataStore.js?v=2026-05-04T19:25:33Z"></script>
-<script src="../scheduleShared.js?v=2026-05-04T19:25:33Z"></script>
-<script src="../presenceShared.js?v=2026-05-04T19:25:33Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-04T19:25:33Z"></script>
-<script src="../sunnySupport.js?v=2026-05-04T19:25:33Z"></script>
-<script src="offlineInvite.js?v=2026-05-04T19:25:33Z"></script>
+<script src="../promptManager.js?v=2026-05-04T19:59:15Z"></script>
+<script src="../chatStorage.js?v=2026-05-04T19:59:15Z"></script>
+<script src="../assetStore.js?v=2026-05-04T19:59:15Z"></script>
+<script src="../accountManager.js?v=2026-05-04T19:59:15Z"></script>
+<script src="../metadataStore.js?v=2026-05-04T19:59:15Z"></script>
+<script src="../scheduleShared.js?v=2026-05-04T19:59:15Z"></script>
+<script src="../presenceShared.js?v=2026-05-04T19:59:15Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-04T19:59:15Z"></script>
+<script src="../sunnySupport.js?v=2026-05-04T19:59:15Z"></script>
+<script src="offlineInvite.js?v=2026-05-04T19:59:15Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -1943,63 +1943,62 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 #imageCardOverlay .voice-btn{border-radius:4px;box-shadow:3px 3px 0 rgba(17,17,17,.82);background:#fff;color:#111}
 #imageCardOverlay .voice-btn.primary{background:#111;color:#fff}
 #imageCardOverlay .voice-btn.image-real{grid-column:1 / -1;background:#111;color:#fff}
-.voice-call-overlay{position:fixed;inset:0;z-index:350;background:#050505;display:none;overflow:hidden;color:#fff;--voice-call-keyboard-inset:0px}
+.voice-call-overlay{position:fixed;inset:0;z-index:350;background:#050505;display:none;overflow:hidden;color:#fff;--voice-call-keyboard-inset:0px;--voice-call-bg-image:none;touch-action:manipulation}
 .voice-call-overlay.open{display:block}
-.voice-call-bg{position:absolute;inset:0;background:
-  radial-gradient(circle at 22% 18%,rgba(255,255,255,.10),transparent 25%),
-  radial-gradient(circle at 82% 78%,rgba(255,255,255,.08),transparent 28%),
-  linear-gradient(180deg,#151515 0%,#070707 56%,#020202 100%)}
-.voice-call-bg::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px);background-size:100% 31px;opacity:.24}
+.voice-call-bg{position:absolute;inset:0;background:#050505;overflow:hidden}
+.voice-call-bg::before{content:'';position:absolute;inset:-38px;background-image:var(--voice-call-bg-image),radial-gradient(circle at 26% 18%,rgba(255,255,255,.15),transparent 28%),radial-gradient(circle at 82% 72%,rgba(255,255,255,.10),transparent 32%),linear-gradient(180deg,#232323 0%,#0d0d0d 48%,#030303 100%);background-size:cover,auto,auto,auto;background-position:center;filter:grayscale(1) blur(24px);transform:scale(1.12);opacity:.42}
+.voice-call-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.42),rgba(0,0,0,.16) 38%,rgba(0,0,0,.82)),radial-gradient(circle at 50% 34%,transparent 0,rgba(0,0,0,.36) 55%,rgba(0,0,0,.78) 100%);box-shadow:inset 0 0 80px rgba(255,255,255,.035)}
 .voice-call-shell{position:relative;z-index:1;height:100%;min-height:100dvh;box-sizing:border-box;display:flex;flex-direction:column;padding:calc(var(--safe-top) + 12px) 14px 0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue","PingFang SC",sans-serif;overflow:hidden}
-.voice-call-top{height:48px;display:grid;grid-template-columns:46px minmax(0,1fr)64px;align-items:center;gap:10px;flex:0 0 auto}
-.voice-call-mini-btn,.voice-call-hangup-top,.voice-call-actionbtn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-.voice-call-mini-btn{width:42px;height:42px;border-radius:999px;padding:0}
+.voice-call-top{height:58px;display:grid;grid-template-columns:54px minmax(0,1fr)54px 76px;align-items:center;gap:10px;flex:0 0 auto}
+.voice-call-mini-btn,.voice-call-hangup-top,.voice-call-actionbtn,.voice-call-menu-btn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.12);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.voice-call-mini-btn,.voice-call-menu-btn{width:48px;height:48px;border-radius:999px;padding:0;box-shadow:0 14px 26px rgba(0,0,0,.24)}
 .voice-call-mini-btn svg,.voice-call-actionbtn svg{width:20px;height:20px;display:block}
-.voice-call-mini-btn:active,.voice-call-hangup-top:active,.voice-call-actionbtn:active,.voice-call-end-strip:active{transform:scale(.96)}
-.voice-call-hangup-top{height:42px;border-radius:999px;background:#fff;color:#111;font-size:13px;font-weight:800;letter-spacing:0;white-space:nowrap}
-.voice-call-headcopy{min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px}
-.voice-call-ticket{max-width:100%;padding:0 13px;min-height:30px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(255,255,255,.055);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.voice-call-sub{max-width:100%;font-size:11px;font-weight:650;color:rgba(255,255,255,.58);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.voice-call-hero{padding:16px 0 10px;display:grid;grid-template-columns:minmax(70px,1fr)96px minmax(70px,1fr);align-items:center;gap:10px;flex:0 0 auto}
-.voice-call-person{min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px}
-.voice-call-portrait{width:86px;height:86px;border-radius:28px;border:1.5px solid rgba(255,255,255,.78);background:#fff;color:#111;font-size:20px;font-weight:900;box-shadow:0 15px 28px rgba(0,0,0,.28);overflow:hidden;display:flex;align-items:center;justify-content:center}
-.voice-call-portrait.small{width:76px;height:76px;border-radius:24px}
+.voice-call-menu-btn svg{width:22px;height:22px;display:block}
+.voice-call-mini-btn:active,.voice-call-menu-btn:active,.voice-call-hangup-top:active,.voice-call-actionbtn:active,.voice-call-end-strip:active{transform:scale(.96)}
+.voice-call-hangup-top{height:48px;border-radius:999px;background:#fff;color:#111;font-size:13px;font-weight:900;letter-spacing:.02em;white-space:nowrap;box-shadow:0 18px 34px rgba(0,0,0,.28)}
+.voice-call-headcopy{min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;align-self:center}
+.voice-call-ticket{max-width:100%;padding:0 16px;min-height:34px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}
+.voice-call-sub{max-width:100%;font-size:11px;font-weight:750;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 8px rgba(0,0,0,.45)}
+.voice-call-stage{position:relative;min-height:150px;flex:0 0 auto;display:flex;align-items:flex-start;justify-content:center;padding:14px 96px 4px 20px}
+.voice-call-title-stack{min-width:0;display:flex;flex-direction:column;align-items:center;gap:9px}
+.voice-call-portrait{position:absolute;right:10px;top:9px;width:88px;height:110px;border-radius:20px;border:2px solid rgba(255,255,255,.82);background:#fff;color:#111;font-size:20px;font-weight:900;box-shadow:0 18px 34px rgba(0,0,0,.32);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.voice-call-portrait.small{width:78px;height:78px;border-radius:22px}
 .voice-call-portrait img{width:100%;height:100%;object-fit:cover;display:block}
 .voice-call-portrait-fallback{font-size:20px;font-weight:900;color:#111}
-.voice-call-nameplate{max-width:110px;min-height:22px;padding:0 10px;border:1px solid rgba(255,255,255,.15);border-radius:999px;background:rgba(255,255,255,.07);font-size:10px;font-weight:750;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.voice-call-center{display:flex;flex-direction:column;align-items:center;gap:8px}
-.voice-call-centerpulse{min-width:86px;height:34px;padding:0 13px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;color:#fff}
-.voice-call-centerpulse::before{content:'';width:8px;height:8px;border-radius:999px;background:#47d46c;margin-right:9px;box-shadow:0 0 0 5px rgba(71,212,108,.12)}
-.voice-call-livehint{max-width:100%;min-height:25px;padding:0 11px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(255,255,255,.05);font-size:11px;font-weight:700;color:rgba(255,255,255,.62);display:flex;align-items:center;justify-content:center;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.voice-call-feed{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:10px;padding:9px 2px calc(132px + var(--voice-call-keyboard-inset));scrollbar-width:none;overscroll-behavior:contain}
+.voice-call-nameplate{max-width:120px;min-height:22px;padding:0 10px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(255,255,255,.08);font-size:10px;font-weight:850;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.voice-call-centerpulse{min-width:94px;height:36px;padding:0 15px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(0,0,0,.34);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;font-variant-numeric:tabular-nums;color:#fff;box-shadow:0 10px 22px rgba(0,0,0,.22)}
+.voice-call-centerpulse::before{content:'';width:8px;height:8px;border-radius:999px;background:#43d86d;margin-right:9px;box-shadow:0 0 0 5px rgba(67,216,109,.13)}
+.voice-call-livehint{max-width:170px;min-height:26px;padding:0 12px;border:1px solid rgba(255,255,255,.13);border-radius:999px;background:rgba(255,255,255,.08);font-size:11px;font-weight:800;color:rgba(255,255,255,.72);display:flex;align-items:center;justify-content:center;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.voice-call-feed{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:13px;padding:8px 12px calc(174px + var(--voice-call-keyboard-inset));scrollbar-width:none;overscroll-behavior:contain}
 .voice-call-feed::-webkit-scrollbar{display:none}
 .voice-call-line{display:flex;align-items:flex-start}
 .voice-call-line.user{justify-content:flex-end}
 .voice-call-line.ai{justify-content:flex-start}
 .voice-call-line.narrator,.voice-call-line.system{justify-content:center}
-.voice-call-bubble{max-width:min(82%,310px);padding:9px 12px;border:1px solid rgba(255,255,255,.12);border-radius:19px;background:rgba(255,255,255,.075);color:#fff;font-size:14px;font-weight:600;line-height:1.55;white-space:pre-wrap;word-break:break-word;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-.voice-call-line.user .voice-call-bubble{background:#fff;color:#111;border-color:#fff;border-top-right-radius:7px}
-.voice-call-line.ai .voice-call-bubble{border-top-left-radius:7px}
-.voice-call-line.narrator .voice-call-bubble{background:transparent;border:none;color:rgba(255,255,255,.56);font-size:12px;font-style:italic;text-align:center;box-shadow:none}
-.voice-call-line.system .voice-call-bubble{background:rgba(255,255,255,.05);border-style:dashed;color:rgba(255,255,255,.5);font-size:12px;text-align:center}
-.voice-call-controls{position:fixed;left:12px;right:12px;bottom:calc(var(--safe-bottom) + 10px + var(--voice-call-keyboard-inset));z-index:5;transition:bottom .16s ease}
-.voice-call-inputcard{border:1px solid rgba(255,255,255,.14);border-radius:24px;background:rgba(18,18,18,.92);box-shadow:0 18px 42px rgba(0,0,0,.38);padding:10px;display:flex;flex-direction:column;gap:8px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.voice-call-bubble{max-width:min(82%,326px);padding:10px 14px;border:1px solid rgba(255,255,255,.12);border-radius:21px;background:rgba(18,18,18,.58);color:#fff;font-size:15px;font-weight:600;line-height:1.58;white-space:pre-wrap;word-break:break-word;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 10px 26px rgba(0,0,0,.22)}
+.voice-call-line.user .voice-call-bubble{background:rgba(255,255,255,.92);color:#111;border-color:rgba(255,255,255,.95);border-top-right-radius:8px}
+.voice-call-line.ai .voice-call-bubble{border-top-left-radius:8px}
+.voice-call-line.narrator .voice-call-bubble{background:transparent;border:none;color:rgba(255,255,255,.58);font-size:12px;font-style:italic;text-align:center;box-shadow:none;text-shadow:0 1px 8px rgba(0,0,0,.45)}
+.voice-call-line.system .voice-call-bubble{background:rgba(255,255,255,.07);border-style:dashed;color:rgba(255,255,255,.58);font-size:12px;text-align:center}
+.voice-call-controls{position:fixed;left:14px;right:14px;bottom:calc(var(--safe-bottom) + 12px + var(--voice-call-keyboard-inset));z-index:5;transition:bottom .14s ease;will-change:bottom}
+.voice-call-inputcard{border:1px solid rgba(255,255,255,.14);border-radius:32px;background:linear-gradient(145deg,rgba(40,40,40,.94),rgba(16,16,16,.94));box-shadow:0 20px 48px rgba(0,0,0,.42);padding:12px;display:flex;flex-direction:column;gap:10px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
 .voice-call-modebar{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .voice-call-modechips{display:flex;gap:7px}
-.voice-call-chip{min-height:25px;padding:0 12px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.68);font-size:12px;font-weight:750}
+.voice-call-chip{min-height:31px;padding:0 14px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.68);font-size:12px;font-weight:850}
 .voice-call-chip.active{background:#fff;color:#111;border-color:#fff}
-.voice-call-inputrow{display:grid;grid-template-columns:40px minmax(0,1fr)42px;align-items:end;gap:8px}
-.voice-call-textwrap{min-width:0;min-height:42px;display:flex;align-items:center;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.055);padding:0 12px}
-.voice-call-textarea{width:100%;min-height:40px;max-height:96px;border:none;background:transparent;outline:none;resize:none;font-family:inherit;font-size:15px;font-weight:500;line-height:1.45;color:#fff;-webkit-text-fill-color:#fff;padding:9px 0}
+.voice-call-inputrow{display:grid;grid-template-columns:50px minmax(0,1fr)54px;align-items:end;gap:10px}
+.voice-call-textwrap{min-width:0;min-height:50px;display:flex;align-items:center;border:1px solid rgba(255,255,255,.12);border-radius:24px;background:rgba(0,0,0,.22);padding:0 14px}
+.voice-call-textarea{width:100%;min-height:48px;max-height:104px;border:none;background:transparent;outline:none;resize:none;font-family:inherit;font-size:15px;font-weight:650;line-height:1.45;color:#fff;-webkit-text-fill-color:#fff;padding:13px 0}
 .voice-call-textarea::placeholder{color:rgba(255,255,255,.38)}
-.voice-call-actionbtn{width:40px;height:40px;border-radius:999px;padding:0}
+.voice-call-actionbtn{width:50px;height:50px;border-radius:999px;padding:0}
 .voice-call-actionbtn.primary{background:#fff;color:#111;border-color:#fff}
 .voice-call-actionbtn:disabled{opacity:.38}
-.voice-call-end-strip{width:100%;min-height:34px;border:none;border-radius:999px;background:#fff;color:#111;font-family:inherit;font-size:12px;font-weight:800;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.voice-call-end-strip{width:100%;min-height:42px;border:none;border-radius:999px;background:#fff;color:#111;font-family:inherit;font-size:13px;font-weight:950;letter-spacing:.06em;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
 .voice-call-end-strip::before{content:'';width:7px;height:7px;border-radius:999px;background:#111}
 .voice-call-incoming{position:absolute;inset:0;z-index:8;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .voice-call-incoming.open{display:flex}
 .voice-call-incoming-card{width:min(300px,92vw);border:1px solid rgba(255,255,255,.18);border-radius:28px;background:rgba(17,17,17,.94);padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 20px 44px rgba(0,0,0,.42)}
+.voice-call-incoming-card .voice-call-portrait{position:relative;right:auto;top:auto;width:88px;height:88px;border-radius:24px}
 .voice-call-incoming-title{font-size:17px;font-weight:850;color:#fff;text-align:center}
 .voice-call-incoming-sub{font-size:12px;font-weight:650;color:rgba(255,255,255,.58);text-align:center;line-height:1.6}
 .voice-call-ringing-actions{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:4px}
@@ -2032,11 +2031,14 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .voice-call-floating-dot{width:8px;height:8px;border-radius:999px;background:#39d074;box-shadow:0 0 0 5px rgba(57,208,116,.16)}
 @media (max-width: 420px){
   .voice-call-shell{padding-left:12px;padding-right:12px}
-  .voice-call-hero{grid-template-columns:minmax(64px,1fr)82px minmax(64px,1fr);gap:8px;padding-top:12px}
-  .voice-call-portrait{width:78px;height:78px;border-radius:25px}
+  .voice-call-top{grid-template-columns:50px minmax(0,1fr)50px 72px;gap:8px}
+  .voice-call-mini-btn,.voice-call-menu-btn{width:46px;height:46px}
+  .voice-call-stage{min-height:142px;padding-right:90px}
+  .voice-call-portrait{width:78px;height:100px;border-radius:18px}
   .voice-call-portrait.small{width:70px;height:70px;border-radius:23px}
-  .voice-call-centerpulse{min-width:78px;height:32px;font-size:14px}
-  .voice-call-feed{padding-bottom:calc(128px + var(--voice-call-keyboard-inset))}
+  .voice-call-centerpulse{min-width:86px;height:34px;font-size:15px}
+  .voice-call-ticket{font-size:15px;max-width:158px}
+  .voice-call-feed{padding-bottom:calc(166px + var(--voice-call-keyboard-inset))}
   .voice-call-controls{left:10px;right:10px}
 }
 .voice-btn{flex:1;padding:10px;border:var(--bd);border-radius:12px;font-family:var(--fontd);font-size:12px;font-weight:900;cursor:pointer;box-shadow:var(--sh);background:var(--w);transition:transform .12s,box-shadow .12s}
@@ -2350,23 +2352,19 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
       </button>
       <div class="voice-call-headcopy">
         <div class="voice-call-ticket" id="voiceCallTicket">语音通话</div>
-        <div class="voice-call-sub" id="voiceCallSub">只用文字和语音转文字说话</div>
+        <div class="voice-call-sub" id="voiceCallSub">轻轻说，慢慢听</div>
       </div>
+      <button class="voice-call-menu-btn" type="button" onclick="openVoiceCallRecordViewer()" aria-label="通话记录">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h14"></path></svg>
+      </button>
       <button class="voice-call-hangup-top" type="button" onclick="endVoiceCallSession()">挂断</button>
     </div>
-    <div class="voice-call-hero">
-      <div class="voice-call-person">
-        <div class="voice-call-portrait" id="voiceCallCharAvatar"><span class="voice-call-portrait-fallback">CH</span></div>
-        <div class="voice-call-nameplate" id="voiceCallCharLabel">CHAR</div>
-      </div>
-      <div class="voice-call-center">
+    <div class="voice-call-stage">
+      <div class="voice-call-title-stack">
         <div class="voice-call-centerpulse" id="voiceCallPulse">00:00</div>
         <div class="voice-call-livehint" id="voiceCallLiveHint">正在接通</div>
       </div>
-      <div class="voice-call-person">
-        <div class="voice-call-portrait small" id="voiceCallUserAvatar"><span class="voice-call-portrait-fallback">US</span></div>
-        <div class="voice-call-nameplate" id="voiceCallUserLabel">USER</div>
-      </div>
+      <div class="voice-call-portrait" id="voiceCallCharAvatar"><span class="voice-call-portrait-fallback">CH</span></div>
     </div>
     <div class="voice-call-feed" id="voiceCallFeed"></div>
     <div class="voice-call-controls">
@@ -3921,6 +3919,7 @@ var voiceCallRecordOpenId = '';
 var voiceCallSpeechRecognition = null;
 var voiceCallSpeechListening = false;
 var voiceCallMinimized = false;
+var voiceCallViewportBaseHeight = 0;
 var storageHydrationPromise = Promise.resolve();
 var storagePersistRequested = false;
 var momentsPostsCache = [];
@@ -26538,16 +26537,21 @@ function getVoiceCallPhaseLabel(state){
 function syncVoiceCallIdentityUi(){
   var userName = currentVoiceCallUserName();
   var charName = currentVoiceCallCharName();
-  setAvatarNodeFromSource(document.getElementById('voiceCallUserAvatar'), currentVisibleUserAvatarSrc(), userName.slice(0, 2), false);
-  setAvatarNodeFromSource(document.getElementById('voiceCallCharAvatar'), currentVisibleCharAvatarSrc(), charName.slice(0, 2), false);
-  setAvatarNodeFromSource(document.getElementById('voiceCallIncomingAvatar'), currentVisibleCharAvatarSrc(), charName.slice(0, 2), false);
+  var charSrc = currentVisibleCharAvatarSrc();
+  setAvatarNodeFromSource(document.getElementById('voiceCallCharAvatar'), charSrc, charName.slice(0, 2), false);
+  setAvatarNodeFromSource(document.getElementById('voiceCallIncomingAvatar'), charSrc, charName.slice(0, 2), false);
+  var overlay = document.getElementById('voiceCallOverlay');
+  if(overlay){
+    var bgValue = charSrc ? ('url("' + String(charSrc).replace(/["\\]/g, '\\$&') + '")') : 'none';
+    overlay.style.setProperty('--voice-call-bg-image', bgValue);
+  }
   var userLabel = document.getElementById('voiceCallUserLabel');
   var charLabel = document.getElementById('voiceCallCharLabel');
   var ticket = document.getElementById('voiceCallTicket');
   var incomingTitle = document.getElementById('voiceCallIncomingTitle');
   if(userLabel) userLabel.textContent = userName;
   if(charLabel) charLabel.textContent = charName;
-  if(ticket) ticket.textContent = userName + ' × ' + charName;
+  if(ticket) ticket.textContent = charName;
   if(incomingTitle) incomingTitle.textContent = charName + ' 来电';
 }
 
@@ -26570,7 +26574,7 @@ function syncVoiceCallSettingsUi(){
     speechBtn.style.opacity = inputMode === 'speech' ? '1' : '.45';
   }
   if(liveHint) liveHint.textContent = getVoiceCallPhaseLabel(state);
-  if(ticketSub) ticketSub.textContent = '只用文字和语音转文字说话';
+  if(ticketSub) ticketSub.textContent = inputMode === 'speech' ? '语音转文字 / 电话中' : '消息输入 / 电话中';
   syncVoiceCallKeyboardInset();
 }
 
@@ -26584,9 +26588,13 @@ function syncVoiceCallKeyboardInset(){
   if(!overlay) return;
   var focused = !!(document.activeElement && document.activeElement.id === 'voiceCallInput');
   var inset = 0;
+  var currentLayoutH = Math.round(window.innerHeight || document.documentElement.clientHeight || 0) || 0;
+  if(!voiceCallViewportBaseHeight || (!focused && currentLayoutH > voiceCallViewportBaseHeight)){
+    voiceCallViewportBaseHeight = currentLayoutH;
+  }
   if(isVoiceCallOverlayOpen() && focused && window.visualViewport){
     var vv = window.visualViewport;
-    var layoutH = Math.round(window.innerHeight || document.documentElement.clientHeight || 0) || 0;
+    var layoutH = Math.max(voiceCallViewportBaseHeight || 0, currentLayoutH, Math.round(document.documentElement.clientHeight || 0));
     var visualBottom = Math.round((vv.height || layoutH) + Math.max(0, vv.offsetTop || 0));
     var covered = Math.max(0, layoutH - visualBottom);
     if(covered > 80) inset = Math.min(430, covered);
@@ -26673,12 +26681,13 @@ function renderVoiceCallFeed(){
 
 function tickVoiceCallTimer(){
   var state = ensureVoiceCallState();
+  var pulse = document.getElementById('voiceCallPulse');
   if(!state.active || !state.connectedAt){
-    document.getElementById('voiceCallPulse').textContent = '00:00';
+    if(pulse) pulse.textContent = '00:00';
     syncVoiceCallFloating();
     return;
   }
-  document.getElementById('voiceCallPulse').textContent = formatVoiceCallDuration(Date.now() - state.connectedAt);
+  if(pulse) pulse.textContent = formatVoiceCallDuration(Date.now() - state.connectedAt);
   syncVoiceCallFloating();
 }
 
@@ -26856,8 +26865,9 @@ async function triggerVoiceCallAssistantTurn(userText){
 	    return true;
 	  }catch(err){
 	    console.error('voice call reply failed', err);
-    state.phase = 'error';
-	    appendVoiceCallLine('system', '这一句没有接稳，可以再说一次。');
+    state.phase = 'listening';
+    var hasUserTurn = (Array.isArray(state.transcript) ? state.transcript : []).some(function(line){ return line && line.role === 'user'; });
+	    appendVoiceCallLine('system', hasUserTurn ? '刚刚没听清，可以再说一次。' : '电话已经接通，你先说也可以。');
 	    return false;
 	  }finally{
 	    state.awaitingReply = false;
@@ -26871,6 +26881,7 @@ function openVoiceCallOverlay(){
   var overlay = document.getElementById('voiceCallOverlay');
   if(!overlay) return;
   voiceCallMinimized = false;
+  voiceCallViewportBaseHeight = Math.round(window.innerHeight || document.documentElement.clientHeight || 0) || voiceCallViewportBaseHeight || 0;
   var state = ensureVoiceCallState();
   state.minimized = false;
   overlay.classList.add('open');
@@ -26936,7 +26947,7 @@ async function openVoiceCallFromAddon(){
 	    active: true,
 	    incoming: false,
 	    minimized: false,
-    phase: 'connecting',
+    phase: 'listening',
 	    startedAt: Date.now(),
     connectedAt: Date.now(),
     draftInputMode: settings.inputMode,
@@ -26951,11 +26962,9 @@ async function openVoiceCallFromAddon(){
 	    setTimeout(function(){
 	      if(voiceCallState && voiceCallState.active) triggerVoiceCallAssistantTurn('');
 	    }, 220);
-  }else{
-    voiceCallState.phase = 'listening';
-    syncVoiceCallSettingsUi();
-    persistVoiceCallSession();
 	  }
+  syncVoiceCallSettingsUi();
+  persistVoiceCallSession();
 	}
 
 async function sendVoiceCallMessage(){
@@ -27242,7 +27251,7 @@ function acceptIncomingVoiceCall(){
   if(!state.incoming) return;
 	  state.incoming = false;
 	  state.active = true;
-  state.phase = 'connecting';
+  state.phase = 'listening';
 	  state.connectedAt = Date.now();
   document.getElementById('voiceCallIncomingDrawer')?.classList.remove('open');
   appendVoiceCallLine('system', '你接起了这通电话。');
@@ -27252,11 +27261,9 @@ function acceptIncomingVoiceCall(){
 	    setTimeout(function(){
 	      if(voiceCallState && voiceCallState.active) triggerVoiceCallAssistantTurn('');
 	    }, 200);
-  }else{
-    state.phase = 'listening';
-    syncVoiceCallSettingsUi();
-    persistVoiceCallSession();
 	  }
+  syncVoiceCallSettingsUi();
+  persistVoiceCallSession();
 	}
 
 function rejectIncomingVoiceCall(){
