@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-04T20:34:52Z"></script>
-<script src="../chatStorage.js?v=2026-05-04T20:34:52Z"></script>
-<script src="../assetStore.js?v=2026-05-04T20:34:52Z"></script>
-<script src="../accountManager.js?v=2026-05-04T20:34:52Z"></script>
-<script src="../metadataStore.js?v=2026-05-04T20:34:52Z"></script>
-<script src="../scheduleShared.js?v=2026-05-04T20:34:52Z"></script>
-<script src="../presenceShared.js?v=2026-05-04T20:34:52Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-04T20:34:52Z"></script>
-<script src="../sunnySupport.js?v=2026-05-04T20:34:52Z"></script>
-<script src="offlineInvite.js?v=2026-05-04T20:34:52Z"></script>
+<script src="../promptManager.js?v=2026-05-04T21:12:30Z"></script>
+<script src="../chatStorage.js?v=2026-05-04T21:12:30Z"></script>
+<script src="../assetStore.js?v=2026-05-04T21:12:30Z"></script>
+<script src="../accountManager.js?v=2026-05-04T21:12:30Z"></script>
+<script src="../metadataStore.js?v=2026-05-04T21:12:30Z"></script>
+<script src="../scheduleShared.js?v=2026-05-04T21:12:30Z"></script>
+<script src="../presenceShared.js?v=2026-05-04T21:12:30Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-04T21:12:30Z"></script>
+<script src="../sunnySupport.js?v=2026-05-04T21:12:30Z"></script>
+<script src="offlineInvite.js?v=2026-05-04T21:12:30Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -2047,6 +2047,80 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
   .voice-call-feed{padding-bottom:calc(202px + var(--voice-call-keyboard-inset))}
   .voice-call-controls{left:10px;right:10px}
 }
+.voice-call-shell{padding:calc(var(--safe-top) + 14px) 18px 0;background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(246,246,246,.92));color:#111}
+.voice-call-bg{background:#f7f7f7}
+.voice-call-bg::before{background-image:var(--voice-call-bg-image);background-size:cover;background-position:center;filter:grayscale(1) blur(26px);transform:scale(1.15);opacity:.14}
+.voice-call-bg::after{background:linear-gradient(180deg,rgba(255,255,255,.88),rgba(255,255,255,.74) 42%,rgba(255,255,255,.92)),radial-gradient(circle at 50% 22%,rgba(255,255,255,.72),transparent 52%);box-shadow:inset 0 0 90px rgba(255,255,255,.64)}
+.voice-call-top{height:54px;display:grid;grid-template-columns:46px minmax(0,1fr)44px;gap:10px;align-items:start}
+.voice-call-headcopy{align-items:center;gap:2px;padding-top:1px}
+.voice-call-ticket{min-height:31px;max-width:min(194px,100%);padding:0 16px;border:2px solid #111;border-radius:999px;background:rgba(255,255,255,.78);color:#111;font-family:var(--fontcute);font-size:16px;font-weight:900;box-shadow:4px 5px 0 rgba(0,0,0,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.voice-call-sub{display:none;font-size:10px;font-weight:900;color:rgba(17,17,17,.48);text-shadow:none}
+.voice-call-side-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;justify-content:flex-start;z-index:6}
+.voice-call-mini-btn,.voice-call-menu-btn{width:44px;height:44px;border:2px solid #111;border-radius:16px;background:rgba(255,255,255,.78);color:#111;box-shadow:4px 5px 0 rgba(0,0,0,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.voice-call-mini-btn svg,.voice-call-menu-btn svg{width:21px;height:21px}
+.voice-call-stage{min-height:214px;padding:6px 46px 0 22px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:15px}
+.voice-call-duo{position:relative;display:flex;align-items:flex-start;justify-content:center;margin-top:0;min-height:142px}
+.voice-call-person{position:relative;display:flex;flex-direction:column;align-items:center;gap:7px}
+.voice-call-person.user{margin-left:-18px;margin-top:10px}
+.voice-call-person.char{z-index:2}
+.voice-call-portrait{position:relative;right:auto;top:auto;width:118px;height:118px;border:3px solid #111;border-radius:30px;background:linear-gradient(145deg,#fff,#ececec);color:#111;box-shadow:7px 8px 0 rgba(0,0,0,.88),inset 0 0 0 5px rgba(255,255,255,.78);overflow:hidden}
+.voice-call-portrait.user{border-radius:30px}
+.voice-call-portrait::after{content:'';position:absolute;inset:7px;border:1px solid rgba(255,255,255,.78);border-radius:24px;pointer-events:none}
+.voice-call-portrait img{width:100%;height:100%;object-fit:cover;display:block}
+.voice-call-portrait-fallback{font-family:var(--fontcute);font-size:24px;font-weight:900;color:#111}
+.voice-call-nameplate{max-width:112px;min-height:26px;padding:0 12px;border:2px solid #111;border-radius:999px;background:#fff;color:#111;font-size:12px;font-weight:900;box-shadow:3px 4px 0 rgba(0,0,0,.78)}
+.voice-call-title-stack{align-items:center;gap:8px;margin-top:-4px}
+.voice-call-centerpulse{min-width:144px;height:36px;padding:0 15px;border:2px solid #111;border-radius:999px;background:#fff;color:#111;font-family:var(--fontcute);font-size:14px;font-weight:900;font-variant-numeric:tabular-nums;box-shadow:4px 5px 0 rgba(0,0,0,.86);gap:8px}
+.voice-call-centerpulse::before{width:8px;height:8px;background:#18ad61;margin-right:0;box-shadow:0 0 0 5px rgba(24,173,97,.14)}
+.voice-call-centerpulse strong{font-size:16px;font-weight:900;letter-spacing:.04em}
+.voice-call-livehint{max-width:190px;min-height:24px;padding:0 12px;border:1px solid rgba(17,17,17,.12);background:rgba(255,255,255,.62);color:rgba(17,17,17,.54);font-size:11px;font-weight:900;box-shadow:none;text-shadow:none}
+.voice-call-feed{flex:1 1 auto;gap:8px;padding:6px 4px calc(122px + var(--voice-call-keyboard-inset));scroll-behavior:smooth;touch-action:pan-y;overscroll-behavior:contain}
+.voice-call-line{display:flex;align-items:flex-end;gap:8px;min-height:30px}
+.voice-call-line.user{justify-content:flex-end}
+.voice-call-line.ai{justify-content:flex-start}
+.voice-call-line.narrator,.voice-call-line.system{justify-content:center;padding:4px 0}
+.voice-call-bubble{max-width:min(72%,298px);padding:8px 12px;border:1.5px solid rgba(17,17,17,.78);border-radius:18px;background:rgba(255,255,255,.78);color:#111;font-size:15px;font-weight:850;line-height:1.55;box-shadow:3px 4px 0 rgba(0,0,0,.12);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.voice-call-line.ai .voice-call-bubble{background:rgba(255,255,255,.78);border-top-left-radius:7px}
+.voice-call-line.user .voice-call-bubble{background:#111;color:#fff;border-color:#111;border-top-right-radius:7px;box-shadow:3px 4px 0 rgba(0,0,0,.18)}
+.voice-call-line.narrator .voice-call-bubble{max-width:min(84%,350px);padding:0;background:transparent;border:none;box-shadow:none;color:#111;text-shadow:none}
+.voice-call-line.system .voice-call-bubble{max-width:min(80%,300px);background:rgba(255,255,255,.55);border:1px dashed rgba(17,17,17,.28);color:rgba(17,17,17,.52);font-size:12px;text-align:center;box-shadow:none}
+.voice-call-line-avatar{flex:0 0 auto;width:34px;height:34px;border:2px solid #111;border-radius:12px;background:#fff;color:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:3px 3px 0 rgba(0,0,0,.84);font-size:10px;font-weight:900}
+.voice-call-line-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.voice-call-line.ai:not(.has-avatar){padding-left:42px}
+.voice-call-line.user:not(.has-avatar){padding-right:42px}
+.voice-call-controls{left:0;right:0;bottom:calc(var(--safe-bottom) + 12px + var(--voice-call-keyboard-inset));padding:0 24px;transition:bottom .16s ease}
+.voice-call-inputcard{display:none;border:2px solid #111;border-radius:24px;background:rgba(255,255,255,.88);color:#111;box-shadow:7px 8px 0 rgba(0,0,0,.86);padding:11px;margin:0 auto 16px;max-width:360px;gap:9px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+.voice-call-inputcard.open{display:flex}
+.voice-call-modebar{min-height:28px}
+.voice-call-modehint{max-width:none;color:#111;font-family:var(--fontcute);font-size:13px;font-weight:900}
+.voice-call-composer-close{width:28px;height:28px;border:2px solid #111;border-radius:999px;background:#fff;color:#111;font-size:18px;font-weight:900;line-height:1;box-shadow:2px 2px 0 rgba(0,0,0,.78)}
+.voice-call-inputrow{grid-template-columns:minmax(0,1fr)46px;gap:9px}
+.voice-call-textwrap{min-height:46px;border:2px solid #111;border-radius:16px;background:#fff;padding:0 12px;box-shadow:3px 3px 0 rgba(0,0,0,.1)}
+.voice-call-textarea{min-height:44px;max-height:104px;color:#111;-webkit-text-fill-color:#111;font-size:15px;font-weight:850;padding:11px 0}
+.voice-call-textarea::placeholder{color:rgba(17,17,17,.34)}
+.voice-call-actionbtn{width:46px;height:46px;border:2px solid #111;border-radius:999px;background:#fff;color:#111;box-shadow:3px 3px 0 rgba(0,0,0,.82)}
+.voice-call-actionbtn.primary{background:#111;color:#fff;border-color:#111}
+.voice-call-roundbar{gap:30px;padding:0;align-items:center;justify-content:center}
+.voice-call-roundbtn{width:64px;height:64px;border:2px solid #111;background:rgba(255,255,255,.86);color:#111;box-shadow:5px 6px 0 rgba(0,0,0,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.voice-call-roundbtn svg{width:25px;height:25px}
+.voice-call-roundbtn.end{width:70px;height:70px;background:#ef4545;color:#fff;border-color:#111;box-shadow:0 0 0 8px rgba(239,69,69,.15),5px 7px 0 rgba(0,0,0,.88)}
+.voice-call-roundbtn.loading{opacity:.58;pointer-events:none}
+.voice-call-roundbtn:disabled{opacity:.38}
+.voice-call-record-body{-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;scroll-behavior:smooth}
+@media (max-width:420px){
+  .voice-call-shell{padding-left:14px;padding-right:14px}
+  .voice-call-top{grid-template-columns:44px minmax(0,1fr)42px;gap:8px}
+  .voice-call-mini-btn,.voice-call-menu-btn{width:42px;height:42px;border-radius:15px}
+  .voice-call-stage{min-height:206px;padding-left:18px;padding-right:42px}
+  .voice-call-portrait{width:108px;height:108px;border-radius:28px}
+  .voice-call-person.user{margin-left:-16px}
+  .voice-call-nameplate{max-width:102px}
+  .voice-call-feed{padding-bottom:calc(120px + var(--voice-call-keyboard-inset))}
+  .voice-call-controls{padding:0 20px}
+  .voice-call-roundbar{gap:24px}
+  .voice-call-roundbtn{width:60px;height:60px}
+  .voice-call-roundbtn.end{width:68px;height:68px}
+}
 .voice-btn{flex:1;padding:10px;border:var(--bd);border-radius:12px;font-family:var(--fontd);font-size:12px;font-weight:900;cursor:pointer;box-shadow:var(--sh);background:var(--w);transition:transform .12s,box-shadow .12s}
 .voice-btn.primary{background:var(--b);color:var(--w)}
 .voice-btn:active{transform:translate(2px,2px);box-shadow:0 0 0}
@@ -2360,27 +2434,37 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
         <div class="voice-call-ticket" id="voiceCallTicket">语音通话</div>
         <div class="voice-call-sub" id="voiceCallSub">轻轻说，慢慢听</div>
       </div>
-      <button class="voice-call-menu-btn" type="button" onclick="openVoiceCallRecordViewer()" aria-label="通话记录">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h14"></path></svg>
-      </button>
-      <button class="voice-call-hangup-top" type="button" onclick="endVoiceCallSession()">挂断</button>
+      <div class="voice-call-side-actions" aria-label="通话工具">
+        <button class="voice-call-menu-btn" type="button" onclick="openVoiceCallSettingsPanel()" aria-label="通话设置">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Z"></path><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8.92 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.47.51.83.98 1H21a2 2 0 0 1 0 4h-.62c-.47.17-.84.53-.98 1Z"></path></svg>
+        </button>
+        <button class="voice-call-menu-btn" type="button" onclick="openVoiceCallRecordViewer()" aria-label="通话记录">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6h10M7 11.5h10M7 17h6"></path><path d="M5 3.5h14a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V5A1.5 1.5 0 0 1 5 3.5Z"></path></svg>
+        </button>
+      </div>
     </div>
     <div class="voice-call-stage">
+      <div class="voice-call-duo">
+        <div class="voice-call-person char">
+          <div class="voice-call-portrait" id="voiceCallCharAvatar"><span class="voice-call-portrait-fallback">CH</span></div>
+          <div class="voice-call-nameplate" id="voiceCallCharLabel">CHAR</div>
+        </div>
+        <div class="voice-call-person user">
+          <div class="voice-call-portrait user" id="voiceCallUserAvatar"><span class="voice-call-portrait-fallback">US</span></div>
+          <div class="voice-call-nameplate" id="voiceCallUserLabel">USER</div>
+        </div>
+      </div>
       <div class="voice-call-title-stack">
-        <div class="voice-call-centerpulse" id="voiceCallPulse">00:00</div>
+        <div class="voice-call-centerpulse"><span>通话中</span><strong id="voiceCallPulse">00:00</strong></div>
         <div class="voice-call-livehint" id="voiceCallLiveHint">正在接通</div>
       </div>
-      <div class="voice-call-portrait" id="voiceCallCharAvatar"><span class="voice-call-portrait-fallback">CH</span></div>
     </div>
     <div class="voice-call-feed" id="voiceCallFeed"></div>
     <div class="voice-call-controls">
-      <div class="voice-call-inputcard">
+      <div class="voice-call-inputcard" id="voiceCallComposerSheet">
         <div class="voice-call-modebar">
-          <div class="voice-call-modechips">
-            <button class="voice-call-chip active" id="voiceCallModeTextBtn" type="button" onclick="setVoiceCallInputMode('text')">消息</button>
-            <button class="voice-call-chip" id="voiceCallModeSpeechBtn" type="button" onclick="setVoiceCallInputMode('speech')">动作</button>
-          </div>
-          <div class="voice-call-modehint" id="voiceCallModeHint">回车发送</div>
+          <div class="voice-call-modehint" id="voiceCallModeHint">消息</div>
+          <button class="voice-call-composer-close" type="button" onclick="closeVoiceCallComposer()" aria-label="收起输入">×</button>
         </div>
         <div class="voice-call-inputrow">
           <div class="voice-call-textwrap"><textarea class="voice-call-textarea" id="voiceCallInput" rows="1" placeholder="想说什么？" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendVoiceCallMessage();}"></textarea></div>
@@ -2388,17 +2472,17 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.4 19.6 20.6 12 5.4 4.4 4 10.7l8.4 1.3L4 13.3l1.4 6.3Z"></path></svg>
           </button>
         </div>
-        <div class="voice-call-roundbar" aria-label="通话控制">
-          <button class="voice-call-roundbtn" id="voiceCallSpeechBtn" type="button" onclick="toggleVoiceCallSpeechInput()" aria-label="语音转文字">
+      </div>
+      <div class="voice-call-roundbar" aria-label="通话控制">
+          <button class="voice-call-roundbtn" id="voiceCallInputBtn" type="button" onclick="queueVoiceCallComposerOpen(event)" ondblclick="openVoiceCallComposer('narrator', event)" aria-label="输入消息，双击输入动作">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2a3.9 3.9 0 0 0-3.9 3.9v5.5a3.9 3.9 0 1 0 7.8 0V6.1A3.9 3.9 0 0 0 12 2.2Z"></path><path d="M6 10.8a1 1 0 1 0-2 0 8 8 0 0 0 7 7.92V21H8.4a1 1 0 1 0 0 2h7.2a1 1 0 1 0 0-2H13v-2.28a8 8 0 0 0 7-7.92 1 1 0 1 0-2 0 6 6 0 0 1-12 0Z"></path></svg>
           </button>
           <button class="voice-call-roundbtn end" type="button" onclick="endVoiceCallSession()" aria-label="结束通话">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 14.4c3.2-2 7.6-2 10.8 0"></path><path d="M8.2 13.6l-1.9 2.6a1.7 1.7 0 0 0 .34 2.35l1.2.9a1.7 1.7 0 0 0 2.36-.35l1.14-1.58a1.1 1.1 0 0 1 1.78 0l1.13 1.58a1.7 1.7 0 0 0 2.36.35l1.2-.9a1.7 1.7 0 0 0 .34-2.35l-1.9-2.6"></path></svg>
           </button>
-          <button class="voice-call-roundbtn" type="button" onclick="openVoiceCallRecordViewer()" aria-label="通话记录">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M7 7h10M7 12h10M7 17h7"></path></svg>
+          <button class="voice-call-roundbtn" id="voiceCallReplyBtn" type="button" onclick="triggerVoiceCallAssistantFromControls()" aria-label="让角色回复">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9.2v5.6c0 .66.54 1.2 1.2 1.2h3.05l5.05 4.04c.78.62 1.95.07 1.95-.92V4.88c0-.99-1.17-1.54-1.95-.92L8.25 8H5.2C4.54 8 4 8.54 4 9.2Z"></path><path d="M17.3 8.65a1 1 0 0 1 1.4.2 5.2 5.2 0 0 1 0 6.3 1 1 0 1 1-1.6-1.2 3.2 3.2 0 0 0 0-3.9 1 1 0 0 1 .2-1.4Z"></path></svg>
           </button>
-        </div>
       </div>
     </div>
     <div class="voice-call-incoming" id="voiceCallIncomingDrawer">
@@ -3933,6 +4017,8 @@ var voiceCallSpeechRecognition = null;
 var voiceCallSpeechListening = false;
 var voiceCallMinimized = false;
 var voiceCallViewportBaseHeight = 0;
+var voiceCallComposerMode = 'text';
+var voiceCallInputClickTimer = 0;
 var storageHydrationPromise = Promise.resolve();
 var storagePersistRequested = false;
 var momentsPostsCache = [];
@@ -8067,7 +8153,8 @@ function defaultVoiceCallState(){
     requestSource: 'user',
     summary: '',
     recordId: '',
-    awaitingReply: false
+    awaitingReply: false,
+    awaitingAnswer: false
   };
 }
 
@@ -8110,7 +8197,8 @@ function normalizeVoiceCallSessionSnapshot(raw){
     requestSource: String(source.requestSource || '').trim() === 'char' ? 'char' : 'user',
     summary: String(source.summary || '').trim(),
     recordId: String(source.recordId || '').trim(),
-    awaitingReply: false
+    awaitingReply: false,
+    awaitingAnswer: false
 	  });
   if((normalized.active || normalized.incoming) && !normalized.sessionId){
     normalized.sessionId = makeVoiceCallSessionId();
@@ -26551,7 +26639,9 @@ function syncVoiceCallIdentityUi(){
   var userName = currentVoiceCallUserName();
   var charName = currentVoiceCallCharName();
   var charSrc = currentVisibleCharAvatarSrc();
+  var userSrc = currentVisibleUserAvatarSrc() || currentUserAvatarForFamily(character && character.id) || getActiveAccountProfileAvatar();
   setAvatarNodeFromSource(document.getElementById('voiceCallCharAvatar'), charSrc, charName.slice(0, 2), false);
+  setAvatarNodeFromSource(document.getElementById('voiceCallUserAvatar'), userSrc, userName.slice(0, 2), false);
   setAvatarNodeFromSource(document.getElementById('voiceCallIncomingAvatar'), charSrc, charName.slice(0, 2), false);
   var overlay = document.getElementById('voiceCallOverlay');
   if(overlay){
@@ -26578,18 +26668,24 @@ function syncVoiceCallSettingsUi(){
   var textBtn = document.getElementById('voiceCallModeTextBtn');
   var speechModeBtn = document.getElementById('voiceCallModeSpeechBtn');
   var modeHint = document.getElementById('voiceCallModeHint');
+  var replyBtn = document.getElementById('voiceCallReplyBtn');
   if(textBtn) textBtn.classList.toggle('active', inputMode === 'text');
   if(speechModeBtn) speechModeBtn.classList.toggle('active', inputMode === 'speech');
   if(callInput){
-    callInput.placeholder = inputMode === 'speech' ? '点麦克风说话' : '想说什么？';
+    callInput.placeholder = voiceCallComposerMode === 'narrator' ? '写一个动作、停顿或环境声...' : '把这句想说的话轻轻说出来...';
   }
   if(speechBtn){
     speechBtn.disabled = inputMode !== 'speech';
     speechBtn.style.opacity = inputMode === 'speech' ? '1' : '.45';
   }
   if(liveHint) liveHint.textContent = getVoiceCallPhaseLabel(state);
-  if(ticketSub) ticketSub.textContent = inputMode === 'speech' ? '语音转文字 / 电话中' : '消息输入 / 电话中';
-  if(modeHint) modeHint.textContent = inputMode === 'speech' ? '点麦克风开始' : '回车发送';
+  if(ticketSub) ticketSub.textContent = state.awaitingAnswer || state.phase === 'connecting' ? '等待接听' : '文字电话 / 电话中';
+  if(modeHint) modeHint.textContent = voiceCallComposerMode === 'narrator' ? '动作' : '消息';
+  if(replyBtn){
+    var busy = !!(state.awaitingReply || state.awaitingAnswer || state.phase === 'connecting');
+    replyBtn.disabled = !state.active || busy;
+    replyBtn.classList.toggle('loading', busy);
+  }
   syncVoiceCallKeyboardInset();
 }
 
@@ -26618,10 +26714,60 @@ function syncVoiceCallKeyboardInset(){
 }
 
 function openVoiceCallSettingsPanel(){
+  toast('轻点麦克风输入，双击写动作');
   syncVoiceCallSettingsUi();
 }
 
 function closeVoiceCallSettingsPanel(){}
+
+function openVoiceCallComposer(mode, evt){
+  if(evt){
+    evt.preventDefault();
+    evt.stopPropagation();
+  }
+  if(voiceCallInputClickTimer){
+    clearTimeout(voiceCallInputClickTimer);
+    voiceCallInputClickTimer = 0;
+  }
+  var state = ensureVoiceCallState();
+  if(!state.active){
+    toast(state.phase === 'connecting' || state.awaitingAnswer ? '还在等电话接通' : '电话还没接通');
+    return;
+  }
+  voiceCallComposerMode = String(mode || '').trim().toLowerCase() === 'narrator' ? 'narrator' : 'text';
+  var sheet = document.getElementById('voiceCallComposerSheet');
+  if(sheet) sheet.classList.add('open');
+  syncVoiceCallSettingsUi();
+  setTimeout(function(){
+    var input = document.getElementById('voiceCallInput');
+    if(input) input.focus();
+    syncVoiceCallKeyboardInset();
+  }, 40);
+}
+
+function queueVoiceCallComposerOpen(evt){
+  if(evt){
+    evt.preventDefault();
+    evt.stopPropagation();
+  }
+  if(voiceCallInputClickTimer) clearTimeout(voiceCallInputClickTimer);
+  voiceCallInputClickTimer = setTimeout(function(){
+    voiceCallInputClickTimer = 0;
+    openVoiceCallComposer('text');
+  }, 180);
+}
+
+function closeVoiceCallComposer(){
+  if(voiceCallInputClickTimer){
+    clearTimeout(voiceCallInputClickTimer);
+    voiceCallInputClickTimer = 0;
+  }
+  var sheet = document.getElementById('voiceCallComposerSheet');
+  if(sheet) sheet.classList.remove('open');
+  var input = document.getElementById('voiceCallInput');
+  if(input && document.activeElement === input) input.blur();
+  syncVoiceCallKeyboardInset();
+}
 
 function setVoiceCallInputMode(mode){
   var state = ensureVoiceCallState();
@@ -26661,7 +26807,7 @@ function syncVoiceCallFloating(){
   var state = ensureVoiceCallState();
   var btn = document.getElementById('voiceCallFloatingBtn');
   if(!btn) return;
-  var show = !!(voiceCallMinimized && (state.active || state.incoming));
+  var show = !!(voiceCallMinimized && (state.active || state.incoming || state.awaitingAnswer || state.phase === 'connecting'));
   btn.classList.toggle('show', show);
   var timer = document.getElementById('voiceCallFloatingTimer');
   if(timer){
@@ -26678,6 +26824,30 @@ function buildVoiceCallRecordPreviewLine(item){
 
 function renderVoiceCallTranscriptDock(){}
 
+function buildVoiceCallNarratorHtml(text){
+  var copy = String(text || '').trim();
+  if(!copy) return '';
+  return ''
+    + '<div class="narrator-card voice-call-narrator-card">'
+    +   '<div class="narrator-mark open">“</div>'
+    +   '<div class="narrator-mark close">”</div>'
+    +   '<div class="narrator-rail"></div>'
+    +   '<div class="narrator-copy">' + esc(copy) + '</div>'
+    + '</div>';
+}
+
+function hydrateVoiceCallFeedAvatars(){
+  var charName = currentVoiceCallCharName();
+  var userName = currentVoiceCallUserName();
+  var charSrc = currentVisibleCharAvatarSrc();
+  var userSrc = currentVisibleUserAvatarSrc() || currentUserAvatarForFamily(character && character.id) || getActiveAccountProfileAvatar();
+  document.querySelectorAll('[data-call-avatar-role]').forEach(function(node){
+    var role = String(node.getAttribute('data-call-avatar-role') || '').trim();
+    if(role === 'user') setAvatarNodeFromSource(node, userSrc, userName.slice(0, 2), false);
+    else setAvatarNodeFromSource(node, charSrc, charName.slice(0, 2), false);
+  });
+}
+
 function renderVoiceCallFeed(){
   var state = ensureVoiceCallState();
   var host = document.getElementById('voiceCallFeed');
@@ -26687,10 +26857,23 @@ function renderVoiceCallFeed(){
     host.innerHTML = '<div class="voice-call-line system"><div class="voice-call-bubble">电话接通了。</div></div>';
     return;
   }
-  host.innerHTML = items.map(function(item){
+  host.innerHTML = items.map(function(item, idx){
     var cls = item.role === 'user' ? 'user' : (item.role === 'system' ? 'system' : (item.role === 'narrator' ? 'narrator' : 'ai'));
-    return '<div class="voice-call-line ' + cls + '"><div class="voice-call-bubble">' + esc(String(item.text || '').trim()) + '</div></div>';
+    var next = items[idx + 1] || null;
+    var nextRole = next && next.role;
+    var showAvatar = (item.role === 'user' || item.role === 'assistant') && nextRole !== item.role;
+    var text = String(item.text || '').trim();
+    var bubble = item.role === 'narrator' ? buildVoiceCallNarratorHtml(text) : esc(text);
+    var avatar = showAvatar ? '<div class="voice-call-line-avatar" data-call-avatar-role="' + (item.role === 'user' ? 'user' : 'char') + '"></div>' : '';
+    if(item.role === 'user'){
+      return '<div class="voice-call-line ' + cls + (showAvatar ? ' has-avatar' : '') + '"><div class="voice-call-bubble">' + bubble + '</div>' + avatar + '</div>';
+    }
+    if(item.role === 'assistant'){
+      return '<div class="voice-call-line ' + cls + (showAvatar ? ' has-avatar' : '') + '">' + avatar + '<div class="voice-call-bubble">' + bubble + '</div></div>';
+    }
+    return '<div class="voice-call-line ' + cls + '"><div class="voice-call-bubble">' + bubble + '</div></div>';
   }).join('');
+  hydrateVoiceCallFeedAvatars();
   host.scrollTop = host.scrollHeight;
 }
 
@@ -26869,7 +27052,7 @@ function buildVoiceCallPrompt(userText){
     '【通话前聊天上下文】\n' + (buildVoiceCallContextLines(8) || '无'),
     '【这通电话里已经说过的话】\n' + (buildVoiceCallTranscriptLines() || '刚刚接通，还没有正式说话。'),
     userText
-      ? ('【对方刚刚在电话里说】\n' + currentVoiceCallUserName() + '：' + String(userText || '').trim())
+      ? ('【电话里的最新输入】\n' + String(userText || '').trim())
       : '【现在请自然开场】\n请像电话刚接通那样先说第一句。'
   ].join('\n\n');
   return { system: base, user: user };
@@ -26877,7 +27060,7 @@ function buildVoiceCallPrompt(userText){
 
 async function triggerVoiceCallAssistantTurn(userText){
   var state = ensureVoiceCallState();
-  if(!state.active || state.awaitingReply || !character) return false;
+  if(!state.active || state.awaitingReply || state.awaitingAnswer || !character) return false;
   state.awaitingReply = true;
   state.phase = 'thinking';
   syncVoiceCallSettingsUi();
@@ -26906,6 +27089,39 @@ async function triggerVoiceCallAssistantTurn(userText){
 	  }
 }
 
+function getVoiceCallPendingUserTurnText(){
+  var state = ensureVoiceCallState();
+  var lines = Array.isArray(state.transcript) ? state.transcript : [];
+  var start = 0;
+  for(var i = lines.length - 1; i >= 0; i -= 1){
+    if(lines[i] && lines[i].role === 'assistant'){
+      start = i + 1;
+      break;
+    }
+  }
+  return lines.slice(start).filter(function(line){
+    return line && (line.role === 'user' || line.role === 'narrator') && String(line.text || '').trim();
+  }).map(function(line){
+    if(line.role === 'narrator') return '通话旁白：' + String(line.text || '').trim();
+    return currentVoiceCallUserName() + '：' + String(line.text || '').trim();
+  }).join('\n');
+}
+
+async function triggerVoiceCallAssistantFromControls(){
+  var state = ensureVoiceCallState();
+  if(!state.active){
+    toast(state.awaitingAnswer || state.phase === 'connecting' ? '还在等电话接通' : '电话还没接通');
+    return false;
+  }
+  if(state.awaitingReply || state.awaitingAnswer){
+    toast(currentVoiceCallCharName() + ' 还在接话');
+    return false;
+  }
+  closeVoiceCallComposer();
+  var latest = getVoiceCallPendingUserTurnText();
+  return triggerVoiceCallAssistantTurn(latest);
+}
+
 function openVoiceCallOverlay(){
   var overlay = document.getElementById('voiceCallOverlay');
   if(!overlay) return;
@@ -26914,6 +27130,7 @@ function openVoiceCallOverlay(){
   var state = ensureVoiceCallState();
   state.minimized = false;
   overlay.classList.add('open');
+  closeVoiceCallComposer();
   syncVoiceCallIdentityUi();
   syncVoiceCallSettingsUi();
   renderVoiceCallFeed();
@@ -26931,6 +27148,7 @@ function closeVoiceCallOverlay(){
     overlay.style.setProperty('--voice-call-keyboard-inset', '0px');
   }
   document.getElementById('voiceCallIncomingDrawer')?.classList.remove('open');
+  closeVoiceCallComposer();
   closeVoiceCallSettingsPanel();
   var state = ensureVoiceCallState();
   if(!state.active && !state.incoming) stopVoiceCallTicker();
@@ -26939,7 +27157,7 @@ function closeVoiceCallOverlay(){
 
 function minimizeVoiceCallOverlay(){
   var state = ensureVoiceCallState();
-  if(!state.active && !state.incoming) return;
+  if(!state.active && !state.incoming && !state.awaitingAnswer && state.phase !== 'connecting') return;
   state.minimized = true;
   voiceCallMinimized = true;
   persistVoiceCallSession();
@@ -26950,13 +27168,109 @@ function minimizeVoiceCallOverlay(){
 
 function restoreVoiceCallOverlay(){
   var state = ensureVoiceCallState();
-  if(!state.active && !state.incoming) return;
+  if(!state.active && !state.incoming && !state.awaitingAnswer && state.phase !== 'connecting') return;
   state.minimized = false;
   voiceCallMinimized = false;
   persistVoiceCallSession();
   openVoiceCallOverlay();
   if(state.incoming) document.getElementById('voiceCallIncomingDrawer')?.classList.add('open');
   syncVoiceCallFloating();
+}
+
+function parseVoiceCallAnswerDecision(raw){
+  var text = unwrapCodeFence(String(raw || '').trim());
+  var parsed = parseVoiceCallReplyJson(text);
+  var obj = Array.isArray(parsed) ? parsed[0] : parsed;
+  var decision = '';
+  var message = '';
+  if(obj && typeof obj === 'object'){
+    decision = String(obj.decision || obj.answer || obj.result || '').trim().toLowerCase();
+    message = sanitizeVoiceCallAssistantOutput(obj.text || obj.message || obj.content || obj.reply || '');
+  }else{
+    decision = /reject|decline|refuse|hang|挂|拒|不接|没空|忙/i.test(text) ? 'reject' : (/accept|answer|join|接|可以|喂/i.test(text) ? 'accept' : '');
+    message = sanitizeVoiceCallAssistantOutput(text.replace(/^\s*(accept|reject|decline|answer)\s*[:：-]?\s*/i, ''));
+  }
+  if(decision !== 'accept' && decision !== 'reject' && decision !== 'decline') decision = '';
+  if(decision === 'decline') decision = 'reject';
+  return { decision: decision, message: message };
+}
+
+async function askVoiceCallAnswerDecision(){
+  if(!character) return { decision:'reject', message:'' };
+  var sys = [
+    buildHighPriorityContextGuard(),
+    character && character.system_prompt ? ('【角色卡系统提示】\n' + character.system_prompt) : '',
+    character && character.post_history_instructions ? ('【角色附加约束】\n' + character.post_history_instructions) : '',
+    '【任务】',
+    '用户正在给你打一通语音电话。请完全按角色当下的人设、关系、情绪和最近聊天，判断你会不会接。',
+    '只能返回 JSON：{"decision":"accept","message":"一句很短的接电话第一句话"} 或 {"decision":"reject","message":"一句很短的拒接/挂断提示"}。',
+    'message 必须像角色自己说的话，短，最好不超过 20 个字；不要句号收尾。',
+    '不要解释，不要输出多余文字。'
+  ].filter(Boolean).join('\n\n');
+  var user = [
+    '【通话前聊天上下文】',
+    buildVoiceCallContextLines(10) || '无',
+    '现在用户拨出了电话。你要接还是挂？'
+  ].join('\n\n');
+  var raw = await callAIWithCustomPrompts(sys, user);
+  var decision = parseVoiceCallAnswerDecision(raw);
+  if(!decision.decision) throw new Error('empty_call_answer_decision');
+  return decision;
+}
+
+function connectOutgoingVoiceCall(openingText){
+  var state = ensureVoiceCallState();
+  if(!(state.phase === 'connecting' || state.awaitingAnswer)) return false;
+  state.awaitingAnswer = false;
+  state.active = true;
+  state.incoming = false;
+  state.phase = 'listening';
+  state.connectedAt = Date.now();
+  closeVoiceCallRecordViewer();
+  appendVoiceCallLine('system', '电话接通了。');
+  if(String(openingText || '').trim()){
+    appendVoiceCallLine('assistant', openingText);
+  }
+  syncVoiceCallSettingsUi();
+  persistVoiceCallSession();
+  startVoiceCallTicker();
+  return true;
+}
+
+function endUnansweredOutgoingVoiceCall(message){
+  var note = String(message || '').trim() || (currentVoiceCallCharName() + ' 没有接这通电话');
+  appendVoiceCallLine('system', note);
+  appendSystemNotice(note);
+  renderChatLog(true);
+  saveChat(true);
+  voiceCallState = defaultVoiceCallState();
+  voiceCallMinimized = false;
+  voiceCallRecordOpenId = '';
+  persistVoiceCallSession();
+  setTimeout(function(){
+    closeVoiceCallOverlay();
+    syncVoiceCallFloating();
+  }, 520);
+}
+
+async function resolveOutgoingVoiceCallAnswer(){
+  var state = ensureVoiceCallState();
+  if(!(state.phase === 'connecting' || state.awaitingAnswer)) return;
+  try{
+    var result = await askVoiceCallAnswerDecision();
+    if(!(voiceCallState && (voiceCallState.phase === 'connecting' || voiceCallState.awaitingAnswer))) return;
+    if(result.decision === 'accept') connectOutgoingVoiceCall(result.message);
+    else endUnansweredOutgoingVoiceCall(result.message);
+  }catch(err){
+    console.warn('voice call answer decision failed', err);
+    if(voiceCallState && (voiceCallState.phase === 'connecting' || voiceCallState.awaitingAnswer)){
+      appendVoiceCallLine('system', '电话没有接通，稍后再打一次。');
+      voiceCallState.awaitingAnswer = false;
+      voiceCallState.phase = 'error';
+      syncVoiceCallSettingsUi();
+      persistVoiceCallSession();
+    }
+  }
 }
 
 async function openVoiceCallFromAddon(){
@@ -26966,32 +27280,31 @@ async function openVoiceCallFromAddon(){
   }
   closeAddonPanel();
   var state = ensureVoiceCallState();
-  if(state.active || state.incoming){
+  if(state.active || state.incoming || state.awaitingAnswer || state.phase === 'connecting'){
     restoreVoiceCallOverlay();
     return;
   }
   var settings = getVoiceCallSettings();
 	  voiceCallState = Object.assign(defaultVoiceCallState(), {
 	    sessionId: makeVoiceCallSessionId(),
-	    active: true,
+	    active: false,
 	    incoming: false,
 	    minimized: false,
-    phase: 'listening',
+    phase: 'connecting',
 	    startedAt: Date.now(),
-    connectedAt: Date.now(),
+    connectedAt: 0,
     draftInputMode: settings.inputMode,
     draftStarter: settings.starter,
     draftTone: settings.tone,
-    requestSource: 'user'
+    requestSource: 'user',
+    awaitingAnswer: true
   });
+  voiceCallRecordOpenId = '';
+  closeVoiceCallRecordViewer();
   persistVoiceCallSession();
   openVoiceCallOverlay();
-	  appendVoiceCallLine('system', '电话接通了。');
-	  if(normalizeVoiceCallStarter(settings.starter) !== 'user'){
-	    setTimeout(function(){
-	      if(voiceCallState && voiceCallState.active) triggerVoiceCallAssistantTurn('');
-	    }, 220);
-	  }
+  appendVoiceCallLine('system', '正在拨号...');
+  setTimeout(resolveOutgoingVoiceCallAnswer, 180);
   syncVoiceCallSettingsUi();
   persistVoiceCallSession();
 	}
@@ -26999,7 +27312,7 @@ async function openVoiceCallFromAddon(){
 async function sendVoiceCallMessage(){
 	  var state = ensureVoiceCallState();
 	  if(!state.active) return;
-  if(state.awaitingReply){
+  if(state.awaitingReply || state.awaitingAnswer){
     toast(currentVoiceCallCharName() + ' 还在接话');
     return;
   }
@@ -27014,9 +27327,11 @@ async function sendVoiceCallMessage(){
 	    autoResize(input);
 	  }
   syncVoiceCallKeyboardInset();
-  state.phase = 'thinking';
-	  appendVoiceCallLine('user', text);
-	  await triggerVoiceCallAssistantTurn(text);
+  state.phase = 'listening';
+  appendVoiceCallLine(voiceCallComposerMode === 'narrator' ? 'narrator' : 'user', text);
+  closeVoiceCallComposer();
+  syncVoiceCallSettingsUi();
+  persistVoiceCallSession();
 	}
 
 function ensureVoiceCallSpeechRecognition(){
@@ -27236,7 +27551,24 @@ async function finishVoiceCallRecordInBackground(recordId, entryId){
 
 async function endVoiceCallSession(){
   var state = ensureVoiceCallState();
-  if(!state.active) return;
+  if(!state.active){
+    if(state.awaitingAnswer || state.phase === 'connecting'){
+      appendVoiceCallLine('system', '已挂断。');
+      voiceCallState = defaultVoiceCallState();
+      voiceCallMinimized = false;
+      voiceCallRecordOpenId = '';
+      persistVoiceCallSession();
+      closeVoiceCallOverlay();
+      syncVoiceCallFloating();
+    }else if(state.phase === 'error' || state.phase === 'ended'){
+      voiceCallState = defaultVoiceCallState();
+      voiceCallMinimized = false;
+      persistVoiceCallSession();
+      closeVoiceCallOverlay();
+      syncVoiceCallFloating();
+    }
+    return;
+  }
 	  if(voiceCallSpeechRecognition && voiceCallSpeechListening){
 	    try{ voiceCallSpeechRecognition.stop(); }catch(err){}
 	  }
@@ -27291,6 +27623,8 @@ function openIncomingVoiceCallRequest(text){
     pendingInviteText: String(text || '').trim(),
     requestSource: 'char'
   });
+  voiceCallRecordOpenId = '';
+  closeVoiceCallRecordViewer();
   persistVoiceCallSession();
   syncVoiceCallIdentityUi();
   var incomingSub = document.getElementById('voiceCallIncomingSub');
@@ -27303,6 +27637,8 @@ function openIncomingVoiceCallRequest(text){
 function acceptIncomingVoiceCall(){
   var state = ensureVoiceCallState();
   if(!state.incoming) return;
+  voiceCallRecordOpenId = '';
+  closeVoiceCallRecordViewer();
 	  state.incoming = false;
 	  state.active = true;
   state.phase = 'listening';
