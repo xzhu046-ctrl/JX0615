@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-04T22:27:00Z"></script>
-<script src="../chatStorage.js?v=2026-05-04T22:27:00Z"></script>
-<script src="../assetStore.js?v=2026-05-04T22:27:00Z"></script>
-<script src="../accountManager.js?v=2026-05-04T22:27:00Z"></script>
-<script src="../metadataStore.js?v=2026-05-04T22:27:00Z"></script>
-<script src="../scheduleShared.js?v=2026-05-04T22:27:00Z"></script>
-<script src="../presenceShared.js?v=2026-05-04T22:27:00Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-04T22:27:00Z"></script>
-<script src="../sunnySupport.js?v=2026-05-04T22:27:00Z"></script>
-<script src="offlineInvite.js?v=2026-05-04T22:27:00Z"></script>
+<script src="../promptManager.js?v=2026-05-04T22:52:00Z"></script>
+<script src="../chatStorage.js?v=2026-05-04T22:52:00Z"></script>
+<script src="../assetStore.js?v=2026-05-04T22:52:00Z"></script>
+<script src="../accountManager.js?v=2026-05-04T22:52:00Z"></script>
+<script src="../metadataStore.js?v=2026-05-04T22:52:00Z"></script>
+<script src="../scheduleShared.js?v=2026-05-04T22:52:00Z"></script>
+<script src="../presenceShared.js?v=2026-05-04T22:52:00Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-04T22:52:00Z"></script>
+<script src="../sunnySupport.js?v=2026-05-04T22:52:00Z"></script>
+<script src="offlineInvite.js?v=2026-05-04T22:52:00Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -2047,7 +2047,7 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
   .voice-call-feed{padding-bottom:calc(202px + var(--voice-call-keyboard-inset))}
   .voice-call-controls{left:10px;right:10px}
 }
-.voice-call-shell{padding:calc(var(--safe-top) + 10px) 18px 0;background:transparent;color:#111}
+.voice-call-shell{padding:max(10px,calc(var(--safe-top) - 22px)) 18px 0;background:transparent;color:#111}
 .voice-call-bg{background:#f7f7f7}
 .voice-call-bg::before{background-image:var(--voice-call-bg-image),linear-gradient(135deg,#fafafa,#e8e8e8 52%,#fbfbfb);background-size:cover,auto;background-position:center;filter:grayscale(1) blur(28px);transform:scale(1.18);opacity:.30}
 .voice-call-bg::after{background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.50) 38%,rgba(255,255,255,.82)),radial-gradient(circle at 50% 18%,rgba(255,255,255,.68),transparent 48%);box-shadow:inset 0 0 90px rgba(255,255,255,.58)}
@@ -2057,29 +2057,29 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .voice-call-side-actions{grid-column:3;justify-self:end;display:flex;flex-direction:column;gap:9px;align-items:flex-end;justify-content:flex-start;z-index:6}
 .voice-call-mini-btn,.voice-call-menu-btn{width:44px;height:44px;border:1px solid rgba(17,17,17,.12);border-radius:18px;background:rgba(255,255,255,.48);color:#111;box-shadow:0 12px 26px rgba(0,0,0,.12),inset 0 0 0 1px rgba(255,255,255,.72);backdrop-filter:blur(24px) saturate(132%);-webkit-backdrop-filter:blur(24px) saturate(132%)}
 .voice-call-mini-btn svg,.voice-call-menu-btn svg{width:21px;height:21px}
-.voice-call-stage{min-height:170px;padding:0 0 4px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:11px;flex:0 0 auto}
-.voice-call-duo{position:relative;display:flex;align-items:flex-start;justify-content:center;margin-top:-2px;min-height:108px}
+.voice-call-stage{min-height:142px;padding:0 0 2px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;flex:0 0 auto}
+.voice-call-duo{position:relative;display:flex;align-items:flex-start;justify-content:center;margin-top:-6px;min-height:100px}
 .voice-call-person{position:relative;display:flex;flex-direction:column;align-items:center;gap:0}
 .voice-call-person.user{margin-left:-12px;margin-top:0}
 .voice-call-person.char{z-index:2}
-.voice-call-portrait{position:relative;right:auto;top:auto;width:104px;height:104px;border:1px solid rgba(255,255,255,.78);border-radius:999px;background:rgba(255,255,255,.34);color:#111;box-shadow:0 18px 36px rgba(0,0,0,.16),inset 0 0 0 1.5px rgba(255,255,255,.72);overflow:hidden;backdrop-filter:blur(22px) saturate(126%);-webkit-backdrop-filter:blur(22px) saturate(126%)}
+.voice-call-portrait{position:relative;right:auto;top:auto;width:98px;height:98px;border:1px solid rgba(255,255,255,.78);border-radius:999px;background:rgba(255,255,255,.34);color:#111;box-shadow:0 18px 36px rgba(0,0,0,.16),inset 0 0 0 1.5px rgba(255,255,255,.72);overflow:hidden;backdrop-filter:blur(22px) saturate(126%);-webkit-backdrop-filter:blur(22px) saturate(126%)}
 .voice-call-portrait.user{border-radius:999px}
 .voice-call-portrait::after{content:'';position:absolute;inset:8px;border:1px solid rgba(255,255,255,.76);border-radius:999px;pointer-events:none}
 .voice-call-portrait img{width:100%;height:100%;object-fit:cover;display:block}
 .voice-call-portrait-fallback{font-family:var(--fontcute);font-size:24px;font-weight:900;color:#111}
 .voice-call-nameplate{display:none}
-.voice-call-title-stack{align-items:center;gap:7px;margin-top:0}
+.voice-call-title-stack{align-items:center;gap:6px;margin-top:-2px}
 .voice-call-centerpulse{min-width:132px;height:32px;padding:0 13px;border:1px solid rgba(17,17,17,.10);border-radius:999px;background:rgba(255,255,255,.52);color:#111;font-family:var(--fontcute);font-size:13px;font-weight:900;font-variant-numeric:tabular-nums;box-shadow:0 12px 26px rgba(0,0,0,.10),inset 0 0 0 1px rgba(255,255,255,.72);gap:8px;backdrop-filter:blur(24px) saturate(132%);-webkit-backdrop-filter:blur(24px) saturate(132%)}
 .voice-call-centerpulse::before{width:8px;height:8px;background:#18ad61;margin-right:0;box-shadow:0 0 0 6px rgba(24,173,97,.12)}
 .voice-call-centerpulse strong{font-size:15px;font-weight:900;letter-spacing:.04em}
 .voice-call-livehint{max-width:190px;min-height:24px;padding:0 12px;border:1px solid rgba(17,17,17,.08);border-radius:999px;background:rgba(255,255,255,.35);color:rgba(17,17,17,.48);font-size:11px;font-weight:900;box-shadow:none;text-shadow:none;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 .voice-call-livehint.hidden,.voice-call-livehint:empty{display:none}
-.voice-call-feed{flex:1 1 auto;gap:14px;padding:12px 4px calc(118px + var(--voice-call-keyboard-inset));scroll-behavior:smooth;touch-action:pan-y;overscroll-behavior:contain}
-.voice-call-line{display:flex;align-items:flex-end;gap:9px;min-height:0}
+.voice-call-feed{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;gap:18px;padding:14px 4px calc(120px + var(--voice-call-keyboard-inset));scroll-behavior:smooth;touch-action:pan-y;overscroll-behavior:contain}
+.voice-call-line{display:flex;align-items:flex-end;gap:9px;min-height:0;flex:0 0 auto}
 .voice-call-line.user{justify-content:flex-end}
 .voice-call-line.ai{justify-content:flex-start}
 .voice-call-line.narrator,.voice-call-line.system{justify-content:center;padding:7px 0}
-.voice-call-line.narrator{margin:6px 0 14px}
+.voice-call-line.narrator{margin:12px 0 30px}
 .voice-call-line.narrator.ai-narrator{justify-content:flex-start;padding-left:43px;padding-right:0}
 .voice-call-line.narrator.user-narrator{justify-content:flex-end;padding-left:0;padding-right:43px}
 .voice-call-bubble{max-width:min(76%,306px);padding:9px 13px;border:1px solid rgba(17,17,17,.10);border-radius:19px;background:rgba(255,255,255,.46);color:#111;font-size:15px;font-weight:820;line-height:1.56;box-shadow:0 10px 26px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.52);backdrop-filter:blur(24px) saturate(132%);-webkit-backdrop-filter:blur(24px) saturate(132%)}
@@ -2120,10 +2120,10 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
   .voice-call-shell{padding-left:14px;padding-right:14px}
   .voice-call-top{grid-template-columns:44px minmax(0,1fr)42px;gap:8px}
   .voice-call-mini-btn,.voice-call-menu-btn{width:42px;height:42px;border-radius:15px}
-  .voice-call-stage{min-height:164px;padding-left:0;padding-right:0}
-  .voice-call-portrait{width:98px;height:98px;border-radius:999px}
+  .voice-call-stage{min-height:138px;padding-left:0;padding-right:0}
+  .voice-call-portrait{width:94px;height:94px;border-radius:999px}
   .voice-call-person.user{margin-left:-11px;margin-top:0}
-  .voice-call-feed{gap:13px;padding-top:10px;padding-bottom:calc(116px + var(--voice-call-keyboard-inset))}
+  .voice-call-feed{gap:17px;padding-top:12px;padding-bottom:calc(120px + var(--voice-call-keyboard-inset))}
   .voice-call-controls{padding:0 20px}
   .voice-call-roundbar{gap:24px}
   .voice-call-roundbtn{width:60px;height:60px}
@@ -27232,6 +27232,17 @@ function parseVoiceCallAnswerDecision(raw){
   return { decision: decision, message: message };
 }
 
+function shouldSuppressVoiceCallOpeningText(text){
+  var raw = String(text || '').trim();
+  if(!raw) return true;
+  var compact = raw.replace(/\s+/g, '').replace(/[。．.！!？?~～…，,、]/g, '');
+  if(!compact) return true;
+  if(/^(喂+|喂我在呢|喂我在|我在呢|我在|怎么了|怎么啦|找我吗|找我什么事|说吧|嗯)$/.test(compact)) return true;
+  if(/^喂*(我在呢?|在呢?)(怎么了|怎么啦)?$/.test(compact)) return true;
+  if(/^喂*(怎么了|怎么啦|有事吗|什么事)$/.test(compact)) return true;
+  return false;
+}
+
 async function askVoiceCallAnswerDecision(){
   if(!character) return { decision:'reject', message:'' };
   var sys = [
@@ -27240,7 +27251,10 @@ async function askVoiceCallAnswerDecision(){
     character && character.post_history_instructions ? ('【角色附加约束】\n' + character.post_history_instructions) : '',
     '【任务】',
     '用户正在给你打一通语音电话。请完全按角色当下的人设、关系、情绪和最近聊天，判断你会不会接。',
-    '只能返回 JSON：{"decision":"accept","message":"一句很短的接电话第一句话"} 或 {"decision":"reject","message":"一句很短的拒接/挂断提示"}。',
+    '接通第一句不能像默认客服或接电话模板，必须贴角色关系、最近上下文和当下情绪。',
+    '禁止使用“喂，我在呢，怎么了”“喂，怎么啦”“我在呢”“找我吗”这类万能开场。',
+    '如果你拿不准角色会怎么开口，message 可以留空字符串，让对方先说。',
+    '只能返回 JSON：{"decision":"accept","message":"一句很短的接电话第一句话或空字符串"} 或 {"decision":"reject","message":"一句很短的拒接/挂断提示"}。',
     'message 必须像角色自己说的话，短，最好不超过 20 个字；不要句号收尾。',
     '不要解释，不要输出多余文字。'
   ].filter(Boolean).join('\n\n');
@@ -27265,7 +27279,7 @@ function connectOutgoingVoiceCall(openingText){
   state.connectedAt = Date.now();
   closeVoiceCallRecordViewer();
   appendVoiceCallLine('system', '电话接通了');
-  if(String(openingText || '').trim()){
+  if(String(openingText || '').trim() && !shouldSuppressVoiceCallOpeningText(openingText)){
     appendVoiceCallLine('assistant', openingText);
   }
   syncVoiceCallSettingsUi();
