@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-04T06:08:53Z"></script>
-<script src="../chatStorage.js?v=2026-05-04T06:08:53Z"></script>
-<script src="../assetStore.js?v=2026-05-04T06:08:53Z"></script>
-<script src="../accountManager.js?v=2026-05-04T06:08:53Z"></script>
-<script src="../metadataStore.js?v=2026-05-04T06:08:53Z"></script>
-<script src="../scheduleShared.js?v=2026-05-04T06:08:53Z"></script>
-<script src="../presenceShared.js?v=2026-05-04T06:08:53Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-04T06:08:53Z"></script>
-<script src="../sunnySupport.js?v=2026-05-04T06:08:53Z"></script>
-<script src="offlineInvite.js?v=2026-05-04T06:08:53Z"></script>
+<script src="../promptManager.js?v=2026-05-04T14:16:53Z"></script>
+<script src="../chatStorage.js?v=2026-05-04T14:16:53Z"></script>
+<script src="../assetStore.js?v=2026-05-04T14:16:53Z"></script>
+<script src="../accountManager.js?v=2026-05-04T14:16:53Z"></script>
+<script src="../metadataStore.js?v=2026-05-04T14:16:53Z"></script>
+<script src="../scheduleShared.js?v=2026-05-04T14:16:53Z"></script>
+<script src="../presenceShared.js?v=2026-05-04T14:16:53Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-04T14:16:53Z"></script>
+<script src="../sunnySupport.js?v=2026-05-04T14:16:53Z"></script>
+<script src="offlineInvite.js?v=2026-05-04T14:16:53Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -8123,9 +8123,11 @@ function defaultCallRecordStore(){
 
 function defaultVoiceCallState(){
   return {
+    sessionId: '',
     active: false,
     incoming: false,
     minimized: false,
+    phase: 'idle',
     startedAt: 0,
     connectedAt: 0,
     transcript: [],
@@ -8138,6 +8140,10 @@ function defaultVoiceCallState(){
     recordId: '',
     awaitingReply: false
   };
+}
+
+function makeVoiceCallSessionId(){
+  return 'call_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
 }
 
 function normalizeVoiceCallTranscriptLine(raw){
@@ -8159,11 +8165,13 @@ function normalizeVoiceCallSessionSnapshot(raw){
   var transcript = Array.isArray(source.transcript)
     ? source.transcript.map(normalizeVoiceCallTranscriptLine).filter(Boolean).slice(-120)
     : [];
-  var normalized = Object.assign(defaultVoiceCallState(), {
-    active: !!source.active,
-    incoming: !!source.incoming,
-    minimized: !!source.minimized,
-    startedAt: Number(source.startedAt || 0) || 0,
+	  var normalized = Object.assign(defaultVoiceCallState(), {
+    sessionId: String(source.sessionId || '').trim(),
+	    active: !!source.active,
+	    incoming: !!source.incoming,
+	    minimized: !!source.minimized,
+    phase: normalizeVoiceCallPhase(source.phase || (source.incoming ? 'ringing' : (source.active ? 'listening' : 'idle'))),
+	    startedAt: Number(source.startedAt || 0) || 0,
     connectedAt: Number(source.connectedAt || 0) || 0,
     transcript: transcript,
     draftInputMode: normalizeVoiceCallInputMode(source.draftInputMode || 'text'),
@@ -8174,16 +8182,21 @@ function normalizeVoiceCallSessionSnapshot(raw){
     summary: String(source.summary || '').trim(),
     recordId: String(source.recordId || '').trim(),
     awaitingReply: false
-  });
-  if(!normalized.active && !normalized.incoming){
-    return defaultVoiceCallState();
+	  });
+  if((normalized.active || normalized.incoming) && !normalized.sessionId){
+    normalized.sessionId = makeVoiceCallSessionId();
   }
-  if(!normalized.startedAt) normalized.startedAt = Date.now();
-  if(normalized.active && !normalized.connectedAt){
-    normalized.connectedAt = normalized.startedAt || Date.now();
-  }
-  return normalized;
-}
+	  if(!normalized.active && !normalized.incoming){
+	    return defaultVoiceCallState();
+	  }
+	  if(!normalized.startedAt) normalized.startedAt = Date.now();
+	  if(normalized.active && !normalized.connectedAt){
+	    normalized.connectedAt = normalized.startedAt || Date.now();
+	  }
+  if(normalized.incoming) normalized.phase = 'ringing';
+  else if(normalized.active && normalized.phase === 'idle') normalized.phase = 'listening';
+	  return normalized;
+	}
 
 function normalizeVoiceCallInputMode(value){
   return String(value || '').trim().toLowerCase() === 'speech' ? 'speech' : 'text';
@@ -8192,6 +8205,12 @@ function normalizeVoiceCallInputMode(value){
 function normalizeVoiceCallStarter(value){
   var safe = String(value || '').trim().toLowerCase();
   return (safe === 'user' || safe === 'auto') ? safe : 'char';
+}
+
+function normalizeVoiceCallPhase(value){
+  var safe = String(value || '').trim().toLowerCase();
+  if(['ringing','connecting','listening','thinking','speaking','ended','error'].indexOf(safe) >= 0) return safe;
+  return 'idle';
 }
 
 function requestPersistentChatStorage(){
@@ -10035,12 +10054,14 @@ function startVoiceCallTicker(){
 
 function snapshotCurrentVoiceCallState(){
   var state = normalizeVoiceCallSessionSnapshot(voiceCallState || defaultVoiceCallState());
-  if(!state.active && !state.incoming) return null;
-  return {
-    active: !!state.active,
-    incoming: !!state.incoming,
-    minimized: !!state.minimized,
-    startedAt: Number(state.startedAt || 0) || Date.now(),
+	  if(!state.active && !state.incoming) return null;
+	  return {
+	    sessionId: String(state.sessionId || '').trim() || makeVoiceCallSessionId(),
+	    active: !!state.active,
+	    incoming: !!state.incoming,
+	    minimized: !!state.minimized,
+	    phase: normalizeVoiceCallPhase(state.phase || (state.incoming ? 'ringing' : 'listening')),
+	    startedAt: Number(state.startedAt || 0) || Date.now(),
     connectedAt: Number(state.connectedAt || 0) || 0,
     transcript: (Array.isArray(state.transcript) ? state.transcript : []).map(function(item){
       return normalizeVoiceCallTranscriptLine(item);
@@ -20729,39 +20750,37 @@ async function callAIWithCustomPrompts(systemPrompt, userPrompt){
     var compatibleKey = key;
     if(provider === 'custom') compatibleKey = key || getChatApiSetting('key_custom', '');
     var compatibleModel = provider === 'custom' ? (getChatApiSetting('model_custom_manual', model) || model) : model;
-    var res = await fetch(compatibleUrl, {
-      method: 'POST',
-      headers: buildOpenAiCompatibleHeaders(provider, compatibleKey),
-      body: JSON.stringify({
-        model: compatibleModel,
+    var d = await fetchAiJsonWithRetry(compatibleUrl, {
+	      method: 'POST',
+	      headers: buildOpenAiCompatibleHeaders(provider, compatibleKey),
+	      body: JSON.stringify({
+	        model: compatibleModel,
         temperature: temperature,
         stream: false,
-        messages: [{ role: 'system', content: sys }, { role: 'user', content: user }]
-      })
-    });
-    var d = await readAiJsonResponse(res);
-    return extractAiResponseText(d);
-  }
+	        messages: [{ role: 'system', content: sys }, { role: 'user', content: user }]
+	      })
+	    }, 2);
+	    return extractAiResponseText(d);
+	  }
 
-  if (provider === 'claude') {
-    var resClaude = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
+	  if (provider === 'claude') {
+	    var dClaude = await fetchAiJsonWithRetry('https://api.anthropic.com/v1/messages', {
+	      method: 'POST',
+	      headers: {
         'Content-Type': 'application/json',
         'x-api-key': key,
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({ model: model, temperature: temperature, system: sys, messages: [{ role: 'user', content: user }] })
-    });
-    var dClaude = await readAiJsonResponse(resClaude);
-    return extractAiResponseText(dClaude);
-  }
+	      },
+	      body: JSON.stringify({ model: model, temperature: temperature, system: sys, messages: [{ role: 'user', content: user }] })
+	    }, 2);
+	    return extractAiResponseText(dClaude);
+	  }
 
-  if (provider === 'gemini') {
-    var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(pickApiCredential(key));
-    var resGemini = await fetch(url, {
-      method: 'POST',
+	  if (provider === 'gemini') {
+	    var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(pickApiCredential(key));
+	    var dGemini = await fetchAiJsonWithRetry(url, {
+	      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [
@@ -20769,12 +20788,11 @@ async function callAIWithCustomPrompts(systemPrompt, userPrompt){
           { role: 'model', parts: [{ text: '好的，我会按要求返回。' }] },
           { role: 'user', parts: [{ text: user }] }
         ],
-        generationConfig: { temperature: temperature }
-      })
-    });
-    var dGemini = await readAiJsonResponse(resGemini);
-    return extractAiResponseText(dGemini);
-  }
+	        generationConfig: { temperature: temperature }
+	      })
+	    }, 2);
+	    return extractAiResponseText(dGemini);
+	  }
 
   return '';
 }
@@ -22882,7 +22900,12 @@ async function readAiJsonResponse(res){
   }catch(e){}
   var data = {};
   if(rawText){
-    try{ data = JSON.parse(rawText); }catch(e){ data = { rawText: rawText }; }
+    var trimmed = rawText.trimStart();
+    if(trimmed.indexOf('data:') === 0){
+      data = parseAiSseCompletion(rawText) || { rawText: rawText };
+    }else{
+      try{ data = JSON.parse(rawText); }catch(e){ data = { rawText: rawText }; }
+    }
   }
   if(!res.ok){
     console.warn('[chat-ai-http]', { status: res.status, statusText: res.statusText, body: rawText });
@@ -22893,6 +22916,81 @@ async function readAiJsonResponse(res){
     throw new Error(humanizeAiApiMessage(data.error.message || data.error.status || JSON.stringify(data.error)));
   }
   return data;
+}
+
+function parseAiSseCompletion(raw){
+  var assembled = '';
+  var role = 'assistant';
+  var finishReason = null;
+  var firstChunk = null;
+  var lines = String(raw || '').split(/\r?\n/);
+  for(var i = 0; i < lines.length; i += 1){
+    var line = lines[i];
+    if(!/^data\s*:/i.test(line)) continue;
+    var payload = line.replace(/^data\s*:/i, '').trim();
+    if(!payload || payload === '[DONE]') continue;
+    var chunk = null;
+    try{ chunk = JSON.parse(payload); }catch(err){ continue; }
+    if(!firstChunk) firstChunk = chunk;
+    var choice = chunk && chunk.choices && chunk.choices[0];
+    if(!choice) continue;
+    if(choice.delta){
+      if(typeof choice.delta.content === 'string') assembled += choice.delta.content;
+      if(choice.delta.role) role = choice.delta.role;
+      if(typeof choice.delta.reasoning_content === 'string' && !assembled) assembled += choice.delta.reasoning_content;
+    }else if(choice.message){
+      if(typeof choice.message.content === 'string') assembled += choice.message.content;
+      if(typeof choice.message.reasoning_content === 'string' && !assembled) assembled += choice.message.reasoning_content;
+      if(choice.message.role) role = choice.message.role;
+    }
+    if(choice.finish_reason) finishReason = choice.finish_reason;
+  }
+  if(!firstChunk) return null;
+  return {
+    id: firstChunk.id || 'sse-assembled',
+    object: 'chat.completion',
+    created: firstChunk.created || Math.floor(Date.now() / 1000),
+    model: firstChunk.model || '',
+    choices: [{
+      index: 0,
+      message: { role: role, content: stripAiHiddenThinking(assembled) },
+      finish_reason: finishReason
+    }],
+    usage: firstChunk.usage
+  };
+}
+
+function stripAiHiddenThinking(raw){
+  return String(raw || '')
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/<think>[\s\S]*$/gi, '')
+    .trim();
+}
+
+async function fetchAiJsonWithRetry(url, options, maxRetries){
+  var retryable = { 429:true, 500:true, 502:true, 503:true, 504:true };
+  var attempts = Math.max(0, Number(maxRetries || 0) || 0);
+  var lastErr = null;
+  for(var attempt = 0; attempt <= attempts; attempt += 1){
+    try{
+      var res = await fetch(url, options);
+      if(!res.ok && retryable[Number(res.status)] && attempt < attempts){
+        await sleep(Math.pow(2, attempt) * 700);
+        continue;
+      }
+      return await readAiJsonResponse(res);
+    }catch(err){
+      lastErr = err;
+      var msg = String(err && (err.message || err) || '');
+      var canRetry = /Failed to fetch|NetworkError|Load failed|timeout|429|500|502|503|504|HTML|无效JSON/i.test(msg);
+      if(canRetry && attempt < attempts){
+        await sleep(Math.pow(2, attempt) * 700);
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastErr || new Error('请求失败了。');
 }
 
 function humanizeAiHttpStatus(status, data){
@@ -22962,32 +23060,33 @@ function extractAiResponseText(payload){
         return '';
       }).join('').trim();
     }
-    if(typeof value === 'object'){
-      if(typeof value.output_text === 'string') return value.output_text;
-      if(typeof value.text === 'string') return value.text;
-      if(typeof value.content === 'string') return value.content;
-      if(Array.isArray(value.content)) return pull(value.content);
+	    if(typeof value === 'object'){
+	      if(typeof value.output_text === 'string') return value.output_text;
+	      if(typeof value.text === 'string') return value.text;
+	      if(typeof value.content === 'string') return value.content;
+	      if(typeof value.reasoning_content === 'string') return value.reasoning_content;
+	      if(Array.isArray(value.content)) return pull(value.content);
       if(Array.isArray(value.parts)) return pull(value.parts);
       if(value.message) return pull(value.message);
       if(value.delta) return pull(value.delta);
     }
     return '';
   }
-  if(!payload || typeof payload !== 'object') return pull(payload);
-  if(Array.isArray(payload.output)) return pull(payload.output);
-  if(typeof payload.output_text === 'string') return payload.output_text;
-  if(Array.isArray(payload.choices) && payload.choices.length){
-    var choice = payload.choices[0] || {};
-    return pull(choice.message || choice.delta || choice);
-  }
-  if(Array.isArray(payload.content) && payload.content.length){
-    return pull(payload.content);
-  }
-  if(Array.isArray(payload.candidates) && payload.candidates.length){
-    return pull(payload.candidates[0] && payload.candidates[0].content);
-  }
-  return pull(payload);
-}
+  if(!payload || typeof payload !== 'object') return stripAiHiddenThinking(pull(payload));
+	  if(Array.isArray(payload.output)) return stripAiHiddenThinking(pull(payload.output));
+	  if(typeof payload.output_text === 'string') return stripAiHiddenThinking(payload.output_text);
+	  if(Array.isArray(payload.choices) && payload.choices.length){
+	    var choice = payload.choices[0] || {};
+	    return stripAiHiddenThinking(pull(choice.message || choice.delta || choice));
+	  }
+	  if(Array.isArray(payload.content) && payload.content.length){
+	    return stripAiHiddenThinking(pull(payload.content));
+	  }
+	  if(Array.isArray(payload.candidates) && payload.candidates.length){
+	    return stripAiHiddenThinking(pull(payload.candidates[0] && payload.candidates[0].content));
+	  }
+	  return stripAiHiddenThinking(pull(payload));
+	}
 
 function getDefaultModel(p) {
   return { openai: 'gpt-4o-mini', claude: 'claude-haiku-4-5-20251001', gemini: 'gemini-2.0-flash', openrouter: 'openai/gpt-4o-mini', custom: '' }[p] || 'gpt-4o-mini';
@@ -26510,6 +26609,18 @@ function getVoiceCallStarterLabel(mode){
   return 'CHAR 先开口';
 }
 
+function getVoiceCallPhaseLabel(state, inputMode){
+  var s = state || ensureVoiceCallState();
+  if(s.incoming || s.phase === 'ringing') return currentVoiceCallCharName() + ' 正在来电';
+  if(voiceCallSpeechListening) return '正在听你说话…';
+  if(s.awaitingReply || s.phase === 'thinking') return currentVoiceCallCharName() + ' 正在接话…';
+  if(s.phase === 'connecting') return currentVoiceCallCharName() + ' 正在接听…';
+  if(s.phase === 'speaking') return currentVoiceCallCharName() + ' 正在说话…';
+  if(s.phase === 'error') return '刚刚没接稳，可以再说一次';
+  if(s.phase === 'ended') return '通话已结束';
+  return normalizeVoiceCallInputMode(inputMode) === 'speech' ? '点麦克风直接说话' : '轮到你说啦';
+}
+
 function currentVoiceCallUserName(){
   return String(getCurrentUserDisplayName() || 'USER').trim() || 'USER';
 }
@@ -26597,11 +26708,9 @@ function syncVoiceCallSettingsUi(){
     speechBtn.style.opacity = inputMode === 'speech' ? '1' : '.42';
     speechBtn.disabled = inputMode !== 'speech';
   }
-  if(liveHint){
-    if(state.awaitingReply) liveHint.textContent = currentVoiceCallCharName() + ' 正在接话…';
-    else if(voiceCallSpeechListening) liveHint.textContent = '正在听你说话…';
-    else liveHint.textContent = inputMode === 'speech' ? '点麦克风直接说话' : '轮到你说啦';
-  }
+	  if(liveHint){
+	    liveHint.textContent = getVoiceCallPhaseLabel(state, inputMode);
+	  }
   if(ticketSub){
     ticketSub.innerHTML = tone
       ? ('这通电话会更像：<strong>' + esc(tone) + '</strong>')
@@ -26732,6 +26841,7 @@ function appendVoiceCallLine(role, text){
   var normalizedRole = role === 'user' ? 'user' : (role === 'system' ? 'system' : (role === 'narrator' ? 'narrator' : 'assistant'));
   var line = {
     id: 'call_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
+    sessionId: String(state.sessionId || '').trim(),
     role: normalizedRole,
     text: String(text || '').trim(),
     at: Date.now()
@@ -26744,11 +26854,44 @@ function appendVoiceCallLine(role, text){
   return line;
 }
 
-function extractVoiceCallReplyParts(raw){
+function sanitizeVoiceCallAssistantOutput(raw){
+  var t = String(raw || '').trim();
+  if(!t) return '';
+  t = unwrapCodeFence(t);
+  t = stripAiHiddenThinking(t);
+  t = t.replace(/[［]/g, '[').replace(/[］]/g, ']');
+  t = t.replace(/^\s*\[[^\]\n]*(?:通话|聊天|约会|电话|voice\s*call|call)[^\]\n]*\]\s*/gmi, '');
+  t = t.replace(/\[\s*\/?\s*(?:通话|聊天|约会|电话|voice\s*call|call)\s*\]/gi, '');
+  t = t.replace(/^\s*(?:时间戳|timestamp)\s*[:：].*$/gmi, '');
+  t = t.replace(/^\s*(?:\d{4}[-/.年]\d{1,2}[-/.月]\d{1,2}日?\s*)?\d{1,2}[:：]\d{2}(?::\d{2})?\s*/gm, '');
+  t = t.replace(/\[\s*(?:poke|transfer|music|add_event|schedule|offline_invite|meme|image|money_packet|family_card|call_record|voice_call_request)\b[\s\S]*?\]/ig, '');
+  t = sanitizeAssistantTextForChat(t);
+  return String(t || '').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function parseVoiceCallReplyJson(raw){
   var parsed = maybeParseReplyJson(raw);
+  if(parsed) return parsed;
+  var text = unwrapCodeFence(raw);
+  if(!text) return null;
+  var candidates = [];
+  var arrayStart = text.indexOf('[');
+  var arrayEnd = text.lastIndexOf(']');
+  if(arrayStart >= 0 && arrayEnd > arrayStart) candidates.push(text.slice(arrayStart, arrayEnd + 1));
+  var objectStart = text.indexOf('{');
+  var objectEnd = text.lastIndexOf('}');
+  if(objectStart >= 0 && objectEnd > objectStart) candidates.push(text.slice(objectStart, objectEnd + 1));
+  for(var i = 0; i < candidates.length; i += 1){
+    try{ return JSON.parse(candidates[i]); }catch(err){}
+  }
+  return null;
+}
+
+function extractVoiceCallReplyParts(raw){
+  var parsed = parseVoiceCallReplyJson(raw);
   var items = [];
   function pushPart(type, v){
-    var text = sanitizeAssistantTextForChat(String(v || '').trim());
+    var text = sanitizeVoiceCallAssistantOutput(String(v || '').trim());
     var safeType = normalizeMessageType(type || 'text');
     if(safeType !== 'narrator') safeType = 'text';
     if(text) items.push({ type: safeType, text: text });
@@ -26783,17 +26926,33 @@ function extractVoiceCallReplyParts(raw){
 }
 
 function buildVoiceCallContextLines(limit){
-  return getVisibleChatForModel().slice(-(Number(limit || 8) || 8)).map(function(item){
+  return getVisibleChatForModel().filter(function(item){
+    return item && !item.hidden;
+  }).slice(-(Number(limit || 8) || 8)).map(function(item){
     if(!item) return '';
-    return (item.role === 'user' ? currentVoiceCallUserName() : currentVoiceCallCharName()) + '：' + String(formatMessageForModel(item) || '').replace(/\s+/g, ' ').trim();
+    var kind = normalizeMessageType(item.type || 'text');
+    var source = '聊天记录';
+    if(kind === 'callrecord') source = '通话记录';
+    else if(kind === 'voicecallrequest') source = '来电请求';
+    else if(kind === 'offlineinvite') source = '线下邀约';
+    else if(kind === 'schedulequote') source = '日程引用';
+    else if(kind === 'momentcard') source = '朋友圈';
+    else if(kind === 'narrator') source = '旁白';
+    var speaker = item.role === 'user' ? currentVoiceCallUserName() : (item.role === 'system' ? '系统' : currentVoiceCallCharName());
+    var body = String(formatMessageForModel(item) || '').replace(/\s+/g, ' ').trim();
+    if(!body) return '';
+    return '[' + source + '] ' + speaker + '：' + body;
   }).filter(Boolean).join('\n');
 }
 
 function buildVoiceCallTranscriptLines(){
   var state = ensureVoiceCallState();
-  return (Array.isArray(state.transcript) ? state.transcript : []).slice(-18).map(function(item){
+  return (Array.isArray(state.transcript) ? state.transcript : []).filter(function(item){
+    return item && item.role !== 'system';
+  }).slice(-18).map(function(item){
     var speaker = getVoiceCallRoleLabel(item.role);
-    return speaker + '：' + String(item.text || '').trim();
+    var label = item.role === 'narrator' ? '通话旁白' : '通话';
+    return '[' + label + '] ' + speaker + '：' + String(item.text || '').trim();
   }).join('\n');
 }
 
@@ -26811,12 +26970,15 @@ function buildVoiceCallPrompt(userText){
     memoryPrompt,
     worldbookEntries ? ('【世界书】\n' + worldbookEntries) : '',
     replyLangPrompt,
-    '【当前模式】',
-    '你正在和 ' + currentVoiceCallUserName() + ' 进行一通语音电话，但界面会把说话内容显示成文字。',
-    '这是电话界面。只允许输出两类：text 是角色真正说出口的话；narrator 是屏幕旁白/很轻的动作氛围。',
-    '禁止输出 voice、meme、image、money、transfer、rich_html、schedule、emoji、表情包、转账、语音消息。',
-    'text 要像真人打电话一样自然。每句尽量短，最好不超过 20 个字，不要一整坨复句。',
-    '默认返回 JSON 数组，每项格式：{"type":"text","content":"..."} 或 {"type":"narrator","content":"..."}。1 到 4 条就够了，至少 1 条 text。',
+	    '【当前模式】',
+	    '你正在和 ' + currentVoiceCallUserName() + ' 进行一通语音电话，但界面会把说话内容显示成文字。',
+	    '这不是普通聊天窗口：你要像真的接着电话，能感觉到对方刚刚说完话后的停顿、呼吸和语气。',
+	    '这是电话界面。只允许输出两类：text 是角色真正说出口的话；narrator 是屏幕旁白/很轻的动作氛围。',
+	    '禁止输出 voice、meme、image、money、transfer、rich_html、schedule、emoji、表情包、转账、语音消息。',
+	    '禁止输出 [通话]、[聊天]、[约会]、时间戳、动作指令标签；那些只是上下文来源，不是回复内容。',
+	    'text 要像真人打电话一样自然。每句尽量短，最好不超过 20 个字，不要一整坨复句。',
+	    '可以有很短的停顿、轻笑、迟疑，但不要写成长段小说旁白；旁白只能补氛围，不能替代正文。',
+	    '默认返回 JSON 数组，每项格式：{"type":"text","content":"..."} 或 {"type":"narrator","content":"..."}。1 到 4 条就够了，至少 1 条 text。',
     '每条都要直接接住对方刚刚说的东西，不要自说自话。',
     settings.tone ? ('【通话氛围】\n' + settings.tone) : ''
   ].filter(Boolean).join('\n\n');
@@ -26834,6 +26996,7 @@ async function triggerVoiceCallAssistantTurn(userText){
   var state = ensureVoiceCallState();
   if(!state.active || state.awaitingReply || !character) return false;
   state.awaitingReply = true;
+  state.phase = 'thinking';
   syncVoiceCallSettingsUi();
   persistVoiceCallSession();
   try{
@@ -26841,19 +27004,22 @@ async function triggerVoiceCallAssistantTurn(userText){
     var raw = await callAIWithCustomPrompts(prompt.system, prompt.user);
     var parts = extractVoiceCallReplyParts(raw);
     if(!parts.length) return false;
-    parts.forEach(function(part){
-      appendVoiceCallLine(part.type === 'narrator' ? 'narrator' : 'assistant', part.text);
-    });
-    return true;
-  }catch(err){
-    console.error('voice call reply failed', err);
-    appendVoiceCallLine('system', '这一句掉线了，重新接回来吧。');
-    return false;
-  }finally{
-    state.awaitingReply = false;
-    syncVoiceCallSettingsUi();
-    persistVoiceCallSession();
-  }
+	    parts.forEach(function(part){
+	      appendVoiceCallLine(part.type === 'narrator' ? 'narrator' : 'assistant', part.text);
+	    });
+    state.phase = 'listening';
+	    return true;
+	  }catch(err){
+	    console.error('voice call reply failed', err);
+    state.phase = 'error';
+	    appendVoiceCallLine('system', '这一句没有接稳，可以再说一次。');
+	    return false;
+	  }finally{
+	    state.awaitingReply = false;
+    if(state.active && state.phase === 'thinking') state.phase = 'listening';
+	    syncVoiceCallSettingsUi();
+	    persistVoiceCallSession();
+	  }
 }
 
 function openVoiceCallOverlay(){
@@ -26914,11 +27080,13 @@ async function openVoiceCallFromAddon(){
     return;
   }
   var settings = getVoiceCallSettings();
-  voiceCallState = Object.assign(defaultVoiceCallState(), {
-    active: true,
-    incoming: false,
-    minimized: false,
-    startedAt: Date.now(),
+	  voiceCallState = Object.assign(defaultVoiceCallState(), {
+	    sessionId: makeVoiceCallSessionId(),
+	    active: true,
+	    incoming: false,
+	    minimized: false,
+    phase: 'connecting',
+	    startedAt: Date.now(),
     connectedAt: Date.now(),
     draftInputMode: settings.inputMode,
     draftStarter: settings.starter,
@@ -26927,30 +27095,39 @@ async function openVoiceCallFromAddon(){
   });
   persistVoiceCallSession();
   openVoiceCallOverlay();
-  appendVoiceCallLine('system', '电话接通了。');
-  if(normalizeVoiceCallStarter(settings.starter) !== 'user'){
-    setTimeout(function(){
-      if(voiceCallState && voiceCallState.active) triggerVoiceCallAssistantTurn('');
-    }, 220);
-  }
-}
+	  appendVoiceCallLine('system', '电话接通了。');
+	  if(normalizeVoiceCallStarter(settings.starter) !== 'user'){
+	    setTimeout(function(){
+	      if(voiceCallState && voiceCallState.active) triggerVoiceCallAssistantTurn('');
+	    }, 220);
+  }else{
+    voiceCallState.phase = 'listening';
+    syncVoiceCallSettingsUi();
+    persistVoiceCallSession();
+	  }
+	}
 
 async function sendVoiceCallMessage(){
-  var state = ensureVoiceCallState();
-  if(!state.active) return;
-  var input = document.getElementById('voiceCallInput');
+	  var state = ensureVoiceCallState();
+	  if(!state.active) return;
+  if(state.awaitingReply){
+    toast(currentVoiceCallCharName() + ' 还在接话');
+    return;
+  }
+	  var input = document.getElementById('voiceCallInput');
   var text = String((input && input.value) || '').trim();
   if(!text){
     toast('说点什么吧');
     return;
   }
-  if(input){
-    input.value = '';
-    autoResize(input);
-  }
-  appendVoiceCallLine('user', text);
-  await triggerVoiceCallAssistantTurn(text);
-}
+	  if(input){
+	    input.value = '';
+	    autoResize(input);
+	  }
+  state.phase = 'thinking';
+	  appendVoiceCallLine('user', text);
+	  await triggerVoiceCallAssistantTurn(text);
+	}
 
 function ensureVoiceCallSpeechRecognition(){
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -27020,6 +27197,7 @@ function normalizeCallRecordItem(raw){
   var item = raw && typeof raw === 'object' ? raw : {};
   return {
     id: String(item.id || ('callrec_' + Date.now().toString(36))),
+    sessionId: String(item.sessionId || item.id || '').trim(),
     charId: String(item.charId || (character && character.id) || ''),
     startedAt: Number(item.startedAt || Date.now()) || Date.now(),
     endedAt: Number(item.endedAt || Date.now()) || Date.now(),
@@ -27059,9 +27237,9 @@ function getCallRecordItem(recordId){
 
 async function summarizeVoiceCallRecord(record){
 	  var item = normalizeCallRecordItem(record);
-	  var lines = item.transcript.map(function(line){
-	    var speaker = getVoiceCallRoleLabel(line.role);
-	    return speaker + '：' + String(line.text || '').trim();
+		  var lines = item.transcript.map(function(line){
+		    var speaker = getVoiceCallRoleLabel(line.role);
+		    return speaker + '：' + String(line.text || '').trim();
 	  }).join('\n');
   var sys = [
     '你是电话总结器。',
@@ -27075,9 +27253,9 @@ async function summarizeVoiceCallRecord(record){
     '通话记录：',
     lines || '这通电话很短，还没来得及说太多。'
   ].join('\n\n');
-  try{
-    var raw = await callAIWithCustomPrompts(sys, user);
-    return String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,'').trim() || '这通电话把当下想说的话好好接住了。';
+	  try{
+	    var raw = await callAIWithCustomPrompts(sys, user);
+	    return sanitizeVoiceCallAssistantOutput(raw) || '这通电话把当下想说的话好好接住了。';
   }catch(err){
     console.warn('summarize voice call failed', err);
     return '这通电话把当下想说的话好好接住了。';
@@ -27104,10 +27282,11 @@ async function appendVoiceCallSummaryToMemory(summary){
 
 function buildVoiceCallRecordPayload(record){
   var item = normalizeCallRecordItem(record);
-  return JSON.stringify({
-    type: 'call_record',
-    recordId: item.id,
-    title: item.title || (currentVoiceCallCharName() + ' 的语音通话'),
+	  return JSON.stringify({
+	    type: 'call_record',
+	    recordId: item.id,
+    sessionId: item.sessionId || item.id,
+	    title: item.title || (currentVoiceCallCharName() + ' 的语音通话'),
     durationLabel: item.durationLabel || formatVoiceCallDuration(item.durationMs || 0),
     timeLabel: new Date(item.endedAt || Date.now()).toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit', hour12:false }),
     summary: item.summary || '这一通电话被轻轻存好了。',
@@ -27145,20 +27324,25 @@ function closeVoiceCallRecordViewer(){
 async function endVoiceCallSession(){
   var state = ensureVoiceCallState();
   if(!state.active) return;
-  if(voiceCallSpeechRecognition && voiceCallSpeechListening){
-    try{ voiceCallSpeechRecognition.stop(); }catch(err){}
-  }
-  state.active = false;
-  var record = saveCallRecordItem({
-    id: 'callrec_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6),
-    charId: character && character.id,
+	  if(voiceCallSpeechRecognition && voiceCallSpeechListening){
+	    try{ voiceCallSpeechRecognition.stop(); }catch(err){}
+	  }
+  var recordTranscript = (Array.isArray(state.transcript) ? state.transcript : []).filter(function(line){
+    return line && line.role !== 'system' && String(line.text || '').trim();
+  });
+	  state.active = false;
+  state.phase = 'ended';
+	  var record = saveCallRecordItem({
+	    id: String(state.sessionId || '').trim() || ('callrec_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6)),
+    sessionId: String(state.sessionId || '').trim(),
+	    charId: character && character.id,
     startedAt: state.startedAt || Date.now(),
     endedAt: Date.now(),
     durationMs: Math.max(0, Date.now() - (state.connectedAt || state.startedAt || Date.now())),
     durationLabel: formatVoiceCallDuration(Date.now() - (state.connectedAt || state.startedAt || Date.now())),
     title: currentVoiceCallCharName() + ' 的语音通话',
-    transcript: state.transcript.slice()
-  });
+	    transcript: recordTranscript
+	  });
   record.summary = await summarizeVoiceCallRecord(record);
   record = saveCallRecordItem(record);
   var entry = makeChatEntry('system', buildVoiceCallRecordPayload(record), 'call_record');
@@ -27178,11 +27362,13 @@ async function endVoiceCallSession(){
 function openIncomingVoiceCallRequest(text){
   if(!character) return false;
   var settings = getVoiceCallSettings();
-  voiceCallState = Object.assign(defaultVoiceCallState(), {
-    incoming: true,
-    active: false,
-    minimized: false,
-    startedAt: Date.now(),
+	  voiceCallState = Object.assign(defaultVoiceCallState(), {
+	    sessionId: makeVoiceCallSessionId(),
+	    incoming: true,
+	    active: false,
+	    minimized: false,
+    phase: 'ringing',
+	    startedAt: Date.now(),
     connectedAt: 0,
     draftInputMode: settings.inputMode,
     draftStarter: settings.starter,
@@ -27202,19 +27388,24 @@ function openIncomingVoiceCallRequest(text){
 function acceptIncomingVoiceCall(){
   var state = ensureVoiceCallState();
   if(!state.incoming) return;
-  state.incoming = false;
-  state.active = true;
-  state.connectedAt = Date.now();
+	  state.incoming = false;
+	  state.active = true;
+  state.phase = 'connecting';
+	  state.connectedAt = Date.now();
   document.getElementById('voiceCallIncomingDrawer')?.classList.remove('open');
   appendVoiceCallLine('system', '你接起了这通电话。');
   persistVoiceCallSession();
   var starter = normalizeVoiceCallStarter(state.draftStarter || getVoiceCallSettings().starter);
-  if(starter !== 'user'){
-    setTimeout(function(){
-      if(voiceCallState && voiceCallState.active) triggerVoiceCallAssistantTurn('');
-    }, 200);
-  }
-}
+	  if(starter !== 'user'){
+	    setTimeout(function(){
+	      if(voiceCallState && voiceCallState.active) triggerVoiceCallAssistantTurn('');
+	    }, 200);
+  }else{
+    state.phase = 'listening';
+    syncVoiceCallSettingsUi();
+    persistVoiceCallSession();
+	  }
+	}
 
 function rejectIncomingVoiceCall(){
   var state = ensureVoiceCallState();
