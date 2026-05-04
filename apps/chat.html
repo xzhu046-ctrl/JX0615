@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-04T14:16:53Z"></script>
-<script src="../chatStorage.js?v=2026-05-04T14:16:53Z"></script>
-<script src="../assetStore.js?v=2026-05-04T14:16:53Z"></script>
-<script src="../accountManager.js?v=2026-05-04T14:16:53Z"></script>
-<script src="../metadataStore.js?v=2026-05-04T14:16:53Z"></script>
-<script src="../scheduleShared.js?v=2026-05-04T14:16:53Z"></script>
-<script src="../presenceShared.js?v=2026-05-04T14:16:53Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-04T14:16:53Z"></script>
-<script src="../sunnySupport.js?v=2026-05-04T14:16:53Z"></script>
-<script src="offlineInvite.js?v=2026-05-04T14:16:53Z"></script>
+<script src="../promptManager.js?v=2026-05-04T14:55:53Z"></script>
+<script src="../chatStorage.js?v=2026-05-04T14:55:53Z"></script>
+<script src="../assetStore.js?v=2026-05-04T14:55:53Z"></script>
+<script src="../accountManager.js?v=2026-05-04T14:55:53Z"></script>
+<script src="../metadataStore.js?v=2026-05-04T14:55:53Z"></script>
+<script src="../scheduleShared.js?v=2026-05-04T14:55:53Z"></script>
+<script src="../presenceShared.js?v=2026-05-04T14:55:53Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-04T14:55:53Z"></script>
+<script src="../sunnySupport.js?v=2026-05-04T14:55:53Z"></script>
+<script src="offlineInvite.js?v=2026-05-04T14:55:53Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -1953,10 +1953,13 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .voice-call-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.34),rgba(0,0,0,.72))}
 .voice-call-shell{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;padding:calc(var(--safe-top) + 10px) 16px calc(var(--safe-bottom) + 12px);font-family:var(--fontcute)}
 .voice-call-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.voice-call-top-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .voice-call-mini-btn{width:42px;height:42px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.13);box-shadow:0 14px 32px rgba(0,0,0,.24);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;color:#fff;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .voice-call-mini-btn img{width:18px;height:18px;object-fit:contain;display:block}
 .voice-call-mini-btn svg{width:20px;height:20px;display:block}
 .voice-call-mini-btn:active{transform:scale(.94)}
+.voice-call-hangup-top{height:42px;padding:0 14px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:#fff;color:#111;box-shadow:0 14px 32px rgba(0,0,0,.26);font-family:var(--fontcute);font-size:12px;font-weight:900;letter-spacing:.08em;display:flex;align-items:center;justify-content:center;cursor:pointer;white-space:nowrap}
+.voice-call-hangup-top:active{transform:scale(.96)}
 .voice-call-headcopy{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:2px}
 .voice-call-ticket{display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:0 13px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(0,0,0,.26);box-shadow:0 10px 30px rgba(0,0,0,.22);font-size:15px;font-weight:900;letter-spacing:.06em;text-align:center;color:#fff;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .voice-call-sub{font-size:12px;font-weight:800;color:rgba(255,255,255,.68);text-align:center;line-height:1.45}
@@ -2010,6 +2013,9 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .voice-call-actionbtn img{width:20px;height:20px;object-fit:contain;display:block}
 .voice-call-actionbtn svg{width:20px;height:20px;display:block}
 .voice-call-actionbtn:active{transform:scale(.94)}
+.voice-call-end-strip{width:100%;min-height:38px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#fff;color:#111;box-shadow:0 12px 26px rgba(0,0,0,.24);font-family:var(--fontcute);font-size:12px;font-weight:900;letter-spacing:.08em;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.voice-call-end-strip::before{content:'';width:8px;height:8px;border-radius:999px;background:#111}
+.voice-call-end-strip:active{transform:scale(.985)}
 .voice-call-drawer{position:absolute;top:0;right:0;width:min(312px,calc(100vw - 18px));height:100%;padding:0;transform:translateX(106%);transition:transform .28s ease;z-index:4}
 .voice-call-drawer.open{transform:translateX(0)}
 .voice-call-drawer-shell{height:100%;border-left:1px solid rgba(255,255,255,.18);background:rgba(7,7,7,.82);box-shadow:-10px 18px 34px rgba(0,0,0,.28);display:flex;flex-direction:column;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
@@ -2382,9 +2388,12 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
         <div class="voice-call-ticket" id="voiceCallTicket">VOICE CALL</div>
         <div class="voice-call-sub" id="voiceCallSub">你们正在通话里慢慢说话</div>
       </div>
-      <button class="voice-call-mini-btn" type="button" onclick="openVoiceCallSettingsPanel()" aria-label="通话设置">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h14"></path></svg>
-      </button>
+      <div class="voice-call-top-actions">
+        <button class="voice-call-mini-btn" type="button" onclick="openVoiceCallSettingsPanel()" aria-label="通话设置">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h14"></path></svg>
+        </button>
+        <button class="voice-call-hangup-top" type="button" onclick="endVoiceCallSession()">挂断</button>
+      </div>
     </div>
     <div class="voice-call-hero">
       <div class="voice-call-portrait" id="voiceCallCharAvatar"><span class="voice-call-portrait-fallback">CH</span></div>
@@ -2426,6 +2435,7 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.4 15.9c4.17-3.37 9.03-3.37 13.2 0 .44.35 1.08.29 1.44-.14l1.35-1.62c.35-.42.32-1.03-.08-1.41C15.82 7.5 8.18 7.5 2.69 12.73c-.4.38-.43.99-.08 1.41l1.35 1.62c.36.43 1 .49 1.44.14Z"></path></svg>
             </button>
           </div>
+          <button class="voice-call-end-strip" type="button" onclick="endVoiceCallSession()">结束通话 / END CALL</button>
         </div>
       </div>
     </div>
