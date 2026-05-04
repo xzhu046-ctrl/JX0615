@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-04T21:30:00Z';
+const APP_BUILD_ID = '2026-05-04T21:49:00Z';
 const APP_UPDATE_NOTES = [
-  '修复部分设备打开 app 卡加载',
-  '减少旧缓存和新页面混用',
-  '头像资源加载后自动补回'
+  '调整通话页头像到顶部',
+  '通话消息改成毛玻璃样式',
+  '拉开通话消息间距'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
