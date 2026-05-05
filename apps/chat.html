@@ -2,19 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-05T02:22:39Z"></script>
-<script src="../chatStorage.js?v=2026-05-05T02:22:39Z"></script>
-<script src="../assetStore.js?v=2026-05-05T02:22:39Z"></script>
-<script src="../accountManager.js?v=2026-05-05T02:22:39Z"></script>
-<script src="../metadataStore.js?v=2026-05-05T02:22:39Z"></script>
-<script src="../scheduleShared.js?v=2026-05-05T02:22:39Z"></script>
-<script src="../presenceShared.js?v=2026-05-05T02:22:39Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-05T02:22:39Z"></script>
-<script src="../sunnySupport.js?v=2026-05-05T02:22:39Z"></script>
-<script src="offlineInvite.js?v=2026-05-05T02:22:39Z"></script>
+<script src="../promptManager.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../chatStorage.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../assetStore.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../accountManager.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../metadataStore.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../scheduleShared.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../presenceShared.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../sunnySupport.js?v=2026-05-05T03:26:37Z"></script>
+<script src="offlineInvite.js?v=2026-05-05T03:26:37Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -976,6 +976,9 @@ button{-webkit-appearance:none;appearance:none;-webkit-touch-callout:none;color:
 #msg-input{flex:1;min-height:20px;border:none;background:transparent;font-family:var(--font);font-size:13px;font-weight:600;color:var(--b);outline:none;resize:none;max-height:90px;overflow-y:auto;line-height:1.5;-webkit-text-fill-color:currentColor;font-variant-emoji:text;white-space:pre-wrap;word-break:break-word;-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 #msg-input:empty::before{content:attr(data-placeholder);color:#bbb;pointer-events:none}
 #msg-input[aria-disabled="true"]{opacity:.62;pointer-events:none}
+@media (pointer:coarse){
+  #msg-input{font-size:16px;line-height:1.36}
+}
 .reply-preview{display:none;position:absolute;left:0;right:0;bottom:calc(100% + 8px);border:var(--bd);border-radius:12px;background:var(--w);box-shadow:1px 1px 0 var(--b);padding:8px 10px;gap:8px;align-items:flex-start;z-index:7;max-height:58px;overflow:hidden}
 .reply-preview.show{display:flex}
 .reply-preview-text{flex:1;min-width:0}
@@ -8105,16 +8108,26 @@ function getInviteDisplayPlaceName(snapshot){
   return String(snapshot.aliasName || snapshot.resolvedName || snapshot.realName || '').trim();
 }
 
+function normalizeInviteDisplayPlaceKey(value){
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[·,，。.\s\-_/|]+/g, '')
+    .replace(/市$/,'');
+}
+
 function getInviteDisplayDistanceState(){
   var userSnapshot = getInviteWeatherSnapshot('user');
   var charSnapshot = getInviteWeatherSnapshot('char');
   var userCity = getInviteDisplayPlaceName(userSnapshot);
   var charCity = getInviteDisplayPlaceName(charSnapshot);
   if(!(userCity && charCity)) return null;
+  var userKey = normalizeInviteDisplayPlaceKey(userCity);
+  var charKey = normalizeInviteDisplayPlaceKey(charCity);
   return {
     userCity: userCity,
     charCity: charCity,
-    sameDisplayCity: userCity === charCity
+    sameDisplayCity: !!(userKey && charKey && userKey === charKey)
   };
 }
 
@@ -8148,12 +8161,14 @@ function buildWeatherCommonSensePrompt(){
       lines.push('如果要见面，请像真人一样考虑车程、火车、飞机、时间安排、季节和温度，不要在寒冷天气让对方穿不合时宜的衣服出门。');
       lines.push('除非最近聊天已经明确约好见面、已经到达同一地点，或当前就在进行线下场景，否则不要把跨城写成“已经在你楼下/马上抱住你/我们就在一起”。');
     }
-    if(userSnapshot.hour24 !== null && charSnapshot.hour24 !== null){
+    if(userSnapshot.hour24 !== null && charSnapshot.hour24 !== null && !(displayState && displayState.sameDisplayCity)){
       var diff = Math.abs(Number(userSnapshot.hour24) - Number(charSnapshot.hour24));
       diff = Math.min(diff, 24 - diff);
       if(diff >= 3){
         lines.push('双方存在明显时差，请自然地意识到发消息可能打扰对方休息，但只在语境合适时轻轻表现出来，不要频繁提醒睡觉。');
       }
+    }else if(displayState && displayState.sameDisplayCity){
+      lines.push('双方显示城市相同，必须按同城/同一生活时区理解；不要主动说时差、异地、国内国外、飞来飞去。');
     }
   }
   if(userSnapshot && userSnapshot.hour24 !== null && (userSnapshot.hour24 >= 23 || userSnapshot.hour24 <= 4)){
@@ -19386,8 +19401,8 @@ function buildPresenceHardRulePrompt(){
   var displayState = getInviteDisplayDistanceState();
   var userWeather = getInviteWeatherSnapshot('user');
   var charWeather = getInviteWeatherSnapshot('char');
-  var userLabel = String(snapshot.user.label || (displayState && displayState.userCity) || getInviteDisplayPlaceName(userWeather) || snapshot.user.cityId || '用户所在城市').trim();
-  var charCityName = String((snapshot.char.city && snapshot.char.city.name) || (displayState && displayState.charCity) || getInviteDisplayPlaceName(charWeather) || snapshot.char.placeLabel || '角色所在城市').trim();
+  var userLabel = String((displayState && displayState.userCity) || getInviteDisplayPlaceName(userWeather) || snapshot.user.label || snapshot.user.weatherName || snapshot.user.cityId || '用户所在城市').trim();
+  var charCityName = String((displayState && displayState.charCity) || getInviteDisplayPlaceName(charWeather) || (snapshot.char.city && snapshot.char.city.name) || snapshot.char.placeLabel || '角色所在城市').trim();
   var charPlace = String(snapshot.char.placeLabel || '').trim();
   var sameDisplayCity = !!(displayState && displayState.sameDisplayCity);
   var distanceKm = Math.max(0, Number(snapshot.travel && snapshot.travel.distanceKm) || 0);
@@ -19395,11 +19410,11 @@ function buildPresenceHardRulePrompt(){
     '【现实位置硬规则】',
     '用户当前显示城市：' + userLabel,
     '你当前显示城市：' + [charCityName, charPlace].filter(Boolean).join(' · '),
-    '双方距离：' + String(snapshot.distanceLabel || '').trim()
+    '双方距离：' + (sameDisplayCity ? '同城/近距离生活背景' : String(snapshot.distanceLabel || '').trim())
   ];
   lines.push('真实地理位置只用于时间、天气和生活常识判断，不要把真实定位城市直接说出口，也不要拿它来强行判定异地恋。');
   if(sameDisplayCity || distanceKm < 35){
-    lines.push('双方当前显示为同城/近距离范围。默认按本地活动距离来理解，不要再写买飞机票、坐飞机飞来、跨城跨国赶来、远程才见得到这种异地剧情。');
+    lines.push('双方当前显示为同城/近距离范围。默认按本地活动距离来理解，不要再写买飞机票、坐飞机飞来、跨城跨国赶来、远程才见得到、时差很大这种异地剧情。');
   }else{
     lines.push('双方当前显示城市不同。只有在聊天里真的约好见面、已经在赶路或线下场景开启时，才能写现实赴约；否则按跨城相处来写，不要直接装成熟悉地待在同一屋里。');
   }
@@ -20795,15 +20810,25 @@ function buildSystemPrompt() {
   var presenceHardRule = buildPresenceHardRulePrompt();
   if(presenceHardRule) parts.push(presenceHardRule);
   if(presenceSnapshot && presenceSnapshot.char && presenceSnapshot.char.shareEnabled !== false){
+    var onlineDisplayState = getInviteDisplayDistanceState();
+    var onlineUserWeather = getInviteWeatherSnapshot('user');
+    var onlineCharWeather = getInviteWeatherSnapshot('char');
+    var onlineUserPlace = String((onlineDisplayState && onlineDisplayState.userCity) || getInviteDisplayPlaceName(onlineUserWeather) || (presenceSnapshot.user && (presenceSnapshot.user.label || presenceSnapshot.user.weatherName || presenceSnapshot.user.cityId)) || '未知').trim();
+    var onlineCharCity = String((onlineDisplayState && onlineDisplayState.charCity) || getInviteDisplayPlaceName(onlineCharWeather) || (presenceSnapshot.char.city && presenceSnapshot.char.city.name) || '').trim();
+    var onlineCharPlace = String(presenceSnapshot.char.placeLabel || '').trim();
+    var onlineCharPlaceLine = onlineCharPlace
+      ? (onlineCharPlace + (onlineCharCity ? ('（' + onlineCharCity + '）') : ''))
+      : (onlineCharCity || '未知');
+    var onlineDistance = onlineDisplayState && onlineDisplayState.sameDisplayCity ? '同城/近距离生活背景' : presenceSnapshot.distanceLabel;
     parts.push([
       '【角色当前现实状态】',
-      '用户位置：' + String((presenceSnapshot.user && (presenceSnapshot.user.label || presenceSnapshot.user.weatherName || presenceSnapshot.user.cityId)) || '未知'),
-      '当前位置：' + presenceSnapshot.char.placeLabel + '（' + presenceSnapshot.char.city.name + '）',
+      '用户位置：' + onlineUserPlace,
+      '当前位置：' + onlineCharPlaceLine,
       '当前在做：' + presenceSnapshot.char.activityLabel,
-      '当地时间：' + presenceSnapshot.char.localTimeLabel,
+      '当地时间：' + String((onlineCharWeather && onlineCharWeather.timeLabel) || presenceSnapshot.char.localTimeLabel || '').trim(),
       '可回复状态：' + presenceSnapshot.char.availability,
       '预计更有空的时间：' + presenceSnapshot.char.freeAtLabel,
-      '和用户距离：' + presenceSnapshot.distanceLabel,
+      '和用户距离：' + onlineDistance,
       '请把这些现实状态融进回复里：忙的时候别装得像一直抱着手机，休息时口气可以更松一点，但仍然要符合人设、世界书和最近聊天。'
     ].join('\n'));
   }
@@ -27294,6 +27319,12 @@ function buildVoiceCallWeatherTimePromptBlock(){
     '真实天气/时区城市只用于判断天气、早晚、作息、季节和出门常识；角色说出口的地点名只允许使用显示城市，不要把真实城市名直接说出来。',
     '判断“起床、睡觉、午饭、下班、深夜、清晨、能不能出门”时，优先按这里的角色当地时间和用户当地时间，不要默认中国时间。'
   ].filter(Boolean);
+  var displayState = getInviteDisplayDistanceState();
+  if(displayState && displayState.sameDisplayCity){
+    lines.push('用户和角色的显示城市相同：' + displayState.userCity + '。本轮通话必须按同城/同一生活时区理解，不要说有时差、异地、国内国外、跨城、飞来飞去。');
+  }else if(displayState){
+    lines.push('用户显示城市是：' + displayState.userCity + '；角色显示城市是：' + displayState.charCity + '。若提到地点，只说显示城市，不要说真实天气城市。');
+  }
   return lines.join('\n');
 }
 
@@ -27662,6 +27693,9 @@ function buildVoiceCallRealtimePromptBlock(){
   var state = ensureVoiceCallState();
   var charName = currentVoiceCallCharName();
   var userName = currentVoiceCallUserName();
+  var displayState = getInviteDisplayDistanceState();
+  var userWeather = getInviteWeatherSnapshot('user');
+  var charWeather = getInviteWeatherSnapshot('char');
   var lines = [
     '【电话现场】',
     state.requestSource === 'char'
@@ -27673,18 +27707,21 @@ function buildVoiceCallRealtimePromptBlock(){
   try{
     var snapshot = getCurrentPresenceSnapshot();
     if(snapshot && snapshot.char){
-      var userPlace = String((snapshot.user && (snapshot.user.label || snapshot.user.weatherName || snapshot.user.cityId)) || '').trim();
-      var charPlace = [String((snapshot.char.city && snapshot.char.city.name) || '').trim(), String(snapshot.char.placeLabel || '').trim()].filter(Boolean).join(' · ');
-      var charTime = String(snapshot.char.localTimeLabel || '').trim();
+      var userPlace = String((displayState && displayState.userCity) || getInviteDisplayPlaceName(userWeather) || (snapshot.user && (snapshot.user.label || snapshot.user.weatherName || snapshot.user.cityId)) || '').trim();
+      var charDisplayPlace = String((displayState && displayState.charCity) || getInviteDisplayPlaceName(charWeather) || (snapshot.char.city && snapshot.char.city.name) || '').trim();
+      var charPlace = [charDisplayPlace, String(snapshot.char.placeLabel || '').trim()].filter(Boolean).join(' · ');
+      var charTime = String((charWeather && charWeather.timeLabel) || snapshot.char.localTimeLabel || '').trim();
       var userTime = '';
       try{
-        if(window.PresenceShared && snapshot.user){
+        if(userWeather && userWeather.timeLabel){
+          userTime = userWeather.timeLabel;
+        }else if(window.PresenceShared && snapshot.user){
           var userCity = window.PresenceShared.getCity(snapshot.user.cityId || 'edmonton');
           userTime = formatVoiceCallClockForOffset(userCity && userCity.tz);
         }
       }catch(timeErr){}
       var charActivity = String(snapshot.char.activityLabel || '').trim();
-      var distance = String(snapshot.distanceLabel || '').trim();
+      var distance = displayState && displayState.sameDisplayCity ? '同城/近距离生活背景' : String(snapshot.distanceLabel || '').trim();
       if(userPlace || charPlace || charTime || charActivity || distance){
         lines.push('【现实状态】');
         if(userPlace) lines.push('用户所在：' + userPlace);
@@ -27694,6 +27731,9 @@ function buildVoiceCallRealtimePromptBlock(){
         if(charActivity) lines.push('角色当前在做：' + charActivity);
         if(distance) lines.push('双方距离：' + distance);
         lines.push('判断早晚、睡醒、吃饭、上课、上班、下班、外出，都必须按上面“用户所在 / 角色所在 / 角色当地时间”，禁止默认按中国时间或北京时区推断。');
+        if(displayState && displayState.sameDisplayCity){
+          lines.push('双方显示城市相同，所以不要主动说时差、异地、跨国、国内国外，也不要把真实天气城市名说出口。');
+        }
       }
     }
   }catch(e){}
@@ -28526,7 +28566,8 @@ function syncChatViewport(){
   if(metrics.currentHeight > stableChatAppHeight && !textInputFocused){
     stableChatAppHeight = metrics.currentHeight;
   }
-  var keyboardInset = 0;
+  var rawKeyboardInset = 0;
+  var measuredKeyboardOpen = false;
   if(textInputFocused && window.visualViewport){
     var vv = window.visualViewport;
     var layoutH = Math.max(
@@ -28536,15 +28577,17 @@ function syncChatViewport(){
     );
     var visualBottom = Math.round((vv.height || layoutH) + Math.max(0, vv.offsetTop || 0));
     var covered = Math.max(0, layoutH - visualBottom);
-    if(covered > 80) keyboardInset = Math.min(430, covered);
+    if(covered > 80){
+      rawKeyboardInset = Math.min(430, covered);
+      measuredKeyboardOpen = true;
+    }
   }
-  if(!textInputFocused || keyboardInset <= 80){
-    keyboardInset = 0;
+  if(textInputFocused && parentKeyboardOpen && parentComposerShift > 120 && Date.now() - parentKeyboardUpdatedAt < 1800){
+    rawKeyboardInset = Math.max(rawKeyboardInset, parentComposerShift);
+    measuredKeyboardOpen = measuredKeyboardOpen || parentKeyboardMeasuredOpen;
   }
-  parentComposerShift = 0;
-  parentKeyboardOpen = false;
-  parentKeyboardMeasuredOpen = false;
-  parentKeyboardUpdatedAt = 0;
+  var keyboardInset = resolveStableChatKeyboardInset(rawKeyboardInset, textInputFocused, measuredKeyboardOpen || rawKeyboardInset > 120);
+  if(!textInputFocused || keyboardInset <= 80) keyboardInset = 0;
   if(keyboardInset >= 180) lastKnownKeyboardInset = keyboardInset;
   appliedKeyboardInset = keyboardInset;
   chatInputFocusActive = textInputFocused;
@@ -28600,10 +28643,22 @@ function resolveStableChatKeyboardInset(rawInset, textInputFocused, measuredOpen
     return 0;
   }
   var focusAge = chatKeyboardFocusStartedAt ? (now - chatKeyboardFocusStartedAt) : 9999;
+  var mobileRuntime = isIOSChatRuntime() || isAndroidChatRuntime();
+  if(mobileRuntime && focusAge < 680){
+    var earlyLimit = lastKnownKeyboardInset > 120
+      ? Math.min(430, lastKnownKeyboardInset + 24)
+      : Math.min(340, estimateChatKeyboardInset());
+    if(next > earlyLimit) next = earlyLimit;
+  }
   if(lockedChatKeyboardInset > 120 && focusAge > 160){
     if(Math.abs(next - lockedChatKeyboardInset) < 92) return lockedChatKeyboardInset;
     lockedChatKeyboardInset = next;
     return next;
+  }
+  if(mobileRuntime && focusAge < 120 && !chatKeyboardStableCandidate && appliedKeyboardInset <= 120){
+    chatKeyboardStableCandidate = next;
+    chatKeyboardStableCandidateAt = now;
+    return Math.min(next, estimateChatKeyboardInset());
   }
   if(!isIOSChatRuntime() || focusAge > 460){
     chatKeyboardStableCandidate = next;
@@ -36713,9 +36768,16 @@ window.addEventListener('focusin', function(e){
   if(e.target && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.id === 'msg-input')){
     chatInputFocusActive = true;
     chatKeyboardFocusStartedAt = Date.now();
+    var focusTarget = e.target;
     try{
       if(window.parent) window.parent.postMessage({ type:'CHAT_INPUT_FOCUS' }, '*');
     }catch(err){}
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        if(document.activeElement !== focusTarget) return;
+        try{ focusTarget.scrollIntoView({ block:'nearest', inline:'nearest' }); }catch(scrollErr){}
+      });
+    });
     scheduleComposerPlacementSync();
   }
 });
@@ -36767,6 +36829,7 @@ if(window.visualViewport){
     syncChatViewport();
   });
   window.visualViewport.addEventListener('scroll', function(){
+    if(isChatTextInputActive()) return;
     syncChatViewport();
   });
 }

@@ -52,7 +52,7 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-05T02:22:39Z';
+const APP_BUILD_ID = '2026-05-05T03:26:37Z';
 const APP_UPDATE_NOTES = [
   '删除单条消息后不会再回来',
   '通话会优先按天气城市读时间',

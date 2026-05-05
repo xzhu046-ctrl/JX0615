@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-04T21:30:00Z"></script>
-<script src="../chatStorage.js?v=2026-05-04T21:30:00Z"></script>
-<script src="../metadataStore.js?v=2026-05-04T21:30:00Z"></script>
-<script src="../promptManager.js?v=2026-05-04T21:30:00Z"></script>
-<script src="../accountManager.js?v=2026-05-04T21:30:00Z"></script>
-<script src="../scheduleShared.js?v=2026-05-04T21:30:00Z"></script>
-<script src="../presenceShared.js?v=2026-05-04T21:30:00Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-04T21:30:00Z"></script>
+<script src="../assetStore.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../chatStorage.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../metadataStore.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../promptManager.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../accountManager.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../scheduleShared.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../presenceShared.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-05T03:26:37Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -431,6 +431,9 @@ position:absolute;left:50%;transform:translateX(-50%);width:min(100%,320px);bord
 .composer{position:fixed;left:14px;right:14px;bottom:calc(var(--offline-keyboard-inset) + max(12px,var(--offline-safe-bottom)));z-index:25;display:flex;gap:8px;align-items:center;padding-bottom:0}
 .composer-box{flex:1;min-height:34px;border:2px solid #111;border-radius:0;background:rgba(255,255,255,.97);box-shadow:0 0 0 2px rgba(255,255,255,.95),4px 4px 0 rgba(17,17,17,.94);padding:6px 10px;display:flex;align-items:center}
 .composer-box textarea{width:100%;border:none;outline:none;background:transparent;height:20px;min-height:20px;max-height:20px;resize:none;font-family:var(--font);font-size:13px;font-weight:600;line-height:20px;color:var(--b);overflow:hidden}
+@media (pointer:coarse){
+  .composer-box textarea{font-size:16px;line-height:20px}
+}
 .composer-actions{display:flex;gap:8px;align-items:center}
 .composer-btn{width:34px;height:34px;border-radius:0;border:2px solid #111;background:#fff;color:#0a0a0a;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,.95),4px 4px 0 rgba(17,17,17,.94);transition:transform .12s,box-shadow .12s}
 .composer-btn:active{transform:translate(2px,2px);box-shadow:0 0 0}
@@ -7492,15 +7495,18 @@ function syncOfflineViewport(){
   if(!stableOfflineAppHeight || (!inputFocused && currentHeight > stableOfflineAppHeight)){
     stableOfflineAppHeight = currentHeight;
   }
-  var keyboardInset = 0;
+  var rawKeyboardInset = 0;
   if(inputFocused && vv){
     var layoutH = Math.max(stableOfflineAppHeight || 0, currentHeight, Math.round(document.documentElement.clientHeight || 0));
     var visualBottom = Math.round((vv.height || layoutH) + Math.max(0, vv.offsetTop || 0));
     var covered = Math.max(0, layoutH - visualBottom);
-    if(covered > 80) keyboardInset = Math.min(430, covered);
+    if(covered > 80) rawKeyboardInset = Math.min(430, covered);
   }
+  if(inputFocused && parentOfflineKeyboardInset > 120){
+    rawKeyboardInset = Math.max(rawKeyboardInset, parentOfflineKeyboardInset);
+  }
+  var keyboardInset = resolveStableOfflineKeyboardInset(rawKeyboardInset, inputFocused);
   if(!inputFocused || keyboardInset <= 80) keyboardInset = 0;
-  parentOfflineKeyboardInset = 0;
   appliedOfflineKeyboardInset = keyboardInset;
   if(keyboardInset >= 180) lastKnownOfflineKeyboardInset = keyboardInset;
   var appHeight = stableOfflineAppHeight || currentHeight;
@@ -7529,6 +7535,11 @@ function resolveStableOfflineKeyboardInset(rawInset, inputFocused){
       ? Math.min(430, lastKnownOfflineKeyboardInset + 24)
       : Math.min(340, estimateOfflineKeyboardInset());
     if(next > earlyLimit) next = earlyLimit;
+  }
+  if(mobileRuntime && focusAge < 120 && !offlineKeyboardStableCandidate && appliedOfflineKeyboardInset <= 120){
+    offlineKeyboardStableCandidate = next;
+    offlineKeyboardStableCandidateAt = Date.now();
+    return Math.min(next, estimateOfflineKeyboardInset());
   }
   if(!mobileRuntime || focusAge > 560){
     offlineKeyboardStableCandidate = next;
@@ -15169,6 +15180,13 @@ window.addEventListener('focusin', function(e){
   if(e.target && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')){
     offlineKeyboardFocusStartedAt = Date.now();
     lockedOfflineKeyboardInset = 0;
+    var focusTarget = e.target;
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        if(document.activeElement !== focusTarget) return;
+        try{ focusTarget.scrollIntoView({ block:'nearest', inline:'nearest' }); }catch(scrollErr){}
+      });
+    });
     keepOfflineComposerVisible();
     scheduleOfflineViewportSync();
   }
@@ -15218,6 +15236,8 @@ if(window.visualViewport){
     syncOfflineViewport();
   });
   window.visualViewport.addEventListener('scroll', function(){
+    var activeEl = document.activeElement;
+    if(activeEl && (activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'INPUT')) return;
     syncOfflineViewport();
   });
 }
