@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-04T23:10:00Z';
+const APP_BUILD_ID = '2026-05-05T00:01:00Z';
 const APP_UPDATE_NOTES = [
-  '通话更贴近前后文',
-  '旧通话消息增加淡出层次',
-  '减少万能接电话开场'
+  '通话头像区上移一点',
+  '通话收起后变成可拖头像',
+  '通话更读取人物和地点设定'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -118,6 +118,7 @@ const HOME_MUSIC_PLAY_MODE_KEY = 'home_music_play_mode_v1';
 const HOME_MUSIC_FLOATING_ENABLED_KEY = 'home_music_floating_enabled_v1';
 const HOME_MUSIC_FLOATING_ICON_KEY = 'home_music_floating_icon_v1';
 const HOME_MUSIC_FLOATING_SIZE_KEY = 'home_music_floating_size_v1';
+const SHELL_VOICE_CALL_FLOATING_KEY = 'shell_voice_call_floating_v1';
 const HOME_MUSIC_THIRD_PARTY_BASE = 'https://api.vkeys.cn/v2/music/tencent';
 const HOME_MUSIC_NETEASE_BASE = 'https://api.vkeys.cn/v2/music/netease';
 const HOME_MUSIC_METING_BASES = [
@@ -7674,6 +7675,22 @@ var homeMusicPendingAutoplay = false;
 var homeMusicAutoplayToastTimer = 0;
 var homeMusicPersistPromise = Promise.resolve();
 var homeMusicPlaybackFallbackBusy = false;
+var shellVoiceCallFloatingState = {
+  visible: false,
+  charId: '',
+  charName: '',
+  avatar: '',
+  x: null,
+  y: null,
+  active: false,
+  incoming: false,
+  awaitingAnswer: false,
+  phase: '',
+  connectedAt: 0,
+  startedAt: 0
+};
+var shellVoiceCallFloatingDragState = null;
+var shellVoiceCallFloatingMoved = false;
 
 function normalizeHomeMusicStorageText(value, limit){
   var text = String(value == null ? '' : value).trim();
@@ -8978,6 +8995,191 @@ function syncHomeMusicLyricCardWidth(){
   var card = document.getElementById('home-music-lyric-card');
   if(!card || homeMusicState.lyricHidden) return;
   card.style.width = '';
+}
+
+function isSmallPersistableVoiceCallAvatar(src){
+  var text = String(src || '').trim();
+  return !!(text && text.length < 5000 && !/^blob:/i.test(text));
+}
+
+function normalizeShellVoiceCallFloatingState(payload){
+  var data = payload && typeof payload === 'object' ? payload : {};
+  return {
+    visible: !!data.visible,
+    charId: String(data.charId || shellVoiceCallFloatingState.charId || '').trim(),
+    charName: String(data.charName || shellVoiceCallFloatingState.charName || '').trim(),
+    avatar: String(data.avatar || shellVoiceCallFloatingState.avatar || '').trim(),
+    x: typeof data.x === 'number' ? data.x : shellVoiceCallFloatingState.x,
+    y: typeof data.y === 'number' ? data.y : shellVoiceCallFloatingState.y,
+    active: !!data.active,
+    incoming: !!data.incoming,
+    awaitingAnswer: !!data.awaitingAnswer,
+    phase: String(data.phase || '').trim(),
+    connectedAt: Number(data.connectedAt || 0) || 0,
+    startedAt: Number(data.startedAt || 0) || 0
+  };
+}
+
+function loadShellVoiceCallFloatingState(){
+  try{
+    var parsed = JSON.parse(localStorage.getItem(SHELL_VOICE_CALL_FLOATING_KEY) || 'null');
+    if(parsed && typeof parsed === 'object'){
+      shellVoiceCallFloatingState = normalizeShellVoiceCallFloatingState(parsed);
+      shellVoiceCallFloatingState.avatar = String(parsed.avatar || '').trim();
+    }
+  }catch(err){}
+}
+
+function persistShellVoiceCallFloatingState(){
+  var state = Object.assign({}, shellVoiceCallFloatingState);
+  if(!isSmallPersistableVoiceCallAvatar(state.avatar)) state.avatar = '';
+  try{ localStorage.setItem(SHELL_VOICE_CALL_FLOATING_KEY, JSON.stringify(state)); }catch(err){}
+}
+
+function setShellVoiceCallAvatarNode(node, src, fallback){
+  if(!node) return;
+  var safeSrc = normalizeShellAssetSrc(src || '');
+  var safeFallback = String(fallback || '话').trim().slice(0, 2) || '话';
+  if(isRenderableShellAvatarSrc(safeSrc)){
+    node.innerHTML = '<img src="' + escapeHtmlAttr(safeSrc) + '" alt="" onerror="this.parentElement.textContent=\'话\'">';
+  }else{
+    node.textContent = safeFallback;
+  }
+}
+
+function applyShellVoiceCallFloatingPosition(){
+  var btn = document.getElementById('shell-voice-call-floating');
+  if(!btn) return;
+  var host = btn.offsetParent || btn.parentElement || document.querySelector('.screen') || document.body;
+  var hostRect = host && typeof host.getBoundingClientRect === 'function'
+    ? host.getBoundingClientRect()
+    : { width:Number(window.innerWidth || 0), height:Number(window.innerHeight || 0) };
+  var margin = 8;
+  var viewportWidth = Number(window.innerWidth || document.documentElement.clientWidth || hostRect.width || 0);
+  var viewportHeight = Number(window.innerHeight || document.documentElement.clientHeight || hostRect.height || 0);
+  var scaleX = Number(host.offsetWidth || 0) ? Number(hostRect.width || 0) / Number(host.offsetWidth || 1) : 1;
+  var scaleY = Number(host.offsetHeight || 0) ? Number(hostRect.height || 0) / Number(host.offsetHeight || 1) : 1;
+  if(!isFinite(scaleX) || scaleX <= 0) scaleX = 1;
+  if(!isFinite(scaleY) || scaleY <= 0) scaleY = 1;
+  var minX = Math.max(margin, (-Number(hostRect.left || 0) + margin) / scaleX);
+  var minY = Math.max(margin, (-Number(hostRect.top || 0) + margin) / scaleY);
+  var rightEdge = (Math.min(Number(hostRect.right || (hostRect.left + hostRect.width) || 0), viewportWidth) - Number(hostRect.left || 0) - margin) / scaleX;
+  var bottomEdge = (Math.min(Number(hostRect.bottom || (hostRect.top + hostRect.height) || 0), viewportHeight) - Number(hostRect.top || 0) - margin) / scaleY;
+  var maxX = Math.max(minX, rightEdge - btn.offsetWidth);
+  var maxY = Math.max(minY, bottomEdge - btn.offsetHeight);
+  var x = typeof shellVoiceCallFloatingState.x === 'number' ? shellVoiceCallFloatingState.x : maxX;
+  var y = typeof shellVoiceCallFloatingState.y === 'number' ? shellVoiceCallFloatingState.y : Math.max(margin, maxY - 92);
+  x = Math.max(minX, Math.min(maxX, x));
+  y = Math.max(minY, Math.min(maxY, y));
+  shellVoiceCallFloatingState.x = x;
+  shellVoiceCallFloatingState.y = y;
+  btn.style.left = x + 'px';
+  btn.style.top = y + 'px';
+  btn.style.right = 'auto';
+  btn.style.bottom = 'auto';
+}
+
+function renderShellVoiceCallFloating(){
+  var btn = document.getElementById('shell-voice-call-floating');
+  if(!btn) return;
+  var activeLike = !!(shellVoiceCallFloatingState.active || shellVoiceCallFloatingState.incoming || shellVoiceCallFloatingState.awaitingAnswer || shellVoiceCallFloatingState.phase === 'connecting');
+  btn.hidden = !(shellVoiceCallFloatingState.visible && activeLike);
+  setShellVoiceCallAvatarNode(
+    document.getElementById('shell-voice-call-avatar'),
+    shellVoiceCallFloatingState.avatar,
+    shellVoiceCallFloatingState.charName || '话'
+  );
+  if(!btn.hidden) applyShellVoiceCallFloatingPosition();
+}
+
+function syncShellVoiceCallFloating(payload){
+  var prevX = shellVoiceCallFloatingState.x;
+  var prevY = shellVoiceCallFloatingState.y;
+  shellVoiceCallFloatingState = normalizeShellVoiceCallFloatingState(payload || {});
+  if(typeof prevX === 'number' && typeof shellVoiceCallFloatingState.x !== 'number') shellVoiceCallFloatingState.x = prevX;
+  if(typeof prevY === 'number' && typeof shellVoiceCallFloatingState.y !== 'number') shellVoiceCallFloatingState.y = prevY;
+  persistShellVoiceCallFloatingState();
+  renderShellVoiceCallFloating();
+}
+
+function postRestoreVoiceCallToChatFrame(){
+  try{
+    var frame = document.getElementById('app-iframe');
+    if(frame && frame.contentWindow) frame.contentWindow.postMessage({ type:'RESTORE_VOICE_CALL_OVERLAY' }, '*');
+  }catch(err){}
+}
+
+function restoreShellVoiceCallFromFloating(evt){
+  if(shellVoiceCallFloatingMoved){
+    if(evt && typeof evt.preventDefault === 'function') evt.preventDefault();
+    shellVoiceCallFloatingMoved = false;
+    return;
+  }
+  var charId = String(shellVoiceCallFloatingState.charId || '').trim();
+  var active = charId ? resolveShellCharacterById(charId, null) : null;
+  var slim = active ? persistShellActiveCharacter(active) : null;
+  if(slim && slim.id){
+    setWidgetCharacter(active || slim);
+    renderBondWidget(active || slim);
+    try{ localStorage.setItem('pendingChatChar', JSON.stringify(slim)); }catch(err){}
+    try{ localStorage.setItem('pendingChatCharId', String(slim.id || '')); }catch(err){}
+    pendingOpenChatCharId = String(slim.id || '').trim();
+    pendingOpenChatNonce = String(Date.now()) + '_' + Math.random().toString(36).slice(2, 8);
+  }
+  var opener = currentApp === 'chat' ? Promise.resolve() : replaceApp('chat');
+  Promise.resolve(opener).then(function(){
+    [80, 220, 420, 720, 1080].forEach(function(delay){
+      setTimeout(postRestoreVoiceCallToChatFrame, delay);
+    });
+  });
+}
+
+function initShellVoiceCallFloating(){
+  var btn = document.getElementById('shell-voice-call-floating');
+  var screen = document.querySelector('.screen');
+  if(screen && btn && btn.parentElement !== screen) screen.appendChild(btn);
+  loadShellVoiceCallFloatingState();
+  renderShellVoiceCallFloating();
+  if(!btn || btn.__shellVoiceCallFloatingBound) return;
+  btn.__shellVoiceCallFloatingBound = true;
+  btn.addEventListener('pointerdown', function(evt){
+    shellVoiceCallFloatingMoved = false;
+    applyShellVoiceCallFloatingPosition();
+    shellVoiceCallFloatingDragState = {
+      pointerId: evt.pointerId,
+      startX: evt.clientX,
+      startY: evt.clientY,
+      originX: typeof shellVoiceCallFloatingState.x === 'number' ? shellVoiceCallFloatingState.x : 0,
+      originY: typeof shellVoiceCallFloatingState.y === 'number' ? shellVoiceCallFloatingState.y : 0
+    };
+    try{ btn.setPointerCapture(evt.pointerId); }catch(err){}
+  });
+  btn.addEventListener('pointermove', function(evt){
+    if(!shellVoiceCallFloatingDragState || evt.pointerId !== shellVoiceCallFloatingDragState.pointerId) return;
+    var dx = evt.clientX - shellVoiceCallFloatingDragState.startX;
+    var dy = evt.clientY - shellVoiceCallFloatingDragState.startY;
+    if(Math.abs(dx) > 4 || Math.abs(dy) > 4) shellVoiceCallFloatingMoved = true;
+    shellVoiceCallFloatingState.x = shellVoiceCallFloatingDragState.originX + dx;
+    shellVoiceCallFloatingState.y = shellVoiceCallFloatingDragState.originY + dy;
+    applyShellVoiceCallFloatingPosition();
+  });
+  ['pointerup','pointercancel'].forEach(function(name){
+    btn.addEventListener(name, function(evt){
+      if(!shellVoiceCallFloatingDragState || evt.pointerId !== shellVoiceCallFloatingDragState.pointerId) return;
+      shellVoiceCallFloatingDragState = null;
+      persistShellVoiceCallFloatingState();
+    });
+  });
+  btn.addEventListener('click', restoreShellVoiceCallFromFloating);
+  if(window.visualViewport && !window.visualViewport.__shellVoiceCallFloatingBound){
+    window.visualViewport.__shellVoiceCallFloatingBound = true;
+    window.visualViewport.addEventListener('resize', applyShellVoiceCallFloatingPosition);
+    window.visualViewport.addEventListener('scroll', applyShellVoiceCallFloatingPosition);
+  }
+  if(!window.__shellVoiceCallFloatingResizeBound){
+    window.__shellVoiceCallFloatingResizeBound = true;
+    window.addEventListener('resize', applyShellVoiceCallFloatingPosition);
+  }
 }
 
 function editHomeMusicTrackName(index){
@@ -10424,6 +10626,9 @@ window.addEventListener('message',(e)=>{
         setWidgetCharacter(activeAfterBundle);
       }
     }
+  }
+  if(type==='VOICE_CALL_FLOATING_SYNC'){
+    syncShellVoiceCallFloating(payload || {});
   }
   if(type==='USER_AVATAR_UPDATED'){
     var avatarSrc = normalizeShellAssetSrc(payload && payload.src || '');
@@ -12192,6 +12397,7 @@ function restoreState(){
   bindBondAvatarPressBehavior();
   bindTopFrameEditor();
   bindHomeMusicSystem();
+  initShellVoiceCallFloating();
   bindWidgetCharacterBackgroundInput();
   bindWidgetMiniOrbInput();
   bindClockWidgetArtInput();

@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-04T23:10:00Z"></script>
-<script src="../chatStorage.js?v=2026-05-04T23:10:00Z"></script>
-<script src="../assetStore.js?v=2026-05-04T23:10:00Z"></script>
-<script src="../accountManager.js?v=2026-05-04T23:10:00Z"></script>
-<script src="../metadataStore.js?v=2026-05-04T23:10:00Z"></script>
-<script src="../scheduleShared.js?v=2026-05-04T23:10:00Z"></script>
-<script src="../presenceShared.js?v=2026-05-04T23:10:00Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-04T23:10:00Z"></script>
-<script src="../sunnySupport.js?v=2026-05-04T23:10:00Z"></script>
-<script src="offlineInvite.js?v=2026-05-04T23:10:00Z"></script>
+<script src="../promptManager.js?v=2026-05-05T00:01:00Z"></script>
+<script src="../chatStorage.js?v=2026-05-05T00:01:00Z"></script>
+<script src="../assetStore.js?v=2026-05-05T00:01:00Z"></script>
+<script src="../accountManager.js?v=2026-05-05T00:01:00Z"></script>
+<script src="../metadataStore.js?v=2026-05-05T00:01:00Z"></script>
+<script src="../scheduleShared.js?v=2026-05-05T00:01:00Z"></script>
+<script src="../presenceShared.js?v=2026-05-05T00:01:00Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-05T00:01:00Z"></script>
+<script src="../sunnySupport.js?v=2026-05-05T00:01:00Z"></script>
+<script src="offlineInvite.js?v=2026-05-05T00:01:00Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -2032,9 +2032,10 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .call-record-summary{font-size:12px;font-weight:800;line-height:1.58;color:#111;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .call-record-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;font-weight:900;color:#666}
 .call-record-meta strong{color:#111}
-.voice-call-floating{position:fixed;right:18px;bottom:calc(var(--safe-bottom) + 92px);z-index:80;display:none;align-items:center;gap:8px;min-height:38px;padding:0 13px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(0,0,0,.72);color:#fff;font-family:var(--fontcute);font-size:12px;font-weight:900;box-shadow:0 14px 32px rgba(0,0,0,.24);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.voice-call-floating{position:fixed;right:18px;bottom:calc(var(--safe-bottom) + 92px);z-index:80;display:none;width:54px;height:54px;align-items:center;justify-content:center;padding:0;border:1px solid rgba(255,255,255,.78);border-radius:999px;background:rgba(255,255,255,.58);color:#111;font-family:var(--fontcute);font-size:12px;font-weight:900;box-shadow:0 14px 28px rgba(0,0,0,.16),inset 0 0 0 1px rgba(255,255,255,.68);backdrop-filter:blur(18px) saturate(130%);-webkit-backdrop-filter:blur(18px) saturate(130%);overflow:hidden;touch-action:none}
 .voice-call-floating.show{display:flex}
-.voice-call-floating-dot{width:8px;height:8px;border-radius:999px;background:#39d074;box-shadow:0 0 0 5px rgba(57,208,116,.16)}
+.voice-call-floating-avatar{width:100%;height:100%;display:flex;align-items:center;justify-content:center;border-radius:999px;overflow:hidden}
+.voice-call-floating-avatar img{width:100%;height:100%;object-fit:cover;display:block}
 @media (max-width: 420px){
   .voice-call-shell{padding-left:12px;padding-right:12px}
   .voice-call-top{grid-template-columns:50px minmax(0,1fr)50px 72px;gap:8px}
@@ -2051,20 +2052,20 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .voice-call-bg{background:#f7f7f7}
 .voice-call-bg::before{background-image:var(--voice-call-bg-image),linear-gradient(135deg,#fafafa,#e8e8e8 52%,#fbfbfb);background-size:cover,auto;background-position:center;filter:grayscale(1) blur(28px);transform:scale(1.18);opacity:.30}
 .voice-call-bg::after{background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.50) 38%,rgba(255,255,255,.82)),radial-gradient(circle at 50% 18%,rgba(255,255,255,.68),transparent 48%);box-shadow:inset 0 0 90px rgba(255,255,255,.58)}
-.voice-call-top{height:50px;display:grid;grid-template-columns:46px minmax(0,1fr)44px;gap:10px;align-items:start;flex:0 0 auto}
+.voice-call-top{height:50px;display:grid;grid-template-columns:46px minmax(0,1fr)44px;gap:10px;align-items:start;flex:0 0 auto;transform:translateY(14px)}
 .voice-call-headcopy{display:none}
 .voice-call-ticket,.voice-call-sub{display:none}
 .voice-call-side-actions{grid-column:3;justify-self:end;display:flex;flex-direction:column;gap:9px;align-items:flex-end;justify-content:flex-start;z-index:6}
 .voice-call-mini-btn,.voice-call-menu-btn{width:44px;height:44px;border:1px solid rgba(17,17,17,.12);border-radius:18px;background:rgba(255,255,255,.48);color:#111;box-shadow:0 12px 26px rgba(0,0,0,.12),inset 0 0 0 1px rgba(255,255,255,.72);backdrop-filter:blur(24px) saturate(132%);-webkit-backdrop-filter:blur(24px) saturate(132%)}
 .voice-call-mini-btn svg,.voice-call-menu-btn svg{width:21px;height:21px}
-.voice-call-stage{min-height:142px;padding:0 0 2px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;flex:0 0 auto}
+.voice-call-stage{min-height:142px;margin-top:-25px;padding:0 0 2px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;flex:0 0 auto}
 .voice-call-duo{position:relative;display:flex;align-items:flex-start;justify-content:center;margin-top:-6px;min-height:100px}
 .voice-call-person{position:relative;display:flex;flex-direction:column;align-items:center;gap:0}
 .voice-call-person.user{margin-left:-12px;margin-top:0}
 .voice-call-person.char{z-index:2}
 .voice-call-portrait{position:relative;right:auto;top:auto;width:98px;height:98px;border:1px solid rgba(255,255,255,.78);border-radius:999px;background:rgba(255,255,255,.34);color:#111;box-shadow:0 18px 36px rgba(0,0,0,.16),inset 0 0 0 1.5px rgba(255,255,255,.72);overflow:hidden;backdrop-filter:blur(22px) saturate(126%);-webkit-backdrop-filter:blur(22px) saturate(126%)}
 .voice-call-portrait.user{border-radius:999px}
-.voice-call-portrait::after{content:'';position:absolute;inset:8px;border:1px solid rgba(255,255,255,.76);border-radius:999px;pointer-events:none}
+.voice-call-portrait::after{display:none}
 .voice-call-portrait img{width:100%;height:100%;object-fit:cover;display:block}
 .voice-call-portrait-fallback{font-family:var(--fontcute);font-size:24px;font-weight:900;color:#111}
 .voice-call-nameplate{display:none}
@@ -2087,7 +2088,7 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .voice-call-line.ai{justify-content:flex-start}
 .voice-call-line.narrator,.voice-call-line.system{justify-content:center;padding:7px 0}
 .voice-call-line.system.call-fade-5,.voice-call-line.system.call-fade-6{opacity:.30}
-.voice-call-line.narrator{margin:12px 0 30px}
+.voice-call-line.narrator{margin:-8px 0 -3px;padding:0}
 .voice-call-line.narrator.ai-narrator{justify-content:flex-start;padding-left:43px;padding-right:0}
 .voice-call-line.narrator.user-narrator{justify-content:flex-end;padding-left:0;padding-right:43px}
 .voice-call-bubble{max-width:min(76%,306px);padding:9px 13px;border:1px solid rgba(17,17,17,.10);border-radius:19px;background:rgba(255,255,255,.46);color:#111;font-size:15px;font-weight:820;line-height:1.56;box-shadow:0 10px 26px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.52);backdrop-filter:blur(24px) saturate(132%);-webkit-backdrop-filter:blur(24px) saturate(132%)}
@@ -2128,7 +2129,7 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
   .voice-call-shell{padding-left:14px;padding-right:14px}
   .voice-call-top{grid-template-columns:44px minmax(0,1fr)42px;gap:8px}
   .voice-call-mini-btn,.voice-call-menu-btn{width:42px;height:42px;border-radius:15px}
-  .voice-call-stage{min-height:138px;padding-left:0;padding-right:0}
+  .voice-call-stage{min-height:138px;margin-top:-25px;padding-left:0;padding-right:0}
   .voice-call-portrait{width:94px;height:94px;border-radius:999px}
   .voice-call-person.user{margin-left:-11px;margin-top:0}
   .voice-call-feed{gap:17px;padding-top:12px;padding-bottom:calc(120px + var(--voice-call-keyboard-inset))}
@@ -2434,9 +2435,8 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
   <button class="send-btn" id="sendBtn" onclick="sendOnly()" title="只发送不触发回复">➤</button>
 </div>
 
-<button class="voice-call-floating" id="voiceCallFloatingBtn" type="button" onclick="restoreVoiceCallOverlay()" aria-label="回到通话">
-  <span class="voice-call-floating-dot" aria-hidden="true"></span>
-  <span id="voiceCallFloatingTimer">00:00</span>
+<button class="voice-call-floating" id="voiceCallFloatingBtn" type="button" onclick="restoreVoiceCallOverlayFromFloating(event)" aria-label="回到通话">
+  <span class="voice-call-floating-avatar" id="voiceCallFloatingAvatar">话</span>
 </button>
 
 <div class="voice-call-overlay" id="voiceCallOverlay">
@@ -4035,6 +4035,8 @@ var voiceCallMinimized = false;
 var voiceCallViewportBaseHeight = 0;
 var voiceCallComposerMode = 'text';
 var voiceCallInputClickTimer = 0;
+var voiceCallFloatingDragState = null;
+var voiceCallFloatingMoved = false;
 var storageHydrationPromise = Promise.resolve();
 var storagePersistRequested = false;
 var momentsPostsCache = [];
@@ -8218,12 +8220,13 @@ function normalizeVoiceCallSessionSnapshot(raw){
     summary: String(source.summary || '').trim(),
     recordId: String(source.recordId || '').trim(),
     awaitingReply: false,
-    awaitingAnswer: false
+    awaitingAnswer: !!source.awaitingAnswer || String(source.phase || '').trim().toLowerCase() === 'connecting'
 	  });
-  if((normalized.active || normalized.incoming) && !normalized.sessionId){
+  var activeLike = !!(normalized.active || normalized.incoming || normalized.awaitingAnswer || normalized.phase === 'connecting');
+  if(activeLike && !normalized.sessionId){
     normalized.sessionId = makeVoiceCallSessionId();
   }
-	  if(!normalized.active && !normalized.incoming){
+	  if(!activeLike){
 	    return defaultVoiceCallState();
 	  }
 	  if(!normalized.startedAt) normalized.startedAt = Date.now();
@@ -8231,6 +8234,7 @@ function normalizeVoiceCallSessionSnapshot(raw){
 	    normalized.connectedAt = normalized.startedAt || Date.now();
 	  }
   if(normalized.incoming) normalized.phase = 'ringing';
+  else if(normalized.awaitingAnswer) normalized.phase = 'connecting';
   else if(normalized.active && normalized.phase === 'idle') normalized.phase = 'listening';
 	  return normalized;
 	}
@@ -10085,17 +10089,18 @@ function startVoiceCallTicker(){
   stopVoiceCallTicker();
   var state = ensureVoiceCallState();
   tickVoiceCallTimer();
-  if(!state.active && !state.incoming) return;
+  if(!state.active && !state.incoming && !state.awaitingAnswer && state.phase !== 'connecting') return;
   voiceCallTicker = setInterval(tickVoiceCallTimer, 1000);
 }
 
 function snapshotCurrentVoiceCallState(){
   var state = normalizeVoiceCallSessionSnapshot(voiceCallState || defaultVoiceCallState());
-	  if(!state.active && !state.incoming) return null;
+	  if(!state.active && !state.incoming && !state.awaitingAnswer && state.phase !== 'connecting') return null;
 	  return {
 	    sessionId: String(state.sessionId || '').trim() || makeVoiceCallSessionId(),
 	    active: !!state.active,
 	    incoming: !!state.incoming,
+    awaitingAnswer: !!state.awaitingAnswer,
 	    minimized: !!state.minimized,
 	    phase: normalizeVoiceCallPhase(state.phase || (state.incoming ? 'ringing' : 'listening')),
 	    startedAt: Number(state.startedAt || 0) || Date.now(),
@@ -10147,7 +10152,7 @@ async function restorePersistedVoiceCallSession(){
     }
   }
   var next = normalizeVoiceCallSessionSnapshot(stored);
-  if(!next.active && !next.incoming){
+  if(!next.active && !next.incoming && !next.awaitingAnswer && next.phase !== 'connecting'){
     closeVoiceCallOverlay();
     return false;
   }
@@ -20311,6 +20316,7 @@ function getStrictPromptWorldbookEntries(){
 }
 
 async function restoreOrStartChat() {
+  initVoiceCallFloatingDrag();
   var msgs = document.getElementById('messages');
   replyTargetId = null;
   chatStorageHadCanonicalEmpty = false;
@@ -26643,6 +26649,44 @@ function currentVoiceCallCharName(){
   return String((character && (character.nickname || character.name)) || 'CHAR').trim() || 'CHAR';
 }
 
+function getVoiceCallUserPersonaText(){
+  if(!isDefaultAccountContext()) return '';
+  var charId = String((character && character.id) || '');
+  try{
+    return String((character && character.userPersonaProfile) || '').trim()
+      || String(localStorage.getItem(accountScopedKey('user_persona_' + charId)) || '').trim()
+      || String(localStorage.getItem('user_persona_' + charId) || '').trim()
+      || String(localStorage.getItem(userKey('user_persona')) || '').trim();
+  }catch(e){
+    return String((character && character.userPersonaProfile) || '').trim();
+  }
+}
+
+function buildVoiceCallIdentityPromptBlock(){
+  if(!character) return '';
+  var userName = isDefaultAccountContext()
+    ? (getChatUserName(character.id) || localStorage.getItem(userKey('user_name')) || currentVoiceCallUserName())
+    : (getActiveAccountProfileName() || currentVoiceCallUserName());
+  var userPersona = getVoiceCallUserPersonaText();
+  var userNickNote = String((character && character.userNicknameNote) || '').trim();
+  var greeting = getPromptGreeting();
+  var lines = [
+    '【通话人物设定】',
+    '角色本名：' + String(character.name || currentVoiceCallCharName()),
+    '当前显示名：' + currentVoiceCallCharName(),
+    '用户名字：' + String(userName || currentVoiceCallUserName()).trim()
+  ];
+  if(userNickNote) lines.push('角色给用户存的备注/昵称：' + userNickNote);
+  if(character.personality || character.description) lines.push('核心人设：' + String(character.personality || character.description || '').slice(0, 1800));
+  if(character.scenario) lines.push('关系/场景：' + String(character.scenario || '').slice(0, 900));
+  if(greeting) lines.push('当前开场白/关系基调：' + greeting.slice(0, 700));
+  if(userPersona) lines.push('用户设定：' + userPersona.slice(0, 1000));
+  var identityHint = getSubAccountIdentityHint();
+  if(identityHint) lines.push(identityHint);
+  lines.push('通话第一反应必须从这些设定、最近聊天和现实地点里长出来，不要默认成陌生客服接电话。');
+  return lines.filter(Boolean).join('\n');
+}
+
 function getVoiceCallPhaseLabel(state){
   var s = state || ensureVoiceCallState();
   if(s.incoming || s.phase === 'ringing') return currentVoiceCallCharName() + ' 来电中';
@@ -26844,17 +26888,119 @@ function getVoiceCallRoleLabel(role, item){
   return currentVoiceCallCharName();
 }
 
+function buildVoiceCallFloatingPayload(show){
+  var state = ensureVoiceCallState();
+  var charName = currentVoiceCallCharName();
+  var avatar = currentVisibleCharAvatarSrc() || String((character && character.avatar) || '').trim();
+  return {
+    visible: !!show,
+    charId: String((character && character.id) || '').trim(),
+    charName: charName,
+    avatar: avatar,
+    active: !!state.active,
+    incoming: !!state.incoming,
+    awaitingAnswer: !!state.awaitingAnswer,
+    minimized: !!(voiceCallMinimized || state.minimized),
+    phase: String(state.phase || '').trim(),
+    connectedAt: Number(state.connectedAt || 0) || 0,
+    startedAt: Number(state.startedAt || 0) || 0
+  };
+}
+
+function postVoiceCallFloatingSyncToShell(showOverride){
+  var state = ensureVoiceCallState();
+  var activeLike = !!(state.active || state.incoming || state.awaitingAnswer || state.phase === 'connecting');
+  var show = typeof showOverride === 'boolean' ? showOverride : !!(voiceCallMinimized && activeLike);
+  try{
+    postToShell({ type:'VOICE_CALL_FLOATING_SYNC', payload: buildVoiceCallFloatingPayload(show) });
+  }catch(e){}
+}
+
+function placeVoiceCallFloatingWithinViewport(btn){
+  if(!btn) return;
+  var rect = btn.getBoundingClientRect();
+  var margin = 8;
+  var maxX = Math.max(margin, (window.innerWidth || document.documentElement.clientWidth || 0) - rect.width - margin);
+  var maxY = Math.max(margin, (window.innerHeight || document.documentElement.clientHeight || 0) - rect.height - margin);
+  var x = Number(btn.dataset.x);
+  var y = Number(btn.dataset.y);
+  if(!isFinite(x)) x = Math.max(margin, maxX - 10);
+  if(!isFinite(y)) y = Math.max(margin, maxY - 92);
+  x = Math.max(margin, Math.min(maxX, x));
+  y = Math.max(margin, Math.min(maxY, y));
+  btn.dataset.x = String(x);
+  btn.dataset.y = String(y);
+  btn.style.left = x + 'px';
+  btn.style.top = y + 'px';
+  btn.style.right = 'auto';
+  btn.style.bottom = 'auto';
+}
+
+function restoreVoiceCallOverlayFromFloating(evt){
+  if(voiceCallFloatingMoved){
+    if(evt && typeof evt.preventDefault === 'function') evt.preventDefault();
+    voiceCallFloatingMoved = false;
+    return;
+  }
+  restoreVoiceCallOverlay();
+}
+
+function initVoiceCallFloatingDrag(){
+  var btn = document.getElementById('voiceCallFloatingBtn');
+  if(!btn || btn.__voiceCallFloatingDragBound) return;
+  btn.__voiceCallFloatingDragBound = true;
+  btn.addEventListener('pointerdown', function(evt){
+    voiceCallFloatingMoved = false;
+    placeVoiceCallFloatingWithinViewport(btn);
+    voiceCallFloatingDragState = {
+      pointerId: evt.pointerId,
+      startX: evt.clientX,
+      startY: evt.clientY,
+      originX: Number(btn.dataset.x) || 0,
+      originY: Number(btn.dataset.y) || 0
+    };
+    try{ btn.setPointerCapture(evt.pointerId); }catch(e){}
+  });
+  btn.addEventListener('pointermove', function(evt){
+    if(!voiceCallFloatingDragState || evt.pointerId !== voiceCallFloatingDragState.pointerId) return;
+    var dx = evt.clientX - voiceCallFloatingDragState.startX;
+    var dy = evt.clientY - voiceCallFloatingDragState.startY;
+    if(Math.abs(dx) > 4 || Math.abs(dy) > 4) voiceCallFloatingMoved = true;
+    btn.dataset.x = String(voiceCallFloatingDragState.originX + dx);
+    btn.dataset.y = String(voiceCallFloatingDragState.originY + dy);
+    placeVoiceCallFloatingWithinViewport(btn);
+  });
+  ['pointerup','pointercancel'].forEach(function(name){
+    btn.addEventListener(name, function(evt){
+      if(!voiceCallFloatingDragState || evt.pointerId !== voiceCallFloatingDragState.pointerId) return;
+      voiceCallFloatingDragState = null;
+    });
+  });
+  if(window.visualViewport && !window.visualViewport.__voiceCallFloatingBound){
+    window.visualViewport.__voiceCallFloatingBound = true;
+    window.visualViewport.addEventListener('resize', function(){ placeVoiceCallFloatingWithinViewport(btn); });
+    window.visualViewport.addEventListener('scroll', function(){ placeVoiceCallFloatingWithinViewport(btn); });
+  }
+  if(!window.__voiceCallFloatingResizeBound){
+    window.__voiceCallFloatingResizeBound = true;
+    window.addEventListener('resize', function(){ placeVoiceCallFloatingWithinViewport(btn); });
+  }
+}
+
 function syncVoiceCallFloating(){
   var state = ensureVoiceCallState();
   var btn = document.getElementById('voiceCallFloatingBtn');
   if(!btn) return;
   var show = !!(voiceCallMinimized && (state.active || state.incoming || state.awaitingAnswer || state.phase === 'connecting'));
-  btn.classList.toggle('show', show);
-  var timer = document.getElementById('voiceCallFloatingTimer');
-  if(timer){
-    if(state.active && state.connectedAt) timer.textContent = formatVoiceCallDuration(Date.now() - state.connectedAt);
-    else timer.textContent = state.incoming ? '来电' : '通话';
+  var parentShellAvailable = false;
+  try{ parentShellAvailable = !!(window.parent && window.parent !== window); }catch(e){}
+  btn.classList.toggle('show', show && !parentShellAvailable);
+  var avatar = document.getElementById('voiceCallFloatingAvatar');
+  if(avatar){
+    setAvatarNodeFromSource(avatar, currentVisibleCharAvatarSrc() || String((character && character.avatar) || '').trim(), currentVoiceCallCharName().slice(0, 2), false);
   }
+  if(show && !parentShellAvailable) placeVoiceCallFloatingWithinViewport(btn);
+  postVoiceCallFloatingSyncToShell(show);
 }
 
 function buildVoiceCallRecordPreviewLine(item){
@@ -27118,12 +27264,15 @@ function buildVoiceCallPrompt(userText){
   }).filter(Boolean).join('\n\n');
   var base = [
     buildHighPriorityContextGuard(),
+    buildCharacterAdherenceGuard(),
+    buildVoiceCallIdentityPromptBlock(),
     character && character.system_prompt ? ('【角色卡系统提示】\n' + character.system_prompt) : '',
     character && character.post_history_instructions ? ('【角色附加约束】\n' + character.post_history_instructions) : '',
     memoryPrompt,
     worldbookEntries ? ('【世界书】\n' + worldbookEntries) : '',
     replyLangPrompt,
     buildVoiceCallRealtimePromptBlock(),
+    buildPresenceHardRulePrompt(),
     '【当前模式】',
     '你正在和用户语音通话。通话前聊天上下文是这通电话的原因，优先级很高，不能像重新开局。',
     '你不是在完成问答任务，而是在听对方说话：会被语气带动，会犹豫，会打断自己，会突然想到别的，但必须符合角色本人。',
@@ -27242,7 +27391,7 @@ function closeVoiceCallOverlay(){
   closeVoiceCallComposer();
   closeVoiceCallSettingsPanel();
   var state = ensureVoiceCallState();
-  if(!state.active && !state.incoming) stopVoiceCallTicker();
+  if(!state.active && !state.incoming && !state.awaitingAnswer && state.phase !== 'connecting') stopVoiceCallTicker();
   syncVoiceCallFloating();
 }
 
@@ -27254,10 +27403,25 @@ function minimizeVoiceCallOverlay(){
   persistVoiceCallSession();
   closeVoiceCallOverlay();
   syncVoiceCallFloating();
-  toast('通话被轻轻收起来了');
 }
 
 function restoreVoiceCallOverlay(){
+  var state = ensureVoiceCallState();
+  if(!state.active && !state.incoming && !state.awaitingAnswer && state.phase !== 'connecting') return;
+  state.minimized = false;
+  voiceCallMinimized = false;
+  persistVoiceCallSession();
+  openVoiceCallOverlay();
+  if(state.incoming) document.getElementById('voiceCallIncomingDrawer')?.classList.add('open');
+  syncVoiceCallFloating();
+}
+
+async function restoreVoiceCallFromShell(){
+  try{
+    await restorePersistedVoiceCallSession();
+  }catch(err){
+    console.error('restore voice call from shell failed', err);
+  }
   var state = ensureVoiceCallState();
   if(!state.active && !state.incoming && !state.awaitingAnswer && state.phase !== 'connecting') return;
   state.minimized = false;
@@ -27301,9 +27465,12 @@ async function askVoiceCallAnswerDecision(){
   if(!character) return { decision:'reject', message:'' };
   var sys = [
     buildHighPriorityContextGuard(),
+    buildCharacterAdherenceGuard(),
+    buildVoiceCallIdentityPromptBlock(),
     character && character.system_prompt ? ('【角色卡系统提示】\n' + character.system_prompt) : '',
     character && character.post_history_instructions ? ('【角色附加约束】\n' + character.post_history_instructions) : '',
     buildVoiceCallRealtimePromptBlock(),
+    buildPresenceHardRulePrompt(),
     '【任务】',
     '用户正在给你打一通语音电话。请完全按角色当下的人设、关系、情绪、现实状态和最近聊天，判断你会不会接。',
     '接通第一句必须像这个角色真的在电话那头开口：贴角色关系、最近上下文和当下情绪，不要像默认客服或接电话模板。',
@@ -35741,7 +35908,20 @@ window.addEventListener('message', async function(e) {
     return;
   }
   if (d.type === 'APP_CLOSING') {
+    try{
+      var closingCall = ensureVoiceCallState();
+      if(closingCall && (closingCall.active || closingCall.incoming || closingCall.awaitingAnswer || closingCall.phase === 'connecting')){
+        closingCall.minimized = true;
+        voiceCallMinimized = true;
+        persistVoiceCallSession();
+        postVoiceCallFloatingSyncToShell(true);
+      }
+    }catch(closeCallErr){}
     persistChatBeforeLeave();
+    return;
+  }
+  if (d.type === 'RESTORE_VOICE_CALL_OVERLAY') {
+    restoreVoiceCallFromShell();
     return;
   }
   if (d.type === 'SET_ACTIVE_CHARACTER' || d.type === 'OPEN_CHAT_WITH') {
