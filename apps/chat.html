@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-05T01:59:37Z"></script>
-<script src="../chatStorage.js?v=2026-05-05T01:59:37Z"></script>
-<script src="../assetStore.js?v=2026-05-05T01:59:37Z"></script>
-<script src="../accountManager.js?v=2026-05-05T01:59:37Z"></script>
-<script src="../metadataStore.js?v=2026-05-05T01:59:37Z"></script>
-<script src="../scheduleShared.js?v=2026-05-05T01:59:37Z"></script>
-<script src="../presenceShared.js?v=2026-05-05T01:59:37Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-05T01:59:37Z"></script>
-<script src="../sunnySupport.js?v=2026-05-05T01:59:37Z"></script>
-<script src="offlineInvite.js?v=2026-05-05T01:59:37Z"></script>
+<script src="../promptManager.js?v=2026-05-05T02:22:39Z"></script>
+<script src="../chatStorage.js?v=2026-05-05T02:22:39Z"></script>
+<script src="../assetStore.js?v=2026-05-05T02:22:39Z"></script>
+<script src="../accountManager.js?v=2026-05-05T02:22:39Z"></script>
+<script src="../metadataStore.js?v=2026-05-05T02:22:39Z"></script>
+<script src="../scheduleShared.js?v=2026-05-05T02:22:39Z"></script>
+<script src="../presenceShared.js?v=2026-05-05T02:22:39Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-05T02:22:39Z"></script>
+<script src="../sunnySupport.js?v=2026-05-05T02:22:39Z"></script>
+<script src="offlineInvite.js?v=2026-05-05T02:22:39Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -17451,11 +17451,16 @@ function enterMultiSelectMode(){
 }
 async function removeMessagesByIds(ids){
   if(!ids || !ids.length) return 0;
-  var set = new Set(ids);
+  var set = new Set(ids.map(function(id){ return String(id || '').trim(); }).filter(Boolean));
+  if(!set.size) return 0;
   var before = chatLog.length;
-  var removedAssistant = chatLog.some(function(m){ return set.has(m.id) && m.role === 'assistant'; });
-  var removedSystem = chatLog.some(function(m){ return set.has(m.id) && m.role === 'system'; });
-  chatLog = chatLog.filter(function(m){ return !set.has(m.id); });
+  var removedAssistant = chatLog.some(function(m){ return set.has(String((m && m.id) || '')) && m.role === 'assistant'; });
+  var removedSystem = chatLog.some(function(m){ return set.has(String((m && m.id) || '')) && m.role === 'system'; });
+  var removedIds = chatLog.filter(function(m){ return m && set.has(String(m.id || '')); }).map(function(m){ return String(m.id || ''); });
+  chatLog = chatLog.filter(function(m){ return !set.has(String((m && m.id) || '')); });
+  if(character && character.id && removedIds.length){
+    await persistDeletedChatMessageIds(character.id, removedIds);
+  }
   if(editingMessageId && set.has(editingMessageId)){
     editingMessageId = null;
     editingDraft = '';
@@ -27259,6 +27264,39 @@ function formatVoiceCallClockForOffset(offsetHours){
   return String(local.getHours()).padStart(2, '0') + ':' + String(local.getMinutes()).padStart(2, '0');
 }
 
+function buildVoiceCallWeatherTimePromptBlock(){
+  var userSnapshot = getInviteWeatherSnapshot('user');
+  var charSnapshot = getInviteWeatherSnapshot('char');
+  if(!userSnapshot && !charSnapshot) return '';
+  function lineFor(role, snapshot){
+    if(!snapshot) return '';
+    var who = role === 'user' ? '用户' : '角色';
+    var displayCity = String(snapshot.aliasName || snapshot.resolvedName || snapshot.realName || '').trim() || (who + '显示城市');
+    var realCity = String(snapshot.resolvedName || snapshot.realName || '').trim() || '未设定';
+    var timeText = String((snapshot.timeLabel || '') + (snapshot.dateLabel ? (' ' + snapshot.dateLabel) : '')).trim() || '未设定';
+    var period = snapshot.periodLabel ? ('（' + snapshot.periodLabel + '）') : '';
+    var weather = [
+      snapshot.weatherIcon || '',
+      snapshot.weatherLabel || '',
+      snapshot.temperatureC === null ? '' : (snapshot.temperatureC + '°C')
+    ].filter(Boolean).join(' ');
+    return [
+      who + '显示城市：' + displayCity,
+      who + '真实天气/时区城市：' + realCity,
+      who + '当地时间：' + timeText + period,
+      weather ? (who + '当前天气：' + weather) : ''
+    ].filter(Boolean).join('；');
+  }
+  var lines = [
+    '【通话天气与时间硬规则】',
+    lineFor('user', userSnapshot),
+    lineFor('char', charSnapshot),
+    '真实天气/时区城市只用于判断天气、早晚、作息、季节和出门常识；角色说出口的地点名只允许使用显示城市，不要把真实城市名直接说出来。',
+    '判断“起床、睡觉、午饭、下班、深夜、清晨、能不能出门”时，优先按这里的角色当地时间和用户当地时间，不要默认中国时间。'
+  ].filter(Boolean);
+  return lines.join('\n');
+}
+
 function normalizeVoiceCallNarratorSpeaker(value){
   return String(value || '').trim().toLowerCase() === 'user' ? 'user' : 'assistant';
 }
@@ -27681,6 +27719,7 @@ function buildVoiceCallPrompt(userText){
     schedulePrompt ? ('【通话日程感知】\n' + schedulePrompt + '\n通话时如果你今天有自己的时间轴，要把它当作你此刻正在生活的真实背景；用户问你在干嘛、等会儿做什么、为什么忙，优先按当前时间命中的角色时间轴回答。没有角色时间轴时再自由发挥，不要硬编具体日程。') : '',
     replyLangPrompt,
     buildVoiceCallRealtimePromptBlock(),
+    buildVoiceCallWeatherTimePromptBlock(),
     buildPresenceHardRulePrompt(),
     '【人设读取硬规则】\n回复前先读取并服从角色卡、人设、关系/场景、用户设定、世界书、记忆、最近聊天和现实地点时间。不要用通用恋爱模板、客服模板或陌生人接电话模板替代角色本人。',
     '【当前模式】',
@@ -27718,6 +27757,12 @@ async function triggerVoiceCallAssistantTurn(userText){
   syncVoiceCallSettingsUi();
   persistVoiceCallSession();
   try{
+    try{
+      await Promise.all([
+        refreshInviteWeatherSnapshot('user'),
+        refreshInviteWeatherSnapshot('char')
+      ]);
+    }catch(weatherErr){}
     var prompt = buildVoiceCallPrompt(userText);
     var raw = await callAIWithCustomPrompts(prompt.system, prompt.user);
     var parts = extractVoiceCallReplyParts(raw).filter(function(part){ return part && part.text; });
@@ -28481,24 +28526,25 @@ function syncChatViewport(){
   if(metrics.currentHeight > stableChatAppHeight && !textInputFocused){
     stableChatAppHeight = metrics.currentHeight;
   }
-  var parentFresh = parentKeyboardOpen && parentKeyboardUpdatedAt && Date.now() - parentKeyboardUpdatedAt < 8000;
-  var parentInset = (textInputFocused && parentFresh) ? Math.max(0, parentComposerShift || 0) : 0;
-  var inferredInset = textInputFocused ? Math.max(0, stableChatAppHeight - metrics.visibleHeight) : 0;
-  var iframeMeasuredRaw = textInputFocused ? Math.max(metrics.obscuredHeight, inferredInset) : 0;
-  var measuredKeyboardRaw = textInputFocused ? Math.max(iframeMeasuredRaw, parentInset) : 0;
-  var measuredOpen = textInputFocused && (iframeMeasuredRaw > 120 || (parentInset > 120 && parentKeyboardMeasuredOpen));
-  var focusAge = chatKeyboardFocusStartedAt ? Date.now() - chatKeyboardFocusStartedAt : 0;
-  if(textInputFocused && measuredKeyboardRaw <= 120 && isAndroidChatRuntime() && !chatKeyboardRealOpenSeen && appliedKeyboardInset <= 120 && focusAge < 900){
-    measuredKeyboardRaw = Math.max(measuredKeyboardRaw, appliedKeyboardInset, lastKnownKeyboardInset, estimateChatKeyboardInset());
+  var keyboardInset = 0;
+  if(textInputFocused && window.visualViewport){
+    var vv = window.visualViewport;
+    var layoutH = Math.max(
+      stableChatAppHeight || 0,
+      metrics.currentHeight || 0,
+      Math.round(document.documentElement.clientHeight || 0)
+    );
+    var visualBottom = Math.round((vv.height || layoutH) + Math.max(0, vv.offsetTop || 0));
+    var covered = Math.max(0, layoutH - visualBottom);
+    if(covered > 80) keyboardInset = Math.min(430, covered);
   }
-  var keyboardInset = resolveStableChatKeyboardInset(measuredKeyboardRaw, textInputFocused, measuredOpen);
-  if(!textInputFocused || keyboardInset <= 120){
+  if(!textInputFocused || keyboardInset <= 80){
     keyboardInset = 0;
-    parentComposerShift = 0;
-    parentKeyboardOpen = false;
-    parentKeyboardMeasuredOpen = false;
-    parentKeyboardUpdatedAt = 0;
   }
+  parentComposerShift = 0;
+  parentKeyboardOpen = false;
+  parentKeyboardMeasuredOpen = false;
+  parentKeyboardUpdatedAt = 0;
   if(keyboardInset >= 180) lastKnownKeyboardInset = keyboardInset;
   appliedKeyboardInset = keyboardInset;
   chatInputFocusActive = textInputFocused;
@@ -31221,6 +31267,11 @@ function chatHistoryHasUserEntryAfter(list, cutoff){
   });
 }
 
+function getChatEntryStorageId(entry){
+  if(Array.isArray(entry)) return String(entry[0] || '').trim();
+  return String((entry && entry.id) || '').trim();
+}
+
 function filterChatHistoryAfterClearMarker(list, cutoff){
   var after = Number(cutoff || 0) || 0;
   var source = Array.isArray(list) ? list : [];
@@ -31245,6 +31296,133 @@ function enforceChatClearMarkerOnRecord(record, charId, clearAt){
     reason: ''
   });
   return next;
+}
+
+function chatDeletedMessagesStorageBase(charId){
+  return 'chat_deleted_message_ids_' + String(charId || '').trim();
+}
+
+function getChatDeletedMessageKeyCandidates(charId){
+  var base = chatDeletedMessagesStorageBase(charId);
+  if(!base || base === 'chat_deleted_message_ids_') return [];
+  var keys = [accountScopedKey(base), base];
+  getAccountIdCandidates().forEach(function(accountId){
+    if(accountId) keys.push(accountScopedKeyForAccount(base, accountId));
+  });
+  return Array.from(new Set(keys.filter(Boolean)));
+}
+
+function getChatDeletedMessageWriteKeyCandidates(charId){
+  var base = chatDeletedMessagesStorageBase(charId);
+  if(!base || base === 'chat_deleted_message_ids_') return [];
+  var keys = [accountScopedKey(base), base];
+  getWriteAccountIdCandidates().forEach(function(accountId){
+    if(accountId) keys.push(accountScopedKeyForAccount(base, accountId));
+  });
+  return Array.from(new Set(keys.filter(Boolean)));
+}
+
+function mergeDeletedChatMessageMap(target, raw){
+  var map = target && typeof target === 'object' ? target : Object.create(null);
+  function add(id, at){
+    var safeId = String(id || '').trim();
+    if(!safeId) return;
+    map[safeId] = Math.max(Number(map[safeId] || 0) || 0, Number(at || Date.now()) || Date.now());
+  }
+  if(Array.isArray(raw)){
+    raw.forEach(function(item){
+      if(item && typeof item === 'object') add(item.id || item.msgId || item.messageId, item.deletedAt || item.at || item.updatedAt);
+      else add(item, Date.now());
+    });
+    return map;
+  }
+  if(raw && typeof raw === 'object'){
+    if(Array.isArray(raw.ids)) mergeDeletedChatMessageMap(map, raw.ids);
+    if(raw.map && typeof raw.map === 'object') mergeDeletedChatMessageMap(map, raw.map);
+    Object.keys(raw).forEach(function(key){
+      if(/^(ids|map|charId|updatedAt|data)$/.test(key)) return;
+      add(key, raw[key]);
+    });
+    if(raw.data) mergeDeletedChatMessageMap(map, raw.data);
+  }
+  return map;
+}
+
+function serializeDeletedChatMessageMap(map, charId){
+  var source = map && typeof map === 'object' ? map : {};
+  var ids = Object.keys(source).filter(Boolean).map(function(id){
+    return { id: id, deletedAt: Number(source[id] || Date.now()) || Date.now() };
+  }).sort(function(a, b){ return b.deletedAt - a.deletedAt; }).slice(0, 3000);
+  return {
+    charId: String(charId || ''),
+    updatedAt: ids.length ? Math.max.apply(Math, ids.map(function(item){ return item.deletedAt; })) : Date.now(),
+    ids: ids
+  };
+}
+
+function readLocalDeletedChatMessageMap(charId){
+  var map = Object.create(null);
+  getChatDeletedMessageKeyCandidates(charId).forEach(function(key){
+    try{
+      var raw = localStorage.getItem(key);
+      if(raw) mergeDeletedChatMessageMap(map, JSON.parse(raw));
+    }catch(err){}
+  });
+  return map;
+}
+
+async function readDeletedChatMessageMap(charId){
+  var map = readLocalDeletedChatMessageMap(charId);
+  if(window.PhoneStorage && typeof window.PhoneStorage.get === 'function'){
+    var keys = getChatDeletedMessageKeyCandidates(charId);
+    for(var i = 0; i < keys.length; i += 1){
+      try{
+        var record = await window.PhoneStorage.get('kv', keys[i]);
+        mergeDeletedChatMessageMap(map, record && Object.prototype.hasOwnProperty.call(record, 'data') ? record.data : record);
+      }catch(err){}
+    }
+  }
+  return map;
+}
+
+async function persistDeletedChatMessageIds(charId, ids){
+  var safeCharId = String(charId || '').trim();
+  var list = Array.from(new Set((Array.isArray(ids) ? ids : []).map(function(id){ return String(id || '').trim(); }).filter(Boolean)));
+  if(!safeCharId || !list.length) return;
+  var map = await readDeletedChatMessageMap(safeCharId);
+  var now = Date.now();
+  list.forEach(function(id){ map[id] = Math.max(Number(map[id] || 0) || 0, now); });
+  var payload = serializeDeletedChatMessageMap(map, safeCharId);
+  var keys = getChatDeletedMessageWriteKeyCandidates(safeCharId);
+  keys.forEach(function(key){
+    try{ localStorage.setItem(key, JSON.stringify(payload)); }catch(err){}
+  });
+  if(window.PhoneStorage && typeof window.PhoneStorage.put === 'function'){
+    await Promise.all(keys.map(function(key){
+      return window.PhoneStorage.put('kv', {
+        id: key,
+        charId: safeCharId,
+        updatedAt: payload.updatedAt,
+        data: payload
+      }).catch(function(){ return null; });
+    }));
+  }
+}
+
+function filterDeletedChatMessages(list, deletedMap){
+  var map = deletedMap && typeof deletedMap === 'object' ? deletedMap : null;
+  if(!map || !Object.keys(map).length) return Array.isArray(list) ? list.slice() : [];
+  return (Array.isArray(list) ? list : []).filter(function(entry){
+    var id = getChatEntryStorageId(entry);
+    return !id || !map[id];
+  });
+}
+
+function filterDeletedMessagesFromRecord(record, deletedMap){
+  if(!record || !Array.isArray(record.history)) return record;
+  var filtered = filterDeletedChatMessages(record.history, deletedMap);
+  if(filtered.length === record.history.length) return record;
+  return Object.assign({}, record, { history: filtered });
 }
 
 function chatClearMarkerStorageBase(charId){
@@ -31744,6 +31922,7 @@ async function loadBestChatHistoryRecord(charId){
   await ensureAccountManagerReady();
   var candidates = getChatStorageKeyCandidates(charId);
   var clearMarkerAt = await readChatClearMarkerAt(charId);
+  var deletedMessageMap = await readDeletedChatMessageMap(charId);
   var best = null;
   best = chooseBetterChatHistory(best, makeChatClearTombstoneRecord(charId, clearMarkerAt));
   for(var i = 0; i < candidates.length; i += 1){
@@ -31752,7 +31931,7 @@ async function loadBestChatHistoryRecord(charId){
       if(window.PhoneStorage && typeof window.PhoneStorage.get === 'function'){
         var stored = await window.PhoneStorage.get('chats', key);
         if(hasCanonicalEmptyChatRecord(stored)) chatStorageHadCanonicalEmpty = true;
-        best = chooseBetterChatHistory(best, normalizeStoredChatRecord(stored, key));
+        best = chooseBetterChatHistory(best, filterDeletedMessagesFromRecord(normalizeStoredChatRecord(stored, key), deletedMessageMap));
       }
     }catch(e){}
     try{
@@ -31760,12 +31939,12 @@ async function loadBestChatHistoryRecord(charId){
       if(localRaw){
         var localObj = JSON.parse(localRaw || 'null');
         if(hasCanonicalEmptyChatRecord(localObj)) chatStorageHadCanonicalEmpty = true;
-        best = chooseBetterChatHistory(best, normalizeStoredChatRecord(localObj, key));
+        best = chooseBetterChatHistory(best, filterDeletedMessagesFromRecord(normalizeStoredChatRecord(localObj, key), deletedMessageMap));
       }
     }catch(localErr){
       var localHistory = parseStoredChatHistory(localStorage.getItem(key));
       if(localHistory.length){
-        best = chooseBetterChatHistory(best, {
+        best = chooseBetterChatHistory(best, filterDeletedMessagesFromRecord({
           key: key,
           updatedAt: 0,
           revision: 0,
@@ -31773,7 +31952,7 @@ async function loadBestChatHistoryRecord(charId){
           clearTombstoneAt: 0,
           reason: '',
           history: localHistory
-        });
+        }, deletedMessageMap));
       }
     }
   }
@@ -31789,11 +31968,13 @@ async function loadBestChatHistoryRecord(charId){
           if(!normalized) return;
           if(!normalized.history.length) chatStorageHadCanonicalEmpty = true;
           if(candidates.indexOf(recordKey) === -1 && charIds.indexOf(recordCharId) === -1) return;
+          normalized = filterDeletedMessagesFromRecord(normalized, deletedMessageMap);
           best = chooseBetterChatHistory(best, normalized);
         });
       }
     }catch(e){}
   }
+  best = filterDeletedMessagesFromRecord(best, deletedMessageMap);
   best = enforceChatClearMarkerOnRecord(best, charId, clearMarkerAt);
   best = chooseBetterChatHistory(best, makeChatClearTombstoneRecord(charId, clearMarkerAt));
   best = enforceChatClearMarkerOnRecord(best, charId, clearMarkerAt);
@@ -36584,19 +36765,8 @@ window.addEventListener('input', function(e){
 if(window.visualViewport){
   window.visualViewport.addEventListener('resize', function(){
     syncChatViewport();
-    keepComposerVisible();
   });
   window.visualViewport.addEventListener('scroll', function(){
-    if(isChatTextInputActive()){
-      if(isAndroidChatRuntime() && appliedKeyboardInset > 120){
-        var metrics = getChatViewportMetrics();
-        var inferredInset = Math.max(0, stableChatAppHeight - metrics.visibleHeight);
-        if(Math.max(metrics.obscuredHeight, inferredInset) <= 120){
-          syncChatViewport();
-        }
-      }
-      return;
-    }
     syncChatViewport();
   });
 }

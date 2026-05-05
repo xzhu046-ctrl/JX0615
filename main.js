@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-05T01:59:37Z';
+const APP_BUILD_ID = '2026-05-05T02:22:39Z';
 const APP_UPDATE_NOTES = [
-  '清空聊天后旧记录不会再回来',
-  '离开页面时会保留清空状态',
-  '主页预览也会同步清空边界'
+  '删除单条消息后不会再回来',
+  '通话会优先按天气城市读时间',
+  '聊天输入框改用稳定键盘定位'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -2608,12 +2608,14 @@ async function getBackgroundCharacter(){
 async function readBackgroundChatHistory(charId, accountId){
   var scoped = scopedKeyForAccount('chat_' + charId, accountId);
   var clearMarkerAt = await getShellChatClearMarkerAtAsync(charId, accountId);
+  var deletedMessageMap = await getShellDeletedChatMessageMapAsync(charId, accountId);
   try{
     if(window.PhoneStorage && typeof window.PhoneStorage.get === 'function'){
       var record = await window.PhoneStorage.get('chats', scoped);
       var list = record && Array.isArray(record.history) ? record.history : [];
       var recordClearAt = Math.max(clearMarkerAt, Number((record && (record.deletedAt || record.clearTombstoneAt)) || 0) || 0);
       if(recordClearAt && list.length) list = filterShellChatHistoryAfterClear(list, recordClearAt);
+      list = filterShellDeletedChatMessages(list, deletedMessageMap);
       if(Array.isArray(list) && list.length) return list;
     }
   }catch(e){}
@@ -2625,6 +2627,7 @@ async function readBackgroundChatHistory(charId, accountId){
     var fallbackList = (parsed && (parsed.history || parsed.messages)) || [];
     var localClearAt = Math.max(clearMarkerAt, Number((parsed && (parsed.deletedAt || parsed.clearTombstoneAt)) || 0) || 0);
     if(localClearAt && Array.isArray(fallbackList) && fallbackList.length) fallbackList = filterShellChatHistoryAfterClear(fallbackList, localClearAt);
+    fallbackList = filterShellDeletedChatMessages(fallbackList, deletedMessageMap);
     return Array.isArray(fallbackList) ? fallbackList : [];
   }catch(e3){
     return [];
@@ -2634,8 +2637,10 @@ async function readBackgroundChatHistory(charId, accountId){
 async function writeBackgroundChatHistory(charId, accountId, messages){
   var scoped = scopedKeyForAccount('chat_' + charId, accountId);
   var clearMarkerAt = await getShellChatClearMarkerAtAsync(charId, accountId);
+  var deletedMessageMap = await getShellDeletedChatMessageMapAsync(charId, accountId);
   var nextMessages = Array.isArray(messages) ? messages.slice() : [];
   if(clearMarkerAt && nextMessages.length) nextMessages = filterShellChatHistoryAfterClear(nextMessages, clearMarkerAt);
+  nextMessages = filterShellDeletedChatMessages(nextMessages, deletedMessageMap);
   if(window.PhoneStorage && typeof window.PhoneStorage.put === 'function'){
     try{
       await window.PhoneStorage.put('chats', {
@@ -7101,6 +7106,87 @@ function filterShellChatHistoryAfterClear(list, cutoff){
   return shellChatHistoryHasUserEntryAfter(filtered, after) ? filtered : [];
 }
 
+function getShellChatEntryId(entry){
+  if(Array.isArray(entry)) return String(entry[0] || '').trim();
+  return String((entry && entry.id) || '').trim();
+}
+
+function shellChatDeletedMessagesBase(charId){
+  return 'chat_deleted_message_ids_' + String(charId || '').trim();
+}
+
+function getShellChatDeletedMessageKeys(charId, accountId){
+  var base = shellChatDeletedMessagesBase(charId);
+  if(!base || base === 'chat_deleted_message_ids_') return [];
+  var activeId = accountId || getActiveAccountId();
+  var keys = [mainScopedKey(base), base];
+  if(activeId) keys.push(scopedKeyForAccount(base, activeId));
+  var defaultId = getDefaultAccountId();
+  if(defaultId) keys.push(scopedKeyForAccount(base, defaultId));
+  return Array.from(new Set(keys.filter(Boolean)));
+}
+
+function mergeShellDeletedChatMessageMap(target, raw){
+  var map = target && typeof target === 'object' ? target : Object.create(null);
+  function add(id, at){
+    var safeId = String(id || '').trim();
+    if(!safeId) return;
+    map[safeId] = Math.max(Number(map[safeId] || 0) || 0, Number(at || Date.now()) || Date.now());
+  }
+  if(Array.isArray(raw)){
+    raw.forEach(function(item){
+      if(item && typeof item === 'object') add(item.id || item.msgId || item.messageId, item.deletedAt || item.at || item.updatedAt);
+      else add(item, Date.now());
+    });
+    return map;
+  }
+  if(raw && typeof raw === 'object'){
+    if(Array.isArray(raw.ids)) mergeShellDeletedChatMessageMap(map, raw.ids);
+    if(raw.map && typeof raw.map === 'object') mergeShellDeletedChatMessageMap(map, raw.map);
+    Object.keys(raw).forEach(function(key){
+      if(/^(ids|map|charId|updatedAt|data)$/.test(key)) return;
+      add(key, raw[key]);
+    });
+    if(raw.data) mergeShellDeletedChatMessageMap(map, raw.data);
+  }
+  return map;
+}
+
+function getLocalShellDeletedChatMessageMap(charId, accountId){
+  var map = Object.create(null);
+  getShellChatDeletedMessageKeys(charId, accountId).forEach(function(key){
+    try{
+      var raw = localStorage.getItem(key);
+      if(raw) mergeShellDeletedChatMessageMap(map, JSON.parse(raw));
+    }catch(e){}
+  });
+  return map;
+}
+
+async function getShellDeletedChatMessageMapAsync(charId, accountId){
+  var map = getLocalShellDeletedChatMessageMap(charId, accountId);
+  if(window.PhoneStorage && typeof window.PhoneStorage.get === 'function'){
+    var keys = getShellChatDeletedMessageKeys(charId, accountId);
+    for(var i = 0; i < keys.length; i += 1){
+      try{
+        var record = await window.PhoneStorage.get('kv', keys[i]);
+        mergeShellDeletedChatMessageMap(map, record && Object.prototype.hasOwnProperty.call(record, 'data') ? record.data : record);
+      }catch(e){}
+    }
+  }
+  return map;
+}
+
+function filterShellDeletedChatMessages(list, deletedMap){
+  var source = Array.isArray(list) ? list : [];
+  var map = deletedMap && typeof deletedMap === 'object' ? deletedMap : null;
+  if(!map || !Object.keys(map).length) return source.slice();
+  return source.filter(function(entry){
+    var id = getShellChatEntryId(entry);
+    return !id || !map[id];
+  });
+}
+
 function getStoredChatMessages(charId){
   if(!charId) return [];
   try{
@@ -7167,6 +7253,7 @@ function getStoredChatMessages(charId){
       if(nextUpdatedAt === bestUpdatedAt && nextStamp.lastTs === bestStamp.lastTs && nextStamp.count > bestStamp.count) return nextRecord;
       return bestRecord;
     }
+    var deletedMessageMap = getLocalShellDeletedChatMessageMap(charId, getActiveAccountId());
     var best = null;
     candidates.forEach(function(raw){
       if(!raw) return;
@@ -7175,6 +7262,7 @@ function getStoredChatMessages(charId){
         var list = normalizeStoredHistory((parsed && (parsed.history || parsed.messages)) || []);
         var recordClearAt = Math.max(clearMarkerAt, Number((parsed && (parsed.deletedAt || parsed.clearTombstoneAt)) || 0) || 0);
         if(recordClearAt && list.length) list = filterShellChatHistoryAfterClear(list, recordClearAt);
+        list = filterShellDeletedChatMessages(list, deletedMessageMap);
         if(Array.isArray(list) && list.length){
           best = chooseBetter(best, {
             history: list,
@@ -7192,6 +7280,7 @@ function getStoredChatMessages(charId){
 async function getStoredChatMessagesAsync(charId){
   var localList = getStoredChatMessages(charId);
   var clearMarkerAt = await getShellChatClearMarkerAtAsync(charId, getActiveAccountId());
+  var deletedMessageMap = await getShellDeletedChatMessageMapAsync(charId, getActiveAccountId());
   if(window.PhoneStorage && typeof window.PhoneStorage.get === 'function' && charId){
     try{
       var scoped = scopedKeyForAccount('chat_' + charId, getActiveAccountId());
@@ -7213,6 +7302,7 @@ async function getStoredChatMessagesAsync(charId){
       }).filter(Boolean) : [];
       var recordClearAt = Math.max(clearMarkerAt, Number((record && (record.deletedAt || record.clearTombstoneAt)) || 0) || 0);
       if(recordClearAt && history.length) history = filterShellChatHistoryAfterClear(history, recordClearAt);
+      history = filterShellDeletedChatMessages(history, deletedMessageMap);
       if(history.length){
         var localLastTs = 0;
         localList.forEach(function(entry){
@@ -11863,6 +11953,7 @@ function getQqUnreadCountForActive(){
         Number((saved && (saved.deletedAt || saved.clearTombstoneAt)) || 0) || 0
       );
       if(clearAt && list.length) list = filterShellChatHistoryAfterClear(list, clearAt);
+      list = filterShellDeletedChatMessages(list, getLocalShellDeletedChatMessageMap(c.id, activeId));
       list.forEach(function(m){
         var ts = getShellChatMessageTimestamp(m);
         if(m && getShellChatMessageRole(m) === 'assistant' && !getShellChatMessageReadAt(m) && ts > getShellChatSeenAt(c.id)) total++;
@@ -12011,6 +12102,7 @@ async function refreshQqUnreadCountCache(){
           Number((record && (record.deletedAt || record.clearTombstoneAt)) || 0) || 0
         );
         if(clearAt && list.length) list = filterShellChatHistoryAfterClear(list, clearAt);
+        list = filterShellDeletedChatMessages(list, getLocalShellDeletedChatMessageMap(charId, activeId));
         byChar[charId] = chooseBetterShellUnreadSummary(byChar[charId], summarizeShellUnreadHistoryForChar(list, charId));
       });
       chatTotal = Object.keys(byChar).reduce(function(sum, charId){
@@ -12048,6 +12140,7 @@ async function markShellChatAsRead(charId){
   var seenAt = Date.now();
   var keys = getShellChatStorageKeysForChar(safeId);
   var clearMarkerAt = await getShellChatClearMarkerAtAsync(safeId, getActiveAccountId());
+  var deletedMessageMap = await getShellDeletedChatMessageMapAsync(safeId, getActiveAccountId());
   var changed = false;
   if(window.PhoneStorage && typeof window.PhoneStorage.list === 'function' && typeof window.PhoneStorage.put === 'function'){
     try{
@@ -12063,6 +12156,7 @@ async function markShellChatAsRead(charId){
         if(recordCharId !== safeId && keys.indexOf(recordId) === -1 && recordId.indexOf('chat_' + safeId + '__acct_') !== 0) continue;
         var listFromRecord = record && Array.isArray(record.history) ? record.history : [];
         if(clearMarkerAt && listFromRecord.length) listFromRecord = filterShellChatHistoryAfterClear(listFromRecord, clearMarkerAt);
+        listFromRecord = filterShellDeletedChatMessages(listFromRecord, deletedMessageMap);
         seenAt = absorbShellChatSeenTimestamp(seenAt, listFromRecord);
         if(!listFromRecord.length) continue;
         var nowIdb = Math.max(Date.now(), seenAt);
@@ -12094,6 +12188,7 @@ async function markShellChatAsRead(charId){
         var saved = await window.PhoneStorage.get('chats', keys[i]);
         var list = saved && Array.isArray(saved.history) ? saved.history : [];
         if(clearMarkerAt && list.length) list = filterShellChatHistoryAfterClear(list, clearMarkerAt);
+        list = filterShellDeletedChatMessages(list, deletedMessageMap);
         seenAt = absorbShellChatSeenTimestamp(seenAt, list);
         if(!list.length) continue;
         var now = Math.max(Date.now(), seenAt);
@@ -12131,6 +12226,7 @@ async function markShellChatAsRead(charId){
       var saved = JSON.parse(localStorage.getItem(key) || 'null');
       var list = saved && (Array.isArray(saved.history) ? saved.history : (Array.isArray(saved.messages) ? saved.messages : []));
       if(clearMarkerAt && list.length) list = filterShellChatHistoryAfterClear(list, clearMarkerAt);
+      list = filterShellDeletedChatMessages(list, deletedMessageMap);
       seenAt = absorbShellChatSeenTimestamp(seenAt, list);
       if(!list.length) return;
       var now = Math.max(Date.now(), seenAt);
