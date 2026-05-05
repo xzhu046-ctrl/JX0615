@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-05T04:10:22Z';
+const APP_BUILD_ID = '2026-05-05T04:28:10Z';
 const APP_UPDATE_NOTES = [
-  '聊天不再被状态模板截断',
-  '日程按设定城市刷新时间',
-  '同城时不再乱说时差'
+  '地点名称只显示设定城市',
+  '真实天气时间继续准确刷新',
+  '日程地点不再暴露真实城市'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -3889,7 +3889,7 @@ function getSchedulePresenceContext(character){
     var charWeather = loadScheduleWeatherSettingByCharId('char', character.id) || {};
     function displayPlace(setting, fallback){
       if(!(setting && typeof setting === 'object')) return String(fallback || '').trim();
-      return String(setting.aliasName || '').trim() || String(setting.realName || '').trim() || String(setting.resolvedName || '').trim() || String(fallback || '').trim();
+      return String(setting.aliasName || '').trim() || String(fallback || '').trim();
     }
     var userLabel = displayPlace(userWeather, String(snapshot.user.label || '').trim() || String(snapshot.user.cityId || '').trim() || '用户所在城市');
     var charCityName = displayPlace(charWeather, snapshot.char.city && snapshot.char.city.name ? String(snapshot.char.city.name).trim() : '');
@@ -3932,7 +3932,7 @@ function buildScheduleWeatherPresenceContext(payload){
   if(!(user || char)) return '';
   function displayPlace(setting, fallback){
     if(!(setting && typeof setting === 'object')) return String(fallback || '').trim();
-    return String(setting.aliasName || '').trim() || String(setting.realName || '').trim() || String(setting.resolvedName || '').trim() || String(fallback || '').trim();
+    return String(setting.aliasName || '').trim() || String(fallback || '').trim();
   }
   var lines = [
     user ? ('用户当前显示地理位置：' + displayPlace(user, '用户所在城市')) : '',
@@ -4285,26 +4285,13 @@ function getSchedulePresenceLocaleGuard(character, payload){
     [userWeather, charWeather].forEach(function(setting){
       if(!(setting && typeof setting === 'object')) return;
       pushToken(setting.aliasName);
-      pushToken(setting.realName);
-      pushToken(setting.resolvedName);
-      pushToken(setting.admin1);
-      pushToken(setting.country);
     });
   }else if(window.PresenceShared && character && character.id && typeof window.PresenceShared.getPresenceSnapshot === 'function'){
     try{
       var snapshot = window.PresenceShared.getPresenceSnapshot(character, Date.now());
       if(snapshot && snapshot.user && snapshot.char){
         pushToken(snapshot.user.label);
-        pushToken(snapshot.user.weatherName);
-        try{
-          if(snapshot.user.cityId && typeof window.PresenceShared.getCity === 'function'){
-            var userCity = window.PresenceShared.getCity(snapshot.user.cityId);
-            pushToken(userCity && userCity.name);
-            pushToken(userCity && userCity.country);
-          }
-        }catch(err){}
         pushToken(snapshot.char.city && snapshot.char.city.name);
-        pushToken(snapshot.char.city && snapshot.char.city.country);
         pushToken(snapshot.char.placeLabel);
       }
     }catch(err){}
@@ -4319,12 +4306,12 @@ function getSchedulePresenceLocaleGuard(character, payload){
   }catch(err){}
   var farDistance = false;
   if(userWeather && charWeather){
-    farDistance = getScheduleWeatherDistanceKm(userWeather, charWeather) >= 8;
-    if(!farDistance){
-      var userPlace = String(userWeather.aliasName || userWeather.realName || userWeather.resolvedName || '').trim();
-      var charPlace = String(charWeather.aliasName || charWeather.realName || charWeather.resolvedName || '').trim();
-      if(userPlace && charPlace && userPlace !== charPlace) farDistance = true;
-      if(String(userWeather.country || '').trim() && String(charWeather.country || '').trim() && String(userWeather.country || '').trim() !== String(charWeather.country || '').trim()) farDistance = true;
+    var userPlace = String(userWeather.aliasName || '').trim();
+    var charPlace = String(charWeather.aliasName || '').trim();
+    if(userPlace && charPlace){
+      farDistance = userPlace !== charPlace;
+    }else{
+      farDistance = getScheduleWeatherDistanceKm(userWeather, charWeather) >= 8;
     }
   }else{
     farDistance = isScheduleFarDistance(character);

@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-05T04:10:22Z"></script>
-<script src="../chatStorage.js?v=2026-05-05T04:10:22Z"></script>
-<script src="../assetStore.js?v=2026-05-05T04:10:22Z"></script>
-<script src="../accountManager.js?v=2026-05-05T04:10:22Z"></script>
-<script src="../metadataStore.js?v=2026-05-05T04:10:22Z"></script>
-<script src="../scheduleShared.js?v=2026-05-05T04:10:22Z"></script>
-<script src="../presenceShared.js?v=2026-05-05T04:10:22Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-05T04:10:22Z"></script>
-<script src="../sunnySupport.js?v=2026-05-05T04:10:22Z"></script>
-<script src="offlineInvite.js?v=2026-05-05T04:10:22Z"></script>
+<script src="../promptManager.js?v=2026-05-05T04:28:10Z"></script>
+<script src="../chatStorage.js?v=2026-05-05T04:28:10Z"></script>
+<script src="../assetStore.js?v=2026-05-05T04:28:10Z"></script>
+<script src="../accountManager.js?v=2026-05-05T04:28:10Z"></script>
+<script src="../metadataStore.js?v=2026-05-05T04:28:10Z"></script>
+<script src="../scheduleShared.js?v=2026-05-05T04:28:10Z"></script>
+<script src="../presenceShared.js?v=2026-05-05T04:28:10Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-05T04:28:10Z"></script>
+<script src="../sunnySupport.js?v=2026-05-05T04:28:10Z"></script>
+<script src="offlineInvite.js?v=2026-05-05T04:28:10Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -7964,9 +7964,9 @@ function renderWeatherSettingUi(role){
   if(preview) preview.classList.toggle('show', hasPreview);
   if(previewEmpty) previewEmpty.classList.toggle('show', !hasPreview);
   if(hasPreview){
-    if(title) title.textContent = setting.aliasName || setting.realName || setting.resolvedName;
+    if(title) title.textContent = setting.aliasName || '显示城市未设置';
     var timeInfo = buildTimezoneTimeSnapshot(setting.timezone);
-    if(sub) sub.textContent = (setting.resolvedName || setting.realName || '已匹配城市')
+    if(sub) sub.textContent = '真实天气 / 时间已锁定'
       + (timeInfo && timeInfo.timeLabel ? ('  ·  ' + timeInfo.timeLabel) : '')
       + (setting.temperatureC === null ? '' : ('  ·  ' + setting.temperatureC + '°C  ·  ' + setting.weatherLabel));
     if(icon) icon.textContent = setting.weatherIcon || '☀︎';
@@ -8146,10 +8146,11 @@ async function refreshInviteWeatherSnapshot(role){
 function getInviteWeatherPromptText(role){
   var snapshot = getInviteWeatherSnapshot(role);
   if(!snapshot) return '';
+  var displayCity = String(snapshot.aliasName || '').trim() || '未设定';
   return [
     (role === 'user' ? '用户' : '角色') + '天气设定：',
-    '显示城市=' + (snapshot.aliasName || '未设定'),
-    '真实天气城市=' + (snapshot.resolvedName || snapshot.realName || '未设定'),
+    '显示城市=' + displayCity,
+    '真实天气/时区数据=已锁定但城市名不可说出口',
     '当前时间=' + (snapshot.timeLabel || '未设定') + (snapshot.dateLabel ? (' ' + snapshot.dateLabel) : ''),
     '当前天气=' + snapshot.weatherIcon + (snapshot.weatherLabel ? (' ' + snapshot.weatherLabel) : '') + (snapshot.temperatureC === null ? '' : (' ' + snapshot.temperatureC + '°C'))
   ].join('');
@@ -8157,7 +8158,7 @@ function getInviteWeatherPromptText(role){
 
 function getInviteDisplayPlaceName(snapshot){
   snapshot = snapshot && typeof snapshot === 'object' ? snapshot : {};
-  return String(snapshot.aliasName || snapshot.resolvedName || snapshot.realName || '').trim();
+  return String(snapshot.aliasName || '').trim();
 }
 
 function normalizeInviteDisplayPlaceKey(value){
@@ -8189,17 +8190,19 @@ function buildWeatherCommonSensePrompt(){
   if(!userSnapshot && !charSnapshot) return '';
   var lines = ['【真实天气与城市常识】'];
   if(userSnapshot){
+    var userDisplayCity = String(userSnapshot.aliasName || '').trim() || getInviteDisplayPlaceName(userSnapshot) || '未设定';
     lines.push([
-      '用户所在城市显示为：' + (userSnapshot.aliasName || userSnapshot.resolvedName || userSnapshot.realName || '未设定'),
-      '对应真实天气城市：' + (userSnapshot.resolvedName || userSnapshot.realName || '未设定'),
+      '用户所在城市显示为：' + userDisplayCity,
+      '真实天气/时区数据已按后台锁定城市计算，真实城市名不可说出口',
       '当地时间：' + ((userSnapshot.timeLabel || '') + (userSnapshot.dateLabel ? (' ' + userSnapshot.dateLabel) : '') || '未设定') + (userSnapshot.periodLabel ? ('（' + userSnapshot.periodLabel + '）') : ''),
       '当前天气：' + userSnapshot.weatherIcon + (userSnapshot.weatherLabel ? (' ' + userSnapshot.weatherLabel) : '') + (userSnapshot.temperatureC === null ? '' : ('，约 ' + userSnapshot.temperatureC + '°C'))
     ].join('；'));
   }
   if(charSnapshot){
+    var charDisplayCity = String(charSnapshot.aliasName || '').trim() || getInviteDisplayPlaceName(charSnapshot) || '未设定';
     lines.push([
-      '角色所在城市显示为：' + (charSnapshot.aliasName || charSnapshot.resolvedName || charSnapshot.realName || '未设定'),
-      '对应真实天气城市：' + (charSnapshot.resolvedName || charSnapshot.realName || '未设定'),
+      '角色所在城市显示为：' + charDisplayCity,
+      '真实天气/时区数据已按后台锁定城市计算，真实城市名不可说出口',
       '当地时间：' + ((charSnapshot.timeLabel || '') + (charSnapshot.dateLabel ? (' ' + charSnapshot.dateLabel) : '') || '未设定') + (charSnapshot.periodLabel ? ('（' + charSnapshot.periodLabel + '）') : ''),
       '当前天气：' + charSnapshot.weatherIcon + (charSnapshot.weatherLabel ? (' ' + charSnapshot.weatherLabel) : '') + (charSnapshot.temperatureC === null ? '' : ('，约 ' + charSnapshot.temperatureC + '°C'))
     ].join('；'));
@@ -27342,8 +27345,7 @@ function buildVoiceCallWeatherTimePromptBlock(){
   function lineFor(role, snapshot){
     if(!snapshot) return '';
     var who = role === 'user' ? '用户' : '角色';
-    var displayCity = String(snapshot.aliasName || snapshot.resolvedName || snapshot.realName || '').trim() || (who + '显示城市');
-    var realCity = String(snapshot.resolvedName || snapshot.realName || '').trim() || '未设定';
+    var displayCity = String(snapshot.aliasName || '').trim() || getInviteDisplayPlaceName(snapshot) || (who + '显示城市');
     var timeText = String((snapshot.timeLabel || '') + (snapshot.dateLabel ? (' ' + snapshot.dateLabel) : '')).trim() || '未设定';
     var period = snapshot.periodLabel ? ('（' + snapshot.periodLabel + '）') : '';
     var weather = [
@@ -27353,7 +27355,7 @@ function buildVoiceCallWeatherTimePromptBlock(){
     ].filter(Boolean).join(' ');
     return [
       who + '显示城市：' + displayCity,
-      who + '真实天气/时区城市：' + realCity,
+      who + '真实天气/时区数据：已按后台锁定城市计算，城市名不可说出口',
       who + '当地时间：' + timeText + period,
       weather ? (who + '当前天气：' + weather) : ''
     ].filter(Boolean).join('；');
@@ -27362,7 +27364,7 @@ function buildVoiceCallWeatherTimePromptBlock(){
     '【通话天气与时间硬规则】',
     lineFor('user', userSnapshot),
     lineFor('char', charSnapshot),
-    '真实天气/时区城市只用于判断天气、早晚、作息、季节和出门常识；角色说出口的地点名只允许使用显示城市，不要把真实城市名直接说出来。',
+    '真实天气/时区数据只用于判断天气、早晚、作息、季节和出门常识；角色说出口的地点名只允许使用显示城市，不要把真实城市名直接说出来。',
     '判断“起床、睡觉、午饭、下班、深夜、清晨、能不能出门”时，优先按这里的角色当地时间和用户当地时间，不要默认中国时间。'
   ].filter(Boolean);
   var displayState = getInviteDisplayDistanceState();
