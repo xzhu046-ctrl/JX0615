@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-05T05:03:34Z"></script>
-<script src="../chatStorage.js?v=2026-05-05T05:03:34Z"></script>
-<script src="../assetStore.js?v=2026-05-05T05:03:34Z"></script>
-<script src="../accountManager.js?v=2026-05-05T05:03:34Z"></script>
-<script src="../metadataStore.js?v=2026-05-05T05:03:34Z"></script>
-<script src="../scheduleShared.js?v=2026-05-05T05:03:34Z"></script>
-<script src="../presenceShared.js?v=2026-05-05T05:03:34Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-05T05:03:34Z"></script>
-<script src="../sunnySupport.js?v=2026-05-05T05:03:34Z"></script>
-<script src="offlineInvite.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../promptManager.js?v=2026-05-05T05:49:21Z"></script>
+<script src="../chatStorage.js?v=2026-05-05T05:49:21Z"></script>
+<script src="../assetStore.js?v=2026-05-05T05:49:21Z"></script>
+<script src="../accountManager.js?v=2026-05-05T05:49:21Z"></script>
+<script src="../metadataStore.js?v=2026-05-05T05:49:21Z"></script>
+<script src="../scheduleShared.js?v=2026-05-05T05:49:21Z"></script>
+<script src="../presenceShared.js?v=2026-05-05T05:49:21Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-05T05:49:21Z"></script>
+<script src="../sunnySupport.js?v=2026-05-05T05:49:21Z"></script>
+<script src="offlineInvite.js?v=2026-05-05T05:49:21Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -8135,16 +8135,16 @@ function loadWeatherSettingsIntoPanel(role){
 function getInviteWeatherSnapshot(role){
   role = role === 'user' ? 'user' : 'char';
   var setting = getWeatherSettingState(role);
-  if(!setting.locked || !setting.weatherIcon) return null;
+  if(!setting.locked && !String(setting.timezone || '').trim()) return null;
   var timeInfo = buildTimezoneTimeSnapshot(setting.timezone);
   return {
     aliasName: setting.aliasName || '',
     realName: setting.realName || '',
     resolvedName: setting.resolvedName || '',
     timezone: setting.timezone || '',
-    weatherIcon: normalizeOfflineWeatherIcon(setting.weatherIcon),
+    weatherIcon: String(setting.weatherIcon || '').trim() ? normalizeOfflineWeatherIcon(setting.weatherIcon) : '',
     weatherLabel: setting.weatherLabel || '',
-    temperatureC: setting.temperatureC,
+    temperatureC: Number.isFinite(Number(setting.temperatureC)) ? Number(setting.temperatureC) : null,
     timeLabel: timeInfo && timeInfo.timeLabel ? timeInfo.timeLabel : '',
     dateLabel: timeInfo && timeInfo.dateLabel ? timeInfo.dateLabel : '',
     hour24: timeInfo && isFinite(timeInfo.hour24) ? timeInfo.hour24 : null,
@@ -8175,13 +8175,22 @@ function getInviteWeatherPromptText(role){
     '显示城市=' + displayCity,
     '真实天气/时区数据=已锁定但城市名不可说出口',
     '当前时间=' + getInviteTimeAwarenessText(snapshot),
-    '当前天气=' + snapshot.weatherIcon + (snapshot.weatherLabel ? (' ' + snapshot.weatherLabel) : '') + (snapshot.temperatureC === null ? '' : (' ' + snapshot.temperatureC + '°C'))
+    '当前天气=' + formatInviteWeatherBrief(snapshot)
   ].join('');
 }
 
 function getInviteDisplayPlaceName(snapshot){
   snapshot = snapshot && typeof snapshot === 'object' ? snapshot : {};
   return String(snapshot.aliasName || '').trim();
+}
+
+function formatInviteWeatherBrief(snapshot){
+  snapshot = snapshot && typeof snapshot === 'object' ? snapshot : {};
+  var parts = [
+    String(snapshot.weatherLabel || '').trim(),
+    snapshot.temperatureC === null || snapshot.temperatureC === undefined ? '' : (snapshot.temperatureC + '°C')
+  ].filter(Boolean);
+  return parts.length ? parts.join(' ') : '未刷新（只使用地点和当地时间）';
 }
 
 function normalizeInviteDisplayPlaceKey(value){
@@ -8218,7 +8227,7 @@ function buildWeatherCommonSensePrompt(){
       '用户所在城市显示为：' + userDisplayCity,
       '真实天气/时区数据已按后台锁定城市计算，真实城市名不可说出口',
       '当地时间：' + getInviteTimeAwarenessText(userSnapshot),
-      '当前天气：' + userSnapshot.weatherIcon + (userSnapshot.weatherLabel ? (' ' + userSnapshot.weatherLabel) : '') + (userSnapshot.temperatureC === null ? '' : ('，约 ' + userSnapshot.temperatureC + '°C'))
+      '当前天气：' + formatInviteWeatherBrief(userSnapshot)
     ].join('；'));
   }
   if(charSnapshot){
@@ -8227,7 +8236,7 @@ function buildWeatherCommonSensePrompt(){
       '角色所在城市显示为：' + charDisplayCity,
       '真实天气/时区数据已按后台锁定城市计算，真实城市名不可说出口',
       '当地时间：' + getInviteTimeAwarenessText(charSnapshot),
-      '当前天气：' + charSnapshot.weatherIcon + (charSnapshot.weatherLabel ? (' ' + charSnapshot.weatherLabel) : '') + (charSnapshot.temperatureC === null ? '' : ('，约 ' + charSnapshot.temperatureC + '°C'))
+      '当前天气：' + formatInviteWeatherBrief(charSnapshot)
     ].join('；'));
   }
   lines.push('如果用户问“现在几点/几点钟/上午还是下午/今天几号”，这是事实问答，不是自由创作：问“你那里/你现在”就答角色当地时间；问“我这里/用户那里”就答用户当地时间；只说上面给出的时间，禁止编造、禁止默认中国时间或设备时间。');
@@ -9391,6 +9400,47 @@ function getInviteTimeAwarenessText(snapshot){
     clockBits.push('（24小时制 ' + hour + '点' + (Number.isFinite(minute) ? String(minute).padStart(2, '0') : '00') + '分）');
   }
   return clockBits.join(' ');
+}
+
+function buildCurrentTimeFactPromptBlock(){
+  var userSnapshot = null;
+  var charSnapshot = null;
+  try{ userSnapshot = getInviteWeatherSnapshot('user'); }catch(err){}
+  try{ charSnapshot = getInviteWeatherSnapshot('char'); }catch(err2){}
+  var clock = null;
+  try{
+    if(character) clock = buildScheduleLocalNowContext(character);
+  }catch(err3){}
+  var userTime = userSnapshot ? getInviteTimeAwarenessText(userSnapshot) : '';
+  var charTime = charSnapshot ? getInviteTimeAwarenessText(charSnapshot) : '';
+  if(!userTime && clock && clock.user) userTime = formatSchedulePromptClock(clock.user);
+  if(!charTime && clock && clock.char) charTime = formatSchedulePromptClock(clock.char);
+  var userPlace = '';
+  var charPlace = '';
+  try{
+    userPlace = userSnapshot ? (String(userSnapshot.aliasName || '').trim() || getInviteDisplayPlaceName(userSnapshot) || '') : '';
+  }catch(err4){}
+  try{
+    charPlace = charSnapshot ? (String(charSnapshot.aliasName || '').trim() || getInviteDisplayPlaceName(charSnapshot) || '') : '';
+  }catch(err5){}
+  var lines = [
+    '### 【当前时间】',
+    '角色显示地点：' + (charPlace || '未设定'),
+    '角色当前当地时间：' + (charTime || '未拿到'),
+    '用户显示地点：' + (userPlace || '未设定'),
+    '用户当前当地时间：' + (userTime || '未拿到'),
+    '用户问“现在几点/几点钟/上午还是下午/今天几号”时，默认回答角色当前当地时间；问“我这里/用户这里”才回答用户当前当地时间。',
+    '只许使用本段时间事实，不许猜时间、不许默认中国时间、不许默认设备时间。没拿到就说没拿到。'
+  ];
+  try{
+    var displayState = getInviteDisplayDistanceState();
+    if(displayState && displayState.sameDisplayCity){
+      lines.push('双方显示城市相同：按同城/同一生活时区理解，不要主动说时差、异地、跨国、国内国外。');
+    }else if(displayState){
+      lines.push('双方显示城市不同：用户显示城市=' + displayState.userCity + '；角色显示城市=' + displayState.charCity + '。正文里地点名只说显示城市。');
+    }
+  }catch(err6){}
+  return lines.join('\n');
 }
 
 function saveAvatarVisionSummaryStore(charId, store){
@@ -16363,8 +16413,13 @@ function formatMessageForModel(msg){
 function formatChatForModel(list){
   return (list || []).map(function(item){
     if(!item || item.role === 'system') return '';
-    return (item.role === 'user' ? '用户' : '角色') + '：' + String(formatMessageForModel(item) || '').replace(/\s+/g, ' ').trim();
+    return formatModelMessageTimeForPrompt(item) + (item.role === 'user' ? '用户' : '角色') + '：' + String(formatMessageForModel(item) || '').replace(/\s+/g, ' ').trim();
   }).filter(Boolean).join('\n');
+}
+function formatModelMessageTimeForPrompt(msg){
+  var at = Number(msg && (msg.sentAt || msg.createdAt || msg.timestamp || msg.readAt) || 0) || 0;
+  if(!at) return '';
+  return '[' + formatChatTimeDivider(at) + '] ';
 }
 function buildMemeLibraryPromptBlock(){
   var items = getAllMemeItems();
@@ -20889,6 +20944,8 @@ function buildSystemPrompt() {
 
   var parts = [];
   parts.push(buildHighPriorityContextGuard());
+  var currentTimeFact = buildCurrentTimeFactPromptBlock();
+  if(currentTimeFact) parts.push(currentTimeFact);
 
   // Character card system prompt
   if (character) {
@@ -21052,6 +21109,7 @@ function buildSystemPrompt() {
       : '旁白模式关闭时，不要输出 narrator。',
     'inner_voice、thought_chain、status、reaction、recall、rename_profile、change_avatar、change_user_avatar 都不算正文。',
     '本轮必须更新隐藏顶栏状态。必须先写完 text 正文，再附加 [[状态:xx]] 或 status 对象；禁止只输出状态。',
+    '“无语、笑死、在忙、困困、想你、吃醋”这类如果只是状态词，必须放进隐藏 status，不能当唯一 text 正文；text 必须直接接住用户最新一句。',
     '如果你正在犹豫格式，优先输出 [{"type":"text","content":"一句角色会发出的短消息"}]。'
   ].join('\n');
 
@@ -22602,7 +22660,7 @@ async function requestAndDeliverAiReply(provider, key){
     var typingElapsed = Date.now() - typingStartedAt;
     if(typingElapsed < 120) await sleep(120 - typingElapsed);
     hideTyping();
-    var deliveredIds = await deliverAiReply(reply, undefined, { reactionEmoji: chosenReactionEmoji });
+    var deliveredIds = await deliverAiReply(reply, undefined, { reactionEmoji: chosenReactionEmoji, hiddenStatusConsumed: !!headerStatusParsed.status });
     if(!Array.isArray(deliveredIds) || !deliveredIds.length){
       throw new Error('AI 没有返回可显示的聊天内容');
     }
@@ -23025,7 +23083,7 @@ async function callAI(provider, key) {
       }
       return null;
     }
-    return { role: m.role, content: formatMessageForModel(m) };
+    return { role: m.role, content: formatModelMessageTimeForPrompt(m) + formatMessageForModel(m) };
   }).filter(Boolean); // user-configurable context window
   if(pendingModelUserCue){
     msgs.push({ role: 'user', content: pendingModelUserCue });
@@ -23082,6 +23140,10 @@ async function callAI(provider, key) {
     }catch(avatarVisionErr){
       console.warn('buildAvatarVisionMessagesForPrompt for focused avatar cue failed', avatarVisionErr);
     }
+  }
+  var latestFocusPrompt = buildLatestUserFocusPromptBlock(latestUserTextForAvatarCue || extractLatestUserTextForAvatarCue(msgs));
+  if(latestFocusPrompt){
+    msgs.push({ role:'user', content: latestFocusPrompt });
   }
   var reply = await callAIChat(provider, key, model, temperature, sys, msgs);
   if(/"type"\s*:\s*"rich_html"|"rich_html"\s*:|"html"\s*:/i.test(String(reply || ''))){
@@ -27477,6 +27539,17 @@ function buildVoiceCallWeatherTimePromptBlock(){
   return lines.join('\n');
 }
 
+function buildLatestUserFocusPromptBlock(latestText){
+  var latest = String(latestText || '').replace(/\s+/g, ' ').trim();
+  var lines = [
+    '【本轮最新用户输入】',
+    latest || '无',
+    buildCurrentTimeFactPromptBlock(),
+    '回答前先判断用户这一句到底在问什么，再按这一句作答；不要被旧聊天、隐藏状态、心声或格式要求带跑。'
+  ];
+  return lines.filter(Boolean).join('\n');
+}
+
 function normalizeVoiceCallNarratorSpeaker(value){
   return String(value || '').trim().toLowerCase() === 'user' ? 'user' : 'assistant';
 }
@@ -27900,6 +27973,7 @@ function buildVoiceCallPrompt(userText){
   }).filter(Boolean).join('\n\n');
   var base = [
     buildHighPriorityContextGuard(),
+    buildCurrentTimeFactPromptBlock(),
     buildCharacterAdherenceGuard(),
     buildVoiceCallIdentityPromptBlock(),
     character && character.system_prompt ? ('【角色卡系统提示】\n' + character.system_prompt) : '',
@@ -35407,12 +35481,13 @@ async function deliverAiReply(text, limitOverride, options){
     }));
   };
   var parsed = null;
-  var rawParts = [];
-  var inlineInnerVoiceCandidates = [];
-  var hiddenInnerVoiceConsumed = false;
-  var normalizeReplyTextField = function(value){
-    if(value == null) return '';
-    if(typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'){
+	  var rawParts = [];
+	  var inlineInnerVoiceCandidates = [];
+	  var hiddenInnerVoiceConsumed = false;
+	  var hiddenStatusConsumed = !!options.hiddenStatusConsumed;
+	  var normalizeReplyTextField = function(value){
+	    if(value == null) return '';
+	    if(typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'){
       return String(value || '').trim();
     }
     if(Array.isArray(value)){
@@ -35429,11 +35504,49 @@ async function deliverAiReply(text, limitOverride, options){
       if(typeof value.message === 'string' || Array.isArray(value.message)) return normalizeReplyTextField(value.message);
       if(typeof value.answer === 'string' || Array.isArray(value.answer)) return normalizeReplyTextField(value.answer);
       if(typeof value.output === 'string' || Array.isArray(value.output)) return normalizeReplyTextField(value.output);
-    }
-    return '';
-  };
-  var isReplyMetadataOnly = function(item){
-    if(!item || typeof item !== 'object') return false;
+	    }
+	    return '';
+	  };
+	  var isEmptyReplyContainerText = function(value){
+	    return /^\s*(?:\[\s*\]|\{\s*\}|null|undefined)\s*$/i.test(String(value || '').trim());
+	  };
+	  var isHiddenStatusOnlyText = function(value){
+	    var raw = String(value || '').trim();
+	    if(!raw) return false;
+	    if(/^\[\[\s*(?:状态|status|表情|reaction)\s*[:：][\s\S]*?\]\]\s*$/i.test(raw)) return true;
+	    if(/^["']?(?:status|header_status|chat_status|state|reaction|char_reaction|状态|顶栏状态|表情)["']?\s*[:：=]/i.test(raw)) return true;
+	    if(/^\s*\{[\s\S]*["']?(?:type|kind|action)["']?\s*[:：]\s*["']?(?:status|header_status|chat_status|state|reaction|char_reaction)["']?[\s\S]*\}\s*$/i.test(raw)) return true;
+	    if(/^\s*\{[\s\S]*["']?(?:status|header_status|chat_status|state|reaction|char_reaction)["']?\s*[:：][\s\S]*\}\s*$/i.test(raw)
+	      && !/["']?(?:content|text|reply|message|answer|output|narrator|narration)["']?\s*[:：]/i.test(raw)){
+	      return true;
+	    }
+	    return false;
+	  };
+	  var isLikelyBareStatusWord = function(value){
+	    var compact = String(value || '').replace(/\s+/g, '').trim();
+	    if(!compact || compact.length > 4) return false;
+	    return /^(无语|笑死|发呆|想你|困困|忙|在忙|吃醋|开心|难过|委屈|生气|沉默|冷淡|烦|烦躁|害羞|脸红|紧张|想睡|困|走神|偷笑|心软|在线|emo|破防)$/.test(compact);
+	  };
+	  var isTopLevelStatusOnlyObject = function(item){
+	    if(!item || typeof item !== 'object' || Array.isArray(item)) return false;
+	    var explicitKind = String(item.type || item.action || item.kind || '').trim().toLowerCase();
+	    if(/^(status|header_status|chat_status|state|reaction|char_reaction)$/i.test(explicitKind)) return true;
+	    var hasStatusField = Object.prototype.hasOwnProperty.call(item, 'status')
+	      || Object.prototype.hasOwnProperty.call(item, 'header_status')
+	      || Object.prototype.hasOwnProperty.call(item, 'headerStatus')
+	      || Object.prototype.hasOwnProperty.call(item, 'chat_status')
+	      || Object.prototype.hasOwnProperty.call(item, 'chatStatus')
+	      || Object.prototype.hasOwnProperty.call(item, 'state')
+	      || Object.prototype.hasOwnProperty.call(item, 'reaction')
+	      || Object.prototype.hasOwnProperty.call(item, 'charReaction');
+	    if(!hasStatusField || explicitKind) return false;
+	    var visibleKeys = ['content','text','reply_content','description','reply','message','answer','output','assistant','narrator','narration','html','css','js','url','title','cover','coverUrl','rich_html','html_card','voice_message','image_message','meme_message','money_packet','offline_invite'];
+	    return !visibleKeys.some(function(key){
+	      return Object.prototype.hasOwnProperty.call(item, key) && item[key] != null && String(normalizeReplyTextField(item[key]) || item[key] || '').trim();
+	    });
+	  };
+	  var isReplyMetadataOnly = function(item){
+	    if(!item || typeof item !== 'object') return false;
     var hasReplyMeta = !!String(item.reply_to || item.replyTo || '').trim() || !!String(item.reply_role || item.replyRole || '').trim();
     if(!hasReplyMeta) return false;
     var hasBody =
@@ -35452,15 +35565,22 @@ async function deliverAiReply(text, limitOverride, options){
       (item.offline_invite && typeof item.offline_invite === 'object');
     return !hasBody;
   };
-  var appendRawPart = function(item){
-    if(typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean'){
-      var primitiveText = normalizeReplyTextField(item);
-      if(primitiveText) rawParts.push({ text: primitiveText, t: 'text', replyTo: '', replyRole: '', translationText: '' });
-      return;
-    }
-    if(!item || typeof item !== 'object') return;
-    var explicitKind = String(item.type || item.action || item.kind || '').trim().toLowerCase();
-    if(/^(status|header_status|chat_status|state|reaction|char_reaction)$/i.test(explicitKind)) return;
+	  var appendRawPart = function(item){
+	    if(typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean'){
+	      var primitiveText = normalizeReplyTextField(item);
+	      if(isHiddenStatusOnlyText(primitiveText) || isEmptyReplyContainerText(primitiveText)){
+	        hiddenStatusConsumed = hiddenStatusConsumed || isHiddenStatusOnlyText(primitiveText);
+	        return;
+	      }
+	      if(primitiveText) rawParts.push({ text: primitiveText, t: 'text', replyTo: '', replyRole: '', translationText: '' });
+	      return;
+	    }
+	    if(!item || typeof item !== 'object') return;
+	    var explicitKind = String(item.type || item.action || item.kind || '').trim().toLowerCase();
+	    if(/^(status|header_status|chat_status|state|reaction|char_reaction)$/i.test(explicitKind) || isTopLevelStatusOnlyObject(item)){
+	      hiddenStatusConsumed = true;
+	      return;
+	    }
     var rawType = normalizeMessageType(item.type || '');
     var innerVoiceCandidate = null;
     if(item.inner_voice && typeof item.inner_voice === 'object') innerVoiceCandidate = parseInnerVoiceResult(JSON.stringify(item.inner_voice));
@@ -36240,24 +36360,27 @@ async function deliverAiReply(text, limitOverride, options){
     }
   }
 
-  if(!rawParts.length && text){
-    if(!hiddenInnerVoiceConsumed){
-      rawParts = splitPlainTextToParts(text);
-    }else{
+	  if(!rawParts.length && text && !isEmptyReplyContainerText(text) && !isHiddenStatusOnlyText(text)){
+	    if(!hiddenInnerVoiceConsumed){
+	      rawParts = splitPlainTextToParts(text);
+	    }else{
       var residualText = String(text || '').replace(/^[\s,\[\]\{\}]+|[\s,\[\]\{\}]+$/g, '').trim();
       var residualLooksJson = /["']?\s*(type|content|text|reply|message|headline|body|inner[_\s-]*voice|narrator)["']?\s*[:：]/i.test(residualText)
         || /[{}\[\]]/.test(residualText);
       if(residualText && !residualLooksJson){
         rawParts = splitPlainTextToParts(residualText);
-      }
-    }
-  }
-  if(!rawParts.length && hiddenInnerVoiceConsumed){
-    if(getInnerVoiceGenerationMode() === 'together'){
-      saveInlineInnerVoiceCandidate(inlineInnerVoiceCandidates[inlineInnerVoiceCandidates.length - 1] || null);
-    }
-    return [];
-  }
+	      }
+	    }
+	  }
+	  if(!rawParts.length && isHiddenStatusOnlyText(text)){
+	    hiddenStatusConsumed = true;
+	  }
+	  if(!rawParts.length && (hiddenInnerVoiceConsumed || hiddenStatusConsumed || isEmptyReplyContainerText(text))){
+	    if(getInnerVoiceGenerationMode() === 'together'){
+	      saveInlineInnerVoiceCandidate(inlineInnerVoiceCandidates[inlineInnerVoiceCandidates.length - 1] || null);
+	    }
+	    return [];
+	  }
   if(!rawParts.length) rawParts = [{text:String(text||'(空消息)'), t:'text'}];
   var parts = [];
   rawParts.forEach(function(part){
@@ -36292,14 +36415,26 @@ async function deliverAiReply(text, limitOverride, options){
         translationText: mappedTranslations.length ? String(mappedTranslations.shift() || '') : (part.translationText || '')
       });
     });
-  });
-  parts = expandedParts;
-  var hasExplicitMultiBubble = parts.length >= 2 || rawParts.length >= 2;
+	  });
+	  parts = expandedParts;
+	  if(hiddenStatusConsumed && parts.length === 1){
+	    var onlyPart = parts[0] || {};
+	    if(normalizeMessageType(onlyPart.t || 'text') === 'text' && isLikelyBareStatusWord(onlyPart.text)){
+	      parts = [];
+	    }
+	  }
+	  var hasExplicitMultiBubble = parts.length >= 2 || rawParts.length >= 2;
   var cap = hasExplicitMultiBubble ? softMaxN : maxN;
   if(parts.length > cap){
     parts = parts.slice(0, cap);
   }
-  if(!parts.length) parts = [{text:String(text||'(空消息)'), t:'text'}];
+	  if(!parts.length && hiddenStatusConsumed){
+	    if(getInnerVoiceGenerationMode() === 'together'){
+	      saveInlineInnerVoiceCandidate(inlineInnerVoiceCandidates[inlineInnerVoiceCandidates.length - 1] || null);
+	    }
+	    return [];
+	  }
+	  if(!parts.length) parts = [{text:String(text||'(空消息)'), t:'text'}];
   var nonNarratorParts = parts.filter(function(part){
     return normalizeMessageType(part && part.t || 'text') !== 'narrator';
   });
