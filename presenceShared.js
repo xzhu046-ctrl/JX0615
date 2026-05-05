@@ -232,23 +232,89 @@
     return accountScopedKey('real_weather_user_' + safeCharId);
   }
 
-  function getWeatherConfiguredLocation(role, charId){
+  function getWeatherSettingFromCharacter(role, character){
+    if(!(character && typeof character === 'object')) return null;
+    var safeRole = role === 'user' ? 'user' : 'char';
+    var embedded = safeRole === 'user' ? character.weatherUserSetting : character.weatherCharSetting;
+    return embedded && typeof embedded === 'object' ? embedded : null;
+  }
+
+  function readWeatherSettingFromStorage(role, charId){
+    var safeRole = role === 'user' ? 'user' : 'char';
+    var safeCharId = String(charId || '').trim();
+    if(!safeCharId) return null;
+    var baseKey = (safeRole === 'char' ? 'real_weather_char_' : 'real_weather_user_') + safeCharId;
+    var keys = [weatherSettingsStorageKey(safeRole, safeCharId), baseKey].filter(Boolean);
     try{
-      var parsed = safeJsonParse(localStorage.getItem(weatherSettingsStorageKey(role, charId)) || 'null', null);
-      if(!parsed) return null;
-      var lat = Number(parsed.latitude);
-      var lng = Number(parsed.longitude);
-      if(!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-      var displayName = String(parsed.aliasName || parsed.resolvedName || parsed.realName || '').trim();
-      var nearest = findNearestCatalogCity(lat, lng);
-      return {
-        cityId: nearest.id,
-        label: displayName || nearest.name,
-        lat: lat,
-        lng: lng,
-        weatherName: String(parsed.resolvedName || parsed.realName || '').trim(),
-        timezone: String(parsed.timezone || '').trim()
-      };
+      for(var k = 0; k < localStorage.length; k += 1){
+        var key = localStorage.key(k);
+        if(key && (key === baseKey || key.indexOf(baseKey + '__acct_') === 0) && keys.indexOf(key) === -1){
+          keys.push(key);
+        }
+      }
+    }catch(scanErr){}
+    var best = null;
+    for(var i = 0; i < keys.length; i += 1){
+      try{
+        var raw = localStorage.getItem(keys[i]);
+        if(!raw) continue;
+        var parsed = safeJsonParse(raw, null);
+        if(!(parsed && typeof parsed === 'object')) continue;
+        if(!best){
+          best = parsed;
+          continue;
+        }
+        var parsedLocked = !!parsed.locked && String(parsed.timezone || '').trim();
+        var bestLocked = !!best.locked && String(best.timezone || '').trim();
+        if(parsedLocked && !bestLocked){
+          best = parsed;
+        }else if(parsedLocked === bestLocked && Number(parsed.updatedAt || 0) > Number(best.updatedAt || 0)){
+          best = parsed;
+        }
+      }catch(err){}
+    }
+    return best;
+  }
+
+  function normalizeWeatherConfiguredLocation(setting){
+    if(!(setting && typeof setting === 'object')) return null;
+    var lat = Number(setting.latitude);
+    var lng = Number(setting.longitude);
+    var hasCoords = Number.isFinite(lat) && Number.isFinite(lng);
+    var nearest = hasCoords ? findNearestCatalogCity(lat, lng) : null;
+    var displayName = String(setting.aliasName || setting.displayName || setting.resolvedName || setting.realName || '').trim();
+    var timezone = String(setting.timezone || '').trim();
+    var weatherName = String(setting.resolvedName || setting.realName || '').trim();
+    if(!displayName && !weatherName && !timezone && !hasCoords) return null;
+    return {
+      cityId: nearest ? nearest.id : '',
+      label: displayName || weatherName || (nearest && nearest.name) || '',
+      lat: hasCoords ? lat : null,
+      lng: hasCoords ? lng : null,
+      weatherName: weatherName,
+      timezone: timezone,
+      locked: !!setting.locked,
+      updatedAt: Number(setting.updatedAt || 0) || 0
+    };
+  }
+
+  function chooseWeatherConfiguredLocation(embedded, stored){
+    var a = normalizeWeatherConfiguredLocation(embedded);
+    var b = normalizeWeatherConfiguredLocation(stored);
+    if(a && b){
+      if(b.locked && !a.locked) return b;
+      if(Number(b.updatedAt || 0) > Number(a.updatedAt || 0)) return b;
+      return a;
+    }
+    return a || b || null;
+  }
+
+  function getWeatherConfiguredLocation(role, charId, character){
+    try{
+      return chooseWeatherConfiguredLocation(
+        getWeatherSettingFromCharacter(role, character),
+        readWeatherSettingFromStorage(role, charId)
+      );
     }catch(err){
       return null;
     }
@@ -310,6 +376,43 @@
       weekday: shifted.getUTCDay(),
       daySeed: shifted.getUTCFullYear() * 1000 + Math.ceil((Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate()) - Date.UTC(shifted.getUTCFullYear(), 0, 0)) / 86400000)
     };
+  }
+
+  function getLocalPartsByTimezoneName(timezoneName, fallbackOffset, now){
+    var safeName = String(timezoneName || '').trim();
+    var safeNow = Number(now || Date.now()) || Date.now();
+    if(safeName){
+      try{
+        var partMap = {};
+        var weekdayRaw = '';
+        new Intl.DateTimeFormat('en-CA', {
+          timeZone: safeName,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          weekday: 'short',
+          hourCycle: 'h23'
+        }).formatToParts(new Date(safeNow)).forEach(function(part){
+          if(part.type === 'weekday') weekdayRaw = String(part.value || '').toLowerCase();
+          else if(part.type !== 'literal') partMap[part.type] = part.value;
+        });
+        var year = parseInt(partMap.year || '0', 10) || 0;
+        var month = parseInt(partMap.month || '0', 10) || 0;
+        var day = parseInt(partMap.day || '0', 10) || 0;
+        var hour = parseInt(partMap.hour || '0', 10) || 0;
+        var minute = parseInt(partMap.minute || '0', 10) || 0;
+        var weekday = ['sun','mon','tue','wed','thu','fri','sat'].indexOf(weekdayRaw.slice(0, 3));
+        return {
+          hour: hour,
+          minute: minute,
+          weekday: weekday >= 0 ? weekday : 0,
+          daySeed: year * 1000 + Math.ceil((Date.UTC(year, month - 1, day) - Date.UTC(year, 0, 0)) / 86400000)
+        };
+      }catch(err){}
+    }
+    return getLocalParts(fallbackOffset, safeNow);
   }
 
   function seededRatio(seedStr){
@@ -428,19 +531,22 @@
 
   function getCharPresence(character, now){
     const settings = getCharSettings(character);
-    const charWeatherLoc = getWeatherConfiguredLocation('char', character && character.id);
-    const displayCity = getCity(settings.cityId || DEFAULT_CHAR_CITY);
-    const weatherCity = charWeatherLoc ? findNearestCatalogCity(charWeatherLoc.lat, charWeatherLoc.lng) : displayCity;
-    const timeCity = displayCity;
-    const parts = getLocalParts(timeCity.tz, now);
+    const charWeatherLoc = getWeatherConfiguredLocation('char', character && character.id, character);
+    const defaultCity = getCity(settings.cityId || DEFAULT_CHAR_CITY);
+    const hasWeatherCoords = !!(charWeatherLoc && Number.isFinite(Number(charWeatherLoc.lat)) && Number.isFinite(Number(charWeatherLoc.lng)));
+    const weatherCity = hasWeatherCoords ? findNearestCatalogCity(charWeatherLoc.lat, charWeatherLoc.lng) : defaultCity;
+    const displayCity = Object.assign({}, weatherCity || defaultCity, {
+      name: String((charWeatherLoc && charWeatherLoc.label) || defaultCity.name || '').trim() || defaultCity.name
+    });
+    const parts = getLocalPartsByTimezoneName(charWeatherLoc && charWeatherLoc.timezone, Number((weatherCity || defaultCity).tz), now);
     const profile = settings.schedule === 'auto' ? inferProfile(character) : String(settings.schedule || 'office');
     const segment = segmentForProfile(profile, parts);
-    const point = pointForSegment(displayCity, segment, [character && character.id || '', parts.daySeed, segment.key].join(':'));
+    const point = pointForSegment(weatherCity || defaultCity, segment, [character && character.id || '', parts.daySeed, segment.key].join(':'));
     return {
       settings,
       city: displayCity,
       weatherCity,
-      timezoneOffset: Number(timeCity.tz),
+      timezoneOffset: Number((weatherCity || defaultCity).tz),
       timezoneName: String((charWeatherLoc && charWeatherLoc.timezone) || '').trim(),
       profile,
       availability: segment.availability,
@@ -529,16 +635,19 @@
   function getPresenceSnapshot(character, now){
     const charId = character && character.id ? String(character.id) : '';
     const storedUser = getUserLocation();
-    const weatherUserLoc = getWeatherConfiguredLocation('user', charId);
-    const userCity = getCity(storedUser.cityId || DEFAULT_USER_CITY);
+    const weatherUserLoc = getWeatherConfiguredLocation('user', charId, character);
+    const defaultUserCity = getCity(storedUser.cityId || DEFAULT_USER_CITY);
+    const hasWeatherCoords = !!(weatherUserLoc && Number.isFinite(Number(weatherUserLoc.lat)) && Number.isFinite(Number(weatherUserLoc.lng)));
+    const userCity = hasWeatherCoords ? findNearestCatalogCity(weatherUserLoc.lat, weatherUserLoc.lng) : defaultUserCity;
     const user = Object.assign({}, storedUser, {
       cityId: userCity.id,
-      label: String(storedUser.label || userCity.name).trim() || userCity.name,
-      lat: Number.isFinite(Number(storedUser.lat)) ? Number(storedUser.lat) : userCity.lat,
-      lng: Number.isFinite(Number(storedUser.lng)) ? Number(storedUser.lng) : userCity.lng,
+      label: String((weatherUserLoc && weatherUserLoc.label) || storedUser.label || userCity.name).trim() || userCity.name,
+      lat: hasWeatherCoords ? Number(weatherUserLoc.lat) : (Number.isFinite(Number(storedUser.lat)) ? Number(storedUser.lat) : userCity.lat),
+      lng: hasWeatherCoords ? Number(weatherUserLoc.lng) : (Number.isFinite(Number(storedUser.lng)) ? Number(storedUser.lng) : userCity.lng),
       weatherName: String(weatherUserLoc && weatherUserLoc.weatherName || storedUser.weatherName || '').trim(),
       weatherTimezone: String(weatherUserLoc && weatherUserLoc.timezone || storedUser.timezone || '').trim(),
-      weatherTimezoneOffset: Number(weatherUserLoc && getCity(weatherUserLoc.cityId).tz || userCity.tz) || 0
+      timezone: String(weatherUserLoc && weatherUserLoc.timezone || storedUser.timezone || '').trim(),
+      weatherTimezoneOffset: Number(userCity.tz || defaultUserCity.tz) || 0
     });
     const charPresence = getCharPresence(character, now);
     const userPoint = { lat:Number(user.lat), lng:Number(user.lng) };

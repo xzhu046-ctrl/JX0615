@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-05T03:26:37Z"></script>
-<script src="../chatStorage.js?v=2026-05-05T03:26:37Z"></script>
-<script src="../assetStore.js?v=2026-05-05T03:26:37Z"></script>
-<script src="../accountManager.js?v=2026-05-05T03:26:37Z"></script>
-<script src="../metadataStore.js?v=2026-05-05T03:26:37Z"></script>
-<script src="../scheduleShared.js?v=2026-05-05T03:26:37Z"></script>
-<script src="../presenceShared.js?v=2026-05-05T03:26:37Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-05T03:26:37Z"></script>
-<script src="../sunnySupport.js?v=2026-05-05T03:26:37Z"></script>
-<script src="offlineInvite.js?v=2026-05-05T03:26:37Z"></script>
+<script src="../promptManager.js?v=2026-05-05T04:10:22Z"></script>
+<script src="../chatStorage.js?v=2026-05-05T04:10:22Z"></script>
+<script src="../assetStore.js?v=2026-05-05T04:10:22Z"></script>
+<script src="../accountManager.js?v=2026-05-05T04:10:22Z"></script>
+<script src="../metadataStore.js?v=2026-05-05T04:10:22Z"></script>
+<script src="../scheduleShared.js?v=2026-05-05T04:10:22Z"></script>
+<script src="../presenceShared.js?v=2026-05-05T04:10:22Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-05T04:10:22Z"></script>
+<script src="../sunnySupport.js?v=2026-05-05T04:10:22Z"></script>
+<script src="offlineInvite.js?v=2026-05-05T04:10:22Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -7687,19 +7687,71 @@ function getWeatherRoleLabel(role){
   return role === 'user' ? 'User' : 'Char';
 }
 
+function getStoredWeatherSettingCandidate(role, charId){
+  var safeRole = role === 'user' ? 'user' : 'char';
+  var safeCharId = String(charId || '').trim();
+  if(!safeCharId) return null;
+  var base = (safeRole === 'user' ? 'real_weather_user_' : 'real_weather_char_') + safeCharId;
+  var keys = [];
+  function addKey(key){
+    key = String(key || '').trim();
+    if(key && keys.indexOf(key) === -1) keys.push(key);
+  }
+  try{ addKey(weatherSettingsStorageKey(safeRole, safeCharId)); }catch(e){}
+  getAccountIdCandidates().forEach(function(accountId){
+    addKey(accountScopedKeyForAccount(base, accountId));
+  });
+  addKey(base);
+  try{
+    for(var k = 0; k < localStorage.length; k += 1){
+      var key = localStorage.key(k);
+      if(key && (key === base || key.indexOf(base + '__acct_') === 0)) addKey(key);
+    }
+  }catch(scanErr){}
+  var best = null;
+  keys.forEach(function(key){
+    try{
+      var raw = localStorage.getItem(key);
+      if(!raw) return;
+      var parsed = JSON.parse(raw);
+      if(!(parsed && typeof parsed === 'object')) return;
+      var candidate = cloneWeatherSetting(parsed, safeRole);
+      if(!best){
+        best = candidate;
+        return;
+      }
+      var candidateLocked = !!candidate.locked && String(candidate.timezone || '').trim();
+      var bestLocked = !!best.locked && String(best.timezone || '').trim();
+      if(candidateLocked && !bestLocked){
+        best = candidate;
+        return;
+      }
+      if(candidateLocked === bestLocked && Number(candidate.updatedAt || 0) > Number(best.updatedAt || 0)){
+        best = candidate;
+      }
+    }catch(e){}
+  });
+  return best;
+}
+
 function getWeatherSettingState(role){
   var setting = stagedWeatherSettings[role];
   if(setting) return cloneWeatherSetting(setting, role);
+  var stored = getStoredWeatherSettingCandidate(role, character && character.id);
   if(character){
     var embedded = role === 'user' ? character.weatherUserSetting : character.weatherCharSetting;
-    if(embedded && typeof embedded === 'object') return cloneWeatherSetting(embedded, role);
+    if(embedded && typeof embedded === 'object'){
+      var embeddedSetting = cloneWeatherSetting(embedded, role);
+      if(stored){
+        var storedLocked = !!stored.locked && String(stored.timezone || '').trim();
+        var embeddedLocked = !!embeddedSetting.locked && String(embeddedSetting.timezone || '').trim();
+        if(storedLocked && !embeddedLocked) return cloneWeatherSetting(stored, role);
+        if(storedLocked === embeddedLocked && Number(stored.updatedAt || 0) > Number(embeddedSetting.updatedAt || 0)) return cloneWeatherSetting(stored, role);
+      }
+      return embeddedSetting;
+    }
   }
-  var key = weatherSettingsStorageKey(role, character && character.id);
-  try{
-    return cloneWeatherSetting(JSON.parse(localStorage.getItem(key) || 'null'), role);
-  }catch(e){
-    return defaultWeatherSetting(role);
-  }
+  return stored ? cloneWeatherSetting(stored, role) : defaultWeatherSetting(role);
 }
 
 function saveWeatherSettingState(role, setting){
@@ -22339,12 +22391,6 @@ async function triggerReply() {
       return;
     }
 
-    if(await maybeHandlePresenceAutoReply()){
-      pendingMomentsChatCue = '';
-      pendingFamilyFollowupCue = '';
-      pendingModelUserCue = '';
-      return;
-    }
     if(resolvePendingUserRecallNoticesForReply()){
       await saveChat(true);
     }

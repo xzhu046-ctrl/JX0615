@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-05T03:26:37Z';
+const APP_BUILD_ID = '2026-05-05T04:10:22Z';
 const APP_UPDATE_NOTES = [
-  '删除单条消息后不会再回来',
-  '通话会优先按天气城市读时间',
-  '聊天输入框改用稳定键盘定位'
+  '聊天不再被状态模板截断',
+  '日程按设定城市刷新时间',
+  '同城时不再乱说时差'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -3895,12 +3895,15 @@ function getSchedulePresenceContext(character){
     var charCityName = displayPlace(charWeather, snapshot.char.city && snapshot.char.city.name ? String(snapshot.char.city.name).trim() : '');
     var charPlace = String(snapshot.char.placeLabel || '').trim();
     var charActivity = String(snapshot.char.activityLabel || '').trim();
-    var charClock = String(snapshot.char.localTimeLabel || '').trim();
+    var localClock = buildScheduleLocalNowContextForCharacter(character, Date.now());
+    var userClock = String(localClock && localClock.user && localClock.user.nowTime || '').trim();
+    var charClock = String(localClock && localClock.char && localClock.char.nowTime || snapshot.char.localTimeLabel || '').trim();
     var distanceLabel = String(snapshot.distanceLabel || '').trim();
     var sameCity = !!(userLabel && charCityName && userLabel === charCityName);
     var lines = [
       '用户当前显示地理位置：' + userLabel,
       '角色当前显示地理位置：' + [charCityName, charPlace].filter(Boolean).join(' · '),
+      userClock ? ('用户当前当地时间：' + userClock) : '',
       charClock ? ('角色当前当地时间：' + charClock) : '',
       charActivity ? ('角色当前状态：' + charActivity) : '',
       distanceLabel ? ('双方距离：' + distanceLabel) : ''
@@ -3965,15 +3968,53 @@ function loadScheduleWeatherSettingByCharId(role, charId){
   if(!safeCharId) return null;
   var baseKey = (safeRole === 'char' ? 'real_weather_char_' : 'real_weather_user_') + safeCharId;
   var keys = [scopedKeyForAccount(baseKey, getActiveAccountId()), baseKey].filter(Boolean);
+  var candidates = [];
+  function pushCandidate(value){
+    if(value && typeof value === 'object') candidates.push(value);
+  }
+  try{
+    var chars = getStoredCharactersSnapshot();
+    var hit = Array.isArray(chars) ? chars.find(function(item){ return item && String(item.id || '').trim() === safeCharId; }) : null;
+    pushCandidate(hit && safeRole === 'char' ? hit.weatherCharSetting : (hit && hit.weatherUserSetting));
+    var active = getActiveCharacterData();
+    if(active && String(active.id || '').trim() === safeCharId){
+      pushCandidate(safeRole === 'char' ? active.weatherCharSetting : active.weatherUserSetting);
+    }
+  }catch(embedErr){}
+  try{
+    for(var k = 0; k < localStorage.length; k += 1){
+      var key = localStorage.key(k);
+      if(key && (key === baseKey || key.indexOf(baseKey + '__acct_') === 0) && keys.indexOf(key) === -1){
+        keys.push(key);
+      }
+    }
+  }catch(scanErr){}
   for(var i = 0; i < keys.length; i++){
     try{
       var raw = localStorage.getItem(keys[i]);
       if(!raw) continue;
       var parsed = JSON.parse(raw);
-      if(parsed && typeof parsed === 'object') return parsed;
+      pushCandidate(parsed);
     }catch(err){}
   }
-  return null;
+  var best = null;
+  candidates.forEach(function(item){
+    if(!(item && typeof item === 'object')) return;
+    if(!best){
+      best = item;
+      return;
+    }
+    var itemLocked = !!item.locked && String(item.timezone || '').trim();
+    var bestLocked = !!best.locked && String(best.timezone || '').trim();
+    if(itemLocked && !bestLocked){
+      best = item;
+      return;
+    }
+    if(itemLocked === bestLocked && Number(item.updatedAt || 0) > Number(best.updatedAt || 0)){
+      best = item;
+    }
+  });
+  return best;
 }
 
 function buildSchedulePresenceContextForCharId(charId, character){
@@ -4049,7 +4090,7 @@ function buildScheduleLocalNowContextForCharacter(character, nowMs){
     }
   }catch(err){}
   return {
-    user: getScheduleLocalClockParts(safeNow, user.timezone, userOffset),
+    user: getScheduleLocalClockParts(safeNow, user.weatherTimezone || user.timezone, userOffset),
     char: getScheduleLocalClockParts(safeNow, charPresence.timezoneName, charPresence.timezoneOffset),
     presence: snapshot || null
   };
