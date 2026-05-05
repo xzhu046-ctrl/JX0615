@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-05T05:49:21Z"></script>
-<script src="../chatStorage.js?v=2026-05-05T05:49:21Z"></script>
-<script src="../assetStore.js?v=2026-05-05T05:49:21Z"></script>
-<script src="../accountManager.js?v=2026-05-05T05:49:21Z"></script>
-<script src="../metadataStore.js?v=2026-05-05T05:49:21Z"></script>
-<script src="../scheduleShared.js?v=2026-05-05T05:49:21Z"></script>
-<script src="../presenceShared.js?v=2026-05-05T05:49:21Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-05T05:49:21Z"></script>
-<script src="../sunnySupport.js?v=2026-05-05T05:49:21Z"></script>
-<script src="offlineInvite.js?v=2026-05-05T05:49:21Z"></script>
+<script src="../promptManager.js?v=2026-05-05T06:24:35Z"></script>
+<script src="../chatStorage.js?v=2026-05-05T06:24:35Z"></script>
+<script src="../assetStore.js?v=2026-05-05T06:24:35Z"></script>
+<script src="../accountManager.js?v=2026-05-05T06:24:35Z"></script>
+<script src="../metadataStore.js?v=2026-05-05T06:24:35Z"></script>
+<script src="../scheduleShared.js?v=2026-05-05T06:24:35Z"></script>
+<script src="../presenceShared.js?v=2026-05-05T06:24:35Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-05T06:24:35Z"></script>
+<script src="../sunnySupport.js?v=2026-05-05T06:24:35Z"></script>
+<script src="offlineInvite.js?v=2026-05-05T06:24:35Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -1392,7 +1392,7 @@ button{-webkit-appearance:none;appearance:none;-webkit-touch-callout:none;color:
 .weather-preview-main{min-width:0;display:flex;flex-direction:column;gap:2px}
 .weather-preview-title{font-family:var(--fontd);font-size:12px;font-weight:900;color:var(--b);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .weather-preview-sub{font-size:11px;font-weight:700;color:var(--g);line-height:1.35}
-.weather-preview-icon{flex-shrink:0;min-width:66px;padding:8px 10px;border:var(--bd);border-radius:999px;background:#fff;box-shadow:var(--sh);text-align:center;font-family:'Helvetica Neue','Arial Unicode MS',var(--fontd);font-size:23px;font-weight:900;color:#0a0a0a;-webkit-text-fill-color:#0a0a0a;font-variant-emoji:text}
+.weather-preview-icon{display:none}
 .weather-preview-empty{display:none;margin-top:12px;font-size:11px;line-height:1.5;color:var(--g)}
 .weather-preview-empty.show{display:block}
 .cs-language-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -2910,21 +2910,21 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
         </div>
 
         <div class="cs-card">
-          <div class="cs-card-title">天气</div>
+          <div class="cs-card-title">CHAR 和 USER 的居住地</div>
           <div class="weather-setting-card">
             <div class="weather-setting-role" data-weather-role="char">
               <div class="weather-setting-head">
-                <div class="weather-setting-name">CHAR 天气</div>
+                <div class="weather-setting-name">CHAR 居住地</div>
                 <div class="weather-setting-state" id="weatherCharState">未锁定</div>
               </div>
               <div class="weather-setting-grid">
                 <div>
-                  <span class="cs-label">设定名字</span>
-                  <input class="cs-input cs-underline" id="weatherCharAlias" type="text" placeholder="想显示的城市名..." oninput="onWeatherSettingInput('char');syncChatSettingsFieldWidths()">
+                  <span class="cs-label">展示名字</span>
+                  <input class="cs-input cs-underline" id="weatherCharAlias" type="text" placeholder="聊天里显示的居住地名..." oninput="onWeatherSettingInput('char');syncChatSettingsFieldWidths()">
                 </div>
                 <div>
                   <span class="cs-label">真实名字</span>
-                  <input class="cs-input cs-underline" id="weatherCharReal" type="text" placeholder="真实天气城市名..." oninput="onWeatherSettingInput('char');syncChatSettingsFieldWidths()">
+                  <input class="cs-input cs-underline" id="weatherCharReal" type="text" placeholder="用于日期时间天气的真实城市..." oninput="onWeatherSettingInput('char');syncChatSettingsFieldWidths()">
                 </div>
               </div>
               <div class="weather-setting-actions">
@@ -2938,21 +2938,21 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
                 </div>
                 <div class="weather-preview-icon" id="weatherCharPreviewIcon">☀︎</div>
               </div>
-              <div class="weather-preview-empty show" id="weatherCharPreviewEmpty">锁定后会在这里显示真实城市的天气和温度。</div>
+              <div class="weather-preview-empty show" id="weatherCharPreviewEmpty">锁定后会显示用于感知的日期、时间和天气。</div>
             </div>
             <div class="weather-setting-role" data-weather-role="user">
               <div class="weather-setting-head">
-                <div class="weather-setting-name">USER 天气</div>
+                <div class="weather-setting-name">USER 居住地</div>
                 <div class="weather-setting-state" id="weatherUserState">未锁定</div>
               </div>
               <div class="weather-setting-grid">
                 <div>
-                  <span class="cs-label">设定名字</span>
-                  <input class="cs-input cs-underline" id="weatherUserAlias" type="text" placeholder="想显示的城市名..." oninput="onWeatherSettingInput('user');syncChatSettingsFieldWidths()">
+                  <span class="cs-label">展示名字</span>
+                  <input class="cs-input cs-underline" id="weatherUserAlias" type="text" placeholder="聊天里显示的居住地名..." oninput="onWeatherSettingInput('user');syncChatSettingsFieldWidths()">
                 </div>
                 <div>
                   <span class="cs-label">真实名字</span>
-                  <input class="cs-input cs-underline" id="weatherUserReal" type="text" placeholder="真实天气城市名..." oninput="onWeatherSettingInput('user');syncChatSettingsFieldWidths()">
+                  <input class="cs-input cs-underline" id="weatherUserReal" type="text" placeholder="用于日期时间天气的真实城市..." oninput="onWeatherSettingInput('user');syncChatSettingsFieldWidths()">
                 </div>
               </div>
               <div class="weather-setting-actions">
@@ -2966,7 +2966,7 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
                 </div>
                 <div class="weather-preview-icon" id="weatherUserPreviewIcon">☀︎</div>
               </div>
-              <div class="weather-preview-empty show" id="weatherUserPreviewEmpty">锁定后会在这里显示真实城市的天气和温度。</div>
+              <div class="weather-preview-empty show" id="weatherUserPreviewEmpty">锁定后会显示用于感知的日期、时间和天气。</div>
             </div>
           </div>
         </div>
@@ -7979,18 +7979,19 @@ function renderWeatherSettingUi(role){
   var icon = document.getElementById(prefix + 'PreviewIcon');
   var lockBtn = document.getElementById(prefix + 'LockBtn');
   var setting = getWeatherSettingState(role);
-  if(stateEl) stateEl.textContent = setting.locked ? '已锁定真实天气 / 时间' : '未锁定';
+  if(stateEl) stateEl.textContent = setting.locked ? '已锁定时间 / 天气' : '未锁定';
   if(lockBtn) lockBtn.textContent = setting.locked ? '取消锁定' : '锁定';
-  var hasPreview = !!(setting.locked && setting.resolvedName && setting.weatherIcon);
+  var hasPreview = !!(setting.locked && (setting.resolvedName || setting.realName || setting.timezone));
   if(preview) preview.classList.toggle('show', hasPreview);
   if(previewEmpty) previewEmpty.classList.toggle('show', !hasPreview);
   if(hasPreview){
-    if(title) title.textContent = setting.aliasName || '显示城市未设置';
+    var displayTitle = String(setting.aliasName || '').trim() || String(setting.realName || setting.resolvedName || '').trim() || '居住地未设置';
+    if(title) title.textContent = displayTitle;
     var timeInfo = buildTimezoneTimeSnapshot(setting.timezone);
-    if(sub) sub.textContent = '真实天气 / 时间已锁定'
+    if(sub) sub.textContent = '真实地点用于日期 / 时间 / 天气'
       + (timeInfo && timeInfo.timeLabel ? ('  ·  ' + timeInfo.timeLabel) : '')
       + (setting.temperatureC === null ? '' : ('  ·  ' + setting.temperatureC + '°C  ·  ' + setting.weatherLabel));
-    if(icon) icon.textContent = setting.weatherIcon || '☀︎';
+    if(icon) icon.textContent = '';
   }
   syncChatSettingsFieldWidths();
 }
@@ -8044,7 +8045,7 @@ async function searchWeatherCity(role){
     setting.locked = false;
     stagedWeatherSettings[role] = cloneWeatherSetting(setting, role);
     renderWeatherSettingUi(role);
-    toast((setting.aliasName || result.realName || getWeatherRoleLabel(role)) + ' 已找到真实天气与时间');
+    toast((setting.aliasName || result.realName || getWeatherRoleLabel(role)) + ' 已找到时间与天气');
   }catch(e){
     toast('没有找到这个城市');
   } finally {
@@ -8082,7 +8083,7 @@ async function toggleWeatherLock(role){
     if(aliasInput) aliasInput.value = '';
     if(realInput) realInput.value = '';
     renderWeatherSettingUi(role);
-    toast(getWeatherRoleLabel(role) + ' 真实天气 / 时间已取消');
+    toast(getWeatherRoleLabel(role) + ' 居住地时间 / 天气已取消');
     return;
   }
   var prefix = weatherUiPrefix(role);
@@ -8111,7 +8112,7 @@ async function toggleWeatherLock(role){
     setting.locked = true;
     saveWeatherSettingState(role, setting);
     renderWeatherSettingUi(role);
-    toast(getWeatherRoleLabel(role) + ' 真实天气 / 时间已锁定');
+    toast(getWeatherRoleLabel(role) + ' 居住地时间 / 天气已锁定');
   }catch(e){
     toast('锁定失败，请重新搜索城市');
   } finally {
@@ -8169,11 +8170,11 @@ async function refreshInviteWeatherSnapshot(role){
 function getInviteWeatherPromptText(role){
   var snapshot = getInviteWeatherSnapshot(role);
   if(!snapshot) return '';
-  var displayCity = String(snapshot.aliasName || '').trim() || '未设定';
+  var displayCity = getInviteDisplayPlaceName(snapshot) || '未设定';
   return [
-    (role === 'user' ? '用户' : '角色') + '天气设定：',
-    '显示城市=' + displayCity,
-    '真实天气/时区数据=已锁定但城市名不可说出口',
+    (role === 'user' ? '用户' : '角色') + '居住地设定：',
+    '展示名字=' + displayCity,
+    '真实名字只用于日期/时间/天气感知，不可直接说出口',
     '当前时间=' + getInviteTimeAwarenessText(snapshot),
     '当前天气=' + formatInviteWeatherBrief(snapshot)
   ].join('');
@@ -8181,7 +8182,7 @@ function getInviteWeatherPromptText(role){
 
 function getInviteDisplayPlaceName(snapshot){
   snapshot = snapshot && typeof snapshot === 'object' ? snapshot : {};
-  return String(snapshot.aliasName || '').trim();
+  return String(snapshot.aliasName || snapshot.realName || snapshot.resolvedName || '').trim();
 }
 
 function formatInviteWeatherBrief(snapshot){
@@ -8220,21 +8221,21 @@ function buildWeatherCommonSensePrompt(){
   var userSnapshot = getInviteWeatherSnapshot('user');
   var charSnapshot = getInviteWeatherSnapshot('char');
   if(!userSnapshot && !charSnapshot) return '';
-  var lines = ['【真实天气与城市常识】'];
+  var lines = ['【居住地时间与天气】'];
   if(userSnapshot){
-    var userDisplayCity = String(userSnapshot.aliasName || '').trim() || getInviteDisplayPlaceName(userSnapshot) || '未设定';
+    var userDisplayCity = getInviteDisplayPlaceName(userSnapshot) || '未设定';
     lines.push([
-      '用户所在城市显示为：' + userDisplayCity,
-      '真实天气/时区数据已按后台锁定城市计算，真实城市名不可说出口',
+      '用户居住地展示名字：' + userDisplayCity,
+      '真实名字已用于日期/时间/天气计算，真实城市名不可说出口',
       '当地时间：' + getInviteTimeAwarenessText(userSnapshot),
       '当前天气：' + formatInviteWeatherBrief(userSnapshot)
     ].join('；'));
   }
   if(charSnapshot){
-    var charDisplayCity = String(charSnapshot.aliasName || '').trim() || getInviteDisplayPlaceName(charSnapshot) || '未设定';
+    var charDisplayCity = getInviteDisplayPlaceName(charSnapshot) || '未设定';
     lines.push([
-      '角色所在城市显示为：' + charDisplayCity,
-      '真实天气/时区数据已按后台锁定城市计算，真实城市名不可说出口',
+      '角色居住地展示名字：' + charDisplayCity,
+      '真实名字已用于日期/时间/天气计算，真实城市名不可说出口',
       '当地时间：' + getInviteTimeAwarenessText(charSnapshot),
       '当前天气：' + formatInviteWeatherBrief(charSnapshot)
     ].join('；'));
@@ -8245,7 +8246,7 @@ function buildWeatherCommonSensePrompt(){
     if(displayState && displayState.sameDisplayCity){
       lines.push('双方当前应视为同城或至少近距离活动，请保持生活化，但也不要无端默认已经同居。');
     }else if(displayState){
-      lines.push('双方显示城市不同，请把关系理解为跨城相处；不要默认住在一起，不要默认随时能见面。');
+      lines.push('双方居住地展示名字不同，请把关系理解为跨城相处；不要默认住在一起，不要默认随时能见面。');
       lines.push('如果要见面，请像真人一样考虑车程、火车、飞机、时间安排、季节和温度，不要在寒冷天气让对方穿不合时宜的衣服出门。');
       lines.push('除非最近聊天已经明确约好见面、已经到达同一地点，或当前就在进行线下场景，否则不要把跨城写成“已经在你楼下/马上抱住你/我们就在一起”。');
     }
@@ -8256,7 +8257,7 @@ function buildWeatherCommonSensePrompt(){
         lines.push('双方存在明显时差，请自然地意识到发消息可能打扰对方休息，但只在语境合适时轻轻表现出来，不要频繁提醒睡觉。');
       }
     }else if(displayState && displayState.sameDisplayCity){
-      lines.push('双方显示城市相同，必须按同城/同一生活时区理解；不要主动说时差、异地、国内国外、飞来飞去。');
+      lines.push('双方居住地展示名字相同，必须按同城/同一生活时区理解；不要主动说时差、异地、国内国外、飞来飞去。');
     }
   }
   if(userSnapshot && userSnapshot.hour24 !== null && (userSnapshot.hour24 >= 23 || userSnapshot.hour24 <= 4)){
@@ -9425,9 +9426,9 @@ function buildCurrentTimeFactPromptBlock(){
   }catch(err5){}
   var lines = [
     '### 【当前时间】',
-    '角色显示地点：' + (charPlace || '未设定'),
+    '角色居住地展示名字：' + (charPlace || '未设定'),
     '角色当前当地时间：' + (charTime || '未拿到'),
-    '用户显示地点：' + (userPlace || '未设定'),
+    '用户居住地展示名字：' + (userPlace || '未设定'),
     '用户当前当地时间：' + (userTime || '未拿到'),
     '用户问“现在几点/几点钟/上午还是下午/今天几号”时，默认回答角色当前当地时间；问“我这里/用户这里”才回答用户当前当地时间。',
     '只许使用本段时间事实，不许猜时间、不许默认中国时间、不许默认设备时间。没拿到就说没拿到。'
@@ -9435,9 +9436,9 @@ function buildCurrentTimeFactPromptBlock(){
   try{
     var displayState = getInviteDisplayDistanceState();
     if(displayState && displayState.sameDisplayCity){
-      lines.push('双方显示城市相同：按同城/同一生活时区理解，不要主动说时差、异地、跨国、国内国外。');
+      lines.push('双方居住地展示名字相同：按同城/同一生活时区理解，不要主动说时差、异地、跨国、国内国外。');
     }else if(displayState){
-      lines.push('双方显示城市不同：用户显示城市=' + displayState.userCity + '；角色显示城市=' + displayState.charCity + '。正文里地点名只说显示城市。');
+      lines.push('双方展示名字不同：用户居住地=' + displayState.userCity + '；角色居住地=' + displayState.charCity + '。正文里地点名只说展示名字。');
     }
   }catch(err6){}
   return lines.join('\n');
@@ -9883,7 +9884,7 @@ function extractLatestUserTextForAvatarCue(msgs){
     }
     content = String(content || '').trim();
     if(!content) continue;
-    if(/^【当前可见头像识图】|^【头像识图预处理结果】|^【头像问答提醒】/.test(content)) continue;
+    if(/^【当前可见头像识图】|^【头像识图预处理结果】|^【头像问答提醒】|^【本轮回复重点】|^【本轮最新用户输入】/.test(content)) continue;
     return content;
   }
   return '';
@@ -19618,15 +19619,15 @@ function buildPresenceHardRulePrompt(){
   var distanceKm = Math.max(0, Number(snapshot.travel && snapshot.travel.distanceKm) || 0);
   var lines = [
     '【现实位置硬规则】',
-    '用户当前显示城市：' + userLabel,
-    '你当前显示城市：' + [charCityName, charPlace].filter(Boolean).join(' · '),
+    '用户居住地展示名字：' + userLabel,
+    '角色居住地展示名字：' + [charCityName, charPlace].filter(Boolean).join(' · '),
     '双方距离：' + (sameDisplayCity ? '同城/近距离生活背景' : String(snapshot.distanceLabel || '').trim())
   ];
   lines.push('真实地理位置只用于时间、天气和生活常识判断，不要把真实定位城市直接说出口，也不要拿它来强行判定异地恋。');
   if(sameDisplayCity || distanceKm < 35){
     lines.push('双方当前显示为同城/近距离范围。默认按本地活动距离来理解，不要再写买飞机票、坐飞机飞来、跨城跨国赶来、远程才见得到、时差很大这种异地剧情。');
   }else{
-    lines.push('双方当前显示城市不同。只有在聊天里真的约好见面、已经在赶路或线下场景开启时，才能写现实赴约；否则按跨城相处来写，不要直接装成熟悉地待在同一屋里。');
+    lines.push('双方居住地展示名字不同。只有在聊天里真的约好见面、已经在赶路或线下场景开启时，才能写现实赴约；否则按跨城相处来写，不要直接装成熟悉地待在同一屋里。');
   }
   return lines.join('\n');
 }
@@ -20988,7 +20989,8 @@ function buildSystemPrompt() {
 
   var memStore = loadMemorySummaryStore();
   var memText = buildMemoryPromptText(memStore);
-  if(String(memText || '').trim()) parts.push(memText);
+  var hasSingleChatPrompt = !!(promptManager && typeof promptManager.singleChatPrompt === 'function');
+  if(String(memText || '').trim() && !hasSingleChatPrompt) parts.push(memText);
   var identityHint = getSubAccountIdentityHint();
   if(identityHint) parts.push(identityHint);
   var replyLanguagePrompt = buildChatReplyLanguagePrompt();
@@ -21065,11 +21067,11 @@ function buildSystemPrompt() {
 
   var wbAll = [].concat(wbBefore, wbMid, wbAfter).join('\n\n');
   var curGreeting = getPromptGreeting();
-  var recentHistoryPrompt = formatChatForModel(getVisibleChatForModel().slice(-10)).slice(0, 2400);
+  var recentHistoryPrompt = '真实最近对话已作为后续 messages 传入；每条带时间，优先最后一条用户消息。';
   var policyBundle = (promptManager && typeof promptManager.chatPolicyBundle === 'function')
     ? promptManager.chatPolicyBundle()
     : {};
-  var pmPrompt = (promptManager.singleChatPrompt ? promptManager.singleChatPrompt({
+  var pmPrompt = (hasSingleChatPrompt ? promptManager.singleChatPrompt({
     originalName: character ? character.name : '角色',
     nickname: character ? (character.nickname || '') : '',
     persona: character ? (character.personality || character.description || '') : '',
@@ -21110,6 +21112,7 @@ function buildSystemPrompt() {
     'inner_voice、thought_chain、status、reaction、recall、rename_profile、change_avatar、change_user_avatar 都不算正文。',
     '本轮必须更新隐藏顶栏状态。必须先写完 text 正文，再附加 [[状态:xx]] 或 status 对象；禁止只输出状态。',
     '“无语、笑死、在忙、困困、想你、吃醋”这类如果只是状态词，必须放进隐藏 status，不能当唯一 text 正文；text 必须直接接住用户最新一句。',
+    '如果用户在问时间、地点、日程、设置或具体问题，text 不能只写“无语/笑死/看戏/嗯”等情绪词；先按事实回答，再自然收住。',
     '如果你正在犹豫格式，优先输出 [{"type":"text","content":"一句角色会发出的短消息"}]。'
   ].join('\n');
 
@@ -23072,10 +23075,14 @@ async function callAI(provider, key) {
   ensureMemeVisionForPrompt().catch(function(err){
     console.warn('ensureMemeVisionForPrompt failed', err);
   });
-  await ensureRecentUserImageVisionForPrompt().catch(function(err){
-    console.warn('ensureRecentUserImageVisionForPrompt failed', err);
-  });
-  var msgs = getVisibleChatForModel().slice(-14).map(function(m){
+  var visibleForModel = getVisibleChatForModel().slice(-14);
+  if(shouldPrepareRecentUserImageVisionBeforeCall(visibleForModel)){
+    await ensureRecentUserImageVisionForPrompt().catch(function(err){
+      console.warn('ensureRecentUserImageVisionForPrompt failed', err);
+    });
+    visibleForModel = getVisibleChatForModel().slice(-14);
+  }
+  var msgs = visibleForModel.map(function(m){
     if(!m) return null;
     if(m.hidden){
       if(m.role === 'system'){
@@ -23141,10 +23148,7 @@ async function callAI(provider, key) {
       console.warn('buildAvatarVisionMessagesForPrompt for focused avatar cue failed', avatarVisionErr);
     }
   }
-  var latestFocusPrompt = buildLatestUserFocusPromptBlock(latestUserTextForAvatarCue || extractLatestUserTextForAvatarCue(msgs));
-  if(latestFocusPrompt){
-    msgs.push({ role:'user', content: latestFocusPrompt });
-  }
+  msgs = attachLatestUserFocusPromptToMessages(msgs, latestUserTextForAvatarCue || extractLatestUserTextForAvatarCue(msgs));
   var reply = await callAIChat(provider, key, model, temperature, sys, msgs);
   if(/"type"\s*:\s*"rich_html"|"rich_html"\s*:|"html"\s*:/i.test(String(reply || ''))){
     reply = await maybeRepairBrokenRichHtmlReply(reply, provider, key, model, temperature, sys, msgs);
@@ -26945,6 +26949,24 @@ async function ensureRecentUserImageVisionForPrompt(){
   return changed;
 }
 
+function shouldPrepareRecentUserImageVisionBeforeCall(visible){
+  if(!character || !character.id || !loadAvatarVisionEnabled(character.id)) return false;
+  var list = Array.isArray(visible) ? visible.slice() : [];
+  var latestUserText = '';
+  for(var i = list.length - 1; i >= 0; i -= 1){
+    var msg = list[i];
+    if(!msg || msg.role !== 'user') continue;
+    latestUserText = String(formatMessageForModel(msg) || '').trim();
+    break;
+  }
+  if(/图片|照片|图里|图上|相片|拍的|看图|看照片|识图|头像|外貌|穿搭|image|photo|picture/i.test(latestUserText)) return true;
+  return list.slice(-4).some(function(msg){
+    if(!msg || msg.role !== 'user' || normalizeMessageType(msg.type || 'text') !== 'image') return false;
+    var payload = parseImageMessagePayload(msg.content);
+    return !!(payload && (payload.assetKey || payload.src) && !payload.visionDesc);
+  });
+}
+
 async function sendImageCardInput(mode){
   var inp=document.getElementById('imageCardInput');
   if(!inp) return;
@@ -27508,16 +27530,15 @@ function buildVoiceCallWeatherTimePromptBlock(){
   function lineFor(role, snapshot){
     if(!snapshot) return '';
     var who = role === 'user' ? '用户' : '角色';
-    var displayCity = String(snapshot.aliasName || '').trim() || getInviteDisplayPlaceName(snapshot) || (who + '显示城市');
+    var displayCity = getInviteDisplayPlaceName(snapshot) || (who + '居住地');
     var timeText = getInviteTimeAwarenessText(snapshot);
     var weather = [
-      snapshot.weatherIcon || '',
       snapshot.weatherLabel || '',
       snapshot.temperatureC === null ? '' : (snapshot.temperatureC + '°C')
     ].filter(Boolean).join(' ');
     return [
-      who + '显示城市：' + displayCity,
-      who + '真实天气/时区数据：已按后台锁定城市计算，城市名不可说出口',
+      who + '居住地展示名字：' + displayCity,
+      who + '真实名字只用于日期/时间/天气计算，城市名不可说出口',
       who + '当地时间：' + timeText,
       weather ? (who + '当前天气：' + weather) : ''
     ].filter(Boolean).join('；');
@@ -27526,15 +27547,15 @@ function buildVoiceCallWeatherTimePromptBlock(){
     '【通话天气与时间硬规则】',
     lineFor('user', userSnapshot),
     lineFor('char', charSnapshot),
-    '真实天气/时区数据只用于判断天气、早晚、作息、季节和出门常识；角色说出口的地点名只允许使用显示城市，不要把真实城市名直接说出来。',
+    '真实名字只用于判断日期、天气、早晚、作息、季节和出门常识；角色说出口的地点名只允许使用展示名字，不要把真实城市名直接说出来。',
     '如果用户问“现在几点/几点钟/上午下午/今天几号”，默认答角色当地时间；如果用户问“我这里/用户这里”，答用户当地时间。只许使用上面的时间，禁止猜测或套用设备时间。',
     '判断“起床、睡觉、午饭、下班、深夜、清晨、能不能出门”时，优先按这里的角色当地时间和用户当地时间，不要默认中国时间。'
   ].filter(Boolean);
   var displayState = getInviteDisplayDistanceState();
   if(displayState && displayState.sameDisplayCity){
-    lines.push('用户和角色的显示城市相同：' + displayState.userCity + '。本轮通话必须按同城/同一生活时区理解，不要说有时差、异地、国内国外、跨城、飞来飞去。');
+    lines.push('用户和角色的居住地展示名字相同：' + displayState.userCity + '。本轮通话必须按同城/同一生活时区理解，不要说有时差、异地、国内国外、跨城、飞来飞去。');
   }else if(displayState){
-    lines.push('用户显示城市是：' + displayState.userCity + '；角色显示城市是：' + displayState.charCity + '。若提到地点，只说显示城市，不要说真实天气城市。');
+    lines.push('用户居住地展示名字是：' + displayState.userCity + '；角色居住地展示名字是：' + displayState.charCity + '。若提到地点，只说展示名字，不要说真实城市。');
   }
   return lines.join('\n');
 }
@@ -27542,12 +27563,39 @@ function buildVoiceCallWeatherTimePromptBlock(){
 function buildLatestUserFocusPromptBlock(latestText){
   var latest = String(latestText || '').replace(/\s+/g, ' ').trim();
   var lines = [
-    '【本轮最新用户输入】',
-    latest || '无',
-    buildCurrentTimeFactPromptBlock(),
-    '回答前先判断用户这一句到底在问什么，再按这一句作答；不要被旧聊天、隐藏状态、心声或格式要求带跑。'
+    '【本轮回复重点】',
+    '先回答下面这条真实用户消息，不要把隐藏状态、心声、旁白或旧话题当正文。',
+    latest ? ('用户最新原话：' + latest.slice(0, 260)) : '',
+    '如果用户在问时间、地点、日程、设置或具体问题，必须给出一句完整回答，不能只回两三个情绪字。',
+    '输出仍按既有 JSON/正文格式；这段提示不是聊天内容。'
   ];
   return lines.filter(Boolean).join('\n');
+}
+
+function attachLatestUserFocusPromptToMessages(messages, latestText){
+  var list = Array.isArray(messages) ? messages.slice() : [];
+  var focus = buildLatestUserFocusPromptBlock(latestText);
+  if(!focus) return list;
+  for(var i = list.length - 1; i >= 0; i -= 1){
+    var msg = list[i];
+    if(!msg || msg.role !== 'user') continue;
+    if(typeof msg.content === 'string'){
+      var text = String(msg.content || '');
+      if(!text.trim()) continue;
+      if(/^【当前可见头像识图】|^【头像识图预处理结果】|^【头像问答提醒】/.test(text.trim())) continue;
+      if(text.indexOf('【本轮回复重点】') >= 0) return list;
+      list[i] = Object.assign({}, msg, { content: focus + '\n\n【真实用户消息】\n' + text });
+      return list;
+    }
+    if(Array.isArray(msg.content)){
+      var contentParts = msg.content.slice();
+      contentParts.unshift({ type:'text', text: focus + '\n\n【真实用户消息如下】' });
+      list[i] = Object.assign({}, msg, { content: contentParts });
+      return list;
+    }
+  }
+  list.push({ role:'user', content: focus });
+  return list;
 }
 
 function normalizeVoiceCallNarratorSpeaker(value){
@@ -27955,7 +28003,7 @@ function buildVoiceCallRealtimePromptBlock(){
         lines.push('如果用户在电话里问现在几点，默认答角色当地时间；问用户那里几点，才答用户当地时间。禁止编造其他时间。');
         lines.push('判断早晚、睡醒、吃饭、上课、上班、下班、外出，都必须按上面“用户所在 / 角色所在 / 角色当地时间”，禁止默认按中国时间或北京时区推断。');
         if(displayState && displayState.sameDisplayCity){
-          lines.push('双方显示城市相同，所以不要主动说时差、异地、跨国、国内国外，也不要把真实天气城市名说出口。');
+          lines.push('双方居住地展示名字相同，所以不要主动说时差、异地、跨国、国内国外，也不要把真实城市名说出口。');
         }
       }
     }

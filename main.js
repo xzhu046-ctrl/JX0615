@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-05T05:49:21Z';
+const APP_BUILD_ID = '2026-05-05T06:24:35Z';
 const APP_UPDATE_NOTES = [
-  '聊天会先读最新一句',
-  '问时间按聊天设置地点回答',
-  '状态不会当正文发出'
+  '居住地设置更清楚',
+  '聊天会更稳地读最新一句',
+  '天气不再依赖图标'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
