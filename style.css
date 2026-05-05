@@ -277,6 +277,7 @@ html.android-device .phone-outer.frame-off .frame-wallpaper {
 .phone-outer.frame-off .home-content {
   padding-top: 21px;
   padding-bottom: 6px;
+  transform: none;
 }
 html.android-device .phone-outer.frame-off .screen,
 html.android-device .phone-outer.frame-off .home-screen {
@@ -2410,13 +2411,13 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 }
 .music-player-wrap {
   position: relative;
-  width: 132px;
-  height: 132px;
-  transform: translateX(2px);
+  width: 128px;
+  height: 128px;
+  transform: translateX(4px);
 }
 .music-player-widget {
-  width: 116px;
-  height: 116px;
+  width: 112px;
+  height: 112px;
   border-radius: 50%;
   border: 0;
   background:
@@ -2432,7 +2433,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   overflow: visible;
   position: absolute;
   left: 0;
-  top: 2px;
+  top: 8px;
 }
 .page-two-mini-note {
   position: absolute;

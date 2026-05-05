@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-05T07:05:56Z';
+const APP_BUILD_ID = '2026-05-05T08:00:15Z';
 const APP_UPDATE_NOTES = [
-  '扫码登录和歌单更完整',
-  '播放页会显示歌词',
-  '黑胶唱片会显示封面'
+  '主屏幕位置不再上移',
+  '黑胶唱片不撑开主页',
+  '音乐入口点击更稳定'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
