@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-05T04:28:10Z';
+const APP_BUILD_ID = '2026-05-05T05:03:34Z';
 const APP_UPDATE_NOTES = [
-  '地点名称只显示设定城市',
-  '真实天气时间继续准确刷新',
-  '日程地点不再暴露真实城市'
+  '问时间会按设定地点回答',
+  '日程能识别上午下午',
+  '通话和线下同步时间感'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -3880,6 +3880,39 @@ function getScheduleUserPersona(charId){
   return String(localStorage.getItem('user_persona') || '').trim();
 }
 
+function getScheduleClockPeriodLabel(hour24){
+  var h = Number(hour24);
+  if(!isFinite(h)) return '';
+  if(h >= 0 && h <= 4) return '凌晨';
+  if(h <= 7) return '清晨';
+  if(h <= 10) return '上午';
+  if(h <= 13) return '中午';
+  if(h <= 17) return '下午';
+  if(h <= 22) return '晚上';
+  return '深夜';
+}
+
+function formatScheduleLocalClockLabel(clock){
+  clock = clock && typeof clock === 'object' ? clock : {};
+  var explicit = String(clock.explicitLabel || '').trim();
+  if(explicit) return explicit;
+  var dateKey = String(clock.dateKey || '').trim();
+  var time = String(clock.nowTime || clock.timeLabel || '').trim();
+  if(!dateKey && !time) return '未知';
+  var match = time.match(/^(\d{1,2})[:：](\d{1,2})$/);
+  var hour = match ? parseInt(match[1], 10) : Number(clock.hour24);
+  var minute = match ? parseInt(match[2], 10) : Number(clock.minute);
+  var period = String(clock.periodLabel || '').trim() || (Number.isFinite(hour) ? getScheduleClockPeriodLabel(hour) : '');
+  var bits = [];
+  if(dateKey) bits.push(dateKey);
+  if(period) bits.push(period);
+  if(time) bits.push(time);
+  if(Number.isFinite(hour)){
+    bits.push('（24小时制 ' + hour + '点' + String(Number.isFinite(minute) ? minute : 0).padStart(2, '0') + '分）');
+  }
+  return bits.join(' ') || '未知';
+}
+
 function getSchedulePresenceContext(character){
   if(!(window.PresenceShared && character && character.id && typeof window.PresenceShared.getPresenceSnapshot === 'function')) return '';
   try{
@@ -3896,8 +3929,8 @@ function getSchedulePresenceContext(character){
     var charPlace = String(snapshot.char.placeLabel || '').trim();
     var charActivity = String(snapshot.char.activityLabel || '').trim();
     var localClock = buildScheduleLocalNowContextForCharacter(character, Date.now());
-    var userClock = String(localClock && localClock.user && localClock.user.nowTime || '').trim();
-    var charClock = String(localClock && localClock.char && localClock.char.nowTime || snapshot.char.localTimeLabel || '').trim();
+    var userClock = localClock && localClock.user ? formatScheduleLocalClockLabel(localClock.user) : '';
+    var charClock = localClock && localClock.char ? formatScheduleLocalClockLabel(localClock.char) : String(snapshot.char.localTimeLabel || '').trim();
     var distanceLabel = String(snapshot.distanceLabel || '').trim();
     var sameCity = !!(userLabel && charCityName && userLabel === charCityName);
     var lines = [
@@ -3906,7 +3939,8 @@ function getSchedulePresenceContext(character){
       userClock ? ('用户当前当地时间：' + userClock) : '',
       charClock ? ('角色当前当地时间：' + charClock) : '',
       charActivity ? ('角色当前状态：' + charActivity) : '',
-      distanceLabel ? ('双方距离：' + distanceLabel) : ''
+      distanceLabel ? ('双方距离：' + distanceLabel) : '',
+      '如果被问“现在几点/几点钟/上午下午/今天几号”，默认按角色当前当地时间回答；问用户那里才按用户当地时间。禁止猜测或默认设备时间。'
     ].filter(Boolean);
     if(charCityName){
       lines.push('今天所有展示给用户看的地点、行动距离感、移动方式，都必须锁定在这个角色当前显示城市或它合理的附近区域：' + charCityName + '。不要无故跳到别的省市国家，更不要把真实定位城市直接写出来。');
@@ -3940,9 +3974,14 @@ function buildScheduleWeatherPresenceContext(payload){
   ].filter(Boolean);
   if(user && String(user.timezone || '').trim()){
     lines.push('用户当前当地时区：' + String(user.timezone || '').trim());
+    lines.push('用户当前当地时间：' + formatScheduleLocalClockLabel(getScheduleLocalClockParts(Date.now(), user.timezone, 0)));
   }
   if(char && String(char.timezone || '').trim()){
     lines.push('角色当前当地时区：' + String(char.timezone || '').trim());
+    lines.push('角色当前当地时间：' + formatScheduleLocalClockLabel(getScheduleLocalClockParts(Date.now(), char.timezone, 0)));
+  }
+  if(user || char){
+    lines.push('如果被问“现在几点/几点钟/上午下午/今天几号”，默认按角色当前当地时间回答；问用户那里才按用户当地时间。禁止猜测或默认设备时间。');
   }
   if(user && char){
     var userPlace = displayPlace(user, '');
@@ -4036,9 +4075,16 @@ function getScheduleLocalClockParts(nowMs, timezoneName, timezoneOffset){
     var day = parseInt(parts.day || '0', 10) || 0;
     var hour = parseInt(parts.hour || '0', 10) || 0;
     var minute = parseInt(parts.minute || '0', 10) || 0;
+    var dateKey = year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+    var nowTime = String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0');
+    var periodLabel = getScheduleClockPeriodLabel(hour);
     return {
-      dateKey: year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0'),
-      nowTime: String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0')
+      dateKey: dateKey,
+      nowTime: nowTime,
+      hour24: hour,
+      minute: minute,
+      periodLabel: periodLabel,
+      explicitLabel: dateKey + ' ' + periodLabel + ' ' + nowTime + '（24小时制 ' + hour + '点' + String(minute).padStart(2, '0') + '分）'
     };
   }
   if(safeName){
@@ -4071,12 +4117,23 @@ function getScheduleLocalClockParts(nowMs, timezoneName, timezoneOffset){
 function buildScheduleLocalNowContextForCharacter(character, nowMs){
   var safeNow = Number(nowMs || Date.now()) || Date.now();
   if(!(window.PresenceShared && character && character.id && typeof window.PresenceShared.getPresenceSnapshot === 'function')){
-    var fallbackNow = new Date(safeNow);
-    var fallbackDateKey = window.ScheduleShared ? window.ScheduleShared.toDateKey(fallbackNow) : '';
-    var fallbackTime = String(fallbackNow.getHours()).padStart(2, '0') + ':' + String(fallbackNow.getMinutes()).padStart(2, '0');
+    var fallbackUserWeather = character && character.id ? loadScheduleWeatherSettingByCharId('user', character.id) : null;
+    var fallbackCharWeather = character && character.id ? loadScheduleWeatherSettingByCharId('char', character.id) : null;
+    function deviceClock(){
+      var now = new Date(safeNow);
+      var dateKey = window.ScheduleShared ? window.ScheduleShared.toDateKey(now) : (now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0'));
+      var hour = now.getHours();
+      var minute = now.getMinutes();
+      var nowTime = String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0');
+      var periodLabel = getScheduleClockPeriodLabel(hour);
+      return { dateKey: dateKey, nowTime: nowTime, hour24: hour, minute: minute, periodLabel: periodLabel, explicitLabel: dateKey + ' ' + periodLabel + ' ' + nowTime + '（24小时制 ' + hour + '点' + String(minute).padStart(2, '0') + '分）' };
+    }
+    var fallbackDevice = deviceClock();
+    var fallbackUser = fallbackUserWeather && String(fallbackUserWeather.timezone || '').trim() ? getScheduleLocalClockParts(safeNow, fallbackUserWeather.timezone, 0) : fallbackDevice;
+    var fallbackChar = fallbackCharWeather && String(fallbackCharWeather.timezone || '').trim() ? getScheduleLocalClockParts(safeNow, fallbackCharWeather.timezone, 0) : fallbackDevice;
     return {
-      user: { dateKey: fallbackDateKey, nowTime: fallbackTime },
-      char: { dateKey: fallbackDateKey, nowTime: fallbackTime },
+      user: fallbackUser,
+      char: fallbackChar,
       presence: null
     };
   }
@@ -4439,6 +4496,7 @@ async function generateScheduleDayPlan(payload){
   var dateKey = String(payload.dateKey || '').trim();
   var dateObj = /^\d{4}-\d{2}-\d{2}$/.test(dateKey) ? new Date(dateKey + 'T12:00:00') : new Date();
   var weekday = ['周日','周一','周二','周三','周四','周五','周六'][dateObj.getDay()];
+  var localClock = buildScheduleLocalNowContextForCharacter(character, Date.now());
   var eventLines = (Array.isArray(payload.events) ? payload.events : []).map(function(item){
     var hidden = item && item.visibleToChar === false;
     return [
@@ -4488,6 +4546,9 @@ async function generateScheduleDayPlan(payload){
     '用户名字：' + String(payload.userName || getScheduleUserName(charId) || 'USER'),
     String(payload.userPersona || getScheduleUserPersona(charId) || '').trim() ? ('用户设定：' + String(payload.userPersona || getScheduleUserPersona(charId) || '').trim().slice(0, 900)) : '',
     buildScheduleWeatherPresenceContext(payload) ? ('现实地理位置 / 距离感：\n' + buildScheduleWeatherPresenceContext(payload)) : (getSchedulePresenceContext(character) ? ('现实地理位置 / 距离感：\n' + getSchedulePresenceContext(character)) : ''),
+    localClock && localClock.user ? ('用户当前当地时间：' + formatScheduleLocalClockLabel(localClock.user)) : '',
+    localClock && localClock.char ? ('角色当前当地时间：' + formatScheduleLocalClockLabel(localClock.char)) : '',
+    '如果生成或判断今天安排，必须按上面当前当地时间理解上午/下午/晚上，不要把 19:30 当早上，也不要默认中国时间。',
     '务必同时认真读取角色人设和用户设定，再决定今天的安排、互动方式和对用户生活状态的理解，不要脱离双方设定乱写。',
     '先直接读懂用户完整设定里的身份、生活状态、作息、处境和日常节奏，再决定和用户有关的互动方式，不要用死板标签套人设。',
     '角色今天的安排可以自然地和用户有关，但要服从现实距离和关系状态：异地可以是远程一起吃饭、寄东西、偷偷准备车票/机票；同城或住一起才可以出现接送、一起吃饭、顺手照顾之类的互动，而且要自然，不要刻意硬塞。',
@@ -4723,8 +4784,9 @@ async function generateScheduleInlineComment(payload){
     '角色人设：' + String(character.personality || character.description || '').slice(0, 1200),
     character.scenario ? ('角色情境：' + String(character.scenario || '').slice(0, 700)) : '',
     buildSchedulePresenceContextForCharId(charId, character) ? ('现实地理位置 / 距离感：\n' + buildSchedulePresenceContextForCharId(charId, character)) : '',
-    userNow ? ('用户当地日期时间：' + String(userNow.dateKey || '') + ' ' + String(userNow.nowTime || '')) : '',
-    charNow ? ('角色当地日期时间：' + String(charNow.dateKey || '') + ' ' + String(charNow.nowTime || '')) : '',
+    userNow ? ('用户当地日期时间：' + formatScheduleLocalClockLabel(userNow)) : '',
+    charNow ? ('角色当地日期时间：' + formatScheduleLocalClockLabel(charNow)) : '',
+    '如果这条安排和“现在几点/上午下午/是否已经过了”有关，只能按上面的当地时间判断，不能猜。',
     '今天日期：' + String(payload.dateKey || ''),
     '这条安排属于：' + (payload.owner === 'user' ? '用户' : '角色本人'),
     payload.owner === 'user'
@@ -4770,8 +4832,9 @@ async function generateScheduleChatBurst(payload){
     '角色人设：' + String(character.personality || character.description || '').slice(0, 1400),
     character.scenario ? ('角色情境：' + String(character.scenario || '').slice(0, 800)) : '',
     buildSchedulePresenceContextForCharId(charId, character) ? ('现实地理位置 / 距离感：\n' + buildSchedulePresenceContextForCharId(charId, character)) : '',
-    userNow ? ('用户当地日期时间：' + String(userNow.dateKey || '') + ' ' + String(userNow.nowTime || '')) : '',
-    charNow ? ('角色当地日期时间：' + String(charNow.dateKey || '') + ' ' + String(charNow.nowTime || '')) : '',
+    userNow ? ('用户当地日期时间：' + formatScheduleLocalClockLabel(userNow)) : '',
+    charNow ? ('角色当地日期时间：' + formatScheduleLocalClockLabel(charNow)) : '',
+    '如果聊天里问现在几点，默认按角色当地时间回答；问用户那里才按用户当地时间。禁止编造时间。',
     payload.context ? ('这次触发背景：' + String(payload.context || '').trim()) : '',
     payload.targets ? ('你刚刚看过的日程内容：\n' + String(payload.targets || '').trim()) : '',
     payload.actions ? ('你刚刚已经做过的动作：\n' + String(payload.actions || '').trim()) : '',
@@ -5135,15 +5198,12 @@ function getScheduleEntryTimeStatusText(item, owner, dateKey, localClock){
   var liveNow = owner === 'char'
     ? String(localClock.char && localClock.char.nowTime || '')
     : String(localClock.user && localClock.user.nowTime || '');
-  var nowParts = liveNow.split(':');
-  var nowMinutes = nowParts.length === 2 ? ((parseInt(nowParts[0], 10) || 0) * 60 + (parseInt(nowParts[1], 10) || 0)) : -1;
+  var nowMinutes = scheduleTimeToMinutes(liveNow);
   if(nowMinutes < 0) return '';
   var start = String(item.start || '').trim();
   var end = String(item.end || '').trim();
-  var startParts = start.split(':');
-  var endParts = end.split(':');
-  var startMinutes = startParts.length === 2 ? ((parseInt(startParts[0], 10) || 0) * 60 + (parseInt(startParts[1], 10) || 0)) : -1;
-  var endMinutes = endParts.length === 2 ? ((parseInt(endParts[0], 10) || 0) * 60 + (parseInt(endParts[1], 10) || 0)) : -1;
+  var startMinutes = scheduleTimeToMinutes(start);
+  var endMinutes = scheduleTimeToMinutes(end);
   if(startMinutes < 0) return '当前已经是这一天里的稍后时段。';
   if(endMinutes < startMinutes) endMinutes = startMinutes + 59;
   if(nowMinutes > endMinutes) return '这条安排的时间已经过去了。';
@@ -5222,8 +5282,8 @@ function buildScheduleHeuristicPlanFromUserText(userText, localClock, speaker){
   var shortClean = clean.slice(0, 28);
   function nextTimeSlot(offsetMinutes, durationMinutes){
     var nowText = String(localClock && localClock.char && localClock.char.nowTime || '');
-    var match = nowText.match(/^(\d{1,2}):(\d{2})$/);
-    var nowMinutes = match ? ((parseInt(match[1], 10) || 0) * 60 + (parseInt(match[2], 10) || 0)) : 12 * 60;
+    var nowMinutes = scheduleTimeToMinutes(nowText);
+    if(nowMinutes < 0) nowMinutes = 12 * 60;
     var startMinutes = Math.max(0, Math.min(23 * 60 + 20, nowMinutes + Math.max(10, offsetMinutes || 30)));
     var endMinutes = Math.max(startMinutes + 20, Math.min(23 * 60 + 59, startMinutes + Math.max(35, durationMinutes || 60)));
     function pad(n){ return String(n).padStart(2, '0'); }
@@ -5347,8 +5407,9 @@ async function generateScheduleChatSyncPlan(payload){
     character.scenario ? ('角色情境：' + String(character.scenario || '').slice(0, 800)) : '',
     String(getScheduleUserPersona(charId) || '').trim() ? ('用户设定：' + String(getScheduleUserPersona(charId) || '').trim().slice(0, 1000)) : '',
     buildSchedulePresenceContextForCharId(charId, character) ? ('现实地理位置 / 距离感：\n' + buildSchedulePresenceContextForCharId(charId, character)) : '',
-    localClock.user ? ('用户当地时间：' + String(localClock.user.dateKey || '') + ' ' + String(localClock.user.nowTime || '')) : '',
-    localClock.char ? ('角色当地时间：' + String(localClock.char.dateKey || '') + ' ' + String(localClock.char.nowTime || '')) : '',
+    localClock.user ? ('用户当地时间：' + formatScheduleLocalClockLabel(localClock.user)) : '',
+    localClock.char ? ('角色当地时间：' + formatScheduleLocalClockLabel(localClock.char)) : '',
+    '直接问“现在几点/几点钟”时，默认按角色当地时间回答；问用户那里才按用户当地时间。禁止猜测或默认设备时间。',
     speaker === 'assistant' ? ('角色刚刚在聊天里亲口说的话：' + userText) : ('最新用户聊天内容：' + userText),
     payload.userEvents ? ('用户今天行程：\n- ' + summarizeScheduleItemsForPrompt(payload.userEvents, 'user')) : '用户今天行程：无',
     payload.userTodos ? ('用户今天待办：\n- ' + summarizeScheduleItemsForPrompt(payload.userTodos, 'user')) : '用户今天待办：无',
@@ -5412,8 +5473,9 @@ async function generateScheduleThoughtActions(payload){
     character.scenario ? ('角色情境：' + String(character.scenario || '').slice(0, 800)) : '',
     String(getScheduleUserPersona(charId) || '').trim() ? ('用户设定：' + String(getScheduleUserPersona(charId) || '').trim().slice(0, 900)) : '',
     buildSchedulePresenceContextForCharId(charId, character) ? ('现实地理位置 / 距离感：\n' + buildSchedulePresenceContextForCharId(charId, character)) : '',
-    localClock.user ? ('用户当地时间：' + String(localClock.user.dateKey || '') + ' ' + String(localClock.user.nowTime || '')) : '',
-    localClock.char ? ('角色当地时间：' + String(localClock.char.dateKey || '') + ' ' + String(localClock.char.nowTime || '')) : '',
+    localClock.user ? ('用户当地时间：' + formatScheduleLocalClockLabel(localClock.user)) : '',
+    localClock.char ? ('角色当地时间：' + formatScheduleLocalClockLabel(localClock.char)) : '',
+    '直接问“现在几点/几点钟”时，默认按角色当地时间回答；问用户那里才按用户当地时间。禁止猜测或默认设备时间。',
     '当前日程页日期：' + String(payload.dateKey || ''),
     payload.primaryTarget ? ('当前用户点到的目标：' + JSON.stringify(payload.primaryTarget)) : '',
     '可操作目标：\n- ' + (lines(payload.targets) || '无'),
@@ -12418,8 +12480,11 @@ function getScheduleSharedApi(){
 }
 
 function scheduleTimeToMinutes(value){
+  if(window.ScheduleShared && typeof window.ScheduleShared.timeToMinutes === 'function'){
+    return window.ScheduleShared.timeToMinutes(value);
+  }
   var txt = String(value || '').trim();
-  var match = txt.match(/^(\d{1,2}):(\d{2})$/);
+  var match = txt.match(/^(\d{1,2})[:：](\d{2})$/);
   if(!match) return -1;
   return (parseInt(match[1], 10) || 0) * 60 + (parseInt(match[2], 10) || 0);
 }
@@ -12475,8 +12540,8 @@ async function maybeRunScheduleTodoReminders(){
           timeStatus: todo.done ? '这条待办原本该在现在提醒，但用户已经提前完成了。请像真人一样知道这点，再顺势聊一句。' : '这条待办现在到了提醒时间。请按人设自然提醒用户。',
           extraContext: [
             '提醒时间和是否超时，必须按用户地理位置的当地时间来判断，不要用设备时间乱算。',
-            localClock && localClock.user ? ('用户当地现在：' + String(localClock.user.dateKey || '') + ' ' + String(localClock.user.nowTime || '')) : '',
-            localClock && localClock.char ? ('角色当地现在：' + String(localClock.char.dateKey || '') + ' ' + String(localClock.char.nowTime || '')) : '',
+            localClock && localClock.user ? ('用户当地现在：' + formatScheduleLocalClockLabel(localClock.user)) : '',
+            localClock && localClock.char ? ('角色当地现在：' + formatScheduleLocalClockLabel(localClock.char)) : '',
             todo.done
               ? '这是日程 app 的提醒待办。用户已经在提醒时间前完成了，所以你不是催促，而是知道他做完了，可以顺势夸一句、问一句，或者自然聊开。'
               : '这是日程 app 的提醒待办。你现在要真的发一条聊天消息提醒用户，不要像系统通知。'

@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-05T04:28:10Z"></script>
-<script src="../chatStorage.js?v=2026-05-05T04:28:10Z"></script>
-<script src="../metadataStore.js?v=2026-05-05T04:28:10Z"></script>
-<script src="../promptManager.js?v=2026-05-05T04:28:10Z"></script>
-<script src="../accountManager.js?v=2026-05-05T04:28:10Z"></script>
-<script src="../scheduleShared.js?v=2026-05-05T04:28:10Z"></script>
-<script src="../presenceShared.js?v=2026-05-05T04:28:10Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-05T04:28:10Z"></script>
+<script src="../assetStore.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../chatStorage.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../metadataStore.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../promptManager.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../accountManager.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../scheduleShared.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../presenceShared.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-05T05:03:34Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -10137,11 +10137,12 @@ function buildOfflinePresencePromptBlock(){
     var charClock = getOfflineScheduleLocalClockParts(nowMs, String(charWeather.timezone || charPresence.timezoneName || '').trim(), charPresence.timezoneOffset);
     var lines = [
       '聊天设置地点/时间硬规则（优先级高于世界书、旧记忆、角色卡旧地点）：',
-      '用户显示地点：' + userLabel + '；用户当地日期时间：' + String(userClock.dateKey || '') + ' ' + String(userClock.nowTime || '未知'),
-      '角色显示城市：' + charCityName + '；角色当地日期时间：' + String(charClock.dateKey || '') + ' ' + String(charClock.nowTime || '未知'),
+      '用户显示地点：' + userLabel + '；用户当地日期时间：' + formatOfflineClockLabel(userClock),
+      '角色显示城市：' + charCityName + '；角色当地日期时间：' + formatOfflineClockLabel(charClock),
       '角色当前地点：' + (String(charPresence.placeLabel || '').trim() || '未设置'),
       '角色当前状态：' + (String(charPresence.activityLabel || '').trim() || '未设置'),
       '双方距离/交通：' + (String(snapshot.distanceLabel || '').trim() || '未知') + (snapshot.travel && snapshot.travel.text ? '，' + snapshot.travel.text : ''),
+      '用户问“现在几点/几点钟/上午下午/今天几号”时，默认答角色当地时间；问“我这里/用户这里”才答用户当地时间。只许使用上面时间，禁止猜测或默认中国时间。',
       '正文里所有昼夜、早晚、上课/下班/睡觉、通勤、天气体感和地点名称，都必须按上面这组聊天设置地点与当地时间来写；冲突旧设定只能当旧背景，不得覆盖。'
     ];
     if(userWeather.aliasName || charWeather.aliasName){
@@ -10229,9 +10230,16 @@ function getOfflineScheduleLocalClockParts(nowMs, timezoneName, timezoneOffset){
     var day = parseInt(parts.day || '0', 10) || 0;
     var hour = parseInt(parts.hour || '0', 10) || 0;
     var minute = parseInt(parts.minute || '0', 10) || 0;
+    var dateKey = year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+    var nowTime = String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0');
+    var periodLabel = getOfflineClockPeriodLabel(hour);
     return {
-      dateKey: year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0'),
-      nowTime: String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0')
+      dateKey: dateKey,
+      nowTime: nowTime,
+      hour24: hour,
+      minute: minute,
+      periodLabel: periodLabel,
+      explicitLabel: dateKey + ' ' + periodLabel + ' ' + nowTime + '（24小时制 ' + hour + '点' + String(minute).padStart(2, '0') + '分）'
     };
   }
   if(safeName){
@@ -10260,13 +10268,54 @@ function getOfflineScheduleLocalClockParts(nowMs, timezoneName, timezoneOffset){
     minute: shifted.getUTCMinutes()
   });
 }
+function getOfflineClockPeriodLabel(hour24){
+  var h = Number(hour24);
+  if(!isFinite(h)) return '';
+  if(h >= 0 && h <= 4) return '凌晨';
+  if(h <= 7) return '清晨';
+  if(h <= 10) return '上午';
+  if(h <= 13) return '中午';
+  if(h <= 17) return '下午';
+  if(h <= 22) return '晚上';
+  return '深夜';
+}
+function formatOfflineClockLabel(clock){
+  clock = clock && typeof clock === 'object' ? clock : {};
+  var explicit = String(clock.explicitLabel || '').trim();
+  if(explicit) return explicit;
+  var dateKey = String(clock.dateKey || '').trim();
+  var time = String(clock.nowTime || clock.timeLabel || '').trim();
+  if(!dateKey && !time) return '未知';
+  var match = time.match(/^(\d{1,2})[:：](\d{1,2})$/);
+  var hour = match ? parseInt(match[1], 10) : Number(clock.hour24);
+  var minute = match ? parseInt(match[2], 10) : Number(clock.minute);
+  var period = String(clock.periodLabel || '').trim() || (Number.isFinite(hour) ? getOfflineClockPeriodLabel(hour) : '');
+  var bits = [];
+  if(dateKey) bits.push(dateKey);
+  if(period) bits.push(period);
+  if(time) bits.push(time);
+  if(Number.isFinite(hour)){
+    bits.push('（24小时制 ' + hour + '点' + String(Number.isFinite(minute) ? minute : 0).padStart(2, '0') + '分）');
+  }
+  return bits.join(' ') || '未知';
+}
 function buildOfflineScheduleLocalNowContext(character){
   var safeNow = Date.now();
   if(!(window.PresenceShared && character && character.id && typeof window.PresenceShared.getPresenceSnapshot === 'function')){
     var fallbackUserWeather = getOfflineWeatherSnapshot('user') || {};
     var fallbackCharWeather = getOfflineWeatherSnapshot('char') || {};
-    var fallbackUser = getOfflineScheduleLocalClockParts(safeNow, String(fallbackUserWeather.timezone || '').trim(), 0);
-    var fallbackChar = getOfflineScheduleLocalClockParts(safeNow, String(fallbackCharWeather.timezone || '').trim(), 0);
+    function deviceClock(){
+      var now = new Date(safeNow);
+      var dateKey = window.ScheduleShared ? window.ScheduleShared.toDateKey(now) : (now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0'));
+      var hour = now.getHours();
+      var minute = now.getMinutes();
+      var nowTime = String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0');
+      var periodLabel = getOfflineClockPeriodLabel(hour);
+      return { dateKey: dateKey, nowTime: nowTime, hour24: hour, minute: minute, periodLabel: periodLabel, explicitLabel: dateKey + ' ' + periodLabel + ' ' + nowTime + '（24小时制 ' + hour + '点' + String(minute).padStart(2, '0') + '分）' };
+    }
+    var fallbackDevice = deviceClock();
+    var fallbackUser = String(fallbackUserWeather.timezone || '').trim() ? getOfflineScheduleLocalClockParts(safeNow, String(fallbackUserWeather.timezone || '').trim(), 0) : fallbackDevice;
+    var fallbackChar = String(fallbackCharWeather.timezone || '').trim() ? getOfflineScheduleLocalClockParts(safeNow, String(fallbackCharWeather.timezone || '').trim(), 0) : fallbackDevice;
     return {
       user: fallbackUser,
       char: fallbackChar,
@@ -10325,9 +10374,10 @@ function buildOfflineSchedulePromptBlock(){
   var lines = [];
   if(live && live.enabled){
     lines.push('用户当地日期：' + String(live.userDateKey || userTodayKey));
-    lines.push('用户当地时间：' + String(live.userNowTime || live.nowTime || '未知'));
+    lines.push('用户当地时间：' + formatOfflineClockLabel(clock.user || { dateKey: live.userDateKey || userTodayKey, nowTime: live.userNowTime || live.nowTime }));
     lines.push('char 当地日期：' + String(live.charDateKey || charTodayKey));
-    lines.push('char 当地时间：' + String(live.charNowTime || '未知'));
+    lines.push('char 当地时间：' + formatOfflineClockLabel(clock.char || { dateKey: live.charDateKey || charTodayKey, nowTime: live.charNowTime }));
+    lines.push('用户直接问“现在几点/几点钟/上午下午/今天几号”时，必须按这里的当地时间回答；默认问“现在几点”答 char 当地时间，问“我这里”答用户当地时间。禁止猜测或默认中国时间。');
     if(live.currentCharItem){
       lines.push('char 此刻更可能正在做：' + itemLine(live.currentCharItem, 'char'));
     }else if(live.nextCharItem){
@@ -10348,6 +10398,17 @@ function buildOfflineSchedulePromptBlock(){
     });
   }
   return lines.join('\n').trim();
+}
+function buildOfflineDirectTimePromptLine(){
+  var clock = buildOfflineScheduleLocalNowContext(character);
+  var userClock = clock && clock.user ? formatOfflineClockLabel(clock.user) : '';
+  var charClock = clock && clock.char ? formatOfflineClockLabel(clock.char) : '';
+  if(!userClock && !charClock) return '';
+  return [
+    '直接问时间硬规则：用户问“现在几点/几点钟/上午下午/今天几号”时，默认回答角色当地时间=' + (charClock || '未知'),
+    userClock ? ('用户当地时间=' + userClock) : '',
+    '只能使用这里的时间；没拿到就说没拿到，禁止编造、禁止默认设备时间或中国时间。'
+  ].filter(Boolean).join('\n');
 }
 function inferOfflineGenderText(){
   var pool = [
@@ -10759,6 +10820,7 @@ function buildOfflineUserPrompt(userText){
   var compactLevel = Math.max(0, Number(arguments[1]) || 0);
   var onlineChatText = getOfflineRecentOnlineSnippetByBudget(offlinePromptLimit(isMobileOfflineRuntime() ? 820 : 1200, compactLevel, 260));
   var liveContext = buildOfflineSchedulePromptBlock();
+  var directTimeRule = buildOfflineDirectTimePromptLine();
   var weatherRule = [
     String(session && session.invite && session.invite.weather || '').trim(),
     buildWeatherMoodPrompt(getOfflineWeatherSnapshot('char')),
@@ -10768,6 +10830,7 @@ function buildOfflineUserPrompt(userText){
     '这是一次已经开始的线下见面，请顺着当前氛围继续。',
     buildOfflineInvitePromptLine('见面起点：'),
     '最近线上聊天（按聊天设置读取）：\n' + (onlineChatText || '无'),
+    directTimeRule,
     '当前时间/天气/日程：\n' + (clipOfflinePromptText([weatherRule ? ('天气：' + weatherRule) : '', liveContext || ''].filter(Boolean).join('\n') || '无', offlinePromptLimit(isMobileOfflineRuntime() ? 620 : 900, compactLevel, 220)) || '无'),
     '最近线下记录：\n' + (clipOfflinePromptText(formatOfflineHistoryForPrompt(compactLevel >= 2 ? 3 : 4, compactLevel >= 2 ? 4 : 6) || '无', offlinePromptLimit(isMobileOfflineRuntime() ? 1200 : 1800, compactLevel, 360)) || '无'),
     '反重复提醒：请避开最近线下记录里刚出现过的安抚、解释、动作、比喻和情绪回路，这一幕要有新的现场推进。',

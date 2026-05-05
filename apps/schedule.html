@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>日程</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Quicksand:wght@400;500;600;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../chatStorage.js?v=2026-05-05T04:28:10Z"></script>
-<script src="../accountManager.js?v=2026-05-05T04:28:10Z"></script>
-<script src="../assetStore.js?v=2026-05-05T04:28:10Z"></script>
-<script src="../metadataStore.js?v=2026-05-05T04:28:10Z"></script>
-<script src="../scheduleShared.js?v=2026-05-05T04:28:10Z"></script>
-<script src="../presenceShared.js?v=2026-05-05T04:28:10Z"></script>
+<script src="../chatStorage.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../accountManager.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../assetStore.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../metadataStore.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../scheduleShared.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../presenceShared.js?v=2026-05-05T05:03:34Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -1825,6 +1825,9 @@ function getTimelineSecondaryText(item){
 }
 
 function scheduleTimeToMinutes(value){
+  if(window.ScheduleShared && typeof window.ScheduleShared.timeToMinutes === 'function'){
+    return window.ScheduleShared.timeToMinutes(value);
+  }
   var text = String(value || '').trim();
   var match = text.match(/^(\d{1,2})[:：](\d{1,2})$/);
   if(!match) return -1;
@@ -2575,17 +2578,11 @@ function getItemTimeStatusText(item){
   if(!live || live.enabled === false) return '';
   var liveDateKey = owner === 'char' ? String(live.charDateKey || '') : String(live.userDateKey || live.dateKey || '');
   if(String(selectedDateKey || '') !== liveDateKey) return '';
-  var nowMinutes = (function(txt){
-    txt = String(txt || '');
-    var parts = txt.split(':');
-    return parts.length === 2 ? ((parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0)) : -1;
-  })(owner === 'char' ? live.charNowTime : live.userNowTime || live.nowTime);
+  var nowMinutes = scheduleTimeToMinutes(owner === 'char' ? live.charNowTime : live.userNowTime || live.nowTime);
   var start = String(item.start || '').trim();
   var end = String(item.end || '').trim();
-  var startParts = start.split(':');
-  var endParts = end.split(':');
-  var startMinutes = startParts.length === 2 ? ((parseInt(startParts[0], 10) || 0) * 60 + (parseInt(startParts[1], 10) || 0)) : -1;
-  var endMinutes = endParts.length === 2 ? ((parseInt(endParts[0], 10) || 0) * 60 + (parseInt(endParts[1], 10) || 0)) : -1;
+  var startMinutes = scheduleTimeToMinutes(start);
+  var endMinutes = scheduleTimeToMinutes(end);
   if(startMinutes < 0) return '当前已经是这一天里的稍后时段。';
   if(endMinutes < startMinutes) endMinutes = startMinutes + 59;
   if(nowMinutes > endMinutes) return '这条安排的时间已经过去了。';

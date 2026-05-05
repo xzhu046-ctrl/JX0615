@@ -64,13 +64,79 @@
     return d.getFullYear() + '-' + pad2(d.getMonth() + 1);
   }
 
+  function parseChineseNumber(value){
+    var raw = String(value || '').trim();
+    if(!raw) return NaN;
+    if(/^\d+$/.test(raw)) return parseInt(raw, 10);
+    var map = { 零:0, 〇:0, 一:1, 二:2, 两:2, 三:3, 四:4, 五:5, 六:6, 七:7, 八:8, 九:9 };
+    if(raw === '十') return 10;
+    var tenIndex = raw.indexOf('十');
+    if(tenIndex >= 0){
+      var left = raw.slice(0, tenIndex);
+      var right = raw.slice(tenIndex + 1);
+      var tens = left ? map[left] : 1;
+      var ones = right ? map[right] : 0;
+      if(Number.isFinite(tens) && Number.isFinite(ones)) return tens * 10 + ones;
+    }
+    if(raw.length === 1 && Object.prototype.hasOwnProperty.call(map, raw)) return map[raw];
+    return NaN;
+  }
+
+  function applyMeridiemToHour(hour, meridiem){
+    var h = Math.max(0, Math.min(23, Number(hour) || 0));
+    var tag = String(meridiem || '').toLowerCase();
+    if(/凌晨/.test(tag)){
+      if(h === 12) h = 0;
+      return h;
+    }
+    if(/下午|晚上|傍晚|晚间|pm|p\.m\./i.test(tag)){
+      if(h < 12) h += 12;
+      return h;
+    }
+    if(/中午|午间/.test(tag)){
+      if(h >= 1 && h <= 10) h += 12;
+      return h;
+    }
+    if(/上午|早上|清晨|早晨|am|a\.m\./i.test(tag)){
+      if(h === 12) h = 0;
+      return h;
+    }
+    return h;
+  }
+
   function normalizeTimeValue(value){
     var txt = String(value || '').trim();
-    var match = txt.match(/^(\d{1,2})[:：](\d{1,2})$/);
-    if(!match) return '';
-    var hh = Math.max(0, Math.min(23, parseInt(match[1], 10) || 0));
-    var mm = Math.max(0, Math.min(59, parseInt(match[2], 10) || 0));
-    return pad2(hh) + ':' + pad2(mm);
+    if(!txt) return '';
+    var compact = txt.replace(/\s+/g, '');
+    var match = compact.match(/^(凌晨|清晨|早晨|早上|上午|中午|午间|下午|傍晚|晚上|晚间)?(\d{1,2})[:：](\d{1,2})(am|pm|a\.m\.|p\.m\.)?$/i);
+    if(match){
+      var hh = applyMeridiemToHour(parseInt(match[2], 10) || 0, match[1] || match[4] || '');
+      var mm = Math.max(0, Math.min(59, parseInt(match[3], 10) || 0));
+      return pad2(hh) + ':' + pad2(mm);
+    }
+    match = compact.match(/^(凌晨|清晨|早晨|早上|上午|中午|午间|下午|傍晚|晚上|晚间)?(\d{1,2})(am|pm|a\.m\.|p\.m\.)$/i);
+    if(match){
+      var meridiemHour = applyMeridiemToHour(parseInt(match[2], 10) || 0, match[1] || match[3] || '');
+      return pad2(meridiemHour) + ':00';
+    }
+    match = compact.match(/^(下午|傍晚|晚上|晚间|上午|早上|早晨|清晨|中午|午间|凌晨)(\d{1,2})$/i);
+    if(match){
+      var taggedHour = applyMeridiemToHour(parseInt(match[2], 10) || 0, match[1] || '');
+      return pad2(taggedHour) + ':00';
+    }
+    match = compact.match(/^(凌晨|清晨|早晨|早上|上午|中午|午间|下午|傍晚|晚上|晚间)?([零〇一二两三四五六七八九十\d]{1,3})(?:点|時|时)(半|[零〇一二两三四五六七八九十\d]{1,3}分?)?(am|pm|a\.m\.|p\.m\.)?$/i);
+    if(match){
+      var hour = parseChineseNumber(match[2]);
+      if(!Number.isFinite(hour)) return '';
+      var minute = 0;
+      var minuteRaw = String(match[3] || '').replace(/分$/,'');
+      if(minuteRaw === '半') minute = 30;
+      else if(minuteRaw) minute = parseChineseNumber(minuteRaw);
+      if(!Number.isFinite(minute)) minute = 0;
+      hour = applyMeridiemToHour(hour, match[1] || match[4] || '');
+      return pad2(Math.max(0, Math.min(23, hour))) + ':' + pad2(Math.max(0, Math.min(59, minute)));
+    }
+    return '';
   }
 
   function createId(prefix){
@@ -543,6 +609,8 @@
     normalizeTodo: normalizeTodo,
     normalizeSpecialDate: normalizeSpecialDate,
     normalizeCharDay: normalizeCharDay,
+    normalizeTimeValue: normalizeTimeValue,
+    timeToMinutes: timeToMinutes,
     getHolidayMap: getHolidayMap,
     summarizeDayContext: summarizeDayContext,
     getLiveTimeContext: getLiveTimeContext,
