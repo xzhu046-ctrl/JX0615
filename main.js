@@ -52,11 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-05T00:01:00Z';
+const APP_BUILD_ID = '2026-05-05T00:57:50Z';
 const APP_UPDATE_NOTES = [
-  '通话头像区上移一点',
-  '通话收起后变成可拖头像',
-  '通话更读取人物和地点设定'
+  '通话按设定地点读时间',
+  '接通第一句也带旁白',
+  '通话设置加入背景美化'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';

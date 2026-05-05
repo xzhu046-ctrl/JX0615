@@ -431,7 +431,8 @@
     const charWeatherLoc = getWeatherConfiguredLocation('char', character && character.id);
     const displayCity = getCity(settings.cityId || DEFAULT_CHAR_CITY);
     const weatherCity = charWeatherLoc ? findNearestCatalogCity(charWeatherLoc.lat, charWeatherLoc.lng) : displayCity;
-    const parts = getLocalParts(weatherCity.tz, now);
+    const timeCity = displayCity;
+    const parts = getLocalParts(timeCity.tz, now);
     const profile = settings.schedule === 'auto' ? inferProfile(character) : String(settings.schedule || 'office');
     const segment = segmentForProfile(profile, parts);
     const point = pointForSegment(displayCity, segment, [character && character.id || '', parts.daySeed, segment.key].join(':'));
@@ -439,7 +440,7 @@
       settings,
       city: displayCity,
       weatherCity,
-      timezoneOffset: Number(weatherCity.tz),
+      timezoneOffset: Number(timeCity.tz),
       timezoneName: String((charWeatherLoc && charWeatherLoc.timezone) || '').trim(),
       profile,
       availability: segment.availability,

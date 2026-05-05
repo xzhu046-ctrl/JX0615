@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-05T00:01:00Z"></script>
-<script src="../chatStorage.js?v=2026-05-05T00:01:00Z"></script>
-<script src="../assetStore.js?v=2026-05-05T00:01:00Z"></script>
-<script src="../accountManager.js?v=2026-05-05T00:01:00Z"></script>
-<script src="../metadataStore.js?v=2026-05-05T00:01:00Z"></script>
-<script src="../scheduleShared.js?v=2026-05-05T00:01:00Z"></script>
-<script src="../presenceShared.js?v=2026-05-05T00:01:00Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-05T00:01:00Z"></script>
-<script src="../sunnySupport.js?v=2026-05-05T00:01:00Z"></script>
-<script src="offlineInvite.js?v=2026-05-05T00:01:00Z"></script>
+<script src="../promptManager.js?v=2026-05-05T00:57:50Z"></script>
+<script src="../chatStorage.js?v=2026-05-05T00:57:50Z"></script>
+<script src="../assetStore.js?v=2026-05-05T00:57:50Z"></script>
+<script src="../accountManager.js?v=2026-05-05T00:57:50Z"></script>
+<script src="../metadataStore.js?v=2026-05-05T00:57:50Z"></script>
+<script src="../scheduleShared.js?v=2026-05-05T00:57:50Z"></script>
+<script src="../presenceShared.js?v=2026-05-05T00:57:50Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-05T00:57:50Z"></script>
+<script src="../sunnySupport.js?v=2026-05-05T00:57:50Z"></script>
+<script src="offlineInvite.js?v=2026-05-05T00:57:50Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -1943,10 +1943,10 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 #imageCardOverlay .voice-btn{border-radius:4px;box-shadow:3px 3px 0 rgba(17,17,17,.82);background:#fff;color:#111}
 #imageCardOverlay .voice-btn.primary{background:#111;color:#fff}
 #imageCardOverlay .voice-btn.image-real{grid-column:1 / -1;background:#111;color:#fff}
-.voice-call-overlay{position:fixed;inset:0;z-index:350;background:#050505;display:none;overflow:hidden;color:#fff;--voice-call-keyboard-inset:0px;--voice-call-bg-image:none;touch-action:manipulation}
+.voice-call-overlay{position:fixed;inset:0;z-index:350;background:#050505;display:none;overflow:hidden;color:#fff;--voice-call-keyboard-inset:0px;--voice-call-bg-image:none;--voice-call-top-pattern-image:none;--voice-call-bg-blur:28px;--voice-call-elastic-tail:0px;touch-action:manipulation}
 .voice-call-overlay.open{display:block}
 .voice-call-bg{position:absolute;inset:0;background:#050505;overflow:hidden}
-.voice-call-bg::before{content:'';position:absolute;inset:-38px;background-image:var(--voice-call-bg-image),radial-gradient(circle at 26% 18%,rgba(255,255,255,.15),transparent 28%),radial-gradient(circle at 82% 72%,rgba(255,255,255,.10),transparent 32%),linear-gradient(180deg,#232323 0%,#0d0d0d 48%,#030303 100%);background-size:cover,auto,auto,auto;background-position:center;filter:grayscale(1) blur(24px);transform:scale(1.12);opacity:.42}
+.voice-call-bg::before{content:'';position:absolute;inset:-38px;background-image:var(--voice-call-bg-image),radial-gradient(circle at 26% 18%,rgba(255,255,255,.15),transparent 28%),radial-gradient(circle at 82% 72%,rgba(255,255,255,.10),transparent 32%),linear-gradient(180deg,#232323 0%,#0d0d0d 48%,#030303 100%);background-size:cover,auto,auto,auto;background-position:center;filter:grayscale(1) blur(var(--voice-call-bg-blur,24px));transform:scale(1.12);opacity:.42}
 .voice-call-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.42),rgba(0,0,0,.16) 38%,rgba(0,0,0,.82)),radial-gradient(circle at 50% 34%,transparent 0,rgba(0,0,0,.36) 55%,rgba(0,0,0,.78) 100%);box-shadow:inset 0 0 80px rgba(255,255,255,.035)}
 .voice-call-shell{position:relative;z-index:1;height:100%;min-height:100dvh;box-sizing:border-box;display:flex;flex-direction:column;padding:calc(var(--safe-top) + 12px) 14px 0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue","PingFang SC",sans-serif;overflow:hidden}
 .voice-call-top{height:58px;display:grid;grid-template-columns:54px minmax(0,1fr)54px 76px;align-items:center;gap:10px;flex:0 0 auto}
@@ -2011,6 +2011,21 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .voice-call-ringing-btn{width:62px;height:62px;border-radius:999px;border:1px solid rgba(255,255,255,.18);font-size:12px;font-weight:850;cursor:pointer}
 .voice-call-ringing-btn.accept{background:#fff;color:#111}
 .voice-call-ringing-btn.reject{background:rgba(255,255,255,.08);color:#fff}
+.voice-call-settings-panel{position:absolute;inset:0;z-index:12;display:none;align-items:flex-end;justify-content:center;padding:18px;background:rgba(255,255,255,.16);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.voice-call-settings-panel.open{display:flex}
+.voice-call-settings-card{width:min(360px,calc(100vw - 30px));max-height:min(78vh,640px);overflow:auto;border:1.5px solid rgba(17,17,17,.16);border-radius:28px;background:rgba(255,255,255,.82);color:#111;box-shadow:0 24px 54px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.68);padding:16px;display:flex;flex-direction:column;gap:14px;font-family:var(--fontcute);backdrop-filter:blur(28px) saturate(138%);-webkit-backdrop-filter:blur(28px) saturate(138%)}
+.voice-call-settings-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.voice-call-settings-title{font-size:20px;font-weight:900;letter-spacing:.02em}
+.voice-call-settings-close{width:36px;height:36px;border:1.5px solid rgba(17,17,17,.18);border-radius:14px;background:rgba(255,255,255,.72);color:#111;font-size:22px;font-weight:900;box-shadow:0 9px 18px rgba(0,0,0,.10)}
+.voice-call-settings-row{border:1.5px solid rgba(17,17,17,.12);border-radius:20px;background:rgba(255,255,255,.58);padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.58)}
+.voice-call-settings-label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:900;color:#111}
+.voice-call-settings-label span:last-child{font-family:var(--font);font-size:11px;font-weight:900;color:rgba(17,17,17,.50)}
+.voice-call-settings-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.voice-call-settings-btn{min-height:38px;border:1.5px solid rgba(17,17,17,.16);border-radius:16px;background:rgba(255,255,255,.78);color:#111;font-family:var(--fontcute);font-size:13px;font-weight:900;box-shadow:0 8px 18px rgba(0,0,0,.10)}
+.voice-call-settings-btn.primary{background:#111;color:#fff;border-color:#111}
+.voice-call-settings-btn:active,.voice-call-settings-close:active{transform:scale(.96)}
+.voice-call-settings-range{width:100%;accent-color:#111}
+.voice-call-settings-hint{font-family:var(--font);font-size:11px;font-weight:800;line-height:1.55;color:rgba(17,17,17,.52)}
 .voice-call-record-overlay{position:fixed;inset:0;z-index:362;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.26);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .voice-call-record-overlay.open{display:flex}
 .voice-call-record-card{width:min(100%,360px);max-height:min(84vh,720px);border:2px solid #111;border-radius:22px;background:#fff;color:#111;box-shadow:7px 8px 0 rgba(0,0,0,.88);display:flex;flex-direction:column;overflow:hidden}
@@ -2050,7 +2065,7 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 }
 .voice-call-shell{padding:max(10px,calc(var(--safe-top) - 22px)) 18px 0;background:transparent;color:#111}
 .voice-call-bg{background:#f7f7f7}
-.voice-call-bg::before{background-image:var(--voice-call-bg-image),linear-gradient(135deg,#fafafa,#e8e8e8 52%,#fbfbfb);background-size:cover,auto;background-position:center;filter:grayscale(1) blur(28px);transform:scale(1.18);opacity:.30}
+.voice-call-bg::before{background-image:var(--voice-call-bg-image),linear-gradient(135deg,#fafafa,#e8e8e8 52%,#fbfbfb);background-size:cover,auto;background-position:center;filter:grayscale(1) blur(var(--voice-call-bg-blur,28px));transform:scale(1.18);opacity:.30}
 .voice-call-bg::after{background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.50) 38%,rgba(255,255,255,.82)),radial-gradient(circle at 50% 18%,rgba(255,255,255,.68),transparent 48%);box-shadow:inset 0 0 90px rgba(255,255,255,.58)}
 .voice-call-top{height:50px;display:grid;grid-template-columns:46px minmax(0,1fr)44px;gap:10px;align-items:start;flex:0 0 auto;transform:translateY(14px)}
 .voice-call-headcopy{display:none}
@@ -2058,7 +2073,9 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .voice-call-side-actions{grid-column:3;justify-self:end;display:flex;flex-direction:column;gap:9px;align-items:flex-end;justify-content:flex-start;z-index:6}
 .voice-call-mini-btn,.voice-call-menu-btn{width:44px;height:44px;border:1px solid rgba(17,17,17,.12);border-radius:18px;background:rgba(255,255,255,.48);color:#111;box-shadow:0 12px 26px rgba(0,0,0,.12),inset 0 0 0 1px rgba(255,255,255,.72);backdrop-filter:blur(24px) saturate(132%);-webkit-backdrop-filter:blur(24px) saturate(132%)}
 .voice-call-mini-btn svg,.voice-call-menu-btn svg{width:21px;height:21px}
-.voice-call-stage{min-height:142px;margin-top:-25px;padding:0 0 2px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;flex:0 0 auto}
+.voice-call-stage{position:relative;min-height:142px;margin-top:-25px;padding:0 0 2px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;flex:0 0 auto;overflow:visible}
+.voice-call-stage::before{content:'';position:absolute;inset:-18px 58px 16px;border-radius:30px;background-image:var(--voice-call-top-pattern-image);background-size:cover;background-position:center;opacity:.18;filter:grayscale(1);mix-blend-mode:multiply;pointer-events:none}
+.voice-call-duo,.voice-call-title-stack{position:relative;z-index:1}
 .voice-call-duo{position:relative;display:flex;align-items:flex-start;justify-content:center;margin-top:-6px;min-height:100px}
 .voice-call-person{position:relative;display:flex;flex-direction:column;align-items:center;gap:0}
 .voice-call-person.user{margin-left:-12px;margin-top:0}
@@ -2076,6 +2093,7 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .voice-call-livehint{max-width:190px;min-height:24px;padding:0 12px;border:1px solid rgba(17,17,17,.08);border-radius:999px;background:rgba(255,255,255,.35);color:rgba(17,17,17,.48);font-size:11px;font-weight:900;box-shadow:none;text-shadow:none;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 .voice-call-livehint.hidden,.voice-call-livehint:empty{display:none}
 .voice-call-feed{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;gap:18px;padding:14px 4px calc(120px + var(--voice-call-keyboard-inset));scroll-behavior:smooth;touch-action:pan-y;overscroll-behavior:contain}
+.voice-call-feed::after{content:'';display:block;flex:0 0 var(--voice-call-elastic-tail,0px);min-height:var(--voice-call-elastic-tail,0px);pointer-events:none}
 .voice-call-line{display:flex;align-items:flex-end;gap:9px;min-height:0;flex:0 0 auto;transition:opacity .18s ease,filter .18s ease}
 .voice-call-line.call-fade-0{opacity:1;filter:none}
 .voice-call-line.call-fade-1{opacity:.96}
@@ -2509,6 +2527,35 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
         <div class="voice-call-ringing-actions">
           <button class="voice-call-ringing-btn reject" type="button" onclick="rejectIncomingVoiceCall()">挂掉</button>
           <button class="voice-call-ringing-btn accept" type="button" onclick="acceptIncomingVoiceCall()">接听</button>
+        </div>
+      </div>
+    </div>
+    <div class="voice-call-settings-panel" id="voiceCallSettingsPanel" onclick="if(event.target===this)closeVoiceCallSettingsPanel()">
+      <div class="voice-call-settings-card" role="dialog" aria-modal="true" aria-label="通话美化">
+        <input id="voiceCallBgFile" type="file" accept="image/*" hidden onchange="handleVoiceCallAppearanceFile('background', this.files && this.files[0]); this.value='';">
+        <input id="voiceCallTopPatternFile" type="file" accept="image/*" hidden onchange="handleVoiceCallAppearanceFile('top', this.files && this.files[0]); this.value='';">
+        <div class="voice-call-settings-head">
+          <div class="voice-call-settings-title">通话美化</div>
+          <button class="voice-call-settings-close" type="button" onclick="closeVoiceCallSettingsPanel()" aria-label="关闭">×</button>
+        </div>
+        <div class="voice-call-settings-row">
+          <div class="voice-call-settings-label"><span>背景</span><span id="voiceCallBgState">默认头像</span></div>
+          <div class="voice-call-settings-actions">
+            <button class="voice-call-settings-btn primary" type="button" onclick="chooseVoiceCallAppearanceFile('background')">换背景</button>
+            <button class="voice-call-settings-btn" type="button" onclick="clearVoiceCallAppearanceAsset('background')">清空</button>
+          </div>
+          <div class="voice-call-settings-hint">背景会跟着这个角色一起保存。</div>
+        </div>
+        <div class="voice-call-settings-row">
+          <div class="voice-call-settings-label"><span>顶栏图案</span><span id="voiceCallTopPatternState">未设置</span></div>
+          <div class="voice-call-settings-actions">
+            <button class="voice-call-settings-btn primary" type="button" onclick="chooseVoiceCallAppearanceFile('top')">换图案</button>
+            <button class="voice-call-settings-btn" type="button" onclick="clearVoiceCallAppearanceAsset('top')">清空</button>
+          </div>
+        </div>
+        <div class="voice-call-settings-row">
+          <div class="voice-call-settings-label"><span>背景模糊</span><span id="voiceCallBgBlurValue">28px</span></div>
+          <input class="voice-call-settings-range" id="voiceCallBgBlur" type="range" min="0" max="42" step="1" value="28" oninput="setVoiceCallBgBlur(this.value)" onchange="persistVoiceCallAppearanceDraft()">
         </div>
       </div>
     </div>
@@ -4037,6 +4084,11 @@ var voiceCallComposerMode = 'text';
 var voiceCallInputClickTimer = 0;
 var voiceCallFloatingDragState = null;
 var voiceCallFloatingMoved = false;
+var voiceCallAppearanceCache = null;
+var voiceCallAppearanceLoadPromise = null;
+var voiceCallAppearanceLoadCharId = '';
+var voiceCallAppearanceApplyToken = 0;
+var voiceCallAppearanceSaveTimer = 0;
 var storageHydrationPromise = Promise.resolve();
 var storagePersistRequested = false;
 var momentsPostsCache = [];
@@ -9905,7 +9957,10 @@ function normalizeChatSettingsBundle(raw){
     charBgEnabled: src.charBgEnabled === null || src.charBgEnabled === undefined ? null : !!src.charBgEnabled,
     momentsFreq: normalizeMomentsFreq(src.momentsFreq || DEFAULT_MOMENTS_FREQ),
     autoSummaryEnabled: src.autoSummaryEnabled === null || src.autoSummaryEnabled === undefined ? null : !!src.autoSummaryEnabled,
-    userPersonaProfile: String(src.userPersonaProfile || '')
+    userPersonaProfile: String(src.userPersonaProfile || ''),
+    voiceCallBgAssetKey: String(src.voiceCallBgAssetKey || ''),
+    voiceCallTopPatternAssetKey: String(src.voiceCallTopPatternAssetKey || ''),
+    voiceCallBgBlur: Math.max(0, Math.min(42, Number(src.voiceCallBgBlur === undefined || src.voiceCallBgBlur === null ? 28 : src.voiceCallBgBlur) || 0))
   };
 }
 
@@ -19282,8 +19337,8 @@ function buildPresenceHardRulePrompt(){
   var displayState = getInviteDisplayDistanceState();
   var userWeather = getInviteWeatherSnapshot('user');
   var charWeather = getInviteWeatherSnapshot('char');
-  var userLabel = String((displayState && displayState.userCity) || getInviteDisplayPlaceName(userWeather) || snapshot.user.label || snapshot.user.cityId || '用户所在城市').trim();
-  var charCityName = String((displayState && displayState.charCity) || getInviteDisplayPlaceName(charWeather) || snapshot.char.placeLabel || (snapshot.char.city && snapshot.char.city.name) || '角色所在城市').trim();
+  var userLabel = String(snapshot.user.label || (displayState && displayState.userCity) || getInviteDisplayPlaceName(userWeather) || snapshot.user.cityId || '用户所在城市').trim();
+  var charCityName = String((snapshot.char.city && snapshot.char.city.name) || (displayState && displayState.charCity) || getInviteDisplayPlaceName(charWeather) || snapshot.char.placeLabel || '角色所在城市').trim();
   var charPlace = String(snapshot.char.placeLabel || '').trim();
   var sameDisplayCity = !!(displayState && displayState.sameDisplayCity);
   var distanceKm = Math.max(0, Number(snapshot.travel && snapshot.travel.distanceKm) || 0);
@@ -26636,6 +26691,166 @@ function getVoiceCallSettings(){
   };
 }
 
+function normalizeVoiceCallAppearance(raw){
+  var src = raw && typeof raw === 'object' ? raw : {};
+  var blur = Number(src.voiceCallBgBlur !== undefined && src.voiceCallBgBlur !== null ? src.voiceCallBgBlur : src.bgBlur);
+  if(!Number.isFinite(blur)) blur = 28;
+  return {
+    voiceCallBgAssetKey: String(src.voiceCallBgAssetKey || src.bgAssetKey || '').trim(),
+    voiceCallTopPatternAssetKey: String(src.voiceCallTopPatternAssetKey || src.topPatternAssetKey || '').trim(),
+    voiceCallBgBlur: Math.max(0, Math.min(42, Math.round(blur)))
+  };
+}
+
+function voiceCallAppearanceAssetKey(kind){
+  var safeKind = kind === 'top' ? 'top' : 'background';
+  var safeCharId = String((character && character.id) || 'char').replace(/[^\w-]+/g, '_');
+  return accountScopedKey('voice_call_' + safeKind + '_' + safeCharId);
+}
+
+function voiceCallCssUrl(src){
+  var clean = String(src || '').trim();
+  return clean ? ('url(' + JSON.stringify(clean) + ')') : 'none';
+}
+
+function getCachedVoiceCallAppearance(){
+  var charId = String((character && character.id) || '').trim();
+  if(voiceCallAppearanceCache && voiceCallAppearanceCache.__charId === charId){
+    return normalizeVoiceCallAppearance(voiceCallAppearanceCache);
+  }
+  return normalizeVoiceCallAppearance(character || {});
+}
+
+function loadVoiceCallAppearance(){
+  var charId = String((character && character.id) || '').trim();
+  if(!charId) return Promise.resolve(normalizeVoiceCallAppearance({}));
+  if(voiceCallAppearanceCache && voiceCallAppearanceCache.__charId === charId){
+    return Promise.resolve(normalizeVoiceCallAppearance(voiceCallAppearanceCache));
+  }
+  if(voiceCallAppearanceLoadPromise && voiceCallAppearanceLoadCharId === charId) return voiceCallAppearanceLoadPromise;
+  voiceCallAppearanceLoadCharId = charId;
+  voiceCallAppearanceLoadPromise = loadChatSettingsBundle(charId).catch(function(){ return null; }).then(function(bundle){
+    var appearance = normalizeVoiceCallAppearance(Object.assign({}, character || {}, bundle || {}));
+    voiceCallAppearanceCache = Object.assign({}, appearance, { __charId: charId });
+    return appearance;
+  }).finally(function(){
+    voiceCallAppearanceLoadPromise = null;
+    voiceCallAppearanceLoadCharId = '';
+  });
+  return voiceCallAppearanceLoadPromise;
+}
+
+function saveVoiceCallAppearance(next){
+  var charId = String((character && character.id) || '').trim();
+  if(!charId) return Promise.resolve(null);
+  var appearance = normalizeVoiceCallAppearance(next);
+  voiceCallAppearanceCache = Object.assign({}, appearance, { __charId: charId });
+  character.voiceCallBgAssetKey = appearance.voiceCallBgAssetKey;
+  character.voiceCallTopPatternAssetKey = appearance.voiceCallTopPatternAssetKey;
+  character.voiceCallBgBlur = appearance.voiceCallBgBlur;
+  return saveChatSettingsBundle(charId, appearance).catch(function(err){
+    console.warn('voice call appearance bundle save failed', err);
+    return null;
+  });
+}
+
+function syncVoiceCallAppearanceUi(appearance){
+  var app = normalizeVoiceCallAppearance(appearance || getCachedVoiceCallAppearance());
+  var blur = document.getElementById('voiceCallBgBlur');
+  var blurValue = document.getElementById('voiceCallBgBlurValue');
+  var bgState = document.getElementById('voiceCallBgState');
+  var topState = document.getElementById('voiceCallTopPatternState');
+  if(blur) blur.value = String(app.voiceCallBgBlur);
+  if(blurValue) blurValue.textContent = app.voiceCallBgBlur + 'px';
+  if(bgState) bgState.textContent = app.voiceCallBgAssetKey ? '已自定义' : '默认头像';
+  if(topState) topState.textContent = app.voiceCallTopPatternAssetKey ? '已自定义' : '未设置';
+}
+
+async function applyVoiceCallAppearance(){
+  var overlay = document.getElementById('voiceCallOverlay');
+  if(!overlay) return;
+  var token = ++voiceCallAppearanceApplyToken;
+  var fallbackBg = currentVisibleCharAvatarSrc();
+  var app = await loadVoiceCallAppearance().catch(function(){ return normalizeVoiceCallAppearance({}); });
+  var bgSrc = '';
+  var topSrc = '';
+  if(app.voiceCallBgAssetKey){
+    bgSrc = String(await loadStoredAsset(app.voiceCallBgAssetKey).catch(function(){ return ''; }) || '').trim();
+  }
+  if(app.voiceCallTopPatternAssetKey){
+    topSrc = String(await loadStoredAsset(app.voiceCallTopPatternAssetKey).catch(function(){ return ''; }) || '').trim();
+  }
+  if(token !== voiceCallAppearanceApplyToken) return;
+  overlay.style.setProperty('--voice-call-bg-image', voiceCallCssUrl(bgSrc || fallbackBg));
+  overlay.style.setProperty('--voice-call-top-pattern-image', voiceCallCssUrl(topSrc));
+  overlay.style.setProperty('--voice-call-bg-blur', app.voiceCallBgBlur + 'px');
+  syncVoiceCallAppearanceUi(app);
+}
+
+function chooseVoiceCallAppearanceFile(kind){
+  var input = document.getElementById(kind === 'top' ? 'voiceCallTopPatternFile' : 'voiceCallBgFile');
+  if(input) input.click();
+}
+
+async function handleVoiceCallAppearanceFile(kind, file){
+  if(!file) return;
+  if(!/^image\//i.test(String(file.type || ''))){
+    toast('请选择图片文件');
+    return;
+  }
+  try{
+    var raw = await readFileAsDataUrl(file);
+    var prepared = raw;
+    if(window.assetStore && typeof window.assetStore.optimizeImageDataUrl === 'function'){
+      prepared = await window.assetStore.optimizeImageDataUrl(raw);
+    }else{
+      prepared = await shrinkDataUrl(raw, kind === 'top' ? 900 : 1400);
+    }
+    var app = await loadVoiceCallAppearance();
+    var assetKey = voiceCallAppearanceAssetKey(kind === 'top' ? 'top' : 'background');
+    var saved = await saveStoredAsset(assetKey, prepared);
+    if(!saved){
+      toast('图片保存失败，换张小一点的图试试');
+      return;
+    }
+    if(kind === 'top') app.voiceCallTopPatternAssetKey = assetKey;
+    else app.voiceCallBgAssetKey = assetKey;
+    await saveVoiceCallAppearance(app);
+    await applyVoiceCallAppearance();
+    toast(kind === 'top' ? '顶栏图案已更新' : '通话背景已更新');
+  }catch(err){
+    console.warn('voice call appearance image failed', err);
+    toast('图片读取失败');
+  }
+}
+
+async function clearVoiceCallAppearanceAsset(kind){
+  var app = await loadVoiceCallAppearance().catch(function(){ return normalizeVoiceCallAppearance({}); });
+  var assetKey = kind === 'top' ? app.voiceCallTopPatternAssetKey : app.voiceCallBgAssetKey;
+  if(assetKey) await saveStoredAsset(assetKey, '').catch(function(){ return false; });
+  if(kind === 'top') app.voiceCallTopPatternAssetKey = '';
+  else app.voiceCallBgAssetKey = '';
+  await saveVoiceCallAppearance(app);
+  await applyVoiceCallAppearance();
+  toast(kind === 'top' ? '顶栏图案已清空' : '通话背景已清空');
+}
+
+function setVoiceCallBgBlur(value){
+  var app = getCachedVoiceCallAppearance();
+  app.voiceCallBgBlur = Math.max(0, Math.min(42, Math.round(Number(value) || 0)));
+  voiceCallAppearanceCache = Object.assign({}, app, { __charId: String((character && character.id) || '').trim() });
+  var overlay = document.getElementById('voiceCallOverlay');
+  if(overlay) overlay.style.setProperty('--voice-call-bg-blur', app.voiceCallBgBlur + 'px');
+  syncVoiceCallAppearanceUi(app);
+  clearTimeout(voiceCallAppearanceSaveTimer);
+  voiceCallAppearanceSaveTimer = setTimeout(persistVoiceCallAppearanceDraft, 260);
+}
+
+function persistVoiceCallAppearanceDraft(){
+  clearTimeout(voiceCallAppearanceSaveTimer);
+  return saveVoiceCallAppearance(getCachedVoiceCallAppearance());
+}
+
 function ensureVoiceCallState(){
   if(!voiceCallState) voiceCallState = defaultVoiceCallState();
   return voiceCallState;
@@ -26720,6 +26935,9 @@ function syncVoiceCallIdentityUi(){
   if(overlay){
     var bgValue = charSrc ? ('url("' + String(charSrc).replace(/["\\]/g, '\\$&') + '")') : 'none';
     overlay.style.setProperty('--voice-call-bg-image', bgValue);
+    overlay.style.setProperty('--voice-call-top-pattern-image', 'none');
+    overlay.style.setProperty('--voice-call-bg-blur', getCachedVoiceCallAppearance().voiceCallBgBlur + 'px');
+    applyVoiceCallAppearance();
   }
   var userLabel = document.getElementById('voiceCallUserLabel');
   var charLabel = document.getElementById('voiceCallCharLabel');
@@ -26788,14 +27006,26 @@ function syncVoiceCallKeyboardInset(){
     if(covered > 80) inset = Math.min(430, covered);
   }
   overlay.style.setProperty('--voice-call-keyboard-inset', inset + 'px');
+  setTimeout(syncVoiceCallFeedElasticSpace, 0);
 }
 
 function openVoiceCallSettingsPanel(){
-  toast('轻点麦克风输入，双击写动作');
+  var panel = document.getElementById('voiceCallSettingsPanel');
+  if(panel) panel.classList.add('open');
+  loadVoiceCallAppearance().then(function(app){
+    syncVoiceCallAppearanceUi(app);
+    applyVoiceCallAppearance();
+  }).catch(function(){
+    syncVoiceCallAppearanceUi();
+  });
   syncVoiceCallSettingsUi();
 }
 
-function closeVoiceCallSettingsPanel(){}
+function closeVoiceCallSettingsPanel(){
+  var panel = document.getElementById('voiceCallSettingsPanel');
+  if(panel) panel.classList.remove('open');
+  persistVoiceCallAppearanceDraft();
+}
 
 function openVoiceCallComposer(mode, evt){
   if(evt){
@@ -26871,6 +27101,15 @@ function formatVoiceCallDuration(ms){
   var min = Math.floor(total / 60);
   var sec = total % 60;
   return String(min).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+}
+
+function formatVoiceCallClockForOffset(offsetHours){
+  var offset = Number(offsetHours);
+  if(!Number.isFinite(offset)) return '';
+  var now = new Date();
+  var utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  var local = new Date(utcMs + offset * 3600000);
+  return String(local.getHours()).padStart(2, '0') + ':' + String(local.getMinutes()).padStart(2, '0');
 }
 
 function normalizeVoiceCallNarratorSpeaker(value){
@@ -27035,6 +27274,14 @@ function hydrateVoiceCallFeedAvatars(){
   });
 }
 
+function syncVoiceCallFeedElasticSpace(){
+  var host = document.getElementById('voiceCallFeed');
+  if(!host) return;
+  host.style.setProperty('--voice-call-elastic-tail', '0px');
+  var needed = Math.max(0, Math.ceil((host.clientHeight || 0) - (host.scrollHeight || 0) + 72));
+  host.style.setProperty('--voice-call-elastic-tail', needed + 'px');
+}
+
 function getVoiceCallLineFadeClass(index, total){
   var distance = Math.max(0, Number(total || 0) - 1 - Number(index || 0));
   if(distance >= 12) return 'call-fade-6';
@@ -27050,9 +27297,12 @@ function renderVoiceCallFeed(){
   var state = ensureVoiceCallState();
   var host = document.getElementById('voiceCallFeed');
   if(!host) return;
+  host.style.setProperty('--voice-call-elastic-tail', '0px');
   var items = Array.isArray(state.transcript) ? state.transcript : [];
   if(!items.length){
     host.innerHTML = '<div class="voice-call-line system"><div class="voice-call-bubble">电话接通了</div></div>';
+    host.scrollTop = host.scrollHeight;
+    syncVoiceCallFeedElasticSpace();
     return;
   }
   host.innerHTML = items.map(function(item, idx){
@@ -27075,6 +27325,7 @@ function renderVoiceCallFeed(){
   }).join('');
   hydrateVoiceCallFeedAvatars();
   host.scrollTop = host.scrollHeight;
+  syncVoiceCallFeedElasticSpace();
 }
 
 function tickVoiceCallTimer(){
@@ -27240,15 +27491,24 @@ function buildVoiceCallRealtimePromptBlock(){
       var userPlace = String((snapshot.user && (snapshot.user.label || snapshot.user.weatherName || snapshot.user.cityId)) || '').trim();
       var charPlace = [String((snapshot.char.city && snapshot.char.city.name) || '').trim(), String(snapshot.char.placeLabel || '').trim()].filter(Boolean).join(' · ');
       var charTime = String(snapshot.char.localTimeLabel || '').trim();
+      var userTime = '';
+      try{
+        if(window.PresenceShared && snapshot.user){
+          var userCity = window.PresenceShared.getCity(snapshot.user.cityId || 'edmonton');
+          userTime = formatVoiceCallClockForOffset(userCity && userCity.tz);
+        }
+      }catch(timeErr){}
       var charActivity = String(snapshot.char.activityLabel || '').trim();
       var distance = String(snapshot.distanceLabel || '').trim();
       if(userPlace || charPlace || charTime || charActivity || distance){
         lines.push('【现实状态】');
         if(userPlace) lines.push('用户所在：' + userPlace);
+        if(userTime) lines.push('用户当地时间：' + userTime);
         if(charPlace) lines.push('角色所在：' + charPlace);
         if(charTime) lines.push('角色当地时间：' + charTime);
         if(charActivity) lines.push('角色当前在做：' + charActivity);
         if(distance) lines.push('双方距离：' + distance);
+        lines.push('判断早晚、睡醒、吃饭、上课、上班、下班、外出，都必须按上面“用户所在 / 角色所在 / 角色当地时间”，禁止默认按中国时间或北京时区推断。');
       }
     }
   }catch(e){}
@@ -27284,7 +27544,8 @@ function buildVoiceCallPrompt(userText){
     '禁止视觉描写、时间戳、指令标签和解释说明。',
     'text 必须短，最好不超过 20 个字；宁可拆成几句短话，也不要长段独白。',
     'text 禁用句号收尾，不要用“。”或“.”把话写成书面完整句。优先问号、省略号、语气词或自然收住。',
-    '默认返回 JSON 数组，每项格式：{"type":"text","content":"..."} 或 {"type":"narrator","content":"..."}。1 到 4 条，至少 1 条 text。',
+    '默认返回 JSON 数组，每项格式：{"type":"text","content":"..."} 或 {"type":"narrator","content":"..."}。2 到 4 条，每轮至少 1 条 narrator 和 1 条 text。',
+    '刚接通后的第一轮也必须遵守同一格式：先给很短的电话旁白，再给角色说出口的话，不要把第一句话特殊处理。',
     '每条都要直接接住对方刚刚说的东西，不要自说自话；如果刚接通，第一句必须贴最近上下文和关系，禁止万能“喂我在呢怎么了”。',
     settings.tone ? ('【通话氛围】\n' + settings.tone) : ''
   ].filter(Boolean).join('\n\n');
@@ -27378,6 +27639,7 @@ function openVoiceCallOverlay(){
   syncVoiceCallFloating();
   syncVoiceCallKeyboardInset();
   setTimeout(syncVoiceCallKeyboardInset, 80);
+  setTimeout(syncVoiceCallFeedElasticSpace, 90);
   startVoiceCallTicker();
 }
 
@@ -27473,11 +27735,10 @@ async function askVoiceCallAnswerDecision(){
     buildPresenceHardRulePrompt(),
     '【任务】',
     '用户正在给你打一通语音电话。请完全按角色当下的人设、关系、情绪、现实状态和最近聊天，判断你会不会接。',
-    '接通第一句必须像这个角色真的在电话那头开口：贴角色关系、最近上下文和当下情绪，不要像默认客服或接电话模板。',
-    '禁止使用“喂，我在呢，怎么了”“喂，怎么啦”“我在呢”“找我吗”这类万能开场。',
-    '如果你拿不准角色会怎么开口，message 可以留空字符串，让对方先说。',
-    '只能返回 JSON：{"decision":"accept","message":"一句很短的接电话第一句话或空字符串"} 或 {"decision":"reject","message":"一句很短的拒接/挂断提示"}。',
-    'message 必须像角色自己说的话，短，最好不超过 20 个字；不要句号收尾。',
+    '这里只判断接听或拒接，不要生成接通后的第一句；接通后的第一轮会走普通通话回复，并且会包含旁白。',
+    'accept 时 message 必须是空字符串。',
+    '只能返回 JSON：{"decision":"accept","message":""} 或 {"decision":"reject","message":"一句很短的拒接/挂断提示"}。',
+    'reject 的 message 必须像角色自己说的话，短，最好不超过 20 个字；不要句号收尾。',
     '不要解释，不要输出多余文字。'
   ].filter(Boolean).join('\n\n');
   var user = [
@@ -27491,7 +27752,7 @@ async function askVoiceCallAnswerDecision(){
   return decision;
 }
 
-function connectOutgoingVoiceCall(openingText){
+function connectOutgoingVoiceCall(){
   var state = ensureVoiceCallState();
   if(!(state.phase === 'connecting' || state.awaitingAnswer)) return false;
   state.awaitingAnswer = false;
@@ -27501,9 +27762,6 @@ function connectOutgoingVoiceCall(openingText){
   state.connectedAt = Date.now();
   closeVoiceCallRecordViewer();
   appendVoiceCallLine('system', '电话接通了');
-  if(String(openingText || '').trim() && !shouldSuppressVoiceCallOpeningText(openingText)){
-    appendVoiceCallLine('assistant', openingText);
-  }
   syncVoiceCallSettingsUi();
   persistVoiceCallSession();
   startVoiceCallTicker();
@@ -27532,7 +27790,14 @@ async function resolveOutgoingVoiceCallAnswer(){
   try{
     var result = await askVoiceCallAnswerDecision();
     if(!(voiceCallState && (voiceCallState.phase === 'connecting' || voiceCallState.awaitingAnswer))) return;
-    if(result.decision === 'accept') connectOutgoingVoiceCall(result.message);
+    if(result.decision === 'accept'){
+      var connected = connectOutgoingVoiceCall();
+      if(connected){
+        setTimeout(function(){
+          if(voiceCallState && voiceCallState.active) triggerVoiceCallAssistantTurn('');
+        }, 180);
+      }
+    }
     else endUnansweredOutgoingVoiceCall(result.message);
   }catch(err){
     console.warn('voice call answer decision failed', err);
@@ -27946,8 +28211,10 @@ function rejectIncomingVoiceCall(){
 
 if(window.visualViewport){
   window.visualViewport.addEventListener('resize', syncVoiceCallKeyboardInset);
+  window.visualViewport.addEventListener('resize', function(){ setTimeout(syncVoiceCallFeedElasticSpace, 80); });
 }
 window.addEventListener('resize', syncVoiceCallKeyboardInset);
+window.addEventListener('resize', function(){ setTimeout(syncVoiceCallFeedElasticSpace, 80); });
 document.addEventListener('focusin', function(evt){
   if(evt && evt.target && evt.target.id === 'voiceCallInput'){
     syncVoiceCallKeyboardInset();
