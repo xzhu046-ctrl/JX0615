@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-06T07:10:13Z"></script>
-<script src="../chatStorage.js?v=2026-05-06T07:10:13Z"></script>
-<script src="../assetStore.js?v=2026-05-06T07:10:13Z"></script>
-<script src="../accountManager.js?v=2026-05-06T07:10:13Z"></script>
-<script src="../metadataStore.js?v=2026-05-06T07:10:13Z"></script>
-<script src="../scheduleShared.js?v=2026-05-06T07:10:13Z"></script>
-<script src="../presenceShared.js?v=2026-05-06T07:10:13Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-06T07:10:13Z"></script>
-<script src="../sunnySupport.js?v=2026-05-06T07:10:13Z"></script>
-<script src="offlineInvite.js?v=2026-05-06T07:10:13Z"></script>
+<script src="../promptManager.js?v=2026-05-06T07:38:10Z"></script>
+<script src="../chatStorage.js?v=2026-05-06T07:38:10Z"></script>
+<script src="../assetStore.js?v=2026-05-06T07:38:10Z"></script>
+<script src="../accountManager.js?v=2026-05-06T07:38:10Z"></script>
+<script src="../metadataStore.js?v=2026-05-06T07:38:10Z"></script>
+<script src="../scheduleShared.js?v=2026-05-06T07:38:10Z"></script>
+<script src="../presenceShared.js?v=2026-05-06T07:38:10Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-06T07:38:10Z"></script>
+<script src="../sunnySupport.js?v=2026-05-06T07:38:10Z"></script>
+<script src="offlineInvite.js?v=2026-05-06T07:38:10Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -2243,7 +2243,9 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .msg-action-btn[data-action="delete"] img{width:21px;height:21px}
 .msg-action-btn[data-action="recall"] img{transform:scaleX(-1)}
 .msg-action-btn:active{transform:translate(2px,2px);box-shadow:0 0 0}
+.voice-call-actions-overlay{z-index:370;background:rgba(255,255,255,.16);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .voice-call-actions-card{width:min(276px,100%);grid-template-columns:repeat(4,minmax(0,1fr))}
+.voice-call-line[data-call-line-id]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .voice-call-line.select-mode{cursor:pointer}
 .voice-call-line.selected .voice-call-bubble{outline:2px solid rgba(17,17,17,.88);outline-offset:3px}
 .voice-call-line.selected .voice-call-line-avatar{outline:2px solid rgba(17,17,17,.88);outline-offset:2px}
@@ -28109,6 +28111,11 @@ function bindVoiceCallLineLongPress(el, lineId){
     evt.stopPropagation();
     toggleVoiceCallLineSelection(lineId);
   });
+  el.addEventListener('contextmenu', function(evt){
+    evt.preventDefault();
+    evt.stopPropagation();
+    openVoiceCallLineActions(lineId);
+  });
 }
 
 function isVoiceCallAssistantOutputLine(line){
@@ -31886,7 +31893,8 @@ function clearOfflineArchiveRecordsForChar(charId){
 }
 async function clearChatData(opts){
   var options = opts || {};
-  var clearAt = markChatClearTombstone(60000);
+  var keepGreeting = !!options.keepGreeting;
+  var clearAt = keepGreeting ? 0 : markChatClearTombstone(60000);
   if(pendingChatSavePromise){
     try{ await pendingChatSavePromise; }catch(pendingErr){}
   }
@@ -31900,12 +31908,18 @@ async function clearChatData(opts){
   pendingFamilyFollowupCue = '';
   chatLog = [];
   if (character){
-    await persistChatClearMarker(character.id, clearAt);
+    if(keepGreeting){
+      await clearChatClearMarker(character.id);
+    }else{
+      await persistChatClearMarker(character.id, clearAt);
+    }
     markOfflineInviteRecordsHiddenForChar(character.id);
     clearOfflineInviteRecordsForChar(character.id);
     clearOfflineArchiveRecordsForChar(character.id);
     await clearAllChatStorageCopies(character.id);
-    await persistChatClearTombstoneRecords(character.id, clearAt);
+    if(!keepGreeting){
+      await persistChatClearTombstoneRecords(character.id, clearAt);
+    }
     character.nickname = '';
     character.userNicknameNote = '';
     try{
@@ -31924,7 +31938,7 @@ async function clearChatData(opts){
   if(options.clearMemory) await clearInnerVoiceStore();
   var msgs = document.getElementById('messages');
   msgs.innerHTML = '';
-  if(options.keepGreeting){
+  if(keepGreeting){
     clearSuppressOpeningAfterClear(character && character.id);
     var g = getGreeting();
     if (g) {
@@ -32241,6 +32255,20 @@ async function readChatClearMarkerAt(charId){
     }
   }
   return rememberChatClearMarkerAt(best);
+}
+
+async function clearChatClearMarker(charId){
+  var keys = getChatClearMarkerKeyCandidates(charId).concat(getChatClearMarkerWriteKeyCandidates(charId));
+  keys = Array.from(new Set(keys.filter(Boolean)));
+  keys.forEach(function(key){
+    try{ localStorage.removeItem(key); }catch(err){}
+  });
+  if(window.PhoneStorage && typeof window.PhoneStorage.remove === 'function'){
+    await Promise.all(keys.map(function(key){
+      return window.PhoneStorage.remove('kv', key).catch(function(){ return null; });
+    }));
+  }
+  lastChatClearTombstoneAt = 0;
 }
 
 async function persistChatClearMarker(charId, clearAt){
@@ -34583,6 +34611,7 @@ async function applyGreetingSelectionByIndex(nextIndex, options){
     innerVoiceEditingId = '';
     innerVoicePendingDeleteId = '';
     chatLog = [];
+    await clearChatClearMarker(character.id);
     try{ localStorage.removeItem(chatStorageKey(character.id)); }catch(e){}
     var msgs = document.getElementById('messages');
     if(msgs) msgs.innerHTML = '';
