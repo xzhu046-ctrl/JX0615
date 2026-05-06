@@ -52,11 +52,12 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-05T08:00:15Z';
+const APP_BUILD_ID = '2026-05-06T03:33:54Z';
 const APP_UPDATE_NOTES = [
-  '主屏幕位置不再上移',
-  '黑胶唱片不撑开主页',
-  '音乐入口点击更稳定'
+  '唱片小组件恢复原样',
+  '音乐悬浮球显示封面',
+  '头像和页面加载更稳定',
+  '音乐播放不再误报地区限制'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -6189,6 +6190,7 @@ function showAppNotificationCard(payload){
           }
         };
         avatarImg.classList.remove('show');
+        avatarImg.referrerPolicy = 'no-referrer';
         avatarImg.src = safeSrc;
       }
       avatar.textContent = '';
@@ -7476,7 +7478,7 @@ function applyBondAvatarContent(role, src, fallback, charId){
     }
   }
   var baseHtml = isRenderableShellAvatarSrc(safeSrc)
-    ? '<span class="bond-avatar-base"><img src="' + escapeHtmlAttr(safeSrc) + '" alt="" onerror="this.closest(\'.bond-avatar-base\').textContent=\'' + escapeHtmlAttr(safeFallback.slice(0, 2)) + '\'"></span>'
+    ? '<span class="bond-avatar-base"><img src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" onerror="this.closest(\'.bond-avatar-base\').textContent=\'' + escapeHtmlAttr(safeFallback.slice(0, 2)) + '\'"></span>'
     : '<span class="bond-avatar-base">' + escapeHtml(safeFallback.slice(0, 2)) + '</span>';
   var frameUrl = getActiveBondAvatarFrameUrl(safeRole);
   if(frameUrl){
@@ -8942,7 +8944,8 @@ function applyHomeMusicBubbleAppearance(){
   var src = String(homeMusicState.customBubbleIcon || '').trim();
   if(isRenderableHomeMusicFloatingIcon(src)){
     bubble.classList.add('is-custom-image');
-    bubble.innerHTML = '<img class="home-music-bubble-custom-image" src="' + escapeHtml(src) + '" alt="音乐悬浮球">';
+    bubble.classList.remove('is-track-cover');
+    bubble.innerHTML = '<img class="home-music-bubble-custom-image" src="' + escapeHtmlAttr(src) + '" alt="音乐悬浮球" referrerpolicy="no-referrer">';
     bubble.style.minWidth = (44 * scale) + 'px';
     bubble.style.minHeight = (44 * scale) + 'px';
     bubble.style.width = 'auto';
@@ -8957,6 +8960,18 @@ function applyHomeMusicBubbleAppearance(){
     return;
   }
   bubble.classList.remove('is-custom-image');
+  var track = getCurrentHomeMusicTrack();
+  var coverSrc = normalizeHomeMusicPlayableUrl(track && track.cover || '');
+  if(isRenderableHomeMusicFloatingIcon(coverSrc)){
+    bubble.classList.add('is-track-cover');
+    bubble.innerHTML = '<img class="home-music-bubble-cover" src="' + escapeHtmlAttr(coverSrc) + '" alt="当前歌曲封面" referrerpolicy="no-referrer" onerror="this.parentElement.classList.remove(\'is-track-cover\');this.parentElement.innerHTML=\'<span class=&quot;home-music-bubble-icon&quot;>♪</span>\'">';
+    bubble.style.minWidth = '';
+    bubble.style.minHeight = '';
+    bubble.style.width = (44 * scale) + 'px';
+    bubble.style.height = (44 * scale) + 'px';
+    return;
+  }
+  bubble.classList.remove('is-track-cover');
   bubble.innerHTML = '<span class="home-music-bubble-icon">♪</span>';
   bubble.style.minWidth = '';
   bubble.style.minHeight = '';
@@ -9266,7 +9281,7 @@ function setShellVoiceCallAvatarNode(node, src, fallback){
   var safeSrc = normalizeShellAssetSrc(src || '');
   var safeFallback = String(fallback || '话').trim().slice(0, 2) || '话';
   if(isRenderableShellAvatarSrc(safeSrc)){
-    node.innerHTML = '<img src="' + escapeHtmlAttr(safeSrc) + '" alt="" onerror="this.parentElement.textContent=\'话\'">';
+    node.innerHTML = '<img src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" onerror="this.parentElement.textContent=\'话\'">';
   }else{
     node.textContent = safeFallback;
   }
@@ -9985,7 +10000,7 @@ function describeHomeMusicAudioError(audio){
   if(code === 1) return '播放被取消';
   if(code === 2) return '网络断开，歌曲没加载起来';
   if(code === 3) return '歌曲文件暂时无法解码';
-  if(code === 4) return '这首歌地址暂时不能播放，可能是地区或音源限制';
+  if(code === 4) return '歌曲刚刚没加载稳，点一下播放重试';
   return '歌曲播放失败';
 }
 
@@ -10029,7 +10044,8 @@ async function attemptHomeMusicPlay(audio){
       return true;
     }
     homeMusicPendingAutoplay = false;
-    showHomeToast(describeHomeMusicAudioError(audio));
+    var mediaCode = audio && audio.error ? Number(audio.error.code) || 0 : 0;
+    if(mediaCode !== 4) showHomeToast(describeHomeMusicAudioError(audio));
     return false;
   }
 }
@@ -10356,7 +10372,9 @@ function bindHomeMusicSystem(){
         if(recovered) return true;
         return tryHomeMusicGlobalPreviewFallback(failedTrack, true);
       }).then(function(recovered){
-        if(!recovered) showHomeToast(describeHomeMusicAudioError(audio));
+        if(recovered) return;
+        var code = audio && audio.error ? Number(audio.error.code) || 0 : 0;
+        if(code !== 4) showHomeToast(describeHomeMusicAudioError(audio));
       });
     });
     audio.addEventListener('timeupdate', function(){
@@ -10604,6 +10622,8 @@ function buildAppFrameUrl(src){
 
 var shellLoadingHideTimer = 0;
 var shellLoadingForceTimer = 0;
+var shellLoadingShownAt = 0;
+var shellLoadingMinVisibleMs = 720;
 var appFrameLoadWatchdogTimer = 0;
 var appFrameLoadWatchdogNonce = 0;
 var appFrameLoadHandlersBound = false;
@@ -10628,6 +10648,7 @@ function showShellLoadingOverlay(kind){
     shellLoadingForceTimer = 0;
   }
   image.src = 'apps/assets/loading-cat.png';
+  shellLoadingShownAt = Date.now();
   overlay.classList.add('show');
 }
 
@@ -10642,11 +10663,14 @@ function hideShellLoadingOverlay(delay){
     clearTimeout(shellLoadingForceTimer);
     shellLoadingForceTimer = 0;
   }
+  var baseDelay = Math.max(0, Number(delay) || 0);
+  var elapsed = shellLoadingShownAt ? Math.max(0, Date.now() - shellLoadingShownAt) : shellLoadingMinVisibleMs;
+  var minDelay = Math.max(0, shellLoadingMinVisibleMs - elapsed);
   shellLoadingHideTimer = setTimeout(function(){
     overlay.classList.remove('show');
     overlay.classList.remove('instant');
     shellLoadingHideTimer = 0;
-  }, Math.max(0, Number(delay) || 0));
+  }, Math.max(baseDelay, minDelay));
 }
 
 function clearAppFrameLoadWatchdog(){
@@ -11127,7 +11151,7 @@ window.addEventListener('message',(e)=>{
     if(bondUserAvatar && !activeCharForAvatar){
       var frameUrl = getActiveBondAvatarFrameUrl('user');
       var baseHtml = isRenderableShellAvatarSrc(avatarSrc)
-        ? '<span class="bond-avatar-base"><img src="' + escapeHtmlAttr(avatarSrc) + '" alt="" onerror="this.closest(\'.bond-avatar-base\').textContent=\'你\'"></span>'
+        ? '<span class="bond-avatar-base"><img src="' + escapeHtmlAttr(avatarSrc) + '" alt="" referrerpolicy="no-referrer" onerror="this.closest(\'.bond-avatar-base\').textContent=\'你\'"></span>'
         : '<span class="bond-avatar-base">你</span>';
       if(frameUrl){
         var frameVisual = getTopFrameVisual(frameUrl);
@@ -11730,6 +11754,7 @@ function applyWidgetUserAvatarContent(target, src, fallback){
     img.alt = '';
     img.decoding = 'async';
     img.loading = 'eager';
+    img.referrerPolicy = 'no-referrer';
     img.onerror = function(){
       if(target.dataset.avatarSrc !== safeSrc) return;
       target.innerHTML = '';
@@ -11848,7 +11873,7 @@ function applyWidgetMiniOrbImage(src){
   var safeSrc = normalizeShellAssetSrc(src || '');
   if(!sideAvEl || !sideOrbEl) return;
   if(isRenderableShellAvatarSrc(safeSrc)){
-    sideAvEl.innerHTML = '<img src="' + safeSrc + '" alt="">';
+    sideAvEl.innerHTML = '<img src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer">';
     sideOrbEl.classList.add('has-image');
   }else{
     sideAvEl.innerHTML = '<span class="widget-mini-orb-plus">+</span>';
@@ -11976,7 +12001,7 @@ function setWidgetCharacter(c){
     liveAvatarSrc = getWidgetAvatarMirrorSrc('char', c.id);
   }
   if (avEl && isRenderableShellAvatarSrc(liveAvatarSrc)) {
-    avEl.innerHTML = '<img src="'+liveAvatarSrc+'" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center">';
+    avEl.innerHTML = '<img src="' + escapeHtmlAttr(liveAvatarSrc) + '" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center">';
   } else if(avEl) {
     avEl.textContent = String(c ? ((c.nickname || c.name || c.avatar || 'C').trim().slice(0, 1) || 'C') : 'C');
   }
@@ -11986,7 +12011,7 @@ function setWidgetCharacter(c){
       if(String(avEl.dataset.charId || '') !== String(c.id || '')) return;
       var safeOverride = normalizeShellAssetSrc(override || '');
       if(isRenderableShellAvatarSrc(safeOverride)){
-        avEl.innerHTML = '<img src="'+safeOverride+'" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center">';
+        avEl.innerHTML = '<img src="' + escapeHtmlAttr(safeOverride) + '" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center">';
         applyBondAvatarContent('char', safeOverride, String((c.nickname || c.name || c.avatar || 'CHAR')).trim().slice(0, 1) || 'C', c.id);
       }
     });
