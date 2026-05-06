@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-06T05:58:31Z"></script>
-<script src="../chatStorage.js?v=2026-05-06T05:58:31Z"></script>
-<script src="../assetStore.js?v=2026-05-06T05:58:31Z"></script>
-<script src="../accountManager.js?v=2026-05-06T05:58:31Z"></script>
-<script src="../metadataStore.js?v=2026-05-06T05:58:31Z"></script>
-<script src="../scheduleShared.js?v=2026-05-06T05:58:31Z"></script>
-<script src="../presenceShared.js?v=2026-05-06T05:58:31Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-06T05:58:31Z"></script>
-<script src="../sunnySupport.js?v=2026-05-06T05:58:31Z"></script>
-<script src="offlineInvite.js?v=2026-05-06T05:58:31Z"></script>
+<script src="../promptManager.js?v=2026-05-06T07:10:13Z"></script>
+<script src="../chatStorage.js?v=2026-05-06T07:10:13Z"></script>
+<script src="../assetStore.js?v=2026-05-06T07:10:13Z"></script>
+<script src="../accountManager.js?v=2026-05-06T07:10:13Z"></script>
+<script src="../metadataStore.js?v=2026-05-06T07:10:13Z"></script>
+<script src="../scheduleShared.js?v=2026-05-06T07:10:13Z"></script>
+<script src="../presenceShared.js?v=2026-05-06T07:10:13Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-06T07:10:13Z"></script>
+<script src="../sunnySupport.js?v=2026-05-06T07:10:13Z"></script>
+<script src="offlineInvite.js?v=2026-05-06T07:10:13Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -2243,6 +2243,19 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .msg-action-btn[data-action="delete"] img{width:21px;height:21px}
 .msg-action-btn[data-action="recall"] img{transform:scaleX(-1)}
 .msg-action-btn:active{transform:translate(2px,2px);box-shadow:0 0 0}
+.voice-call-actions-card{width:min(276px,100%);grid-template-columns:repeat(4,minmax(0,1fr))}
+.voice-call-line.select-mode{cursor:pointer}
+.voice-call-line.selected .voice-call-bubble{outline:2px solid rgba(17,17,17,.88);outline-offset:3px}
+.voice-call-line.selected .voice-call-line-avatar{outline:2px solid rgba(17,17,17,.88);outline-offset:2px}
+.voice-call-edit-wrap{width:min(268px,68vw)}
+.voice-call-edit-wrap .msg-edit-input{min-height:86px;border-color:rgba(17,17,17,.16);background:rgba(255,255,255,.72);font-size:14px;font-weight:820;box-shadow:inset 0 0 0 1px rgba(255,255,255,.48);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.voice-call-line.user .voice-call-edit-wrap .msg-edit-input{background:rgba(255,255,255,.92);color:#111;-webkit-text-fill-color:#111}
+.voice-call-multi-cancel-btn,.voice-call-multi-trash-btn{position:absolute;right:18px;z-index:18;width:46px;height:46px;border:1px solid rgba(17,17,17,.12);border-radius:17px;background:rgba(255,255,255,.62);color:#111;box-shadow:0 12px 24px rgba(0,0,0,.14),inset 0 0 0 1px rgba(255,255,255,.70);display:none;align-items:center;justify-content:center;font-family:var(--fontd);font-size:22px;font-weight:900;backdrop-filter:blur(24px) saturate(132%);-webkit-backdrop-filter:blur(24px) saturate(132%)}
+.voice-call-multi-trash-btn{bottom:calc(var(--safe-bottom) + 98px + var(--voice-call-keyboard-inset));background:rgba(17,17,17,.88)}
+.voice-call-multi-cancel-btn{bottom:calc(var(--safe-bottom) + 154px + var(--voice-call-keyboard-inset))}
+.voice-call-multi-cancel-btn.show,.voice-call-multi-trash-btn.show{display:flex}
+.voice-call-multi-trash-btn img{width:20px;height:20px;filter:brightness(0) invert(1)}
+.voice-call-multi-cancel-btn:active,.voice-call-multi-trash-btn:active{transform:scale(.94)}
 .narrator-card{position:relative;display:inline-flex;flex-direction:column;width:fit-content;max-width:min(398px,calc(100vw - 108px));padding:12px 16px 12px 20px;border:none;border-radius:0 22px 22px 0;background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(240,240,240,.28));backdrop-filter:blur(30px) saturate(138%);-webkit-backdrop-filter:blur(30px) saturate(138%);box-shadow:none;overflow:visible}
 .narrator-card .narrator-rail{position:absolute;left:10px;top:12px;bottom:12px;width:3px;background:linear-gradient(180deg,rgba(17,17,17,.18) 0%,rgba(17,17,17,.92) 22%,rgba(17,17,17,.92) 78%,rgba(17,17,17,.18) 100%);opacity:.92}
 .narrator-copy{position:relative;padding:6px 6px 4px 10px;font-size:13px;line-height:1.72;font-weight:700;color:#6d6d6d;white-space:pre-wrap;word-break:break-word;text-align:left;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-color:rgba(109,109,109,.7);text-decoration-thickness:1.5px;text-underline-offset:4px}
@@ -2542,11 +2555,13 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
           <button class="voice-call-roundbtn end" type="button" onclick="endVoiceCallSession()" aria-label="结束通话">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 14.4c3.2-2 7.6-2 10.8 0"></path><path d="M8.2 13.6l-1.9 2.6a1.7 1.7 0 0 0 .34 2.35l1.2.9a1.7 1.7 0 0 0 2.36-.35l1.14-1.58a1.1 1.1 0 0 1 1.78 0l1.13 1.58a1.7 1.7 0 0 0 2.36.35l1.2-.9a1.7 1.7 0 0 0 .34-2.35l-1.9-2.6"></path></svg>
           </button>
-          <button class="voice-call-roundbtn" id="voiceCallReplyBtn" type="button" onclick="triggerVoiceCallAssistantFromControls()" aria-label="让角色回复">
+          <button class="voice-call-roundbtn" id="voiceCallReplyBtn" type="button" onclick="handleVoiceCallReplyButtonClick(event)" aria-label="让角色回复">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9.2v5.6c0 .66.54 1.2 1.2 1.2h3.05l5.05 4.04c.78.62 1.95.07 1.95-.92V4.88c0-.99-1.17-1.54-1.95-.92L8.25 8H5.2C4.54 8 4 8.54 4 9.2Z"></path><path d="M17.3 8.65a1 1 0 0 1 1.4.2 5.2 5.2 0 0 1 0 6.3 1 1 0 1 1-1.6-1.2 3.2 3.2 0 0 0 0-3.9 1 1 0 0 1 .2-1.4Z"></path></svg>
           </button>
       </div>
     </div>
+    <button class="voice-call-multi-cancel-btn" id="voiceCallMultiCancelBtn" type="button" onclick="exitVoiceCallMultiSelectMode()">×</button>
+    <button class="voice-call-multi-trash-btn" id="voiceCallMultiTrashBtn" type="button" onclick="deleteSelectedVoiceCallLines()"><img src="assets/Recycle-Bin-2--Streamline-Sharp.png" alt="删除"></button>
     <div class="voice-call-incoming" id="voiceCallIncomingDrawer">
       <div class="voice-call-incoming-card">
         <div class="voice-call-portrait" id="voiceCallIncomingAvatar"><span class="voice-call-portrait-fallback">CH</span></div>
@@ -3590,6 +3605,15 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
   </div>
 </div>
 
+<div class="msg-actions-overlay voice-call-actions-overlay" id="voiceCallActionsOverlay">
+  <div class="msg-actions-card voice-call-actions-card">
+    <button class="msg-action-btn" data-action="favorite" type="button" title="收藏" aria-label="收藏" onclick="favoriteActiveVoiceCallLine()"><img src="assets/收藏.png" alt=""></button>
+    <button class="msg-action-btn" data-action="edit" type="button" title="编辑" aria-label="编辑" onclick="beginEditVoiceCallLine()"><img src="assets/编辑.png" alt=""></button>
+    <button class="msg-action-btn" data-action="delete" type="button" title="删除" aria-label="删除" onclick="deleteActiveVoiceCallLine()"><img src="assets/Recycle-Bin-2--Streamline-Sharp.png" alt=""></button>
+    <button class="msg-action-btn" data-action="multi" type="button" title="多选" aria-label="多选" onclick="enterVoiceCallMultiSelectMode()"><img src="assets/多选.png" alt=""></button>
+  </div>
+</div>
+
 <button class="multi-cancel-btn" id="multiCancelBtn" type="button">×</button>
 <button class="multi-share-btn" id="multiShareBtn" type="button"><img src="assets/分享.png" alt="分享"></button>
 <button class="multi-trash-btn" id="multiTrashBtn" type="button"><img src="assets/Recycle-Bin-2--Streamline-Sharp.png" alt="删除"></button>
@@ -4130,6 +4154,14 @@ var voiceCallAppearanceLoadPromise = null;
 var voiceCallAppearanceLoadCharId = '';
 var voiceCallAppearanceApplyToken = 0;
 var voiceCallAppearanceSaveTimer = 0;
+var activeVoiceCallLineId = null;
+var voiceCallMultiSelectMode = false;
+var selectedVoiceCallLineIds = [];
+var editingVoiceCallLineId = null;
+var editingVoiceCallDraft = '';
+var voiceCallLongPressTimer = null;
+var voiceCallReplyLongPressTimer = null;
+var voiceCallReplyLongPressFired = false;
 var storageHydrationPromise = Promise.resolve();
 var storagePersistRequested = false;
 var momentsPostsCache = [];
@@ -27787,14 +27819,23 @@ function renderVoiceCallFeed(){
   var host = document.getElementById('voiceCallFeed');
   if(!host) return;
   host.style.setProperty('--voice-call-elastic-tail', '0px');
+  host.classList.toggle('select-mode', !!voiceCallMultiSelectMode);
   var items = Array.isArray(state.transcript) ? state.transcript : [];
   if(!items.length){
+    voiceCallMultiSelectMode = false;
+    selectedVoiceCallLineIds = [];
+    activeVoiceCallLineId = null;
+    editingVoiceCallLineId = null;
+    editingVoiceCallDraft = '';
     host.innerHTML = '<div class="voice-call-line system"><div class="voice-call-bubble">电话接通了</div></div>';
+    syncVoiceCallMultiSelectDom();
     host.scrollTop = host.scrollHeight;
     syncVoiceCallFeedElasticSpace();
     return;
   }
   host.innerHTML = items.map(function(item, idx){
+    var itemId = escAttr(item && item.id);
+    var selectedCls = voiceCallMultiSelectMode && selectedVoiceCallLineIds.indexOf(String((item && item.id) || '')) >= 0 ? ' selected' : '';
     var narratorSpeaker = item.role === 'narrator' ? normalizeVoiceCallNarratorSpeaker(item.speaker) : '';
     var cls = item.role === 'user' ? 'user' : (item.role === 'system' ? 'system' : (item.role === 'narrator' ? ('narrator ' + (narratorSpeaker === 'user' ? 'user-narrator' : 'ai-narrator')) : 'ai'));
     var fadeCls = getVoiceCallLineFadeClass(idx, items.length);
@@ -27803,18 +27844,380 @@ function renderVoiceCallFeed(){
     var showAvatar = (item.role === 'user' || item.role === 'assistant') && nextRole !== item.role;
     var text = String(item.text || '').trim();
     var bubble = item.role === 'narrator' ? buildVoiceCallNarratorHtml(text) : esc(text);
+    if(editingVoiceCallLineId && String(item.id || '') === String(editingVoiceCallLineId || '')){
+      bubble = '<div class="msg-edit-wrap voice-call-edit-wrap" onclick="event.stopPropagation()"><textarea class="msg-edit-input" oninput="onVoiceCallEditDraftInput(this)">' + esc(editingVoiceCallDraft) + '</textarea><div class="msg-edit-actions"><button class="msg-edit-btn cancel" type="button" onclick="cancelEditVoiceCallLine()">取消</button><button class="msg-edit-btn confirm" type="button" onclick="confirmEditVoiceCallLine()">确认</button></div></div>';
+    }
     var avatar = showAvatar ? '<div class="voice-call-line-avatar" data-call-avatar-role="' + (item.role === 'user' ? 'user' : 'char') + '"></div>' : '';
     if(item.role === 'user'){
-      return '<div class="voice-call-line ' + cls + ' ' + fadeCls + (showAvatar ? ' has-avatar' : '') + '"><div class="voice-call-bubble">' + bubble + '</div>' + avatar + '</div>';
+      return '<div class="voice-call-line ' + cls + ' ' + fadeCls + selectedCls + (showAvatar ? ' has-avatar' : '') + '" data-call-line-id="' + itemId + '"><div class="voice-call-bubble">' + bubble + '</div>' + avatar + '</div>';
     }
     if(item.role === 'assistant'){
-      return '<div class="voice-call-line ' + cls + ' ' + fadeCls + (showAvatar ? ' has-avatar' : '') + '">' + avatar + '<div class="voice-call-bubble">' + bubble + '</div></div>';
+      return '<div class="voice-call-line ' + cls + ' ' + fadeCls + selectedCls + (showAvatar ? ' has-avatar' : '') + '" data-call-line-id="' + itemId + '">' + avatar + '<div class="voice-call-bubble">' + bubble + '</div></div>';
     }
-    return '<div class="voice-call-line ' + cls + ' ' + fadeCls + '"><div class="voice-call-bubble">' + bubble + '</div></div>';
+    return '<div class="voice-call-line ' + cls + ' ' + fadeCls + selectedCls + '" data-call-line-id="' + itemId + '"><div class="voice-call-bubble">' + bubble + '</div></div>';
   }).join('');
   hydrateVoiceCallFeedAvatars();
+  Array.prototype.forEach.call(host.querySelectorAll('.voice-call-line[data-call-line-id]'), function(node){
+    bindVoiceCallLineLongPress(node, String(node.getAttribute('data-call-line-id') || ''));
+  });
+  syncVoiceCallMultiSelectDom();
   host.scrollTop = host.scrollHeight;
   syncVoiceCallFeedElasticSpace();
+}
+
+function rerenderVoiceCallFeedPreserveViewport(){
+  var host = document.getElementById('voiceCallFeed');
+  var prevBottom = host ? (host.scrollHeight - host.scrollTop) : 0;
+  renderVoiceCallFeed();
+  host = document.getElementById('voiceCallFeed');
+  if(host) host.scrollTop = Math.max(0, host.scrollHeight - prevBottom);
+  syncVoiceCallFeedElasticSpace();
+}
+
+function getVoiceCallLineById(lineId){
+  var state = ensureVoiceCallState();
+  var wanted = String(lineId || '').trim();
+  if(!wanted) return null;
+  return (Array.isArray(state.transcript) ? state.transcript : []).find(function(line){
+    return String((line && line.id) || '') === wanted;
+  }) || null;
+}
+
+function closeVoiceCallLineActions(){
+  activeVoiceCallLineId = null;
+  document.getElementById('voiceCallActionsOverlay')?.classList.remove('open');
+}
+
+function resetVoiceCallMessageActionState(){
+  closeVoiceCallLineActions();
+  voiceCallMultiSelectMode = false;
+  selectedVoiceCallLineIds = [];
+  editingVoiceCallLineId = null;
+  editingVoiceCallDraft = '';
+  syncVoiceCallMultiSelectDom();
+}
+
+function openVoiceCallLineActions(lineId){
+  if(voiceCallMultiSelectMode || editingVoiceCallLineId) return;
+  var line = getVoiceCallLineById(lineId);
+  if(!line) return;
+  activeVoiceCallLineId = String(line.id || '');
+  document.getElementById('voiceCallActionsOverlay')?.classList.add('open');
+}
+
+function syncVoiceCallMultiSelectDom(){
+  var selected = new Set((selectedVoiceCallLineIds || []).map(function(id){ return String(id || ''); }));
+  var host = document.getElementById('voiceCallFeed');
+  if(host){
+    host.classList.toggle('select-mode', !!voiceCallMultiSelectMode);
+    Array.prototype.forEach.call(host.querySelectorAll('.voice-call-line[data-call-line-id]'), function(node){
+      var id = String(node.getAttribute('data-call-line-id') || '');
+      node.classList.toggle('select-mode', !!voiceCallMultiSelectMode);
+      node.classList.toggle('selected', !!voiceCallMultiSelectMode && selected.has(id));
+    });
+  }
+  var cancel = document.getElementById('voiceCallMultiCancelBtn');
+  var trash = document.getElementById('voiceCallMultiTrashBtn');
+  if(cancel) cancel.classList.toggle('show', !!voiceCallMultiSelectMode);
+  if(trash) trash.classList.toggle('show', !!voiceCallMultiSelectMode);
+}
+
+function exitVoiceCallMultiSelectMode(){
+  voiceCallMultiSelectMode = false;
+  selectedVoiceCallLineIds = [];
+  syncVoiceCallMultiSelectDom();
+}
+
+function toggleVoiceCallLineSelection(lineId){
+  if(!voiceCallMultiSelectMode) return;
+  lineId = String(lineId || '').trim();
+  if(!lineId) return;
+  var idx = selectedVoiceCallLineIds.indexOf(lineId);
+  if(idx >= 0) selectedVoiceCallLineIds.splice(idx, 1);
+  else selectedVoiceCallLineIds.push(lineId);
+  syncVoiceCallMultiSelectDom();
+}
+
+function enterVoiceCallMultiSelectMode(){
+  voiceCallMultiSelectMode = true;
+  selectedVoiceCallLineIds = activeVoiceCallLineId ? [activeVoiceCallLineId] : [];
+  closeVoiceCallLineActions();
+  syncVoiceCallMultiSelectDom();
+}
+
+function deleteVoiceCallLinesByIds(ids){
+  var state = ensureVoiceCallState();
+  var set = new Set((ids || []).map(function(id){ return String(id || '').trim(); }).filter(Boolean));
+  if(!set.size) return 0;
+  var before = Array.isArray(state.transcript) ? state.transcript.length : 0;
+  state.transcript = (Array.isArray(state.transcript) ? state.transcript : []).filter(function(line){
+    return !set.has(String((line && line.id) || ''));
+  });
+  if(activeVoiceCallLineId && set.has(activeVoiceCallLineId)) activeVoiceCallLineId = null;
+  if(editingVoiceCallLineId && set.has(editingVoiceCallLineId)){
+    editingVoiceCallLineId = null;
+    editingVoiceCallDraft = '';
+  }
+  selectedVoiceCallLineIds = selectedVoiceCallLineIds.filter(function(id){ return !set.has(String(id || '')); });
+  if(!selectedVoiceCallLineIds.length) voiceCallMultiSelectMode = false;
+  renderVoiceCallFeed();
+  renderVoiceCallTranscriptDock();
+  persistVoiceCallSession();
+  return before - state.transcript.length;
+}
+
+function deleteActiveVoiceCallLine(){
+  if(!activeVoiceCallLineId) return;
+  var targetId = activeVoiceCallLineId;
+  closeVoiceCallLineActions();
+  var removed = deleteVoiceCallLinesByIds([targetId]);
+  toast(removed ? '已删除' : '未找到这条');
+}
+
+function deleteSelectedVoiceCallLines(){
+  if(!selectedVoiceCallLineIds.length){
+    toast('先选中消息');
+    return;
+  }
+  var count = deleteVoiceCallLinesByIds(selectedVoiceCallLineIds.slice());
+  selectedVoiceCallLineIds = [];
+  voiceCallMultiSelectMode = false;
+  syncVoiceCallMultiSelectDom();
+  toast(count ? ('已删除 ' + count + ' 条') : '未删除任何消息');
+}
+
+function beginEditVoiceCallLine(){
+  if(!activeVoiceCallLineId) return;
+  var line = getVoiceCallLineById(activeVoiceCallLineId);
+  closeVoiceCallLineActions();
+  if(!line) return;
+  editingVoiceCallLineId = String(line.id || '');
+  editingVoiceCallDraft = String(line.text || '');
+  rerenderVoiceCallFeedPreserveViewport();
+  setTimeout(function(){
+    var input = document.querySelector('.voice-call-edit-wrap .msg-edit-input');
+    if(input){
+      input.focus();
+      input.selectionStart = input.selectionEnd = input.value.length;
+    }
+  }, 20);
+}
+
+function cancelEditVoiceCallLine(){
+  editingVoiceCallLineId = null;
+  editingVoiceCallDraft = '';
+  rerenderVoiceCallFeedPreserveViewport();
+}
+
+function onVoiceCallEditDraftInput(el){
+  editingVoiceCallDraft = el ? el.value : '';
+}
+
+function confirmEditVoiceCallLine(){
+  if(!editingVoiceCallLineId) return;
+  var line = getVoiceCallLineById(editingVoiceCallLineId);
+  if(!line){
+    cancelEditVoiceCallLine();
+    return;
+  }
+  var next = String(editingVoiceCallDraft || '').trim();
+  if(!next){
+    toast('内容不能为空');
+    return;
+  }
+  line.text = next;
+  editingVoiceCallLineId = null;
+  editingVoiceCallDraft = '';
+  rerenderVoiceCallFeedPreserveViewport();
+  renderVoiceCallTranscriptDock();
+  persistVoiceCallSession();
+  toast('已编辑');
+}
+
+async function favoriteActiveVoiceCallLine(){
+  if(!activeVoiceCallLineId) return;
+  var line = getVoiceCallLineById(activeVoiceCallLineId);
+  closeVoiceCallLineActions();
+  if(!line){
+    toast('未找到这条');
+    return;
+  }
+  if(!window.AccountManager){
+    toast('收藏功能不可用');
+    return;
+  }
+  var speaker = line.role === 'user' ? 'user' : 'char';
+  if(line.role === 'narrator'){
+    speaker = normalizeVoiceCallNarratorSpeaker(line.speaker) === 'user' ? 'user' : 'char';
+  }
+  var favoriteRecord = {
+    id: 'fav_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7),
+    from: speaker,
+    charId: character ? character.id : '',
+    name: speaker === 'user' ? currentVoiceCallUserName() : (line.role === 'system' ? '系统' : currentVoiceCallCharName()),
+    avatar: speaker === 'user' ? currentVisibleUserAvatarSrc() : currentVisibleCharAvatarSrc(),
+    text: String(line.text || ''),
+    previewText: String(line.text || '').trim(),
+    type: line.role === 'narrator' ? 'narrator' : 'text',
+    at: Number(line.at || Date.now()) || Date.now()
+  };
+  var favoriteOk = false;
+  try{ favoriteOk = window.AccountManager.addFavorite(favoriteRecord); }catch(err){}
+  var storeOk = await persistFavoriteRecordAsync(favoriteRecord);
+  if(favoriteOk || storeOk) toast('已收藏');
+  else toast('收藏失败，请稍后再试');
+}
+
+function bindVoiceCallLineLongPress(el, lineId){
+  if(!el || !lineId || el.dataset.callLongPressBound) return;
+  el.dataset.callLongPressBound = '1';
+  var startX = 0;
+  var startY = 0;
+  function clear(){
+    if(voiceCallLongPressTimer){
+      clearTimeout(voiceCallLongPressTimer);
+      voiceCallLongPressTimer = null;
+    }
+  }
+  el.addEventListener('pointerdown', function(evt){
+    if(evt.pointerType === 'mouse' && evt.button !== 0) return;
+    if(editingVoiceCallLineId) return;
+    if(evt.target.closest('.msg-edit-wrap')) return;
+    startX = evt.clientX;
+    startY = evt.clientY;
+    clear();
+    voiceCallLongPressTimer = setTimeout(function(){
+      if(voiceCallMultiSelectMode) return;
+      openVoiceCallLineActions(lineId);
+    }, LONG_PRESS_MS);
+  });
+  el.addEventListener('pointermove', function(evt){
+    if(!startX) return;
+    if(Math.abs(evt.clientX - startX) > 8 || Math.abs(evt.clientY - startY) > 8) clear();
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(function(name){
+    el.addEventListener(name, function(){
+      clear();
+      startX = 0;
+      startY = 0;
+    });
+  });
+  el.addEventListener('click', function(evt){
+    if(!voiceCallMultiSelectMode) return;
+    if(evt.target.closest('.msg-edit-wrap')) return;
+    evt.preventDefault();
+    evt.stopPropagation();
+    toggleVoiceCallLineSelection(lineId);
+  });
+}
+
+function isVoiceCallAssistantOutputLine(line){
+  if(!line) return false;
+  if(line.role === 'assistant') return true;
+  if(line.role === 'narrator') return normalizeVoiceCallNarratorSpeaker(line.speaker) !== 'user';
+  return false;
+}
+
+function buildVoiceCallUserTurnTextFromLines(lines){
+  return (Array.isArray(lines) ? lines : []).filter(function(line){
+    return line && (line.role === 'user' || (line.role === 'narrator' && normalizeVoiceCallNarratorSpeaker(line.speaker) === 'user')) && String(line.text || '').trim();
+  }).map(function(line){
+    if(line.role === 'narrator') return currentVoiceCallUserName() + '通话旁白：' + String(line.text || '').trim();
+    return currentVoiceCallUserName() + '：' + String(line.text || '').trim();
+  }).join('\n');
+}
+
+async function triggerVoiceCallRerollFromControls(){
+  var state = ensureVoiceCallState();
+  if(!state.active){
+    toast(state.awaitingAnswer || state.phase === 'connecting' ? '还在等电话接通' : '电话还没接通');
+    return false;
+  }
+  if(state.awaitingReply || state.awaitingAnswer){
+    toast(currentVoiceCallCharName() + ' 还在接话');
+    return false;
+  }
+  var lines = Array.isArray(state.transcript) ? state.transcript : [];
+  var end = lines.length - 1;
+  while(end >= 0 && lines[end] && lines[end].role === 'system') end -= 1;
+  var removeStart = -1;
+  for(var i = end; i >= 0; i -= 1){
+    if(isVoiceCallAssistantOutputLine(lines[i])){
+      removeStart = i;
+      continue;
+    }
+    break;
+  }
+  if(removeStart < 0){
+    toast('还没有可重来的回复');
+    return false;
+  }
+  var before = lines.slice(0, removeStart);
+  var lastAssistantBefore = -1;
+  for(var j = before.length - 1; j >= 0; j -= 1){
+    if(isVoiceCallAssistantOutputLine(before[j])){
+      lastAssistantBefore = j;
+      break;
+    }
+  }
+  var seedText = buildVoiceCallUserTurnTextFromLines(before.slice(lastAssistantBefore + 1));
+  state.transcript = lines.slice(0, removeStart);
+  closeVoiceCallComposer();
+  closeVoiceCallLineActions();
+  exitVoiceCallMultiSelectMode();
+  renderVoiceCallFeed();
+  renderVoiceCallTranscriptDock();
+  persistVoiceCallSession();
+  toast('重新来一版');
+  return triggerVoiceCallAssistantTurn(seedText);
+}
+
+function handleVoiceCallReplyButtonClick(evt){
+  if(voiceCallReplyLongPressFired){
+    voiceCallReplyLongPressFired = false;
+    if(evt){
+      evt.preventDefault();
+      evt.stopPropagation();
+    }
+    return false;
+  }
+  return triggerVoiceCallAssistantFromControls();
+}
+
+function bindVoiceCallReplyRerollButton(){
+  var btn = document.getElementById('voiceCallReplyBtn');
+  if(!btn || btn.dataset.rerollBound) return;
+  btn.dataset.rerollBound = '1';
+  var startX = 0;
+  var startY = 0;
+  function clear(){
+    if(voiceCallReplyLongPressTimer){
+      clearTimeout(voiceCallReplyLongPressTimer);
+      voiceCallReplyLongPressTimer = null;
+    }
+  }
+  btn.addEventListener('pointerdown', function(evt){
+    if(evt.pointerType === 'mouse' && evt.button !== 0) return;
+    startX = evt.clientX;
+    startY = evt.clientY;
+    voiceCallReplyLongPressFired = false;
+    clear();
+    voiceCallReplyLongPressTimer = setTimeout(function(){
+      voiceCallReplyLongPressFired = true;
+      triggerVoiceCallRerollFromControls();
+    }, LONG_PRESS_MS);
+  });
+  btn.addEventListener('pointermove', function(evt){
+    if(!startX) return;
+    if(Math.abs(evt.clientX - startX) > 8 || Math.abs(evt.clientY - startY) > 8) clear();
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(function(name){
+    btn.addEventListener(name, function(){
+      clear();
+      startX = 0;
+      startY = 0;
+    });
+  });
 }
 
 function tickVoiceCallTimer(){
@@ -27928,7 +28331,7 @@ function extractVoiceCallReplyParts(raw){
   if(!items.length){
     pushPart('text', String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,'').trim());
   }
-  return items.slice(0, 4);
+  return items.slice(0, 5);
 }
 
 function buildVoiceCallContextLines(limit){
@@ -28048,10 +28451,13 @@ function buildVoiceCallPrompt(userText){
     'narrator 只能写电话里能听见或感觉到的东西：声音、呼吸、沉默、信号、电流、环境声、语速变化；禁止视觉动作描写。',
     '禁止输出 voice、meme、image、money、transfer、rich_html、schedule、emoji、表情包、转账、语音消息。',
     '禁止视觉描写、时间戳、指令标签和解释说明。',
+    '开场白、角色卡、世界书、记忆、最近聊天和用户设定都要读，但主要拿来学关系、称呼、事实、语气和节奏，不拿来照抄长度。',
+    '根据当前情绪、关系张力、刚刚说了什么、角色是否忙和电话氛围，自己决定发几条；禁止每次都发送相同条数。',
     'text 必须短，最好不超过 20 个字；宁可拆成几句短话，也不要长段独白。',
+    '一个 JSON 的 content/text 字段就是电话里一句真实说出口的话。别把两三句可以独立说的话塞进同一个字段；想补一句就另起一项。',
     'text 禁用句号收尾，不要用“。”或“.”把话写成书面完整句。优先问号、语气词、短停顿或自然收住；少用省略号。',
     '省略号不是默认语气。除非角色卡或上下文明确需要，整轮最多 0 到 1 个省略号；不要每句都用“…”、“......”或“。。。”收尾。',
-    '默认返回 JSON 数组，每项格式：{"type":"text","content":"..."} 或 {"type":"narrator","content":"..."}。2 到 4 条，每轮至少 1 条 narrator 和 1 条 text。',
+    '默认返回 JSON 数组，每项格式：{"type":"text","content":"..."} 或 {"type":"narrator","content":"..."}。每轮 1 到 5 条，必须至少 1 条 text；narrator 只在停顿、接通、氛围变化或听觉细节自然出现时使用。',
     '刚接通后的第一轮也必须遵守同一格式：先给很短的电话旁白，再给角色说出口的话，不要把第一句话特殊处理。',
     '每条都要直接接住对方刚刚说的东西，不要自说自话；如果刚接通，第一句必须贴最近上下文和关系，禁止万能“喂我在呢怎么了”。',
     settings.tone ? ('【通话氛围】\n' + settings.tone) : ''
@@ -28108,17 +28514,12 @@ function getVoiceCallPendingUserTurnText(){
   var lines = Array.isArray(state.transcript) ? state.transcript : [];
   var start = 0;
   for(var i = lines.length - 1; i >= 0; i -= 1){
-    if(lines[i] && lines[i].role === 'assistant'){
+    if(isVoiceCallAssistantOutputLine(lines[i])){
       start = i + 1;
       break;
     }
   }
-  return lines.slice(start).filter(function(line){
-    return line && (line.role === 'user' || (line.role === 'narrator' && normalizeVoiceCallNarratorSpeaker(line.speaker) === 'user')) && String(line.text || '').trim();
-  }).map(function(line){
-    if(line.role === 'narrator') return currentVoiceCallUserName() + '通话旁白：' + String(line.text || '').trim();
-    return currentVoiceCallUserName() + '：' + String(line.text || '').trim();
-  }).join('\n');
+  return buildVoiceCallUserTurnTextFromLines(lines.slice(start));
 }
 
 async function triggerVoiceCallAssistantFromControls(){
@@ -28151,6 +28552,7 @@ function openVoiceCallOverlay(){
   renderVoiceCallTranscriptDock();
   syncVoiceCallFloating();
   syncVoiceCallKeyboardInset();
+  bindVoiceCallReplyRerollButton();
   setTimeout(syncVoiceCallKeyboardInset, 80);
   setTimeout(syncVoiceCallFeedElasticSpace, 90);
   startVoiceCallTicker();
@@ -28165,6 +28567,7 @@ function closeVoiceCallOverlay(){
   document.getElementById('voiceCallIncomingDrawer')?.classList.remove('open');
   closeVoiceCallComposer();
   closeVoiceCallSettingsPanel();
+  resetVoiceCallMessageActionState();
   var state = ensureVoiceCallState();
   if(!state.active && !state.incoming && !state.awaitingAnswer && state.phase !== 'connecting') stopVoiceCallTicker();
   syncVoiceCallFloating();
@@ -28343,6 +28746,7 @@ async function openVoiceCallFromAddon(){
     restoreVoiceCallOverlay();
     return;
   }
+  resetVoiceCallMessageActionState();
   var settings = getVoiceCallSettings();
 	  voiceCallState = Object.assign(defaultVoiceCallState(), {
 	    sessionId: makeVoiceCallSessionId(),
@@ -28670,6 +29074,7 @@ async function endVoiceCallSession(){
 function openIncomingVoiceCallRequest(text){
   if(!character) return false;
   var settings = getVoiceCallSettings();
+  resetVoiceCallMessageActionState();
 	  voiceCallState = Object.assign(defaultVoiceCallState(), {
 	    sessionId: makeVoiceCallSessionId(),
 	    incoming: true,
@@ -29045,13 +29450,18 @@ var _mao = document.getElementById('msgActionsOverlay');
 if(_mao){
   _mao.addEventListener('click', function(e){ if(e.target === _mao) closeMessageActions(); });
 }
+var _vcao = document.getElementById('voiceCallActionsOverlay');
+if(_vcao){
+  _vcao.addEventListener('click', function(e){ if(e.target === _vcao) closeVoiceCallLineActions(); });
+}
+bindVoiceCallReplyRerollButton();
 var _mdc = document.getElementById('multiDeleteConfirm');
   if(_mdc){
     _mdc.addEventListener('click', function(e){ if(e.target === _mdc) closeMultiDeleteConfirm(); });
   }
   var _bao = document.getElementById('blockAppealOverlay');
   if(_bao){
-    _bao.addEventListener('click', function(e){ if(e.target === _bao) document.getElementById('blockAppealOverlay')?.classList.remove('open'); });
+    _bao.addEventListener('click', function(e){ if(e.target === _bao) e.stopPropagation(); });
   }
   var _bco = document.getElementById('blockConfirmOverlay');
   if(_bco){
@@ -29092,7 +29502,7 @@ if(_moneyCoverInput){
   var _bwo = document.getElementById('blockedWallOverlay');
   if(_bwo){
     _bwo.addEventListener('click', function(e){
-      if(e.target === _bwo) minimizeBlockedRequestCard();
+      if(e.target === _bwo) e.stopPropagation();
     });
   }
   var _uro = document.getElementById('userReAddOverlay');
@@ -31545,8 +31955,8 @@ async function clearChatData(opts){
 
 async function confirmClearChatAll(){
   closeClearChatConfirm();
-  await clearChatData({ keepGreeting: false, clearMemory: true });
-  toast('已清空聊天和全部记忆');
+  await clearChatData({ keepGreeting: true, clearMemory: true });
+  toast('已清空聊天和记忆，开场白已重新渲染');
 }
 
 function allowNextEmptyChatOverwrite(ms){

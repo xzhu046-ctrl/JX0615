@@ -60,10 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-06T06:26:19Z';
+const APP_BUILD_ID = '2026-05-06T07:10:13Z';
 const APP_UPDATE_NOTES = [
-  '首页占位位置微调',
-  '地图图标恢复原色'
+  '通话消息支持长按收藏编辑删除和多选',
+  '通话重来回复会按当前上下文重新生成',
+  '清空聊天后会重新显示当前开场白'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
