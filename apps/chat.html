@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-05T06:24:35Z"></script>
-<script src="../chatStorage.js?v=2026-05-05T06:24:35Z"></script>
-<script src="../assetStore.js?v=2026-05-05T06:24:35Z"></script>
-<script src="../accountManager.js?v=2026-05-05T06:24:35Z"></script>
-<script src="../metadataStore.js?v=2026-05-05T06:24:35Z"></script>
-<script src="../scheduleShared.js?v=2026-05-05T06:24:35Z"></script>
-<script src="../presenceShared.js?v=2026-05-05T06:24:35Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-05T06:24:35Z"></script>
-<script src="../sunnySupport.js?v=2026-05-05T06:24:35Z"></script>
-<script src="offlineInvite.js?v=2026-05-05T06:24:35Z"></script>
+<script src="../promptManager.js?v=2026-05-06T05:58:31Z"></script>
+<script src="../chatStorage.js?v=2026-05-06T05:58:31Z"></script>
+<script src="../assetStore.js?v=2026-05-06T05:58:31Z"></script>
+<script src="../accountManager.js?v=2026-05-06T05:58:31Z"></script>
+<script src="../metadataStore.js?v=2026-05-06T05:58:31Z"></script>
+<script src="../scheduleShared.js?v=2026-05-06T05:58:31Z"></script>
+<script src="../presenceShared.js?v=2026-05-06T05:58:31Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-06T05:58:31Z"></script>
+<script src="../sunnySupport.js?v=2026-05-06T05:58:31Z"></script>
+<script src="offlineInvite.js?v=2026-05-06T05:58:31Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -27282,6 +27282,8 @@ function buildVoiceCallIdentityPromptBlock(){
   if(identityHint) lines.push(identityHint);
   lines.push('通话第一反应必须从这些设定、最近聊天和现实地点里长出来，不要默认成陌生客服接电话。');
   lines.push('如果通用接电话模板和角色卡、人设、关系、用户设定冲突，必须以角色本人为准。');
+  lines.push('安全边界不是温柔滤镜：除非角色卡明确要求，否则不准高高在上地侮辱女性、用性别羞辱或现实歧视当作魅力；但这不等于必须温柔体贴。');
+  lines.push('如果人设本来冷淡、嘴毒、烦躁、占有欲强、疏离、坏脾气或不耐烦，可以照样表现；矛头必须来自角色关系和当下情绪，不要变成通用暖男。');
   return lines.filter(Boolean).join('\n');
 }
 
@@ -28035,6 +28037,8 @@ function buildVoiceCallPrompt(userText){
     buildVoiceCallWeatherTimePromptBlock(),
     buildPresenceHardRulePrompt(),
     '【人设读取硬规则】\n回复前先读取并服从角色卡、人设、关系/场景、用户设定、世界书、记忆、最近聊天和现实地点时间。不要用通用恋爱模板、客服模板或陌生人接电话模板替代角色本人。',
+    '【性格边界】\n不要把“不侮辱女性/不现实歧视”理解成必须柔软、哄人或低姿态。角色可以冷、凶、嘴硬、讽刺、不耐烦、占有欲强、玩世不恭；强度和方向必须由角色卡、世界书、关系、最近对话决定。',
+    '除非角色卡/世界书明确要求，禁止高高在上地用性别羞辱、厌女话术、现实歧视去攻击女性；如果角色确实设定恶劣，也要让恶劣来自人设和剧情，不要套模板骂人。',
     '【当前模式】',
     '你正在和用户语音通话。通话前聊天上下文是这通电话的原因，优先级很高，不能像重新开局。',
     '你不是在完成问答任务，而是在听对方说话：会被语气带动，会犹豫，会打断自己，会突然想到别的，但必须符合角色本人。',
@@ -28234,16 +28238,24 @@ function shouldSuppressVoiceCallOpeningText(text){
 
 async function askVoiceCallAnswerDecision(){
   if(!character) return { decision:'reject', message:'' };
+  var answerWorldbook = getStrictPromptWorldbookEntries().map(function(entry){
+    return String((entry && entry.content) || '').trim();
+  }).filter(Boolean).join('\n\n');
+  var answerSchedulePrompt = buildSchedulePromptBlock();
   var sys = [
     buildHighPriorityContextGuard(),
     buildCharacterAdherenceGuard(),
     buildVoiceCallIdentityPromptBlock(),
     character && character.system_prompt ? ('【角色卡系统提示】\n' + character.system_prompt) : '',
     character && character.post_history_instructions ? ('【角色附加约束】\n' + character.post_history_instructions) : '',
+    answerWorldbook ? ('【世界书】\n' + answerWorldbook) : '',
+    answerSchedulePrompt ? ('【接电话时的日程感知】\n' + answerSchedulePrompt) : '',
     buildVoiceCallRealtimePromptBlock(),
+    buildVoiceCallWeatherTimePromptBlock(),
     buildPresenceHardRulePrompt(),
     '【任务】',
-    '用户正在给你打一通语音电话。请完全按角色当下的人设、关系、情绪、现实状态和最近聊天，判断你会不会接。',
+    '用户正在给你打一通语音电话。请完全按角色当下的人设、关系、世界书、日程、所在地时间、情绪、现实状态和最近聊天，判断你会不会接。',
+    '安全边界不是温柔滤镜：除非角色卡明确要求，否则不准高高在上地侮辱女性或用现实歧视当作魅力；但角色该冷淡、烦躁、嘴毒、疏离或不耐烦时仍然要保持人设。',
     '这里只判断接听或拒接，不要生成接通后的第一句；接通后的第一轮会走普通通话回复，并且会包含旁白。',
     'accept 时 message 必须是空字符串。',
     '只能返回 JSON：{"decision":"accept","message":""} 或 {"decision":"reject","message":"一句很短的拒接/挂断提示"}。',

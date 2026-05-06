@@ -3805,7 +3805,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 .page-two-app-row .home-app-label {
   font-size: 12px;
   width: auto;
-  max-width: 48px;
+  max-width: 56px;
   margin-top: 2px;
   padding: 2px 6px;
   border-radius: 999px;
@@ -3819,6 +3819,11 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 .page-two-placeholder-row {
   margin-top: -2px;
   padding-top: 0;
+}
+.page-one-placeholder-row {
+  margin-top: -2px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 .home-page-d3 {
   display: flex;

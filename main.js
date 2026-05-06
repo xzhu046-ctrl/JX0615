@@ -24,10 +24,14 @@ const HOME_ICON_DEFAULTS = {
   map6: '地图',
   char: 'CHAR',
   user: 'USER',
-  'placeholder-1': '占位一',
-  'placeholder-2': '占位二',
-  'placeholder-3': '占位三',
-  'placeholder-4': '占位四',
+  'placeholder-1': '占位1',
+  'placeholder-2': '占位2',
+  'placeholder-3': '占位3',
+  'placeholder-4': '占位4',
+  'placeholder-5': '占位5',
+  'placeholder-6': '占位6',
+  'placeholder-7': '占位7',
+  'placeholder-8': '占位8',
 };
 const PHONE_FRAME_STORAGE_KEY = 'phone_frame_visible';
 const LIVE_DANMAKU_DEFAULTS = {
@@ -56,10 +60,10 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-06T04:57:44Z';
+const APP_BUILD_ID = '2026-05-06T05:58:31Z';
 const APP_UPDATE_NOTES = [
-  '占位 app 支持自定义图标',
-  '外观图标网格一行五个'
+  '占位 app 扩展到 8 个',
+  '通话更贴合角色设定'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -6890,10 +6894,14 @@ function openPlaceholderMiniApp(idx){
     return;
   }
   var placeholderNames = {
-    8: '占位一',
-    9: '占位二',
-    10: '占位三',
-    11: '占位四'
+    8: '占位1',
+    9: '占位2',
+    10: '占位3',
+    11: '占位4',
+    12: '占位5',
+    13: '占位6',
+    14: '占位7',
+    15: '占位8'
   };
   if(placeholderNames[Number(idx)]){
     showHomeToast(placeholderNames[Number(idx)] + ' 暂未设置');
