@@ -1780,8 +1780,6 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 .bond-mini-app.has-custom-icon .home-app-icon-wrap {
   background: rgba(255,255,255,0.95);
 }
-.home-app-btn[data-app="map6"] .home-app-icon-wrap,
-.bond-mini-app[data-app="map6"] .home-app-icon-wrap,
 .bond-mini-app[data-app="couple"] .home-app-icon-wrap {
   background: rgba(255,255,255,.52);
   backdrop-filter: blur(12px) saturate(116%);
@@ -1789,8 +1787,6 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   box-shadow: 3px 4px 0 rgba(0,0,0,.18);
   filter: grayscale(1);
 }
-.home-app-btn[data-app="map6"] .home-app-icon-wrap::after,
-.bond-mini-app[data-app="map6"] .home-app-icon-wrap::after,
 .bond-mini-app[data-app="couple"] .home-app-icon-wrap::after {
   content: '';
   position: absolute;
@@ -3821,7 +3817,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   padding-top: 0;
 }
 .page-one-placeholder-row {
-  margin-top: -2px;
+  margin-top: 10px;
   padding-top: 0;
   padding-bottom: 0;
 }
