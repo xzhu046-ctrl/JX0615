@@ -42,11 +42,12 @@ input[type="text"]:focus{box-shadow:3px 4px 0 #0a0a0a}
 .hint{font-size:11px;color:var(--g);line-height:1.6;margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--off);border:1.5px dashed #cfcfcf}
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--b);color:var(--w);padding:9px 18px;border-radius:12px;font-size:12px;font-weight:700;opacity:0;transition:all .25s;z-index:99}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.icon-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.icon-item{display:flex;flex-direction:column;align-items:center;gap:6px}
+.icon-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px 6px}
+.icon-item{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
 .icon-cell{border:var(--bd);border-radius:12px;background:linear-gradient(180deg, #f1f1f1 0%, #e6e6e6 100%);aspect-ratio:1/1;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;box-shadow:var(--sh);position:relative}
 .icon-cell img{width:100%;height:100%;object-fit:cover}
-.icon-label{text-align:center;font-size:12px;font-weight:800;color:var(--g);width:100%}
+.icon-cell span{font-size:10px;font-weight:900;line-height:1.1;text-align:center;padding:3px;word-break:keep-all}
+.icon-label{text-align:center;font-size:10px;font-weight:800;color:var(--g);width:100%;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .icon-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .danmaku-list{display:flex;flex-direction:column;gap:12px}
 .danmaku-group{border:var(--bd);border-radius:14px;background:linear-gradient(180deg, #fafafa 0%, #efefef 100%);padding:11px;display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden}
@@ -196,6 +197,10 @@ input[type="text"]:focus{box-shadow:3px 4px 0 #0a0a0a}
       <div class="icon-item"><div class="icon-cell" data-app="backend" onclick="pickIcon(this)"><span>后台</span></div><div class="icon-label">后台</div></div>
       <div class="icon-item"><div class="icon-cell" data-app="char" onclick="pickIcon(this)"><span>CHAR</span></div><div class="icon-label">CHAR</div></div>
       <div class="icon-item"><div class="icon-cell" data-app="user" onclick="pickIcon(this)"><span>USER</span></div><div class="icon-label">USER</div></div>
+      <div class="icon-item"><div class="icon-cell" data-app="placeholder-1" onclick="pickIcon(this)"><span>占位一</span></div><div class="icon-label">占位一</div></div>
+      <div class="icon-item"><div class="icon-cell" data-app="placeholder-2" onclick="pickIcon(this)"><span>占位二</span></div><div class="icon-label">占位二</div></div>
+      <div class="icon-item"><div class="icon-cell" data-app="placeholder-3" onclick="pickIcon(this)"><span>占位三</span></div><div class="icon-label">占位三</div></div>
+      <div class="icon-item"><div class="icon-cell" data-app="placeholder-4" onclick="pickIcon(this)"><span>占位四</span></div><div class="icon-label">占位四</div></div>
     </div>
     <div class="icon-actions">
       <button class="btn" onclick="resetIcons()">重置图标</button>
@@ -206,11 +211,11 @@ input[type="text"]:focus{box-shadow:3px 4px 0 #0a0a0a}
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="../assetStore.js?v=2026-05-01T18:22:00Z"></script>
+<script src="../assetStore.js?v=2026-05-06T04:57:44Z"></script>
 <script>
 let chosenData = '';
-const ICON_APPS = ['qq','worldbook','settings','customize','offline','map6','schedule','backend','char','user'];
-const ICON_LABELS = { qq:'QQ', worldbook:'档案', settings:'设置', customize:'外观', offline:'约会', map6:'地图', schedule:'日程', backend:'后台', char:'CHAR', user:'USER' };
+const ICON_APPS = ['qq','worldbook','settings','customize','offline','map6','schedule','backend','char','user','placeholder-1','placeholder-2','placeholder-3','placeholder-4'];
+const ICON_LABELS = { qq:'QQ', worldbook:'档案', settings:'设置', customize:'外观', offline:'约会', map6:'地图', schedule:'日程', backend:'后台', char:'CHAR', user:'USER', 'placeholder-1':'占位一', 'placeholder-2':'占位二', 'placeholder-3':'占位三', 'placeholder-4':'占位四' };
 const PHONE_FRAME_STORAGE_KEY = 'phone_frame_visible';
 const LIVE_DANMAKU_DEFAULTS = {
   '1': ['啊啊啊太可爱了','宝宝上线了','今天状态好好'],

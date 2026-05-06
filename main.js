@@ -24,6 +24,10 @@ const HOME_ICON_DEFAULTS = {
   map6: '地图',
   char: 'CHAR',
   user: 'USER',
+  'placeholder-1': '占位一',
+  'placeholder-2': '占位二',
+  'placeholder-3': '占位三',
+  'placeholder-4': '占位四',
 };
 const PHONE_FRAME_STORAGE_KEY = 'phone_frame_visible';
 const LIVE_DANMAKU_DEFAULTS = {
@@ -52,10 +56,10 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-06T04:39:45Z';
+const APP_BUILD_ID = '2026-05-06T04:57:44Z';
 const APP_UPDATE_NOTES = [
-  '占位 app 改成正式样式',
-  '分页圆点更贴近底栏'
+  '占位 app 支持自定义图标',
+  '外观图标网格一行五个'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
