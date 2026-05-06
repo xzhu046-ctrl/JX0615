@@ -1673,13 +1673,13 @@ html.android-device .phone-outer.frame-off.app-open .phone-frame {
   isolation: isolate;
   overflow: hidden;
   backface-visibility: hidden;
-  transform: translate3d(0,-20px,0);
+  transform: translate3d(0,-12px,0);
 }
 html.android-device .phone-outer.frame-off .home-page-indicator,
 html.ios-device .phone-outer.frame-off .home-page-indicator {
   position: fixed;
   left: 50%;
-  bottom: calc(var(--home-dock-bottom, max(12px, env(safe-area-inset-bottom))) + var(--home-dock-stack-height, 104px));
+  bottom: calc(var(--home-dock-bottom, max(12px, env(safe-area-inset-bottom))) + var(--home-dock-stack-height, 104px) - 16px);
   z-index: 82;
   margin: 0;
   transform: translate3d(-50%, 0, 0);
@@ -3819,14 +3819,6 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 .page-two-placeholder-row {
   margin-top: -2px;
   padding-top: 0;
-}
-.page-two-placeholder-app .bond-mini-icon {
-  background: rgba(255,255,255,0.58);
-  border-style: dashed;
-  box-shadow: 2px 3px 0 rgba(10,10,10,0.72);
-}
-.page-two-placeholder-app .home-app-fallback-text {
-  font-size: 16px;
 }
 .home-page-d3 {
   display: flex;
