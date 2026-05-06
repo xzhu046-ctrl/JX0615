@@ -1,0 +1,6 @@
+.git/
+.wrangler/
+.playwright-cli/
+output/
+.DS_Store
+**/.DS_Store

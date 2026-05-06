@@ -2,3 +2,5 @@
 **/.DS_Store
 .wrangler/
 **/.wrangler/
+.playwright-cli/
+output/
