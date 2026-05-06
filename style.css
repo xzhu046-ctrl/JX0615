@@ -1965,7 +1965,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 4px 2px 4px;
+  padding: 4px 2px calc(var(--home-dock-stack-height, 104px) + 32px);
 }
 .bond-widget {
   position: relative;
@@ -3815,6 +3815,31 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   text-shadow: none;
+}
+.page-two-placeholder-row {
+  margin-top: -2px;
+  padding-top: 0;
+}
+.page-two-placeholder-app .bond-mini-icon {
+  background: rgba(255,255,255,0.58);
+  border-style: dashed;
+  box-shadow: 2px 3px 0 rgba(10,10,10,0.72);
+}
+.page-two-placeholder-app .home-app-fallback-text {
+  font-size: 16px;
+}
+.home-page-d3 {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  min-height: 100%;
+  padding-bottom: calc(var(--home-dock-stack-height, 104px) + 28px);
+}
+.home-page-d3-blank {
+  flex: 1 1 auto;
+  min-height: 100%;
+  width: 100%;
+  pointer-events: none;
 }
 .bond-edit-input {
   width: 100%;

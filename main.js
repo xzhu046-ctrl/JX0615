@@ -52,12 +52,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-06T03:33:54Z';
+const APP_BUILD_ID = '2026-05-06T04:23:57Z';
 const APP_UPDATE_NOTES = [
-  '唱片小组件恢复原样',
-  '音乐悬浮球显示封面',
-  '头像和页面加载更稳定',
-  '音乐播放不再误报地区限制'
+  '第二页增加四个占位',
+  '新增空白 D3 主屏页',
+  '底栏在空白页继续保留'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -5849,6 +5848,20 @@ function getHomePageStep(){
   return getHomePageWidth() + getHomePageGap();
 }
 
+function getHomePageCount(){
+  const pages = document.getElementById('home-pages');
+  if(!pages) return 1;
+  var count = 0;
+  Array.prototype.forEach.call(pages.children || [], function(child){
+    if(child && child.classList && child.classList.contains('home-page')) count += 1;
+  });
+  return Math.max(1, count || 1);
+}
+
+function getHomePageMaxIndex(){
+  return Math.max(0, getHomePageCount() - 1);
+}
+
 function setHomePagesOffset(pages, offsetPx){
   if(!pages) return;
   var snapped = Math.round(Number(offsetPx) || 0);
@@ -6770,7 +6783,7 @@ function renderHomePages(immediate){
 }
 
 function setHomePage(index, immediate){
-  homePageIndex = Math.max(0, Math.min(1, index));
+  homePageIndex = Math.max(0, Math.min(getHomePageMaxIndex(), index));
   try{ localStorage.setItem('home_page_index', String(homePageIndex)); }catch(e){}
   renderHomePages(immediate);
 }
@@ -6809,7 +6822,7 @@ function bindHomePager(){
       surface.setPointerCapture(evt.pointerId);
     }
     evt.preventDefault();
-    const edgeResistance = (homePageIndex === 0 && dx > 0) || (homePageIndex === 1 && dx < 0) ? 0.34 : 1;
+    const edgeResistance = (homePageIndex === 0 && dx > 0) || (homePageIndex === getHomePageMaxIndex() && dx < 0) ? 0.34 : 1;
     const offset = -(homePageIndex * getHomePageStep()) + (dx * edgeResistance);
     pages.style.transition = 'none';
     queueHomePagesOffset(pages, offset);
@@ -6871,6 +6884,16 @@ function openPlaceholderMiniApp(idx){
   }
   if(Number(idx) === 7){
     showHomeToast('蕾蕾在赶工^^');
+    return;
+  }
+  var placeholderNames = {
+    8: '占位一',
+    9: '占位二',
+    10: '占位三',
+    11: '占位四'
+  };
+  if(placeholderNames[Number(idx)]){
+    showHomeToast(placeholderNames[Number(idx)] + ' 暂未设置');
     return;
   }
   showHomeToast(Number(idx) === 1 ? 'CHAR 暂未设置' : (Number(idx) === 2 ? 'USER 暂未设置' : ('占位' + idx + ' 暂未设置')));
@@ -12966,7 +12989,7 @@ function restoreState(){
   renderHomeDockBadges();
   refreshQqUnreadCountCache();
   try{
-    homePageIndex = Math.max(0, Math.min(1, Number(localStorage.getItem('home_page_index') || '0') || 0));
+    homePageIndex = Math.max(0, Math.min(getHomePageMaxIndex(), Number(localStorage.getItem('home_page_index') || '0') || 0));
   }catch(e){
     homePageIndex = 0;
   }
