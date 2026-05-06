@@ -60,10 +60,10 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-06T07:38:10Z';
+const APP_BUILD_ID = '2026-05-06T19:11:45Z';
 const APP_UPDATE_NOTES = [
-  '修复通话长按菜单不显示',
-  '清空聊天后开场白不会被空白覆盖'
+  '关闭后台后不再自动发朋友圈',
+  '角色后台关闭后停止自动改日程和待办'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -2322,6 +2322,13 @@ async function loadShellChatSettingsBundleForChar(charId, accountId){
     }
   }
   shellChatSettingsBundleCache[cacheKey] = best || null;
+  if(best && typeof best === 'object'){
+    keys.forEach(function(key){
+      if(key) shellChatSettingsBundleCache[key] = best;
+    });
+    var directKey = chatSettingsBundleKeyForAccount(safeId, accountId || getActiveAccountId() || getDefaultAccountId());
+    if(directKey) shellChatSettingsBundleCache[directKey] = best;
+  }
   if(best && best.momentsFreq){
     try{
       var freq = normalizeShellMomentsFreq(best.momentsFreq);
@@ -2329,6 +2336,14 @@ async function loadShellChatSettingsBundleForChar(charId, accountId){
       if(activeId) localStorage.setItem(scopedKeyForAccount('char_moments_freq_' + safeId, activeId), freq);
       localStorage.setItem('char_moments_freq_' + safeId, freq);
     }catch(freqErr){}
+  }
+  if(best && Object.prototype.hasOwnProperty.call(best, 'charBgEnabled') && best.charBgEnabled !== null && best.charBgEnabled !== undefined){
+    try{
+      var rawBg = best.charBgEnabled ? '1' : '0';
+      var bgAccountId = String(accountId || getActiveAccountId() || getDefaultAccountId() || '').trim();
+      if(bgAccountId) localStorage.setItem(charBgEnabledKeyForAccount(safeId, bgAccountId), rawBg);
+      localStorage.setItem('char_bg_activity_enabled_' + safeId, rawBg);
+    }catch(bgErr){}
   }
   return best || null;
 }
@@ -2410,8 +2425,7 @@ function isGlobalAiBgEnabled(){
 
 function getCharBgOverride(charId, accountId){
   if(!charId) return null;
-  var bundleKey = chatSettingsBundleKeyForAccount(charId, accountId || getActiveAccountId() || getDefaultAccountId());
-  var cachedBundle = shellChatSettingsBundleCache[bundleKey];
+  var cachedBundle = getCachedShellChatSettingsBundleForChar(charId, accountId || getActiveAccountId() || getDefaultAccountId());
   if(cachedBundle && Object.prototype.hasOwnProperty.call(cachedBundle, 'charBgEnabled')){
     return cachedBundle.charBgEnabled === null || cachedBundle.charBgEnabled === undefined ? null : !!cachedBundle.charBgEnabled;
   }
@@ -12831,12 +12845,15 @@ async function maybeRunScheduleTodoReminders(){
   if(!shared) return;
   scheduleReminderRunning = true;
   try{
+    var defaultId = getDefaultAccountId();
     var state = await shared.loadState();
     state = shared.normalizeState(state || null);
     var changed = false;
     var emitted = false;
     var chars = getStoredCharactersSnapshot();
     for(const charId of Object.keys(state.chars || {})){
+      await loadShellChatSettingsBundleForChar(charId, defaultId);
+      if(!isCharBgEnabled(charId, defaultId)) continue;
       if(!shared.isTimeAwarenessEnabled(state, charId)) continue;
       var character = chars.find(function(item){ return item && String(item.id || '') === String(charId); }) || null;
       var localClock = buildScheduleLocalNowContextForCharacter(character, Date.now());
