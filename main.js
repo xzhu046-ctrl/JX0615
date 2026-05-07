@@ -60,10 +60,10 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-07T05:45:02Z';
+const APP_BUILD_ID = '2026-05-07T06:28:38Z';
 const APP_UPDATE_NOTES = [
-  '第三页播放器改成竖向封面',
-  '播放按钮加载当前歌曲更稳定'
+  '第三页播放器对齐封面和按钮',
+  '歌词模式只显示透明歌词'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -9132,14 +9132,20 @@ function renderHomeD3MusicWidget(force){
   widget.classList.toggle('is-lyrics-expanded', !!homeD3MusicLyricsExpanded);
   if(title){
     title.title = titleText;
-    var shouldMarquee = !!track && String(titleText || '').length > 4;
-    var titleKey = titleText + '|' + (shouldMarquee ? 'marquee' : 'static');
+    var shouldMarquee = !!track;
+    var titleKey = (track && track.id || '') + '|' + titleText + '|' + (shouldMarquee ? 'marquee' : 'static');
     title.classList.toggle('is-marquee', shouldMarquee);
     if(force || title.dataset.titleKey !== titleKey){
       title.dataset.titleKey = titleKey;
       title.innerHTML = shouldMarquee
         ? '<span class="home-d3-song-title-track"><span>' + escapeHtml(titleText) + '</span><span aria-hidden="true">' + escapeHtml(titleText) + '</span></span>'
         : '<span class="home-d3-song-title-static">' + escapeHtml(titleText) + '</span>';
+      var titleTrack = title.querySelector('.home-d3-song-title-track');
+      if(titleTrack){
+        titleTrack.style.animation = 'none';
+        titleTrack.offsetHeight;
+        titleTrack.style.animation = '';
+      }
     }
   }
   if(artist) artist.textContent = artistText;

@@ -3845,14 +3845,14 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   --d3-muted: rgba(17,17,17,0.34);
   --d3-panel: rgba(255,255,255,0.68);
   width: min(100%, 340px);
-  min-height: 226px;
-  max-height: 258px;
-  border: 1px solid rgba(255,255,255,0.74);
+  min-height: 214px;
+  max-height: 246px;
+  border: 1px solid rgba(255,255,255,0.54);
   border-radius: 24px;
   background:
-    radial-gradient(circle at 18% 18%, rgba(255,255,255,0.92), transparent 34%),
-    radial-gradient(circle at 82% 18%, rgba(17,17,17,0.045), transparent 30%),
-    linear-gradient(135deg, rgba(255,255,255,0.62), rgba(255,255,255,0.28));
+    radial-gradient(circle at 18% 18%, rgba(255,255,255,0.66), transparent 34%),
+    radial-gradient(circle at 82% 18%, rgba(17,17,17,0.035), transparent 30%),
+    linear-gradient(135deg, rgba(255,255,255,0.42), rgba(255,255,255,0.18));
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.90),
     inset 0 -1px 0 rgba(255,255,255,0.32),
@@ -3898,7 +3898,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 .home-d3-cover-stack {
   position: relative;
   width: 138px;
-  height: 166px;
+  height: 154px;
   border: 0;
   padding: 0;
   background: transparent;
@@ -3909,9 +3909,9 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 .home-d3-cover-card {
   position: absolute;
   left: 0;
-  top: 6px;
+  top: -3px;
   width: 128px;
-  height: 150px;
+  height: 138px;
   border: 1px solid rgba(255,255,255,0.78);
   border-radius: 18px;
   background: rgba(255,255,255,0.46);
@@ -3950,7 +3950,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 .home-d3-record {
   position: absolute;
   right: 0;
-  top: 78px;
+  top: 57px;
   width: 76px;
   height: 76px;
   border-radius: 50%;
@@ -4220,21 +4220,22 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  margin-top: 54px;
-  padding: 4px 4px 4px 8px;
+  margin-top: 0;
+  padding: 4px 2px 4px 0;
   border-radius: 18px;
-  background:
-    linear-gradient(90deg, rgba(255,255,255,0.54), rgba(255,255,255,0.20)),
-    linear-gradient(180deg, rgba(255,255,255,0.38), rgba(245,245,245,0.10));
+  background: transparent;
   mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
 }
 .home-d3-music-widget.is-lyrics-expanded .home-d3-lyrics {
   display: block;
-  background:
-    linear-gradient(90deg, rgba(255,255,255,0.78), rgba(255,255,255,0.52)),
-    linear-gradient(180deg, rgba(255,255,255,0.54), rgba(245,245,245,0.32));
+  background: transparent;
 }
+.home-d3-music-widget.is-lyrics-expanded .home-d3-music-main {
+  visibility: hidden;
+  pointer-events: none;
+}
+.home-d3-music-widget.is-lyrics-expanded .home-d3-song-title,
 .home-d3-music-widget.is-lyrics-expanded .home-d3-song-artist,
 .home-d3-music-widget.is-lyrics-expanded .home-d3-progress,
 .home-d3-music-widget.is-lyrics-expanded .home-d3-wave,
@@ -4251,7 +4252,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 }
 .home-d3-lyric-line {
   position: relative;
-  padding-left: 18px;
+  padding-left: 0;
   font-family: 'ZCOOL KuaiLe', 'Fredoka', var(--font-display);
   font-size: 16px;
   font-weight: 900;
@@ -4270,13 +4271,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   text-shadow: 0 1px 0 rgba(255,255,255,0.96), 0 12px 20px var(--d3-accent-soft);
 }
 .home-d3-lyric-line.is-active::before {
-  content: '★';
-  position: absolute;
-  left: 0;
-  top: 0.08em;
-  font-size: 12px;
-  line-height: 1;
-  color: var(--d3-accent);
+  content: none;
 }
 .home-d3-lyrics-empty {
   min-height: 86px;
@@ -4315,16 +4310,16 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   }
   .home-d3-cover-stack {
     width: 118px;
-    height: 146px;
+    height: 134px;
   }
   .home-d3-cover-card {
     width: 108px;
-    height: 132px;
+    height: 120px;
   }
   .home-d3-record {
     width: 68px;
     height: 68px;
-    top: 70px;
+    top: 49px;
   }
   .home-d3-song-title {
     font-size: 16px;
