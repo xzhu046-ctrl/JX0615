@@ -3845,8 +3845,8 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   --d3-muted: rgba(17,17,17,0.34);
   --d3-panel: rgba(255,255,255,0.68);
   width: min(100%, 340px);
-  min-height: 186px;
-  max-height: 216px;
+  min-height: 226px;
+  max-height: 258px;
   border: 1px solid rgba(255,255,255,0.74);
   border-radius: 24px;
   background:
@@ -3860,7 +3860,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   padding: 18px 14px 15px;
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 126px minmax(0, 1fr);
+  grid-template-columns: 138px minmax(0, 1fr);
   grid-template-rows: 1fr;
   gap: 13px;
   overflow: hidden;
@@ -3893,12 +3893,12 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
-  gap: 9px;
+  gap: 8px;
 }
 .home-d3-cover-stack {
   position: relative;
-  width: 126px;
-  height: 118px;
+  width: 138px;
+  height: 166px;
   border: 0;
   padding: 0;
   background: transparent;
@@ -3909,11 +3909,11 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 .home-d3-cover-card {
   position: absolute;
   left: 0;
-  top: 11px;
-  width: 96px;
-  height: 96px;
+  top: 6px;
+  width: 128px;
+  height: 150px;
   border: 1px solid rgba(255,255,255,0.78);
-  border-radius: 15px;
+  border-radius: 18px;
   background: rgba(255,255,255,0.46);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.72),
@@ -3949,10 +3949,10 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 }
 .home-d3-record {
   position: absolute;
-  right: 1px;
-  top: 21px;
-  width: 88px;
-  height: 88px;
+  right: 0;
+  top: 78px;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
   background:
     radial-gradient(circle at center, rgba(255,255,255,0.92) 0 9px, transparent 10px),
@@ -3966,7 +3966,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 }
 .home-d3-record-core {
   position: absolute;
-  inset: 13px;
+  inset: 10px;
   border-radius: 50%;
   background: rgba(255,255,255,0.94);
   border: 2px solid rgba(255,255,255,0.88);
@@ -4037,9 +4037,9 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   display: inline-flex;
   width: max-content;
   min-width: 100%;
-  gap: 34px;
+  gap: 22px;
   will-change: transform;
-  animation: homeD3TitleMarquee 9.5s linear infinite;
+  animation: homeD3TitleMarquee 6.8s linear infinite;
 }
 .home-d3-song-title-track span {
   display: inline-block;
@@ -4112,17 +4112,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   transition: width .18s ease;
 }
 .home-d3-progress-dot {
-  position: absolute;
-  left: 0%;
-  top: -1px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: var(--d3-accent);
-  border: 1px solid rgba(255,255,255,0.76);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-  transform: translateX(-50%);
-  transition: left .18s ease;
+  display: none;
 }
 .home-d3-wave {
   height: 30px;
@@ -4203,8 +4193,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   gap: 6px;
   margin-top: 0;
   padding-left: 2px;
-  opacity: .72;
-  filter: grayscale(1);
+  opacity: .96;
 }
 .home-d3-swatch {
   width: 13px;
@@ -4304,8 +4293,8 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   to { transform: rotate(360deg); }
 }
 @keyframes homeD3TitleMarquee {
-  0%, 12% { transform: translateX(0); }
-  88%, 100% { transform: translateX(calc(-50% - 17px)); }
+  from { transform: translate3d(0,0,0); }
+  to { transform: translate3d(calc(-50% - 11px),0,0); }
 }
 @keyframes homeD3WavePulse {
   from { transform: scaleY(.62); }
@@ -4319,22 +4308,23 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   }
   .home-d3-music-widget {
     width: min(100%, 312px);
-    grid-template-columns: 102px minmax(0, 1fr);
+    grid-template-columns: 118px minmax(0, 1fr);
     gap: 10px 10px;
     padding: 16px 13px 13px;
     border-radius: 25px;
   }
   .home-d3-cover-stack {
-    width: 102px;
-    height: 104px;
+    width: 118px;
+    height: 146px;
   }
   .home-d3-cover-card {
-    width: 78px;
-    height: 78px;
+    width: 108px;
+    height: 132px;
   }
   .home-d3-record {
-    width: 74px;
-    height: 74px;
+    width: 68px;
+    height: 68px;
+    top: 70px;
   }
   .home-d3-song-title {
     font-size: 16px;
