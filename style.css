@@ -3834,39 +3834,39 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 30px 8px 12px;
+  padding: 0 8px 12px;
   box-sizing: border-box;
 }
 .home-d3-music-widget {
   --d3-accent: #111;
-  --d3-accent-soft: rgba(17,17,17,0.12);
-  --d3-accent-mid: rgba(17,17,17,0.48);
+  --d3-accent-soft: rgba(17,17,17,0.08);
+  --d3-accent-mid: rgba(17,17,17,0.46);
   --d3-ink: #111;
   --d3-muted: rgba(17,17,17,0.34);
-  --d3-panel: rgba(255,255,255,0.74);
-  width: min(100%, 348px);
-  min-height: 198px;
-  max-height: 238px;
-  border: 2px solid rgba(17,17,17,0.9);
-  border-radius: 26px;
+  --d3-panel: rgba(255,255,255,0.68);
+  width: min(100%, 340px);
+  min-height: 186px;
+  max-height: 216px;
+  border: 1px solid rgba(255,255,255,0.74);
+  border-radius: 24px;
   background:
-    radial-gradient(circle at 16% 18%, rgba(255,255,255,0.92), transparent 30%),
-    radial-gradient(circle at 84% 10%, var(--d3-accent-soft), transparent 22%),
-    linear-gradient(135deg, rgba(255,255,255,0.9), rgba(244,244,244,0.72));
+    radial-gradient(circle at 18% 18%, rgba(255,255,255,0.92), transparent 34%),
+    radial-gradient(circle at 82% 18%, rgba(17,17,17,0.045), transparent 30%),
+    linear-gradient(135deg, rgba(255,255,255,0.62), rgba(255,255,255,0.28));
   box-shadow:
-    0 0 0 1px rgba(255,255,255,0.92),
-    4px 5px 0 rgba(0,0,0,0.9),
-    0 18px 36px rgba(0,0,0,0.12);
-  padding: 20px 14px 16px;
+    inset 0 1px 0 rgba(255,255,255,0.90),
+    inset 0 -1px 0 rgba(255,255,255,0.32),
+    0 18px 44px rgba(0,0,0,0.08);
+  padding: 18px 14px 15px;
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 132px minmax(0, 1fr);
+  grid-template-columns: 126px minmax(0, 1fr);
   grid-template-rows: 1fr;
   gap: 13px;
   overflow: hidden;
   color: var(--d3-ink);
-  backdrop-filter: blur(22px) saturate(1.08);
-  -webkit-backdrop-filter: blur(22px) saturate(1.08);
+  backdrop-filter: blur(24px) saturate(1.12);
+  -webkit-backdrop-filter: blur(24px) saturate(1.12);
   touch-action: manipulation;
 }
 .home-d3-music-widget.is-red {
@@ -3897,8 +3897,8 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 }
 .home-d3-cover-stack {
   position: relative;
-  width: 132px;
-  height: 126px;
+  width: 126px;
+  height: 118px;
   border: 0;
   padding: 0;
   background: transparent;
@@ -3909,15 +3909,15 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 .home-d3-cover-card {
   position: absolute;
   left: 0;
-  top: 12px;
-  width: 100px;
-  height: 100px;
-  border: 2px solid var(--d3-ink);
+  top: 11px;
+  width: 96px;
+  height: 96px;
+  border: 1px solid rgba(255,255,255,0.78);
   border-radius: 15px;
-  background: rgba(255,255,255,0.94);
+  background: rgba(255,255,255,0.46);
   box-shadow:
-    2px 3px 0 rgba(0,0,0,0.9),
-    0 12px 22px rgba(0,0,0,0.12);
+    inset 0 1px 0 rgba(255,255,255,0.72),
+    0 12px 24px rgba(0,0,0,0.10);
   overflow: hidden;
   z-index: 2;
   display: flex;
@@ -3949,27 +3949,27 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 }
 .home-d3-record {
   position: absolute;
-  right: 2px;
-  top: 22px;
-  width: 90px;
-  height: 90px;
+  right: 1px;
+  top: 21px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
   background:
-    radial-gradient(circle at center, rgba(255,255,255,0.98) 0 14px, transparent 15px),
-    repeating-radial-gradient(circle at center, rgba(255,255,255,0.18) 0 1px, transparent 1px 7px),
-    radial-gradient(circle at 44% 38%, var(--d3-accent-mid) 0 14%, #151515 58%, #000 100%);
+    radial-gradient(circle at center, rgba(255,255,255,0.92) 0 9px, transparent 10px),
+    radial-gradient(circle at center, transparent 0 52%, rgba(255,255,255,0.12) 53% 54%, transparent 55%),
+    radial-gradient(circle at 44% 38%, rgba(255,255,255,0.16) 0 8%, #1b1b1b 48%, #050505 100%);
   box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.28),
-    0 12px 20px rgba(0,0,0,0.18);
+    inset 0 0 0 1px rgba(255,255,255,0.18),
+    0 12px 22px rgba(0,0,0,0.18);
   z-index: 4;
   overflow: hidden;
 }
 .home-d3-record-core {
   position: absolute;
-  inset: 24px;
+  inset: 13px;
   border-radius: 50%;
   background: rgba(255,255,255,0.94);
-  border: 4px solid rgba(255,255,255,0.94);
+  border: 2px solid rgba(255,255,255,0.88);
   overflow: hidden;
   box-shadow: 0 0 0 1px rgba(0,0,0,0.12);
 }
@@ -3982,7 +3982,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   z-index: 1;
 }
 .home-d3-record-core .home-d3-cover-fallback {
-  font-size: 13px;
+  font-size: 18px;
 }
 .home-d3-music-widget.is-playing .home-d3-record {
   animation: homeD3RecordSpin 5.5s linear infinite;
@@ -4005,7 +4005,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
   align-self: stretch;
   justify-content: center;
   position: relative;
@@ -4018,25 +4018,42 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 }
 .home-d3-song-title {
   min-width: 0;
-  border: 0;
-  padding: 0;
-  background: transparent;
+  width: 100%;
   color: var(--d3-ink);
   font-family: 'ZCOOL KuaiLe', 'Fredoka', var(--font-display);
-  font-size: clamp(22px, 7.6vw, 34px);
+  font-size: clamp(19px, 6vw, 27px);
   line-height: 1.12;
   font-weight: 900;
   letter-spacing: 0;
   text-align: left;
-  word-break: break-word;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
+  display: block;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
+  mask-image: linear-gradient(to right, transparent, black 10px, black calc(100% - 18px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10px, black calc(100% - 18px), transparent);
+}
+.home-d3-song-title-track {
+  display: inline-flex;
+  width: max-content;
+  min-width: 100%;
+  gap: 34px;
+  will-change: transform;
+  animation: homeD3TitleMarquee 9.5s linear infinite;
+}
+.home-d3-song-title-track span {
+  display: inline-block;
+  white-space: nowrap;
+}
+.home-d3-song-title-static {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .home-d3-song-artist {
   min-height: 13px;
-  color: rgba(17,17,17,0.45);
+  color: rgba(17,17,17,0.42);
   font-size: 10px;
   line-height: 1.25;
   font-weight: 900;
@@ -4086,7 +4103,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   top: 5px;
   height: 4px;
   border-radius: 999px;
-  background: rgba(17,17,17,0.18);
+  background: rgba(17,17,17,0.14);
 }
 .home-d3-progress-fill {
   right: auto;
@@ -4098,17 +4115,17 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   position: absolute;
   left: 0%;
   top: -1px;
-  width: 14px;
-  height: 14px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   background: var(--d3-accent);
-  border: 2px solid var(--d3-ink);
-  box-shadow: 1px 2px 0 rgba(0,0,0,0.76);
+  border: 1px solid rgba(255,255,255,0.76);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
   transform: translateX(-50%);
   transition: left .18s ease;
 }
 .home-d3-wave {
-  height: 34px;
+  height: 30px;
   display: grid;
   grid-template-columns: repeat(30, 1fr);
   align-items: center;
@@ -4120,7 +4137,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   height: calc(var(--d3-bar, .38) * 100%);
   border-radius: 999px;
   background: var(--d3-accent);
-  opacity: .88;
+  opacity: .78;
   transform-origin: center;
 }
 .home-d3-wave span:nth-child(2n) { opacity: .72; }
@@ -4138,15 +4155,15 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 }
 .home-d3-controls {
   display: grid;
-  grid-template-columns: 30px 42px 30px;
+  grid-template-columns: 24px 24px 24px;
   justify-content: center;
   gap: 12px;
   align-items: center;
   margin-top: 0;
 }
 .home-d3-control-btn {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   border: 0;
   border-radius: 50%;
   background: transparent;
@@ -4159,11 +4176,17 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   touch-action: manipulation;
 }
 .home-d3-control-btn.primary {
-  width: 42px;
-  height: 42px;
-  border: 2px solid var(--d3-ink);
-  background: rgba(255,255,255,0.92);
-  box-shadow: 2px 3px 0 rgba(0,0,0,0.9);
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.home-d3-control-btn .music-icon {
+  transform: scale(.82);
+}
+.home-d3-control-btn.primary .music-icon {
+  transform: scale(.62);
 }
 .home-d3-control-btn.is-active {
   background: var(--d3-accent);
@@ -4177,25 +4200,27 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 .home-d3-palette {
   display: flex;
   justify-content: flex-start;
-  gap: 8px;
+  gap: 6px;
   margin-top: 0;
-  padding-left: 3px;
+  padding-left: 2px;
+  opacity: .72;
+  filter: grayscale(1);
 }
 .home-d3-swatch {
-  width: 18px;
-  height: 18px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
-  border: 2px solid var(--d3-ink);
+  border: 1px solid rgba(17,17,17,0.42);
   padding: 0;
   background: #111;
-  box-shadow: 1px 1px 0 rgba(0,0,0,0.86);
+  box-shadow: none;
 }
 .home-d3-swatch.is-red { background: #c43733; }
 .home-d3-swatch.is-blue { background: #2d5f8e; }
 .home-d3-swatch.is-pink { background: #c05b7f; }
 .home-d3-swatch.is-active {
-  outline: 2px solid rgba(255,255,255,0.98);
-  outline-offset: 1px;
+  outline: 1px solid rgba(17,17,17,0.28);
+  outline-offset: 2px;
 }
 .home-d3-lyrics {
   grid-column: 2;
@@ -4278,6 +4303,10 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 @keyframes homeD3RecordSpin {
   to { transform: rotate(360deg); }
 }
+@keyframes homeD3TitleMarquee {
+  0%, 12% { transform: translateX(0); }
+  88%, 100% { transform: translateX(calc(-50% - 17px)); }
+}
 @keyframes homeD3WavePulse {
   from { transform: scaleY(.62); }
   to { transform: scaleY(1.08); }
@@ -4286,7 +4315,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   .home-d3-music-shell {
     padding-left: 8px;
     padding-right: 8px;
-    padding-top: 24px;
+    padding-top: 2px;
   }
   .home-d3-music-widget {
     width: min(100%, 312px);

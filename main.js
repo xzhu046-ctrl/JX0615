@@ -60,10 +60,10 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-07T04:37:12Z';
+const APP_BUILD_ID = '2026-05-07T05:12:59Z';
 const APP_UPDATE_NOTES = [
-  '第三页播放器去掉多余装饰',
-  '波形和播放按钮更轻巧'
+  '第三页播放器换成黑白玻璃风',
+  '歌名改成横向滚动显示'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -9083,8 +9083,16 @@ function renderHomeD3MusicWidget(force){
   widget.classList.toggle('is-playing', !!homeMusicState.isPlaying);
   widget.classList.toggle('is-lyrics-expanded', !!homeD3MusicLyricsExpanded);
   if(title){
-    title.textContent = titleText;
     title.title = titleText;
+    var shouldMarquee = !!track && String(titleText || '').length > 4;
+    var titleKey = titleText + '|' + (shouldMarquee ? 'marquee' : 'static');
+    title.classList.toggle('is-marquee', shouldMarquee);
+    if(force || title.dataset.titleKey !== titleKey){
+      title.dataset.titleKey = titleKey;
+      title.innerHTML = shouldMarquee
+        ? '<span class="home-d3-song-title-track"><span>' + escapeHtml(titleText) + '</span><span aria-hidden="true">' + escapeHtml(titleText) + '</span></span>'
+        : '<span class="home-d3-song-title-static">' + escapeHtml(titleText) + '</span>';
+    }
   }
   if(artist) artist.textContent = artistText;
   if(cover){
@@ -10308,6 +10316,7 @@ async function ensureHomeMusicTrackLoaded(track, autoplay){
     var normalizedSrc = normalizeHomeMusicAudioSrc(src);
     var srcChanged = normalizeHomeMusicAudioSrc(audio.currentSrc || audio.src || '') !== normalizedSrc;
     if(srcChanged) audio.src = src;
+    audio.dataset.homeMusicTrackId = String(track.id || '');
     homeMusicState.parsedLyrics = parseHomeMusicLrc(track.lyricsText || '');
     if(srcChanged || audio.readyState === 0) audio.load();
     if(homeMusicState.currentTime > 0){
@@ -10332,6 +10341,37 @@ async function ensureHomeMusicTrackLoaded(track, autoplay){
     homeMusicState.isPlaying = false;
     renderHomeMusicPlaybackUi();
     showHomeToast(err && err.message ? err.message : '歌曲加载失败');
+  }
+}
+
+function isHomeMusicAudioBoundToTrack(audio, track){
+  if(!audio || !track) return false;
+  return String(audio.dataset.homeMusicTrackId || '') === String(track.id || '') && !!(audio.currentSrc || audio.src);
+}
+
+async function playOrPauseCurrentHomeMusic(){
+  var audio = getHomeMusicAudio();
+  var track = getCurrentHomeMusicTrack();
+  if(!audio) return;
+  if(!track){
+    openHomeMusicPanel();
+    showHomeToast('先选一首歌');
+    return;
+  }
+  if(!isHomeMusicAudioBoundToTrack(audio, track)){
+    await ensureHomeMusicTrackLoaded(track, true);
+    return;
+  }
+  try{
+    if(audio.paused){
+      homeMusicPendingAutoplay = true;
+      await attemptHomeMusicPlay(audio);
+    }else{
+      homeMusicPendingAutoplay = false;
+      audio.pause();
+    }
+  }catch(err){
+    console.error('[home-music] toggle failed', err);
   }
 }
 
@@ -10424,29 +10464,13 @@ function handleHomeMusicBubbleTap(evt){
 }
 
 async function toggleHomeMusicPlayback(){
-  var audio = getHomeMusicAudio();
-  var track = getCurrentHomeMusicTrack();
-  if(!audio) return;
-  if(!track){
-    openHomeMusicPanel();
-    showHomeToast('先导入一首歌');
-    return;
-  }
-  if(!audio.src){
-    await ensureHomeMusicTrackLoaded(track, true);
-    return;
-  }
-  try{
-    if(audio.paused){
-      homeMusicPendingAutoplay = true;
-      await attemptHomeMusicPlay(audio);
-    }else{
-      homeMusicPendingAutoplay = false;
-      audio.pause();
-    }
-  }catch(err){
-    console.error('[home-music] toggle failed', err);
-  }
+  await playOrPauseCurrentHomeMusic();
+}
+
+async function handleHomeD3MusicPlaybackTap(evt){
+  if(evt && typeof evt.preventDefault === 'function') evt.preventDefault();
+  if(evt && typeof evt.stopPropagation === 'function') evt.stopPropagation();
+  await playOrPauseCurrentHomeMusic();
 }
 
 function playHomeMusicTrackByIndex(index){
@@ -10698,6 +10722,7 @@ window.openHomeMusicPanel = openHomeMusicPanel;
 window.closeHomeMusicPanel = closeHomeMusicPanel;
 window.handleHomeMusicBubbleTap = handleHomeMusicBubbleTap;
 window.toggleHomeMusicPlayback = toggleHomeMusicPlayback;
+window.handleHomeD3MusicPlaybackTap = handleHomeD3MusicPlaybackTap;
 window.playPrevHomeMusic = playPrevHomeMusic;
 window.playNextHomeMusic = playNextHomeMusic;
 window.cycleHomeMusicPlayMode = cycleHomeMusicPlayMode;
