@@ -3843,30 +3843,27 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   --d3-accent-mid: rgba(17,17,17,0.46);
   --d3-ink: #111;
   --d3-muted: rgba(17,17,17,0.34);
-  --d3-panel: rgba(255,255,255,0.68);
+  --d3-panel: rgba(255,255,255,0.28);
   width: min(100%, 340px);
-  min-height: 214px;
-  max-height: 246px;
-  border: 1px solid rgba(255,255,255,0.54);
+  height: 176px;
+  min-height: 0;
+  max-height: 176px;
+  border: 1.5px solid rgba(0,0,0,0.20);
   border-radius: 24px;
-  background:
-    radial-gradient(circle at 18% 18%, rgba(255,255,255,0.66), transparent 34%),
-    radial-gradient(circle at 82% 18%, rgba(17,17,17,0.035), transparent 30%),
-    linear-gradient(135deg, rgba(255,255,255,0.42), rgba(255,255,255,0.18));
+  background: rgba(255,255,255,0.28);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.90),
-    inset 0 -1px 0 rgba(255,255,255,0.32),
-    0 18px 44px rgba(0,0,0,0.08);
-  padding: 18px 14px 15px;
+    0 14px 28px rgba(0,0,0,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.55);
+  padding: 16px 14px 6px;
   box-sizing: border-box;
   display: grid;
   grid-template-columns: 138px minmax(0, 1fr);
-  grid-template-rows: 1fr;
+  grid-template-rows: minmax(0, 1fr);
   gap: 13px;
   overflow: hidden;
   color: var(--d3-ink);
-  backdrop-filter: blur(24px) saturate(1.12);
-  -webkit-backdrop-filter: blur(24px) saturate(1.12);
+  backdrop-filter: blur(12px) saturate(1.04);
+  -webkit-backdrop-filter: blur(12px) saturate(1.04);
   touch-action: manipulation;
 }
 .home-d3-music-widget.is-red {
@@ -4007,7 +4004,9 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   flex-direction: column;
   gap: 7px;
   align-self: stretch;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-top: 23px;
+  box-sizing: border-box;
   position: relative;
 }
 .home-d3-music-top {
@@ -4216,6 +4215,8 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   grid-row: 1;
   align-self: stretch;
   display: none;
+  height: 100%;
+  max-height: 100%;
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -4232,6 +4233,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   background: transparent;
 }
 .home-d3-music-widget.is-lyrics-expanded .home-d3-music-main {
+  display: none;
   visibility: hidden;
   pointer-events: none;
 }
@@ -4246,9 +4248,11 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 9px;
   text-align: right;
+  box-sizing: border-box;
+  padding: 66px 0;
 }
 .home-d3-lyric-line {
   position: relative;
@@ -4303,9 +4307,11 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   }
   .home-d3-music-widget {
     width: min(100%, 312px);
+    height: 164px;
+    max-height: 164px;
     grid-template-columns: 118px minmax(0, 1fr);
     gap: 10px 10px;
-    padding: 16px 13px 13px;
+    padding: 15px 13px 5px;
     border-radius: 25px;
   }
   .home-d3-cover-stack {
@@ -4323,6 +4329,12 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   }
   .home-d3-song-title {
     font-size: 16px;
+  }
+  .home-d3-music-main {
+    padding-top: 13px;
+  }
+  .home-d3-lyrics-list {
+    padding: 58px 0;
   }
   .home-d3-lyric-line {
     font-size: 16px;

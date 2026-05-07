@@ -60,10 +60,10 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-07T06:28:38Z';
+const APP_BUILD_ID = '2026-05-07T07:05:45Z';
 const APP_UPDATE_NOTES = [
-  '第三页播放器对齐封面和按钮',
-  '歌词模式只显示透明歌词'
+  '第三页播放器压紧玻璃容器',
+  '云端歌单会自动同步新歌'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -6808,6 +6808,7 @@ function setHomePage(index, immediate){
   homePageIndex = Math.max(0, Math.min(getHomePageMaxIndex(), index));
   try{ localStorage.setItem('home_page_index', String(homePageIndex)); }catch(e){}
   renderHomePages(immediate);
+  maybeRefreshHomeMusicRemoteForD3();
 }
 
 function renderHomePageIndicator(){
@@ -6815,6 +6816,19 @@ function renderHomePageIndicator(){
   dots.forEach((dot, idx)=>{
     dot.classList.toggle('active', idx === homePageIndex);
   });
+}
+
+function maybeRefreshHomeMusicRemoteForD3(){
+  if(homePageIndex !== 2) return;
+  if(!normalizeHomeMusicCookie(homeMusicState.neteaseCookie || '')) return;
+  var now = Date.now();
+  if(now - homeMusicRemoteAutoRefreshAt < 60000) return;
+  homeMusicRemoteAutoRefreshAt = now;
+  if(homeMusicState.neteaseActivePlaylistId){
+    refreshHomeMusicActiveRemotePlaylist(true);
+  }else{
+    loadHomeMusicRemotePlaylists(true);
+  }
 }
 
 function bindHomePager(){
@@ -7933,6 +7947,7 @@ var homeMusicState = {
   neteaseQrImg: '',
   neteaseQrStatus: '',
   neteasePlaylists: [],
+  neteaseActivePlaylistId: '',
   likedRemoteIds: {},
   userPlaylists: [{ id: 'default', name: '默认歌单', createdAt: 0 }],
   activePlaylistId: 'all'
@@ -7946,6 +7961,8 @@ var homeMusicRenameIndex = -1;
 var homeMusicSearchBusy = false;
 var homeMusicQrPollTimer = 0;
 var homeMusicRemotePlaylistBusy = false;
+var homeMusicRemoteAutoRefreshAt = 0;
+var homeMusicVisibilityRefreshBound = false;
 var homeMusicPendingAutoplay = false;
 var homeMusicAutoplayToastTimer = 0;
 var homeMusicPersistPromise = Promise.resolve();
@@ -8138,6 +8155,7 @@ function applyHydratedHomeMusicState(parsed){
   homeMusicState.neteasePlaylists = Array.isArray(parsed.neteasePlaylists)
     ? parsed.neteasePlaylists.map(sanitizeHomeMusicRemotePlaylist).filter(Boolean)
     : [];
+  homeMusicState.neteaseActivePlaylistId = normalizeHomeMusicStorageText(parsed.neteaseActivePlaylistId || homeMusicState.neteaseActivePlaylistId || '', 80);
   homeMusicState.likedRemoteIds = normalizeHomeMusicLikedRemoteIds(parsed.likedRemoteIds || homeMusicState.likedRemoteIds);
   homeMusicState.userPlaylists = normalizeHomeMusicUserPlaylists(parsed.userPlaylists || homeMusicState.userPlaylists);
   homeMusicState.activePlaylistId = normalizeHomeMusicStorageText(parsed.activePlaylistId || homeMusicState.activePlaylistId || 'all', 80) || 'all';
@@ -8251,6 +8269,7 @@ function serializeHomeMusicState(){
     neteaseCookie: normalizeHomeMusicCookie(homeMusicState.neteaseCookie || ''),
     neteaseProfile: sanitizeHomeMusicNeteaseProfile(homeMusicState.neteaseProfile),
     neteasePlaylists: Array.isArray(homeMusicState.neteasePlaylists) ? homeMusicState.neteasePlaylists.map(sanitizeHomeMusicRemotePlaylist).filter(Boolean) : [],
+    neteaseActivePlaylistId: normalizeHomeMusicStorageText(homeMusicState.neteaseActivePlaylistId || '', 80),
     likedRemoteIds: normalizeHomeMusicLikedRemoteIds(homeMusicState.likedRemoteIds),
     userPlaylists: normalizeHomeMusicUserPlaylists(homeMusicState.userPlaylists),
     activePlaylistId: normalizeHomeMusicStorageText(homeMusicState.activePlaylistId || 'all', 80) || 'all'
@@ -9051,6 +9070,15 @@ function getHomeD3MusicLyricLines(track){
   var idx = Math.max(-1, isFinite(rawIdx) ? rawIdx : -1);
   if(parsed.length){
     var activeIdx = idx >= 0 ? idx : 0;
+    if(homeD3MusicLyricsExpanded){
+      return parsed.map(function(line, lineIdx){
+        return {
+          text: String(line && line.text || '').trim(),
+          active: lineIdx === activeIdx,
+          near: Math.abs(lineIdx - activeIdx) <= 1
+        };
+      }).filter(function(line){ return !!line.text; });
+    }
     var radius = homeD3MusicLyricsExpanded ? 4 : 3;
     var start = Math.max(0, activeIdx - radius);
     var end = Math.min(parsed.length, activeIdx + radius + 1);
@@ -9184,6 +9212,14 @@ function renderHomeD3MusicWidget(force){
         }).join('') + '</div>';
       }else{
         lyrics.innerHTML = '<div class="home-d3-lyrics-empty">暂无歌词</div>';
+      }
+      if(homeD3MusicLyricsExpanded){
+        requestAnimationFrame(function(){
+          var active = lyrics.querySelector('.home-d3-lyric-line.is-active');
+          if(active && typeof active.scrollIntoView === 'function'){
+            active.scrollIntoView({ block: 'center', inline: 'nearest' });
+          }
+        });
       }
     }
   }
@@ -9845,6 +9881,7 @@ function renderHomeMusicAccountPanel(){
       '</div>' +
       '<div class="home-music-account-actions">' +
         '<button class="home-music-account-btn" type="button" onclick="loadHomeMusicRemotePlaylists()">' + (homeMusicRemotePlaylistBusy ? '读取中' : '我的歌单') + '</button>' +
+        '<button class="home-music-account-btn" type="button" onclick="refreshHomeMusicActiveRemotePlaylist()">' + (homeMusicRemotePlaylistBusy ? '同步中' : '刷新歌曲') + '</button>' +
         '<button class="home-music-account-btn" type="button" onclick="logoutHomeMusicNetease()">退出</button>' +
       '</div>' +
       (playlists.length ? '<div class="home-music-remote-playlists">' + playlists.map(function(item, idx){
@@ -9900,7 +9937,7 @@ async function startHomeMusicQrLogin(){
           Promise.allSettled([
             refreshHomeMusicNeteaseProfile(),
             loadHomeMusicLikedRemoteIds(),
-            loadHomeMusicRemotePlaylists()
+            loadHomeMusicRemotePlaylists(true)
           ]).then(function(){
             persistHomeMusicState();
             renderHomeMusic();
@@ -9941,7 +9978,47 @@ async function loadHomeMusicLikedRemoteIds(){
   return homeMusicState.likedRemoteIds;
 }
 
-async function loadHomeMusicRemotePlaylists(){
+function getHomeMusicRemotePlaylistById(id){
+  var key = String(id || '').trim();
+  if(!key) return null;
+  var list = Array.isArray(homeMusicState.neteasePlaylists) ? homeMusicState.neteasePlaylists : [];
+  return list.find(function(item){ return String(item && item.id || '').trim() === key; }) || null;
+}
+
+async function fetchHomeMusicRemotePlaylistTracks(item){
+  if(!item || !item.id) return [];
+  var payload = await homeMusicNeteaseCall('playlist/track/all', {
+    id: item.id,
+    limit: 200,
+    offset: 0
+  });
+  var songs = Array.isArray(payload && payload.songs) ? payload.songs : [];
+  return songs.map(mapHomeMusicNeteaseSong).filter(function(track){ return !!track.remoteId; });
+}
+
+function mergeHomeMusicRemoteTracks(mapped){
+  var existing = {};
+  (Array.isArray(homeMusicState.tracks) ? homeMusicState.tracks : []).forEach(function(track){
+    if(track.remoteProvider === 'netease' && track.remoteId) existing[String(track.remoteId)] = 1;
+  });
+  var fresh = (Array.isArray(mapped) ? mapped : []).filter(function(track){
+    if(existing[String(track.remoteId)]) return false;
+    existing[String(track.remoteId)] = 1;
+    track.playlistId = 'default';
+    return true;
+  });
+  if(fresh.length){
+    homeMusicState.tracks = fresh.concat(homeMusicState.tracks || []);
+    if(!homeMusicState.currentTrackId || !getCurrentHomeMusicTrack()){
+      homeMusicState.currentTrackId = fresh[0].id;
+      homeMusicState.currentTime = 0;
+      homeMusicState.currentLyricIndex = -1;
+    }
+  }
+  return fresh;
+}
+
+async function loadHomeMusicRemotePlaylists(silent){
   if(homeMusicRemotePlaylistBusy) return;
   homeMusicRemotePlaylistBusy = true;
   renderHomeMusicAccountPanel();
@@ -9953,9 +10030,9 @@ async function loadHomeMusicRemotePlaylists(){
     var list = Array.isArray(payload && payload.playlist) ? payload.playlist : [];
     homeMusicState.neteasePlaylists = list.map(sanitizeHomeMusicRemotePlaylist).filter(Boolean);
     await persistHomeMusicStateAsync();
-    showHomeToast('歌单已更新');
+    if(!silent) showHomeToast('歌单已更新');
   }catch(err){
-    showHomeToast(err && err.message ? err.message : '歌单读取失败');
+    if(!silent) showHomeToast(err && err.message ? err.message : '歌单读取失败');
   }finally{
     homeMusicRemotePlaylistBusy = false;
     renderHomeMusicAccountPanel();
@@ -9966,24 +10043,9 @@ async function loadHomeMusicRemotePlaylist(index){
   var item = Array.isArray(homeMusicState.neteasePlaylists) ? homeMusicState.neteasePlaylists[index] : null;
   if(!item || !item.id) return;
   try{
-    var payload = await homeMusicNeteaseCall('playlist/track/all', {
-      id: item.id,
-      limit: 120,
-      offset: 0
-    });
-    var songs = Array.isArray(payload && payload.songs) ? payload.songs : [];
-    var mapped = songs.map(mapHomeMusicNeteaseSong).filter(function(track){ return !!track.remoteId; });
-    var existing = {};
-    (Array.isArray(homeMusicState.tracks) ? homeMusicState.tracks : []).forEach(function(track){
-      if(track.remoteProvider === 'netease' && track.remoteId) existing[String(track.remoteId)] = 1;
-    });
-    var fresh = mapped.filter(function(track){
-      if(existing[String(track.remoteId)]) return false;
-      existing[String(track.remoteId)] = 1;
-      track.playlistId = 'default';
-      return true;
-    });
-    homeMusicState.tracks = fresh.concat(homeMusicState.tracks || []);
+    homeMusicState.neteaseActivePlaylistId = String(item.id || '').trim();
+    var mapped = await fetchHomeMusicRemotePlaylistTracks(item);
+    var fresh = mergeHomeMusicRemoteTracks(mapped);
     if(fresh[0]){
       homeMusicState.currentTrackId = fresh[0].id;
       homeMusicState.currentTime = 0;
@@ -10002,6 +10064,55 @@ async function loadHomeMusicRemotePlaylist(index){
   }
 }
 
+async function refreshHomeMusicActiveRemotePlaylist(silent){
+  if(homeMusicRemotePlaylistBusy) return;
+  if(!normalizeHomeMusicCookie(homeMusicState.neteaseCookie || '')) return;
+  var activeId = String(homeMusicState.neteaseActivePlaylistId || '').trim();
+  if(!activeId){
+    if(!(Array.isArray(homeMusicState.neteasePlaylists) && homeMusicState.neteasePlaylists.length)){
+      await loadHomeMusicRemotePlaylists(true);
+    }
+    var firstRemote = Array.isArray(homeMusicState.neteasePlaylists) ? homeMusicState.neteasePlaylists[0] : null;
+    activeId = firstRemote && firstRemote.id ? String(firstRemote.id || '').trim() : '';
+    if(activeId) homeMusicState.neteaseActivePlaylistId = activeId;
+    else{
+      if(!silent) showHomeToast('先打开一个歌单');
+      return;
+    }
+  }
+  var item = getHomeMusicRemotePlaylistById(activeId);
+  if(!item){
+    await loadHomeMusicRemotePlaylists(true);
+    item = getHomeMusicRemotePlaylistById(activeId);
+  }
+  if(!item){
+    if(!silent) showHomeToast('先打开一个歌单');
+    return;
+  }
+  homeMusicRemotePlaylistBusy = true;
+  renderHomeMusicAccountPanel();
+  try{
+    var mapped = await fetchHomeMusicRemotePlaylistTracks(item);
+    var fresh = mergeHomeMusicRemoteTracks(mapped);
+    if(fresh[0]){
+      await warmHomeMusicRemoteTrack(fresh[0]);
+    }
+    await loadHomeMusicLikedRemoteIds();
+    await persistHomeMusicStateAsync();
+    renderHomeMusic();
+    if(fresh[0]){
+      ensureHomeMusicTrackLoaded(getCurrentHomeMusicTrack(), false);
+      warmHomeMusicRemoteTracks(fresh.slice(1), 5);
+    }
+    if(!silent) showHomeToast(fresh.length ? ('新同步 ' + fresh.length + ' 首') : '歌曲已经是最新');
+  }catch(err){
+    if(!silent) showHomeToast(err && err.message ? err.message : '歌曲刷新失败');
+  }finally{
+    homeMusicRemotePlaylistBusy = false;
+    renderHomeMusicAccountPanel();
+  }
+}
+
 async function logoutHomeMusicNetease(){
   stopHomeMusicQrPoll();
   try{ await homeMusicNeteaseCall('logout', {}); }catch(err){}
@@ -10010,6 +10121,7 @@ async function logoutHomeMusicNetease(){
   homeMusicState.neteaseQrImg = '';
   homeMusicState.neteaseQrStatus = '';
   homeMusicState.neteasePlaylists = [];
+  homeMusicState.neteaseActivePlaylistId = '';
   homeMusicState.likedRemoteIds = {};
   await persistHomeMusicStateAsync();
   renderHomeMusic();
@@ -10791,6 +10903,12 @@ function bindHomeMusicSystem(){
       renderHomeMusicPlaybackUi();
     });
   }
+  if(!homeMusicVisibilityRefreshBound){
+    homeMusicVisibilityRefreshBound = true;
+    document.addEventListener('visibilitychange', function(){
+      if(!document.hidden) maybeRefreshHomeMusicRemoteForD3();
+    });
+  }
   renderHomeMusic();
   hydrateHomeMusicFloatingIcon();
   loadStoredAsset('home_slot_musicAlbum').then(function(src){
@@ -10830,6 +10948,7 @@ window.deleteHomeMusicTrack = deleteHomeMusicTrack;
 window.startHomeMusicQrLogin = startHomeMusicQrLogin;
 window.loadHomeMusicRemotePlaylists = loadHomeMusicRemotePlaylists;
 window.loadHomeMusicRemotePlaylist = loadHomeMusicRemotePlaylist;
+window.refreshHomeMusicActiveRemotePlaylist = refreshHomeMusicActiveRemotePlaylist;
 window.logoutHomeMusicNetease = logoutHomeMusicNetease;
 window.selectHomeMusicPlaylist = selectHomeMusicPlaylist;
 window.createHomeMusicUserPlaylist = createHomeMusicUserPlaylist;
@@ -13362,6 +13481,7 @@ function restoreState(){
     homePageIndex = 0;
   }
   renderHomePages(true);
+  maybeRefreshHomeMusicRemoteForD3();
   setupAiBgScheduler();
   try{
     if(sessionStorage.getItem(REFRESH_RECALC_FLAG_KEY) === '1'){
