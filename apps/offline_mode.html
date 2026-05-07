@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-07T01:53:25Z"></script>
-<script src="../chatStorage.js?v=2026-05-07T01:53:25Z"></script>
-<script src="../metadataStore.js?v=2026-05-07T01:53:25Z"></script>
-<script src="../promptManager.js?v=2026-05-07T01:53:25Z"></script>
-<script src="../accountManager.js?v=2026-05-07T01:53:25Z"></script>
-<script src="../scheduleShared.js?v=2026-05-07T01:53:25Z"></script>
-<script src="../presenceShared.js?v=2026-05-07T01:53:25Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-07T01:53:25Z"></script>
+<script src="../assetStore.js?v=2026-05-07T02:31:38Z"></script>
+<script src="../chatStorage.js?v=2026-05-07T02:31:38Z"></script>
+<script src="../metadataStore.js?v=2026-05-07T02:31:38Z"></script>
+<script src="../promptManager.js?v=2026-05-07T02:31:38Z"></script>
+<script src="../accountManager.js?v=2026-05-07T02:31:38Z"></script>
+<script src="../scheduleShared.js?v=2026-05-07T02:31:38Z"></script>
+<script src="../presenceShared.js?v=2026-05-07T02:31:38Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-07T02:31:38Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -14557,27 +14557,33 @@ async function finishOfflineGoodbyeCamera(event){
   var finalSnapshot = offlineGoodbyePhotoSnapshot || snapshotOfflineSessionState(session) || session;
   var instantIds = forceCompleteCurrentOfflineInviteNow('goodbye_finish_immediate', finalSnapshot);
   if(instantIds.length) offlineGoodbyeCompletedInviteIds = instantIds.slice();
-  var finalIds = await completeCurrentOfflineInviteEverywhere('goodbye_finish', finalSnapshot).catch(function(){ return []; });
-  if(Array.isArray(finalIds) && finalIds.length) offlineGoodbyeCompletedInviteIds = finalIds.slice();
-  try{
-    await archiveCurrentOfflineMeet('ended', 'goodbye_finish');
-  }catch(archiveErr){
-    pushOfflineBackendLog('error', 'archive.goodbye_finish', '收尾结束正常存档失败，转入备用保存', archiveErr);
+  var finishPersistPromise = (async function(){
+    var finalIds = await completeCurrentOfflineInviteEverywhere('goodbye_finish', finalSnapshot).catch(function(){ return []; });
+    if(Array.isArray(finalIds) && finalIds.length) offlineGoodbyeCompletedInviteIds = finalIds.slice();
     try{
-      await forceFallbackArchivePersist('ended', 'goodbye_finish_fallback');
-      if(character && character.id){
-        removeOfflineJsonRecord(pendingOfflineResumeKey(character.id));
-        removeOfflineJsonRecord('offline_resume_' + String(character.id || '').trim());
+      await archiveCurrentOfflineMeet('ended', 'goodbye_finish');
+    }catch(archiveErr){
+      pushOfflineBackendLog('error', 'archive.goodbye_finish', '收尾结束正常存档失败，转入备用保存', archiveErr);
+      try{
+        await forceFallbackArchivePersist('ended', 'goodbye_finish_fallback');
+        if(character && character.id){
+          removeOfflineJsonRecord(pendingOfflineResumeKey(character.id));
+          removeOfflineJsonRecord('offline_resume_' + String(character.id || '').trim());
+        }
+      }catch(fallbackErr){
+        pushOfflineBackendLog('error', 'archive.goodbye_finish.fallback', '收尾结束备用保存失败', fallbackErr);
       }
-    }catch(fallbackErr){
-      pushOfflineBackendLog('error', 'archive.goodbye_finish.fallback', '收尾结束备用保存失败', fallbackErr);
     }
-  }
+  })();
   var overlay = document.getElementById('offlineGoodbyeCameraOverlay');
   if(overlay){
     overlay.classList.remove('open');
     overlay.setAttribute('aria-hidden', 'true');
   }
+  await Promise.race([
+    finishPersistPromise,
+    new Promise(function(resolve){ setTimeout(resolve, 700); })
+  ]).catch(function(){ return null; });
   openOfflineDateApp(offlineGoodbyeCompletedInviteIds[0] || '');
   setTimeout(function(){ if(btn) btn.disabled = false; }, 600);
 }

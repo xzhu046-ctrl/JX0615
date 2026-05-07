@@ -60,10 +60,10 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-07T01:53:25Z';
+const APP_BUILD_ID = '2026-05-07T02:31:38Z';
 const APP_UPDATE_NOTES = [
-  '线下先说再见会先保留收尾聊天',
-  '线下记忆会同步线上总结并减少重复'
+  '结束约会会立刻退出收尾聊天室',
+  '线下结束存档不再卡住页面'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
