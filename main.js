@@ -60,10 +60,10 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-08T05:47:36Z';
+const APP_BUILD_ID = '2026-05-08T06:55:35Z';
 const APP_UPDATE_NOTES = [
-  '线下模式新增内置美化“我们的血缘”',
-  '血缘样式会把顶部内容改成文学摘抄'
+  '“我们的血缘”改成信纸头像样式',
+  '红线缝合改成弧线穿针效果'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
