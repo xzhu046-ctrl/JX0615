@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-07T02:31:38Z"></script>
-<script src="../chatStorage.js?v=2026-05-07T02:31:38Z"></script>
-<script src="../metadataStore.js?v=2026-05-07T02:31:38Z"></script>
-<script src="../promptManager.js?v=2026-05-07T02:31:38Z"></script>
-<script src="../accountManager.js?v=2026-05-07T02:31:38Z"></script>
-<script src="../scheduleShared.js?v=2026-05-07T02:31:38Z"></script>
-<script src="../presenceShared.js?v=2026-05-07T02:31:38Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-07T02:31:38Z"></script>
+<script src="../assetStore.js?v=2026-05-08T05:47:36Z"></script>
+<script src="../chatStorage.js?v=2026-05-08T05:47:36Z"></script>
+<script src="../metadataStore.js?v=2026-05-08T05:47:36Z"></script>
+<script src="../promptManager.js?v=2026-05-08T05:47:36Z"></script>
+<script src="../accountManager.js?v=2026-05-08T05:47:36Z"></script>
+<script src="../scheduleShared.js?v=2026-05-08T05:47:36Z"></script>
+<script src="../presenceShared.js?v=2026-05-08T05:47:36Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-08T05:47:36Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -177,6 +177,12 @@ body::before{content:'';position:fixed;left:0;right:0;top:0;bottom:-180px;backgr
 .offline-beauty-tab{flex:0 0 auto;min-width:58px;height:46px;padding:0 8px;border:2px solid #111;border-radius:0;background:#fff;color:#111;font:900 12px/1 var(--fontd);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,4px 4px 0 rgba(17,17,17,.94);cursor:pointer}
 .offline-beauty-tab.is-active{background:#111;color:#fff}
 .offline-beauty-tab:active{transform:translate(1px,1px);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,2px 2px 0 rgba(17,17,17,.94)}
+.offline-builtin-theme-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.offline-builtin-theme-btn{min-height:50px;padding:8px 10px;border:2px solid #111;border-radius:0;background:#fff;color:#111;font:900 12px/1.18 var(--fontd);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,4px 4px 0 rgba(17,17,17,.92);cursor:pointer;text-align:left}
+.offline-builtin-theme-btn span{display:block;font-size:10px;font-weight:900;color:#777;margin-top:5px;letter-spacing:.04em}
+.offline-builtin-theme-btn.is-active{background:#111;color:#fff}
+.offline-builtin-theme-btn.is-active span{color:rgba(255,255,255,.72)}
+.offline-builtin-theme-btn:active{transform:translate(1px,1px);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,2px 2px 0 rgba(17,17,17,.92)}
 .offline-beauty-textarea{
   min-height:220px;
   border:none;
@@ -659,6 +665,68 @@ box-shadow:0 0 0 2px rgba(255,255,255,.97),6px 6px 0 rgba(17,17,17,.94);padding:
 .offline-status-history-name{margin-top:6px;font-family:'ZCOOL KuaiLe','Nunito',sans-serif;font-size:16px;font-weight:900;line-height:1.25;color:#111}
 .offline-status-history-date{margin-top:4px;font-size:11px;font-weight:800;color:#6a6a6a}
 .offline-status-history-empty{font-size:12px;font-weight:800;line-height:1.7;color:#666;padding:8px 2px}
+.offline-story-literary-label{display:none}
+body.offline-theme-bloodline .paper-bg{background:
+linear-gradient(180deg,rgba(255,255,255,.64),rgba(255,255,255,.48)),
+radial-gradient(circle at 13% 7%,rgba(120,0,18,.08),transparent 28%),
+radial-gradient(circle at 94% 20%,rgba(120,0,18,.06),transparent 24%),
+repeating-linear-gradient(0deg,rgba(116,0,18,.045) 0 1px,transparent 1px 28px),
+var(--offline-page-bg) center/cover no-repeat;filter:saturate(.92)}
+body.offline-theme-bloodline .story-wrap{gap:20px;padding-left:13px;padding-right:13px}
+body.offline-theme-bloodline .story-card.char,
+body.offline-theme-bloodline .story-card.user{width:min(100%,360px);gap:10px}
+body.offline-theme-bloodline .story-card::before{content:'';display:block;position:absolute;left:18px;right:18px;top:58px;height:34px;border-top:2px solid rgba(142,9,20,.72);border-bottom:1px solid rgba(142,9,20,.25);transform:skewY(-6deg);opacity:.5;pointer-events:none;z-index:0}
+body.offline-theme-bloodline .story-card.user::before{transform:skewY(5deg)}
+body.offline-theme-bloodline .offline-story-strip{min-height:86px;z-index:2}
+body.offline-theme-bloodline .offline-story-avatar{width:88px;height:108px;flex-basis:88px;padding:8px 8px 23px;border:0;border-radius:2px;background:linear-gradient(180deg,#fff,#f7f4f1);box-shadow:0 16px 26px rgba(34,20,20,.13),0 2px 0 rgba(255,255,255,.9) inset;color:#151313;transform:rotate(-3.2deg)}
+body.offline-theme-bloodline .story-card.user .offline-story-avatar{transform:rotate(2.6deg)}
+body.offline-theme-bloodline .offline-story-avatar img{border-radius:1px;filter:saturate(.95) contrast(1.03)}
+body.offline-theme-bloodline .offline-story-avatar-label{bottom:6px;font-size:9px;letter-spacing:.1em;color:#6c1a22}
+body.offline-theme-bloodline .story-card.char .offline-story-avatar{margin-right:-18px}
+body.offline-theme-bloodline .story-card.user .offline-story-avatar{margin-left:-18px}
+body.offline-theme-bloodline .offline-story-strip-shell{min-height:54px;border:0;border-radius:2px;background:rgba(255,255,255,.72);box-shadow:0 10px 24px rgba(36,0,8,.08),inset 0 0 0 1px rgba(116,0,18,.12);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:0 12px;overflow:hidden}
+body.offline-theme-bloodline .offline-story-strip-shell::before{background:
+linear-gradient(90deg,transparent 0 7%,rgba(137,0,18,.75) 7% 8%,transparent 8% 100%),
+repeating-linear-gradient(90deg,rgba(137,0,18,.42) 0 14px,transparent 14px 23px);opacity:.26;filter:none}
+body.offline-theme-bloodline .offline-story-stat{background:rgba(255,255,255,.58);box-shadow:none;color:#4d2025;font-size:10px;padding:4px 5px}
+body.offline-theme-bloodline .offline-story-stat-icon{color:#9e101f}
+body.offline-theme-bloodline .offline-story-panel{border:1px solid rgba(125,0,18,.2);border-radius:2px;background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58));box-shadow:0 18px 44px rgba(24,0,7,.1),inset 0 0 0 1px rgba(255,255,255,.72);backdrop-filter:blur(16px) saturate(1.05);-webkit-backdrop-filter:blur(16px) saturate(1.05);padding:17px 17px 15px;overflow:hidden}
+body.offline-theme-bloodline .offline-story-panel::before{content:'';display:block;position:absolute;left:16px;right:22px;top:66px;height:0;border-top:2px dashed rgba(158,18,28,.46);pointer-events:none;z-index:0}
+body.offline-theme-bloodline .offline-story-panel::after{content:'× × ×';display:block;position:absolute;right:13px;top:19px;color:#a81222;font:900 13px/1 var(--fontd);letter-spacing:4px;opacity:.78;pointer-events:none;z-index:0}
+body.offline-theme-bloodline .offline-story-meta-row{border-bottom:1px solid rgba(148,0,20,.18);color:#7c5659;font-size:9px;letter-spacing:.1em;padding-bottom:9px}
+body.offline-theme-bloodline .offline-story-tools{margin-top:10px}
+body.offline-theme-bloodline .offline-story-editbtn{border:1px solid rgba(112,0,16,.28);border-radius:999px;background:rgba(255,255,255,.64);box-shadow:0 8px 18px rgba(34,0,8,.08);color:#6f1620}
+body.offline-theme-bloodline .offline-story-hero{margin-top:13px;padding:12px 0 13px;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible}
+body.offline-theme-bloodline .offline-story-hero::before{content:'';display:block;position:absolute;left:-2px;right:36%;bottom:0;height:0;border-bottom:2px solid rgba(137,0,18,.66);box-shadow:0 7px 0 rgba(137,0,18,.18);pointer-events:none}
+body.offline-theme-bloodline .offline-story-hero::after{content:'';display:block;position:absolute;right:3px;top:1px;width:78px;height:28px;border-top:2px solid rgba(137,0,18,.74);border-right:2px solid rgba(137,0,18,.6);transform:rotate(8deg);border-radius:50%;pointer-events:none}
+body.offline-theme-bloodline .offline-story-literary-label{display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;padding:0 2px 5px;border-bottom:1px dashed rgba(128,0,19,.52);font:900 10px/1 var(--fontd);letter-spacing:.16em;text-transform:uppercase;color:#8f101b}
+body.offline-theme-bloodline .offline-story-literary-label::before{content:'"';font:900 18px/1 Georgia,serif;color:#b31321}
+body.offline-theme-bloodline .offline-story-title{display:none}
+body.offline-theme-bloodline .offline-story-quote{display:block;margin-top:0;padding:0;background:transparent;border-radius:0;color:#171313;font-family:'ZCOOL KuaiLe','PingFang SC','Microsoft YaHei',sans-serif;font-size:19px;font-weight:900;line-height:1.54;text-shadow:0 1px 0 rgba(255,255,255,.72);box-decoration-break:slice;-webkit-box-decoration-break:slice}
+body.offline-theme-bloodline .offline-story-divider{height:0;margin:13px 0 12px;border-top:1px dashed rgba(138,0,18,.28);background:transparent}
+body.offline-theme-bloodline .offline-story-body{margin-top:0;color:#191414;font-size:14px;line-height:1.9}
+body.offline-theme-bloodline .offline-inline-fragment{margin-bottom:17px;gap:7px}
+body.offline-theme-bloodline .offline-story-body .offline-inline-fragment > p{position:relative;padding-left:2px}
+body.offline-theme-bloodline .offline-story-body .offline-inline-fragment > p::first-letter{font-size:1.2em;color:#95111d}
+body.offline-theme-bloodline .offline-story-body .sheet-quote-inline{border:0 !important;border-radius:999px;background:rgba(255,255,255,.78) !important;color:#161313 !important;box-shadow:0 10px 22px rgba(42,0,10,.08),inset 0 0 0 1px rgba(130,0,18,.13);padding:5px 12px 6px}
+body.offline-theme-bloodline .offline-story-body .char-sheet-aside{margin:6px 0 15px;padding:9px 13px 9px 25px;border-radius:0;background:linear-gradient(90deg,rgba(255,255,255,.7),rgba(255,255,255,.18));color:#7a4e53;font-weight:800;text-decoration-color:rgba(151,0,22,.42)}
+body.offline-theme-bloodline .offline-story-body .char-sheet-aside::before{left:9px;background:linear-gradient(180deg,rgba(133,0,18,.08),rgba(133,0,18,.88),rgba(133,0,18,.08))}
+body.offline-theme-bloodline .offline-story-body .char-sheet-aside::after,
+body.offline-theme-bloodline .offline-story-body .char-sheet-aside .offline-aside-closequote{color:rgba(126,0,18,.42)}
+body.offline-theme-bloodline .offline-think-toggle,
+body.offline-theme-bloodline .offline-summary-toggle{border:1px solid rgba(118,0,18,.22);border-radius:999px;background:rgba(255,255,255,.66);box-shadow:0 10px 20px rgba(34,0,8,.07);color:#2a1517}
+body.offline-theme-bloodline .offline-think-toggle-icon,
+body.offline-theme-bloodline .offline-summary-dot{background:#9f101f;color:#fff;border-color:#9f101f}
+body.offline-theme-bloodline .offline-think-body,
+body.offline-theme-bloodline .offline-summary-body{border:1px solid rgba(118,0,18,.18);background:rgba(255,255,255,.62);box-shadow:none}
+body.offline-theme-bloodline .offline-status-chip{background:#9f101f;color:#fff;box-shadow:0 12px 24px rgba(99,0,14,.16)}
+body.offline-theme-bloodline .offline-story-iconbtn{background:#fff;color:#8d101a;box-shadow:0 8px 18px rgba(34,0,8,.08);border:1px solid rgba(136,0,18,.13)}
+body.offline-theme-bloodline .composer{gap:9px}
+body.offline-theme-bloodline .composer-box{border:1px solid rgba(111,0,17,.25);border-radius:999px;background:rgba(255,255,255,.76);box-shadow:0 14px 34px rgba(34,0,8,.1),inset 0 0 0 1px rgba(255,255,255,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:7px 13px}
+body.offline-theme-bloodline .composer-box textarea{font-weight:800;color:#221416}
+body.offline-theme-bloodline .composer-btn{border:1px solid rgba(111,0,17,.26);border-radius:999px;background:rgba(255,255,255,.82);color:#8b101b;box-shadow:0 11px 22px rgba(34,0,8,.1),inset 0 0 0 1px rgba(255,255,255,.86)}
+body.offline-theme-bloodline .composer-btn.primary{background:#9f101f;color:#fff;border-color:#9f101f}
+body.offline-theme-bloodline .composer-btn:disabled{background:rgba(226,222,219,.75);color:#998286;box-shadow:none}
 .offline-invite-debug{position:fixed;left:12px;right:12px;top:calc(54px + var(--safe-top));z-index:9999;padding:10px 12px;border:2px solid #111;border-radius:18px;background:rgba(255,255,255,.97);box-shadow:0 10px 24px rgba(0,0,0,.12);display:none;flex-direction:column;gap:5px;max-height:132px;overflow:auto}
 .offline-invite-debug.show{display:flex}
 .offline-invite-debug.startup{left:18px;right:18px;top:50%;transform:translateY(-50%);padding:14px 14px 12px;max-height:min(62vh,440px);border-radius:24px;background:rgba(255,255,255,.995);box-shadow:0 0 0 9999px rgba(0,0,0,.22),0 20px 48px rgba(0,0,0,.24)}
@@ -813,10 +881,14 @@ box-shadow:0 0 0 2px rgba(255,255,255,.97),6px 6px 0 rgba(17,17,17,.94);padding:
           <div class="offline-setting-head">
             <div class="offline-setting-head-main">
               <div class="offline-setting-title">线下美化</div>
-              <div class="offline-setting-note spaced">当前样式就是默认 CSS，可以分块改。</div>
+              <div class="offline-setting-note spaced">内置样式可以直接切换，下面仍可分块改 CSS。</div>
             </div>
           </div>
           <div class="offline-setting-grid">
+            <div class="offline-builtin-theme-tabs" id="offlineBuiltinThemeTabs">
+              <button class="offline-builtin-theme-btn" type="button" data-offline-builtin-theme="classic">默认拍立得<span>原来的线下样子</span></button>
+              <button class="offline-builtin-theme-btn" type="button" data-offline-builtin-theme="bloodline">我们的血缘<span>红线与文学摘抄</span></button>
+            </div>
             <div class="offline-beauty-tabs" id="offlineBeautyTabs"></div>
             <div class="offline-setting-note" id="offlineBeautyHint">选择一个小方块开始改 CSS。</div>
             <textarea class="offline-setting-textarea offline-beauty-textarea" id="offlineBeautyCssInput" spellcheck="false"></textarea>
@@ -5321,8 +5393,26 @@ function getOfflineUiPrefs(){
     summaryEvery: summaryEvery,
     summaryAuto: summaryAuto,
     memoryReadCount: memoryReadCount,
-    sideStoryType: sideStoryType
+    sideStoryType: sideStoryType,
+    builtinTheme: normalizeOfflineBuiltinTheme(character && character.offlineBuiltinTheme)
   };
+}
+function normalizeOfflineBuiltinTheme(value){
+  return String(value || '').trim() === 'bloodline' ? 'bloodline' : 'classic';
+}
+function getOfflineBuiltinTheme(){
+  if(offlineDrawerDraft && Object.prototype.hasOwnProperty.call(offlineDrawerDraft, 'builtinTheme')){
+    return normalizeOfflineBuiltinTheme(offlineDrawerDraft.builtinTheme);
+  }
+  return normalizeOfflineBuiltinTheme(character && character.offlineBuiltinTheme);
+}
+function isOfflineBloodlineTheme(){
+  return getOfflineBuiltinTheme() === 'bloodline';
+}
+function applyOfflineBuiltinTheme(){
+  var theme = getOfflineBuiltinTheme();
+  document.body.classList.toggle('offline-theme-bloodline', theme === 'bloodline');
+  document.body.classList.toggle('offline-theme-classic', theme !== 'bloodline');
 }
 function estimateOfflineOutputTokensFromChars(chars){
   var safeChars = Math.max(60, Number(chars) || 0);
@@ -5384,6 +5474,7 @@ function buildOfflineDrawerDraft(){
     memoryReadCount: ui.memoryReadCount,
     memoryMode: loadOfflineSharedMemoryModeSync(),
     sideStoryType: ui.sideStoryType,
+    builtinTheme: ui.builtinTheme,
     thoughtPrompt: String(character && character.offlineThoughtPrompt || '').trim(),
     titlePrompt: String(character && character.offlineTitlePrompt || '').trim(),
     userTitle: String(character && character.offlineUserTitle || '').trim(),
@@ -5425,6 +5516,7 @@ function applyOfflineDrawerDraftToCharacter(){
   character.offlineSummaryAuto = !!draft.summaryAuto;
   character.offlineMemoryReadCount = Math.max(1, Math.min(12, Number(draft.memoryReadCount) || 5));
   character.offlineSideStoryType = String(draft.sideStoryType || 'future');
+  character.offlineBuiltinTheme = normalizeOfflineBuiltinTheme(draft.builtinTheme);
   character.offlineThoughtPrompt = String(draft.thoughtPrompt || '').trim();
   character.offlineTitlePrompt = String(draft.titlePrompt || '').trim();
   character.offlineUserTitle = String(draft.userTitle || '').trim();
@@ -5441,6 +5533,7 @@ function persistOfflineDrawerSettings(options){
   if(!character) return;
   persistOfflineBeautyCssMap({ silent:true });
   applyOfflineDrawerDraftToCharacter();
+  applyOfflineBuiltinTheme();
   persistOfflineCharacterSettings();
   offlineDrawerDraft = buildOfflineDrawerDraft();
   syncOfflineDrawerControls();
@@ -5872,6 +5965,17 @@ function resetOfflineThoughtPromptToDefault(options){
   }
 }
 function getOfflineTitleDefaultPrompt(){
+  if(isOfflineBloodlineTheme()){
+    return [
+      '当前线下内置美化是“我们的血缘”。这一版不走普通标题卡，而是走“文学摘抄”卡。',
+      'title 字段仍必须返回，用作内部兼容；请写成 4-12 个简体中文字符的极短情绪标记，不要像小说章节名。',
+      'quote 字段必须写成“文学摘抄 + 角色感想”：先让角色凭自己的审美选择一条你确信真实存在的文学作品、诗歌、戏剧或电影台词短摘抄，再根据今天这幕聊天写一句他的感想。',
+      'quote 格式固定为：摘抄｜出处｜感想。摘抄必须很短，中文不超过 40 个字，英文不超过 25 个词；不要使用歌词，不要长篇引用。',
+      '如果你不确定作者或出处，只写你确信的作品名；不确定就把出处写成“出处未明”，绝对不要编造不存在的作者、作品或台词来源。',
+      '感想必须贴角色、贴当天聊天内容，像角色读到这句摘抄后被牵动的一小句，不要写成 AI 读后感。',
+      'title 和 quote 都必须是简体中文；quote 里的外文摘抄如果来自外文作品，可以保留原文，但感想必须是简体中文。'
+    ].join('\n');
+  }
   return [
     'title 是这一幕的标题，6-16 个简体中文字符左右；要搞笑、有网感、带点吐槽和坏笑感，像朋友圈配文、热评式小标题或会被截图传播的小标签，但必须贴人设。',
     'quote 是顶部 char 语录，12-30 个简体中文字符左右；要可爱、圆润、像奶酪体小标签里会出现的那种语气，但必须贴人设。',
@@ -5908,8 +6012,11 @@ function getOfflineTitleCustomPrompt(){
 }
 function getOfflineTitlePromptBlock(){
   var custom = getOfflineTitleCustomPrompt();
+  var themeNote = isOfflineBloodlineTheme()
+    ? '\n当前内置美化为“我们的血缘”：即使用户写了自定义标题提示词，quote 也必须优先遵守“文学摘抄 + 角色感想”的格式；不要退回普通奶酪体小标签。'
+    : '';
   return (custom
-    ? '用户自定义标题提示词（最高优先级，替代默认 title/quote 内容规则；但仍必须保留字段名和可解析格式）：\n' + clipOfflinePromptText(custom, 1400)
+    ? '用户自定义标题提示词（最高优先级，替代默认 title/quote 内容规则；但仍必须保留字段名和可解析格式）：\n' + clipOfflinePromptText(custom, 1400) + themeNote
     : '默认标题提示词：\n' + getOfflineTitleDefaultPrompt());
 }
 function syncOfflineTitlePromptControls(){
@@ -6248,6 +6355,7 @@ function syncOfflineDrawerControls(){
   var translationModeGrid = document.getElementById('offlineDrawerTranslationModeGrid');
   var sideStoryTrigger = document.getElementById('offlineDrawerSideStoryTrigger');
   var sideStoryDropdown = document.getElementById('offlineDrawerSideStoryDropdown');
+  var builtinThemeTabs = document.getElementById('offlineBuiltinThemeTabs');
   var userTitle = document.getElementById('offlineDrawerUserTitle');
   var userQuote = document.getElementById('offlineDrawerUserQuote');
   var range = document.getElementById('offlineDrawerCurrentRange');
@@ -6303,8 +6411,14 @@ function syncOfflineDrawerControls(){
       btn.classList.toggle('is-active', String(btn.getAttribute('data-side-story') || '') === draft.sideStoryType);
     });
   }
+  if(builtinThemeTabs){
+    builtinThemeTabs.querySelectorAll('[data-offline-builtin-theme]').forEach(function(btn){
+      btn.classList.toggle('is-active', normalizeOfflineBuiltinTheme(btn.getAttribute('data-offline-builtin-theme')) === normalizeOfflineBuiltinTheme(draft.builtinTheme));
+    });
+  }
   if(range) range.textContent = '正文 ' + String(draft.bodyMinChars) + ' - ' + String(draft.bodyMaxChars) + ' 字 · 段落 ' + String(draft.paragraphMinCount) + ' - ' + String(draft.paragraphMaxCount) + ' 段 · 心声 ' + String(draft.asideMinChars) + ' - ' + String(draft.asideMaxChars) + ' 字';
   syncOfflineDrawerFieldWidths();
+  applyOfflineBuiltinTheme();
   renderOfflineBeautyControls();
   syncOfflineThoughtPromptControls();
   syncOfflineTitlePromptControls();
@@ -6334,6 +6448,7 @@ function bindOfflineDrawerControls(){
   var translationModeGrid = document.getElementById('offlineDrawerTranslationModeGrid');
   var sideStoryDropdown = document.getElementById('offlineDrawerSideStoryDropdown');
   var sideStoryTrigger = document.getElementById('offlineDrawerSideStoryTrigger');
+  var builtinThemeTabs = document.getElementById('offlineBuiltinThemeTabs');
   var userTitle = document.getElementById('offlineDrawerUserTitle');
   var userQuote = document.getElementById('offlineDrawerUserQuote');
   var pageBgUploadBtn = document.getElementById('offlineDrawerPageBgUploadBtn');
@@ -6662,6 +6777,18 @@ function bindOfflineDrawerControls(){
         getOfflineDrawerDraft().sideStoryType = String(btn.getAttribute('data-side-story') || 'future');
         sideStoryDropdown.classList.remove('open');
         syncOfflineDrawerControls();
+      });
+    });
+  }
+  if(builtinThemeTabs){
+    builtinThemeTabs.querySelectorAll('[data-offline-builtin-theme]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var draft = getOfflineDrawerDraft();
+        draft.builtinTheme = normalizeOfflineBuiltinTheme(btn.getAttribute('data-offline-builtin-theme'));
+        applyOfflineBuiltinTheme();
+        syncOfflineDrawerControls();
+        renderStory();
+        persistOfflineDrawerSettings({ silent:true });
       });
     });
   }
@@ -7179,6 +7306,9 @@ function renderPaperStoryCard(entry, idx, isChar){
         '<div class="offline-story-iconbtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z"></path></svg></div>' +
       '</div>' +
     '</div>';
+  var heroLabel = isOfflineBloodlineTheme()
+    ? '<div class="offline-story-literary-label">文学摘抄</div>'
+    : '';
   return '<div class="story-card ' + (isChar ? 'char' : 'user') + '">' +
     '<div class="offline-story-strip">' +
       (isChar ? (avatarHtml + stripShellHtml) : (stripShellHtml + avatarHtml)) +
@@ -7187,6 +7317,7 @@ function renderPaperStoryCard(entry, idx, isChar){
       '<div class="offline-story-meta-row"><span>' + esc(subtitleLeft || 'offline archive') + '</span><span>' + esc(subtitleRight) + '</span></div>' +
       toolsRow +
       '<div class="offline-story-hero">' +
+        heroLabel +
         '<div class="offline-story-title">' + esc(meta.title) + '</div>' +
         '<div class="offline-story-quote">' + esc(meta.quote) + '</div>' +
       '</div>' +
@@ -8197,10 +8328,17 @@ function buildOfflineOpeningFallback(){
   return ensureOfflineSpeechPresence(body.trim());
 }
 function buildOfflineTitleFallback(){
+  if(isOfflineBloodlineTheme()){
+    var bloodTitles = ['红线存档','血缘片刻','牵连处','今日线结'];
+    return bloodTitles[Math.floor(Math.random() * bloodTitles.length)] || '红线存档';
+  }
   var pool = ['终于抓到你了','你今天别想跑','这次轮到我靠近','见面这事有点坏'];
   return pool[Math.floor(Math.random() * pool.length)] || '终于抓到你了';
 }
 function buildOfflineQuoteFallback(){
+  if(isOfflineBloodlineTheme()){
+    return '短摘抄｜出处未明｜今天像留下了一根红线。';
+  }
   return '先让我把你今天的样子记住。';
 }
 function buildOfflineAsideFallback(){
