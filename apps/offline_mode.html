@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-08T06:55:35Z"></script>
-<script src="../chatStorage.js?v=2026-05-08T06:55:35Z"></script>
-<script src="../metadataStore.js?v=2026-05-08T06:55:35Z"></script>
-<script src="../promptManager.js?v=2026-05-08T06:55:35Z"></script>
-<script src="../accountManager.js?v=2026-05-08T06:55:35Z"></script>
-<script src="../scheduleShared.js?v=2026-05-08T06:55:35Z"></script>
-<script src="../presenceShared.js?v=2026-05-08T06:55:35Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-08T06:55:35Z"></script>
+<script src="../assetStore.js?v=2026-05-08T07:14:02Z"></script>
+<script src="../chatStorage.js?v=2026-05-08T07:14:02Z"></script>
+<script src="../metadataStore.js?v=2026-05-08T07:14:02Z"></script>
+<script src="../promptManager.js?v=2026-05-08T07:14:02Z"></script>
+<script src="../accountManager.js?v=2026-05-08T07:14:02Z"></script>
+<script src="../scheduleShared.js?v=2026-05-08T07:14:02Z"></script>
+<script src="../presenceShared.js?v=2026-05-08T07:14:02Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-08T07:14:02Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -741,38 +741,41 @@ repeating-linear-gradient(0deg,rgba(128,0,18,.026) 0 1px,transparent 1px 26px)}
 .bloodline-edit{position:absolute;top:12px;right:12px;z-index:9;width:28px;height:28px;border:1px solid rgba(128,0,18,.24);border-radius:999px;background:rgba(255,255,255,.78);color:#8b101b;box-shadow:0 10px 20px rgba(63,0,10,.08);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .bloodline-card.user .bloodline-edit{right:auto;left:12px}
 .bloodline-edit svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.bloodline-head{position:relative;display:grid;grid-template-columns:126px 1fr 28px;gap:10px;align-items:start;min-height:142px;margin-bottom:10px}
-.bloodline-card.user .bloodline-head{grid-template-columns:28px 1fr 126px}
-.bloodline-head::before,.bloodline-head::after{content:'';position:absolute;left:112px;right:22px;height:30px;border-top:3px solid rgba(147,0,18,.76);border-radius:50%;pointer-events:none;filter:drop-shadow(0 4px 4px rgba(147,0,18,.13));z-index:1}
-.bloodline-head::before{top:20px;transform:rotate(8deg)}
-.bloodline-head::after{top:42px;left:118px;right:18px;border-top-width:2px;opacity:.72;transform:rotate(-5deg)}
-.bloodline-card.user .bloodline-head::before,.bloodline-card.user .bloodline-head::after{left:22px;right:112px;transform:rotate(-8deg)}
-.bloodline-card.user .bloodline-head::after{left:18px;right:118px;transform:rotate(5deg)}
+.bloodline-head{position:relative;display:grid;grid-template-columns:126px minmax(0,1fr);gap:12px;align-items:center;min-height:142px;margin-bottom:10px}
+.bloodline-card.user .bloodline-head{grid-template-columns:minmax(0,1fr) 126px}
+.bloodline-head::before,.bloodline-head::after{content:none}
 .bloodline-polaroid{position:relative;z-index:3;width:118px;height:136px;padding:0;background:
-linear-gradient(180deg,rgba(255,255,255,.96),rgba(247,251,253,.9)),
-repeating-linear-gradient(0deg,rgba(40,104,150,.055) 0 1px,transparent 1px 10px);
+linear-gradient(180deg,rgba(255,245,246,.96),rgba(246,218,221,.92)),
+repeating-linear-gradient(0deg,rgba(166,32,47,.065) 0 1px,transparent 1px 10px);
 box-shadow:0 18px 30px rgba(29,45,56,.18),0 1px 0 rgba(255,255,255,.96) inset;transform:rotate(-4deg);grid-column:1;overflow:visible;cursor:pointer}
-.bloodline-card.user .bloodline-polaroid{grid-column:3;transform:rotate(3deg)}
+.bloodline-card.user .bloodline-polaroid{grid-column:2;transform:rotate(3deg)}
 .bloodline-polaroid::after{content:'';position:absolute;left:7px;right:-10px;top:11px;bottom:8px;background:
-linear-gradient(90deg,rgba(39,88,126,.18) 0 12%,transparent 12% 100%),
-linear-gradient(180deg,rgba(255,255,255,.82),rgba(236,244,248,.72));
-box-shadow:9px 7px 0 rgba(39,88,126,.13),0 0 0 1px rgba(57,92,116,.12);z-index:-1;transform:rotate(2deg)}
-.bloodline-card.user .bloodline-polaroid::after{left:-10px;right:7px;transform:rotate(-2deg);box-shadow:-9px 7px 0 rgba(39,88,126,.13),0 0 0 1px rgba(57,92,116,.12)}
+linear-gradient(90deg,rgba(176,41,54,.18) 0 12%,transparent 12% 100%),
+linear-gradient(180deg,rgba(255,249,249,.86),rgba(247,228,230,.76));
+box-shadow:9px 7px 0 rgba(150,36,48,.12),0 0 0 1px rgba(150,62,72,.12);z-index:-1;transform:rotate(2deg)}
+.bloodline-card.user .bloodline-polaroid::after{left:-10px;right:7px;transform:rotate(-2deg);box-shadow:-9px 7px 0 rgba(150,36,48,.12),0 0 0 1px rgba(150,62,72,.12)}
 .bloodline-paperclip{position:absolute;left:-2px;top:-26px;width:66px;height:112px;z-index:7;object-fit:contain;filter:drop-shadow(0 10px 10px rgba(21,32,38,.24));pointer-events:none}
 .bloodline-card.user .bloodline-paperclip{left:auto;right:3px;transform:scaleX(-1)}
 .bloodline-polaroid-photo{position:absolute;right:8px;top:30px;width:76px;height:80px;overflow:hidden;background:#f5f8fb;display:flex;align-items:center;justify-content:center;z-index:4;transform:rotate(-2deg);box-shadow:0 8px 16px rgba(42,54,62,.16),0 0 0 2px rgba(255,255,255,.9)}
 .bloodline-card.user .bloodline-polaroid-photo{left:8px;right:auto;transform:rotate(2deg)}
 .bloodline-polaroid-photo img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.96) contrast(1.03)}
-.bloodline-polaroid-photo .offline-story-avatar-fallback{font-family:var(--fontd);font-size:18px;color:#244f75}
-.bloodline-polaroid-caption{position:absolute;left:17px;right:8px;bottom:12px;z-index:5;text-align:left;font:900 13px/1 var(--fontd);letter-spacing:.1em;color:#245f93;text-shadow:0 1px 0 rgba(255,255,255,.86);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bloodline-polaroid-caption::before{content:'';display:inline-block;width:5px;height:19px;margin-right:8px;background:#7da6c5;vertical-align:-5px}
+.bloodline-polaroid-photo .offline-story-avatar-fallback{font-family:var(--fontd);font-size:18px;color:#8f101b}
+.bloodline-polaroid-caption{position:absolute;left:17px;right:8px;bottom:12px;z-index:5;text-align:left;font:900 13px/1 var(--fontd);letter-spacing:.1em;color:#8f101b;text-shadow:0 1px 0 rgba(255,255,255,.86);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bloodline-polaroid-caption::before{content:'';display:inline-block;width:5px;height:19px;margin-right:8px;background:#d99099;vertical-align:-5px}
 .bloodline-card.user .bloodline-polaroid-caption{left:8px;right:17px;text-align:right}
 .bloodline-card.user .bloodline-polaroid-caption::before{display:none}
-.bloodline-card.user .bloodline-polaroid-caption::after{content:'';display:inline-block;width:5px;height:19px;margin-left:8px;background:#7da6c5;vertical-align:-5px}
-.bloodline-motto{position:relative;z-index:2;grid-column:2;align-self:end;padding:70px 2px 0;font-family:'ZCOOL KuaiLe','Ma Shan Zheng','PingFang SC',sans-serif;font-size:24px;font-weight:900;line-height:1.16;color:#181211;text-shadow:0 1px 0 rgba(255,255,255,.9)}
+.bloodline-card.user .bloodline-polaroid-caption::after{content:'';display:inline-block;width:5px;height:19px;margin-left:8px;background:#d99099;vertical-align:-5px}
+.bloodline-motto{position:relative;z-index:2;grid-column:2;align-self:center;padding:0 2px;font-family:'ZCOOL KuaiLe','Ma Shan Zheng','PingFang SC',sans-serif;font-size:23px;font-weight:900;line-height:1.2;color:#181211;text-shadow:0 1px 0 rgba(255,255,255,.9)}
 .bloodline-card.user .bloodline-motto{text-align:right}
-.bloodline-stitches{position:relative;z-index:3;grid-column:3;display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:12px;color:#a30017;font:900 20px/1 var(--fontd);letter-spacing:0;text-shadow:0 5px 10px rgba(163,0,23,.12)}
-.bloodline-card.user .bloodline-stitches{grid-column:1}
+.bloodline-motto-inner{position:relative;display:inline-block;padding:14px 9px 11px 16px;isolation:isolate}
+.bloodline-motto-inner::before{content:'“';position:absolute;left:-10px;top:-16px;font-family:Georgia,'Times New Roman',serif;font-size:56px;line-height:1;color:rgba(20,17,16,.42);font-weight:900;z-index:-1}
+.bloodline-motto-inner::after{content:'”';position:absolute;right:-8px;bottom:-24px;font-family:Georgia,'Times New Roman',serif;font-size:50px;line-height:1;color:rgba(20,17,16,.36);font-weight:900;z-index:-1}
+.bloodline-keyword{position:relative;display:inline-block;margin:0 4px 0 0;padding:0 8px 1px 7px;color:#171111}
+.bloodline-keyword::before{content:'';position:absolute;left:-5px;right:-6px;top:-5px;bottom:-3px;border:3px solid rgba(170,0,20,.72);border-radius:58% 47% 52% 46%;transform:rotate(-8deg);box-shadow:0 0 0 7px rgba(170,0,20,.045);pointer-events:none}
+.bloodline-keyword::after{content:'';position:absolute;right:-43px;top:-13px;width:44px;height:26px;border-top:3px solid rgba(170,0,20,.76);border-right:3px solid rgba(170,0,20,.72);border-radius:0 70% 0 0;transform:rotate(13deg);pointer-events:none}
+.bloodline-redword{position:relative;display:inline-block;padding:0 2px 3px;margin-left:2px}
+.bloodline-redword::after{content:'';position:absolute;left:-3px;right:-5px;bottom:0;height:5px;border-radius:999px;background:linear-gradient(90deg,rgba(167,0,19,.88),rgba(197,34,45,.78));transform:rotate(-2deg);box-shadow:0 5px 8px rgba(167,0,19,.12);pointer-events:none}
+.bloodline-arrow-dot{position:absolute;right:18px;top:9px;width:6px;height:6px;border-radius:999px;background:rgba(170,0,20,.78);box-shadow:0 0 0 5px rgba(170,0,20,.06)}
 .bloodline-red-dash{height:6px;margin:3px 4px 15px;background:repeating-linear-gradient(90deg,rgba(164,0,20,.74) 0 20px,transparent 20px 36px);border-radius:999px;opacity:.78;filter:blur(.05px)}
 .bloodline-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding:0 3px;font:900 9px/1.4 var(--fontd);letter-spacing:.1em;color:rgba(90,52,55,.72);text-transform:uppercase}
 .bloodline-card.user .bloodline-meta{flex-direction:row-reverse}
@@ -790,7 +793,8 @@ box-shadow:9px 7px 0 rgba(39,88,126,.13),0 0 0 1px rgba(57,92,116,.12);z-index:-
 .bloodline-postcards{margin-top:12px;display:flex;flex-direction:column;gap:9px}
 .bloodline-postcards .offline-status-chip{background:#9f101f;color:#fff;box-shadow:0 12px 24px rgba(99,0,14,.16)}
 .bloodline-postcards .offline-summary-toggle,.bloodline-postcards .offline-think-toggle{border:1px solid rgba(118,0,18,.22);border-radius:999px;background:rgba(255,255,255,.66);box-shadow:0 10px 20px rgba(34,0,8,.07);color:#2a1517}
-.bloodline-seam{position:relative;height:76px;margin:17px -7px 3px;overflow:visible;filter:drop-shadow(0 8px 8px rgba(118,0,18,.08))}
+.bloodline-seam{position:relative;height:76px;margin:17px -7px 3px;overflow:visible;filter:drop-shadow(0 8px 8px rgba(118,0,18,.08));background:url('../apps/assets/%E7%BA%A2%E7%BA%BF.png') center/100% auto no-repeat}
+.bloodline-seam::before{content:'';position:absolute;inset:-2px;background:rgba(255,255,255,.34);backdrop-filter:blur(.2px);-webkit-backdrop-filter:blur(.2px);pointer-events:none}
 .bloodline-seam svg{display:block;width:100%;height:100%;overflow:visible}
 .bloodline-seam-paper{fill:none;stroke:rgba(16,13,12,.76);stroke-width:1.8;stroke-linecap:round;stroke-dasharray:74 13 18 9;opacity:.9}
 .bloodline-seam-paper.is-lower{stroke-width:1.55;stroke:rgba(16,13,12,.62);opacity:.72}
@@ -811,14 +815,14 @@ box-shadow:9px 7px 0 rgba(39,88,126,.13),0 0 0 1px rgba(57,92,116,.12);z-index:-
 @media (max-width:420px){
   .bloodline-card{width:min(100%,356px)}
   .bloodline-sheet{padding:15px 14px 14px}
-  .bloodline-head{grid-template-columns:118px 1fr 24px;gap:8px;min-height:138px}
-  .bloodline-card.user .bloodline-head{grid-template-columns:24px 1fr 118px}
+  .bloodline-head{grid-template-columns:118px minmax(0,1fr);gap:8px;min-height:138px}
+  .bloodline-card.user .bloodline-head{grid-template-columns:minmax(0,1fr) 118px}
   .bloodline-polaroid{width:110px;height:130px}
   .bloodline-polaroid-photo{width:70px;height:76px;top:30px}
   .bloodline-polaroid-caption{font-size:12px}
-  .bloodline-head::before,.bloodline-head::after{left:104px;right:18px}
-  .bloodline-card.user .bloodline-head::before,.bloodline-card.user .bloodline-head::after{left:18px;right:104px}
-  .bloodline-motto{font-size:21px;padding-top:68px}
+  .bloodline-motto{font-size:20px;padding:0}
+  .bloodline-motto-inner{padding-left:12px;padding-right:4px}
+  .bloodline-keyword::after{right:-32px;width:34px}
 }
 .offline-invite-debug{position:fixed;left:12px;right:12px;top:calc(54px + var(--safe-top));z-index:9999;padding:10px 12px;border:2px solid #111;border-radius:18px;background:rgba(255,255,255,.97);box-shadow:0 10px 24px rgba(0,0,0,.12);display:none;flex-direction:column;gap:5px;max-height:132px;overflow:auto}
 .offline-invite-debug.show{display:flex}
@@ -7425,8 +7429,7 @@ function renderBloodlineStoryCard(entry, idx, isChar){
           '<div class="bloodline-polaroid-photo">' + renderOfflineAvatarImageHtml(avatar, displayName.slice(0, 2) || (isChar ? 'C' : 'U')) + '</div>' +
           '<div class="bloodline-polaroid-caption">' + esc(displayName || (isChar ? 'char' : 'user')) + '</div>' +
         '</div>' +
-        '<div class="bloodline-motto">血管，是我们藏在身体里的红线</div>' +
-        '<div class="bloodline-stitches" aria-hidden="true"><span>×</span><span>×</span><span>×</span></div>' +
+        '<div class="bloodline-motto"><span class="bloodline-motto-inner"><span class="bloodline-arrow-dot" aria-hidden="true"></span><span class="bloodline-keyword">血管</span>，是我们藏在身体里的<span class="bloodline-redword">红线</span></span></div>' +
       '</div>' +
       '<div class="bloodline-red-dash" aria-hidden="true"></div>' +
       '<div class="bloodline-meta"><span>' + esc(subtitleLeft || 'offline archive') + '</span><span>' + esc(floorLabel + ' · ' + subtitleRight + ' · ' + formatOfflineGenTime(meta.generationMs) + ' · ' + String(meta.tokenCount) + 't') + '</span></div>' +
