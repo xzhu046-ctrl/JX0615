@@ -92,7 +92,7 @@ body {
   min-height: 100dvh;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   font-family: var(--font);
 }
 
@@ -2683,27 +2683,29 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   --p2-music-muted: rgba(17,17,17,0.44);
   --p2-music-rot-x: 0deg;
   --p2-music-rot-y: 0deg;
-  width: 100%;
-  min-height: 140px;
+  width: min(100%, 340px);
+  min-height: 226px;
   border: 1.5px solid rgba(0,0,0,0.18);
-  border-radius: 30px;
-  background: rgba(255,255,255,0.28);
+  border-radius: 32px;
+  background: rgba(255,255,255,0.24);
   box-shadow:
-    0 16px 30px rgba(0,0,0,0.10),
-    inset 0 1px 0 rgba(255,255,255,0.58);
-  backdrop-filter: blur(12px) saturate(1.05);
-  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+    0 18px 34px rgba(0,0,0,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.62),
+    inset 0 -16px 34px rgba(255,255,255,0.10);
+  backdrop-filter: blur(14px) saturate(1.05);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
   display: grid;
-  grid-template-columns: 108px minmax(0, 1fr);
-  gap: 10px;
-  padding: 10px 12px 9px;
+  grid-template-columns: 154px minmax(0, 1fr);
+  gap: 14px;
+  padding: 17px 15px 15px;
   box-sizing: border-box;
   color: var(--p2-music-ink);
   position: relative;
   isolation: isolate;
   overflow: hidden;
   transform-style: preserve-3d;
-  transform: perspective(900px) rotateX(var(--p2-music-rot-x)) rotateY(var(--p2-music-rot-y)) translateZ(0);
+  perspective: 1000px;
+  transform: perspective(1000px) rotateX(calc(1deg + var(--p2-music-rot-x))) rotateY(calc(-2deg + var(--p2-music-rot-y))) translateZ(0);
   transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .22s ease;
   touch-action: pan-y;
 }
@@ -2714,7 +2716,8 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   border-radius: inherit;
   background:
     radial-gradient(circle at 16% 20%, rgba(255,255,255,0.62), transparent 34%),
-    linear-gradient(135deg, rgba(255,255,255,0.40), rgba(255,255,255,0.08) 58%, rgba(0,0,0,0.04));
+    radial-gradient(circle at 78% 78%, rgba(0,0,0,0.08), transparent 34%),
+    linear-gradient(135deg, rgba(255,255,255,0.46), rgba(255,255,255,0.06) 58%, rgba(0,0,0,0.05));
   pointer-events: none;
   z-index: -1;
 }
@@ -2724,11 +2727,11 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   left: 18px;
   right: 18px;
   bottom: 8px;
-  height: 18px;
+  height: 24px;
   border-radius: 50%;
   background: rgba(0,0,0,0.12);
-  filter: blur(18px);
-  opacity: .28;
+  filter: blur(20px);
+  opacity: .34;
   pointer-events: none;
   z-index: -2;
 }
@@ -2746,55 +2749,64 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 }
 .page-two-music3d-card.is-tilting {
   box-shadow:
-    0 20px 38px rgba(0,0,0,0.13),
+    0 24px 46px rgba(0,0,0,0.16),
     inset 0 1px 0 rgba(255,255,255,0.64);
 }
 .page-two-music3d-stage {
   min-width: 0;
-  width: 108px;
-  height: 118px;
+  width: 154px;
+  height: 182px;
   position: relative;
   transform-style: preserve-3d;
   align-self: center;
+  transform: rotateX(9deg) rotateY(-16deg) translateZ(12px);
+  transform-origin: center center;
+}
+.page-two-music3d-card:not(.is-tilting) .page-two-music3d-stage {
+  animation: pageTwoMusic3DStageFloat 5.8s ease-in-out infinite;
 }
 .page-two-music3d-stage::before,
 .page-two-music3d-stage::after {
   content: '';
   position: absolute;
-  border: 1px solid rgba(255,255,255,0.48);
-  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.58);
+  background:
+    linear-gradient(90deg, rgba(18,18,18,0.08), rgba(255,255,255,0.24));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   pointer-events: none;
 }
 .page-two-music3d-stage::before {
-  left: 7px;
-  top: 10px;
-  width: 64px;
-  height: 10px;
+  left: 15px;
+  top: 17px;
+  width: 102px;
+  height: 16px;
   transform-origin: top;
-  transform: translateZ(22px) rotateX(74deg);
+  transform: translateZ(34px) rotateX(74deg);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.10);
 }
 .page-two-music3d-stage::after {
-  left: 12px;
-  bottom: 7px;
-  width: 74px;
-  height: 10px;
+  left: 21px;
+  bottom: 15px;
+  width: 116px;
+  height: 16px;
   transform-origin: bottom;
-  transform: translateZ(12px) rotateX(-72deg);
+  transform: translateZ(24px) rotateX(-72deg);
+  box-shadow: 0 -6px 18px rgba(0,0,0,0.08);
 }
 .page-two-music3d-cover {
   position: absolute;
-  left: 3px;
-  top: 15px;
-  width: 72px;
-  height: 92px;
-  border-radius: 15px;
+  left: 9px;
+  top: 25px;
+  width: 104px;
+  height: 132px;
+  border-radius: 20px;
   background: rgba(255,255,255,0.44);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.68),
-    7px 11px 20px rgba(0,0,0,0.16);
-  transform: translateZ(34px) rotateY(-7deg);
+    inset -8px -10px 18px rgba(0,0,0,0.06),
+    13px 18px 28px rgba(0,0,0,0.19);
+  transform: translateZ(52px) rotateY(-10deg) rotateX(1deg);
   transform-style: preserve-3d;
   z-index: 3;
 }
@@ -2802,14 +2814,16 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   content: '';
   position: absolute;
   top: 2px;
-  right: -8px;
-  width: 8px;
+  right: -16px;
+  width: 16px;
   height: calc(100% - 4px);
-  border-radius: 0 12px 12px 0;
-  background: rgba(255,255,255,0.18);
+  border-radius: 0 16px 16px 0;
+  background:
+    linear-gradient(90deg, rgba(15,15,15,0.16), rgba(255,255,255,0.22)),
+    rgba(255,255,255,0.18);
   border: 1px solid rgba(255,255,255,0.42);
   transform-origin: left;
-  transform: rotateY(72deg);
+  transform: rotateY(78deg);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -2817,14 +2831,16 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   content: '';
   position: absolute;
   left: 3px;
-  bottom: -8px;
+  bottom: -14px;
   width: calc(100% - 6px);
-  height: 8px;
-  border-radius: 0 0 12px 12px;
-  background: rgba(210,210,210,0.24);
+  height: 14px;
+  border-radius: 0 0 16px 16px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.18), rgba(12,12,12,0.16)),
+    rgba(255,255,255,0.16);
   border: 1px solid rgba(255,255,255,0.38);
   transform-origin: top;
-  transform: rotateX(-68deg);
+  transform: rotateX(-76deg);
 }
 .page-two-music3d-cover img,
 .page-two-music3d-cover-fallback {
@@ -2832,7 +2848,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   inset: 0;
   width: 100%;
   height: 100%;
-  border-radius: 15px;
+  border-radius: 20px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -2841,20 +2857,21 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   background: rgba(255,255,255,0.78);
   color: var(--p2-music-accent);
   font-family: 'ZCOOL KuaiLe', var(--font-display);
-  font-size: 28px;
+  font-size: 34px;
   font-weight: 900;
   z-index: 2;
 }
 .page-two-music3d-cover img {
   display: block;
   background: #fff;
+  transform: translateZ(1px);
 }
 .page-two-music3d-record {
   position: absolute;
-  right: 1px;
-  top: 47px;
-  width: 58px;
-  height: 58px;
+  right: 5px;
+  top: 79px;
+  width: 78px;
+  height: 78px;
   border-radius: 50%;
   background:
     radial-gradient(circle at center, rgba(255,255,255,0.95) 0 7px, transparent 8px),
@@ -2863,13 +2880,13 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,0.16),
     0 12px 20px rgba(0,0,0,0.18);
-  transform: translateZ(50px) rotateY(8deg);
+  transform: translateZ(74px) rotateY(18deg) rotateX(4deg);
   overflow: hidden;
   z-index: 5;
 }
 .page-two-music3d-record-core {
   position: absolute;
-  inset: 10px;
+  inset: 13px;
   border-radius: 50%;
   background: rgba(255,255,255,0.94);
   border: 2px solid rgba(255,255,255,0.86);
@@ -2882,7 +2899,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   height: 100%;
   object-fit: cover;
   border-radius: 50%;
-  font-size: 14px;
+  font-size: 16px;
 }
 .page-two-music3d-record-core img {
   display: block;
@@ -2895,10 +2912,10 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 }
 .page-two-music3d-pin {
   position: absolute;
-  right: 11px;
-  top: 19px;
-  width: 8px;
-  height: 8px;
+  right: 17px;
+  top: 33px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--p2-music-accent);
   box-shadow: 0 4px 12px var(--p2-music-accent-soft);
@@ -2907,10 +2924,10 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 }
 .page-two-music3d-shadow {
   position: absolute;
-  left: 16px;
-  right: 10px;
-  bottom: 4px;
-  height: 16px;
+  left: 18px;
+  right: 8px;
+  bottom: 6px;
+  height: 22px;
   border-radius: 50%;
   background: rgba(0,0,0,0.18);
   filter: blur(10px);
@@ -2923,11 +2940,11 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 3px;
-  padding: 2px 0 1px;
+  gap: 6px;
+  padding: 4px 0 2px;
   position: relative;
   z-index: 2;
-  transform: translateZ(24px);
+  transform: translateZ(42px);
 }
 .page-two-music3d-topline {
   display: flex;
@@ -2937,7 +2954,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   min-width: 0;
 }
 .page-two-music3d-chip {
-  font-size: 8px;
+  font-size: 9px;
   line-height: 1;
   font-weight: 900;
   letter-spacing: .14em;
@@ -2950,7 +2967,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   background: rgba(255,255,255,0.34);
   color: rgba(17,17,17,0.64);
   font-family: 'ZCOOL KuaiLe', var(--font-display);
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 900;
   line-height: 1;
   padding: 4px 8px;
@@ -2965,7 +2982,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   background: transparent;
   color: var(--p2-music-ink);
   font-family: 'ZCOOL KuaiLe', 'Fredoka', var(--font-display);
-  font-size: clamp(17px, 4.8vw, 23px);
+  font-size: clamp(20px, 5.6vw, 27px);
   font-weight: 900;
   line-height: 1.08;
   letter-spacing: 0;
@@ -3007,7 +3024,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   text-overflow: ellipsis;
 }
 .page-two-music3d-progress {
-  height: 8px;
+  height: 12px;
   position: relative;
 }
 .page-two-music3d-progress::before,
@@ -3015,8 +3032,8 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   content: '';
   position: absolute;
   left: 0;
-  top: 3px;
-  height: 3px;
+  top: 5px;
+  height: 4px;
   border-radius: 999px;
   background: rgba(17,17,17,0.13);
 }
@@ -3029,7 +3046,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   transition: width .18s ease;
 }
 .page-two-music3d-wave {
-  height: 18px;
+  height: 28px;
   display: grid;
   grid-template-columns: repeat(18, 1fr);
   align-items: center;
@@ -3056,8 +3073,8 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   animation-duration: 1.04s;
 }
 .page-two-music3d-lyrics {
-  height: 26px;
-  min-height: 26px;
+  height: 44px;
+  min-height: 44px;
   overflow: hidden;
   border-radius: 14px;
   background: transparent;
@@ -3065,16 +3082,16 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
 }
 .page-two-music3d-lyrics-list {
-  min-height: 26px;
+  min-height: 44px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2px;
+  gap: 4px;
 }
 .page-two-music3d-lyric-line {
   color: rgba(17,17,17,0.30);
   font-family: 'ZCOOL KuaiLe', 'Fredoka', var(--font-display);
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 900;
   line-height: 1.12;
   white-space: nowrap;
@@ -3090,26 +3107,26 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   transform: translateX(3px);
 }
 .page-two-music3d-lyrics-empty {
-  height: 26px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   color: rgba(17,17,17,0.32);
   font-family: 'ZCOOL KuaiLe', var(--font-display);
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 900;
 }
 .page-two-music3d-controls {
   display: grid;
-  grid-template-columns: 22px 22px 22px;
+  grid-template-columns: 24px 24px 24px;
   align-items: center;
   justify-content: center;
   gap: 12px;
   margin-top: 1px;
 }
 .page-two-music3d-control {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border: 0;
   border-radius: 50%;
   padding: 0;
@@ -3138,6 +3155,10 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 @keyframes pageTwoMusic3DRecordSpin {
   to { transform: rotate(360deg); }
 }
+@keyframes pageTwoMusic3DStageFloat {
+  0%, 100% { transform: rotateX(9deg) rotateY(-16deg) translateZ(12px) translateY(0); }
+  50% { transform: rotateX(6deg) rotateY(-10deg) translateZ(18px) translateY(-4px); }
+}
 @keyframes pageTwoMusic3DTitleMarquee {
   from { transform: translate3d(0,0,0); }
   to { transform: translate3d(calc(-50% - 11px),0,0); }
@@ -3148,40 +3169,40 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 }
 @media (max-width: 360px) {
   .page-two-music3d-card {
-    min-height: 132px;
-    grid-template-columns: 98px minmax(0, 1fr);
-    gap: 8px;
-    padding: 10px 10px 9px;
+    min-height: 208px;
+    grid-template-columns: 136px minmax(0, 1fr);
+    gap: 11px;
+    padding: 15px 12px 13px;
     border-radius: 27px;
   }
   .page-two-music3d-stage {
-    width: 98px;
-    height: 110px;
+    width: 136px;
+    height: 170px;
   }
   .page-two-music3d-cover {
-    width: 64px;
-    height: 84px;
-    top: 14px;
+    width: 90px;
+    height: 120px;
+    top: 24px;
   }
   .page-two-music3d-record {
-    width: 54px;
-    height: 54px;
-    top: 46px;
+    width: 70px;
+    height: 70px;
+    top: 76px;
   }
   .page-two-music3d-main {
-    gap: 3px;
+    gap: 5px;
   }
   .page-two-music3d-title {
-    font-size: 17px;
+    font-size: 19px;
   }
   .page-two-music3d-wave {
-    height: 17px;
+    height: 24px;
   }
   .page-two-music3d-lyrics,
   .page-two-music3d-lyrics-list,
   .page-two-music3d-lyrics-empty {
-    height: 24px;
-    min-height: 24px;
+    height: 38px;
+    min-height: 38px;
   }
 }
 .home-music-floating {
@@ -4340,8 +4361,10 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
   width: 100%;
   min-height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: flex-start;
+  gap: 14px;
   padding: 0 8px 12px;
   box-sizing: border-box;
 }
@@ -4812,6 +4835,7 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
     padding-left: 8px;
     padding-right: 8px;
     padding-top: 2px;
+    gap: 12px;
   }
   .home-d3-music-widget {
     width: min(100%, 312px);
