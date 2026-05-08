@@ -60,10 +60,10 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-08T04:48:22Z';
+const APP_BUILD_ID = '2026-05-08T05:18:34Z';
 const APP_UPDATE_NOTES = [
-  '第三页播放器撤回3D样式',
-  '播放器小文案可以直接编辑'
+  '第三页播放器去掉小文案',
+  '唱片阴影恢复清爽'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -126,7 +126,6 @@ const HOME_MUSIC_FLOATING_ENABLED_KEY = 'home_music_floating_enabled_v1';
 const HOME_MUSIC_FLOATING_ICON_KEY = 'home_music_floating_icon_v1';
 const HOME_MUSIC_FLOATING_SIZE_KEY = 'home_music_floating_size_v1';
 const HOME_D3_MUSIC_COLOR_KEY = 'home_d3_music_color_v1';
-const HOME_D3_MUSIC_CAPTION_KEY = 'home_d3_music_caption_v1';
 const SHELL_VOICE_CALL_FLOATING_KEY = 'shell_voice_call_floating_v1';
 const HOME_MUSIC_NETEASE_PROXY_PATH = 'netease';
 const HOME_MUSIC_NETEASE_QUALITY = 'exhigh';
@@ -9038,47 +9037,6 @@ function setHomeD3MusicColor(color){
   applyHomeD3MusicColor();
 }
 
-function getHomeD3MusicCaption(){
-  var fallback = '爱与希望是永恒存在的';
-  try{
-    var value = String(localStorage.getItem(HOME_D3_MUSIC_CAPTION_KEY) || '').trim();
-    return value || fallback;
-  }catch(err){
-    return fallback;
-  }
-}
-
-function renderHomeD3MusicCaption(){
-  var input = document.getElementById('home-d3-caption-input');
-  if(!input || document.activeElement === input) return;
-  input.value = getHomeD3MusicCaption();
-}
-
-function bindHomeD3MusicCaption(){
-  var input = document.getElementById('home-d3-caption-input');
-  if(!input || input.dataset.bound === '1') return;
-  input.dataset.bound = '1';
-  input.value = getHomeD3MusicCaption();
-  ['pointerdown', 'touchstart', 'click'].forEach(function(name){
-    input.addEventListener(name, function(evt){
-      if(evt) evt.stopPropagation();
-    }, { passive: name !== 'click' });
-  });
-  input.addEventListener('input', function(){
-    var value = String(input.value || '').trim();
-    try{
-      if(value){
-        localStorage.setItem(HOME_D3_MUSIC_CAPTION_KEY, value);
-      }else{
-        localStorage.removeItem(HOME_D3_MUSIC_CAPTION_KEY);
-      }
-    }catch(err){}
-  });
-  input.addEventListener('blur', function(){
-    if(!String(input.value || '').trim()) input.value = getHomeD3MusicCaption();
-  });
-}
-
 function toggleHomeD3MusicLyrics(){
   homeD3MusicLyricsExpanded = !homeD3MusicLyricsExpanded;
   var widget = document.getElementById('home-d3-music-widget');
@@ -9241,7 +9199,6 @@ function renderHomeD3MusicWidget(force){
   if(fill) fill.style.width = pct + '%';
   if(dot) dot.style.left = pct + '%';
   renderHomeD3MusicWave();
-  renderHomeD3MusicCaption();
   if(lyrics){
     var lines = getHomeD3MusicLyricLines(track);
     var lyricKey = (track && track.id || '') + '|' + Number(homeMusicState.currentLyricIndex) + '|' + lines.map(function(line){
@@ -10793,7 +10750,6 @@ function cycleHomeMusicPlayMode(){
 function bindHomeMusicSystem(){
   hydrateHomeMusicState();
   bindHomeD3MusicWidgetEvents();
-  bindHomeD3MusicCaption();
   var bubble = document.getElementById('home-music-bubble');
   var floating = document.getElementById('home-music-floating');
   var panel = document.getElementById('home-music-panel');
