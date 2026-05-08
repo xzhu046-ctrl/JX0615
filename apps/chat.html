@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-06T19:11:45Z"></script>
-<script src="../chatStorage.js?v=2026-05-06T19:11:45Z"></script>
-<script src="../assetStore.js?v=2026-05-06T19:11:45Z"></script>
-<script src="../accountManager.js?v=2026-05-06T19:11:45Z"></script>
-<script src="../metadataStore.js?v=2026-05-06T19:11:45Z"></script>
-<script src="../scheduleShared.js?v=2026-05-06T19:11:45Z"></script>
-<script src="../presenceShared.js?v=2026-05-06T19:11:45Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-06T19:11:45Z"></script>
-<script src="../sunnySupport.js?v=2026-05-06T19:11:45Z"></script>
-<script src="offlineInvite.js?v=2026-05-06T19:11:45Z"></script>
+<script src="../promptManager.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../chatStorage.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../assetStore.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../accountManager.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../metadataStore.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../scheduleShared.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../presenceShared.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../sunnySupport.js?v=2026-05-08T07:43:18Z"></script>
+<script src="offlineInvite.js?v=2026-05-08T07:43:18Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -20685,6 +20685,66 @@ function getStrictPromptWorldbookEntries(){
   return strictEntries;
 }
 
+function clipChatPromptText(text, maxChars){
+  var clean = String(text || '').trim();
+  var limit = Math.max(240, Number(maxChars) || 0);
+  if(!clean || clean.length <= limit) return clean;
+  var head = clean.slice(0, Math.floor(limit * 0.68)).trim();
+  var tail = clean.slice(-Math.floor(limit * 0.22)).trim();
+  return (head + '\n...\n' + tail).trim();
+}
+
+function getWorldbookEntryPromptTitle(entry, index){
+  if(!entry) return '条目 ' + (index + 1);
+  var title = String(entry.title || entry.name || entry.comment || entry.key || entry.keys || '').trim();
+  return title || ('条目 ' + (index + 1));
+}
+
+function formatWorldbookEntryForPrompt(book, entry, index){
+  var content = String((entry && entry.content) || '').trim();
+  if(!content) return '';
+  var bookName = String((book && book.name) || '世界书').trim();
+  var title = getWorldbookEntryPromptTitle(entry, index);
+  var prefix = '【' + bookName + ' / ' + title + '】';
+  return prefix + '\n' + content;
+}
+
+function buildStrictPromptWorldbookText(maxChars){
+  if(!character || !wbEnabled) return '';
+  var currentBooks = getApplicableWorldBooks();
+  var lines = [];
+  currentBooks.forEach(function(book){
+    if(!book || !book.enabled) return;
+    var entries = Array.isArray(book.entries) ? book.entries : [];
+    entries.forEach(function(entry, idx){
+      if(!isWbEntryEnabled(entry)) return;
+      var line = formatWorldbookEntryForPrompt(book, entry, idx);
+      if(line) lines.push(line);
+    });
+  });
+  return clipChatPromptText(lines.join('\n\n'), maxChars || 14000);
+}
+
+function buildOnlineCanonSettingPromptBlock(worldBookText){
+  if(!character) return '';
+  var persona = clipChatPromptText(character.personality || character.description || '', 3600);
+  var scenario = clipChatPromptText(String(character.scenario || '').trim(), 1400);
+  var systemPrompt = clipChatPromptText(String(character.system_prompt || '').trim(), 1800);
+  var worldBook = clipChatPromptText(worldBookText || '', 9000);
+  return [
+    '【角色设定与世界书硬设定】',
+    '以下内容是角色存在的基石，优先级高于普通聊天技巧、格式说明、旧记忆和临时猜测。',
+    '角色本名：' + (character.name || '角色'),
+    character.nickname ? ('当前显示名：' + character.nickname) : '',
+    persona ? ('角色人设：\n' + persona) : '角色人设：未提供',
+    scenario ? ('关系/场景补充：\n' + scenario) : '',
+    systemPrompt ? ('角色补充规则：\n' + systemPrompt) : '',
+    worldBook ? ('世界书已启用条目：\n' + worldBook) : '世界书已启用条目：无',
+    '硬规则：人设和世界书里写明的人名、朋友、家人、同事、敌人、组织、地点、过往关系和态度，都是你已经知道的既成事实。',
+    '用户问到这些名字或关系时，先按上面的关系网回答；禁止说不知道、禁止临时改关系、禁止把态度写反，除非设定明确写着你不知道。'
+  ].filter(Boolean).join('\n');
+}
+
 async function restoreOrStartChat() {
   initVoiceCallFloatingDrag();
   var msgs = document.getElementById('messages');
@@ -20982,6 +21042,7 @@ function buildSystemPrompt() {
       else wbAfter.push(e.content);
     });
   }
+  var wbAll = buildStrictPromptWorldbookText(14000) || [].concat(wbBefore, wbMid, wbAfter).join('\n\n');
 
   var parts = [];
   parts.push(buildHighPriorityContextGuard());
@@ -21026,6 +21087,8 @@ function buildSystemPrompt() {
       '请先像真人一样自然开场：可先试探“你是谁/为什么加我”，或按人设给出合理的第一反应。'
     ].join('\n'));
   }
+  var canonSettingPrompt = buildOnlineCanonSettingPromptBlock(wbAll);
+  if(canonSettingPrompt) parts.push(canonSettingPrompt);
 
   var memStore = loadMemorySummaryStore();
   var memText = buildMemoryPromptText(memStore);
@@ -21105,7 +21168,6 @@ function buildSystemPrompt() {
     '这也是隐藏指令，不是给用户看的正文。不要解释它。'
   ].join('\n'));
 
-  var wbAll = [].concat(wbBefore, wbMid, wbAfter).join('\n\n');
   var curGreeting = getPromptGreeting();
   var recentHistoryPrompt = '真实最近对话已作为后续 messages 传入；每条带时间，优先最后一条用户消息。';
   var policyBundle = (promptManager && typeof promptManager.chatPolicyBundle === 'function')

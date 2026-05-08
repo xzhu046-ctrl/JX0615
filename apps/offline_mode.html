@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-08T07:14:02Z"></script>
-<script src="../chatStorage.js?v=2026-05-08T07:14:02Z"></script>
-<script src="../metadataStore.js?v=2026-05-08T07:14:02Z"></script>
-<script src="../promptManager.js?v=2026-05-08T07:14:02Z"></script>
-<script src="../accountManager.js?v=2026-05-08T07:14:02Z"></script>
-<script src="../scheduleShared.js?v=2026-05-08T07:14:02Z"></script>
-<script src="../presenceShared.js?v=2026-05-08T07:14:02Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-08T07:14:02Z"></script>
+<script src="../assetStore.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../chatStorage.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../metadataStore.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../promptManager.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../accountManager.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../scheduleShared.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../presenceShared.js?v=2026-05-08T07:43:18Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-08T07:43:18Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -749,11 +749,8 @@ linear-gradient(180deg,rgba(255,245,246,.96),rgba(246,218,221,.92)),
 repeating-linear-gradient(0deg,rgba(166,32,47,.065) 0 1px,transparent 1px 10px);
 box-shadow:0 18px 30px rgba(29,45,56,.18),0 1px 0 rgba(255,255,255,.96) inset;transform:rotate(-4deg);grid-column:1;overflow:visible;cursor:pointer}
 .bloodline-card.user .bloodline-polaroid{grid-column:2;transform:rotate(3deg)}
-.bloodline-polaroid::after{content:'';position:absolute;left:7px;right:-10px;top:11px;bottom:8px;background:
-linear-gradient(90deg,rgba(176,41,54,.18) 0 12%,transparent 12% 100%),
-linear-gradient(180deg,rgba(255,249,249,.86),rgba(247,228,230,.76));
-box-shadow:9px 7px 0 rgba(150,36,48,.12),0 0 0 1px rgba(150,62,72,.12);z-index:-1;transform:rotate(2deg)}
-.bloodline-card.user .bloodline-polaroid::after{left:-10px;right:7px;transform:rotate(-2deg);box-shadow:-9px 7px 0 rgba(150,36,48,.12),0 0 0 1px rgba(150,62,72,.12)}
+.bloodline-polaroid::after{content:none}
+.bloodline-card.user .bloodline-polaroid::after{content:none}
 .bloodline-paperclip{position:absolute;left:-2px;top:-26px;width:66px;height:112px;z-index:7;object-fit:contain;filter:drop-shadow(0 10px 10px rgba(21,32,38,.24));pointer-events:none}
 .bloodline-card.user .bloodline-paperclip{left:auto;right:3px;transform:scaleX(-1)}
 .bloodline-polaroid-photo{position:absolute;right:8px;top:30px;width:76px;height:80px;overflow:hidden;background:#f5f8fb;display:flex;align-items:center;justify-content:center;z-index:4;transform:rotate(-2deg);box-shadow:0 8px 16px rgba(42,54,62,.16),0 0 0 2px rgba(255,255,255,.9)}
@@ -767,15 +764,17 @@ box-shadow:9px 7px 0 rgba(150,36,48,.12),0 0 0 1px rgba(150,62,72,.12);z-index:-
 .bloodline-card.user .bloodline-polaroid-caption::after{content:'';display:inline-block;width:5px;height:19px;margin-left:8px;background:#d99099;vertical-align:-5px}
 .bloodline-motto{position:relative;z-index:2;grid-column:2;align-self:center;padding:0 2px;font-family:'ZCOOL KuaiLe','Ma Shan Zheng','PingFang SC',sans-serif;font-size:23px;font-weight:900;line-height:1.2;color:#181211;text-shadow:0 1px 0 rgba(255,255,255,.9)}
 .bloodline-card.user .bloodline-motto{text-align:right}
-.bloodline-motto-inner{position:relative;display:inline-block;padding:14px 9px 11px 16px;isolation:isolate}
-.bloodline-motto-inner::before{content:'“';position:absolute;left:-10px;top:-16px;font-family:Georgia,'Times New Roman',serif;font-size:56px;line-height:1;color:rgba(20,17,16,.42);font-weight:900;z-index:-1}
-.bloodline-motto-inner::after{content:'”';position:absolute;right:-8px;bottom:-24px;font-family:Georgia,'Times New Roman',serif;font-size:50px;line-height:1;color:rgba(20,17,16,.36);font-weight:900;z-index:-1}
+.bloodline-motto-inner{position:relative;display:inline-block;padding:13px 12px 37px 16px;isolation:isolate;background:radial-gradient(circle at 34% 45%,rgba(255,255,255,.66),rgba(255,247,247,.2) 66%,transparent 100%);border-radius:38% 47% 41% 52%}
+.bloodline-motto-inner::before{content:'「';position:absolute;left:-12px;top:-10px;font-family:Georgia,'Times New Roman',serif;font-size:43px;line-height:1;color:rgba(139,0,18,.42);font-weight:900;z-index:-1;transform:rotate(-8deg)}
+.bloodline-motto-inner::after{content:'」';position:absolute;right:-10px;bottom:-2px;font-family:Georgia,'Times New Roman',serif;font-size:39px;line-height:1;color:rgba(139,0,18,.34);font-weight:900;z-index:-1;transform:rotate(6deg)}
 .bloodline-keyword{position:relative;display:inline-block;margin:0 4px 0 0;padding:0 8px 1px 7px;color:#171111}
 .bloodline-keyword::before{content:'';position:absolute;left:-5px;right:-6px;top:-5px;bottom:-3px;border:3px solid rgba(170,0,20,.72);border-radius:58% 47% 52% 46%;transform:rotate(-8deg);box-shadow:0 0 0 7px rgba(170,0,20,.045);pointer-events:none}
 .bloodline-keyword::after{content:'';position:absolute;right:-43px;top:-13px;width:44px;height:26px;border-top:3px solid rgba(170,0,20,.76);border-right:3px solid rgba(170,0,20,.72);border-radius:0 70% 0 0;transform:rotate(13deg);pointer-events:none}
 .bloodline-redword{position:relative;display:inline-block;padding:0 2px 3px;margin-left:2px}
 .bloodline-redword::after{content:'';position:absolute;left:-3px;right:-5px;bottom:0;height:5px;border-radius:999px;background:linear-gradient(90deg,rgba(167,0,19,.88),rgba(197,34,45,.78));transform:rotate(-2deg);box-shadow:0 5px 8px rgba(167,0,19,.12);pointer-events:none}
 .bloodline-arrow-dot{position:absolute;right:18px;top:9px;width:6px;height:6px;border-radius:999px;background:rgba(170,0,20,.78);box-shadow:0 0 0 5px rgba(170,0,20,.06)}
+.bloodline-motto-redline{position:absolute;left:3px;right:-14px;bottom:1px;height:42px;background:url('../apps/assets/%E7%BA%A2%E7%BA%BF.png') center/contain no-repeat;opacity:.78;mix-blend-mode:multiply;filter:drop-shadow(0 8px 8px rgba(142,0,18,.1));transform:rotate(-2deg);pointer-events:none}
+.bloodline-card.user .bloodline-motto-redline{left:-14px;right:3px;transform:scaleX(-1) rotate(-2deg)}
 .bloodline-red-dash{height:6px;margin:3px 4px 15px;background:repeating-linear-gradient(90deg,rgba(164,0,20,.74) 0 20px,transparent 20px 36px);border-radius:999px;opacity:.78;filter:blur(.05px)}
 .bloodline-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding:0 3px;font:900 9px/1.4 var(--fontd);letter-spacing:.1em;color:rgba(90,52,55,.72);text-transform:uppercase}
 .bloodline-card.user .bloodline-meta{flex-direction:row-reverse}
@@ -7429,7 +7428,7 @@ function renderBloodlineStoryCard(entry, idx, isChar){
           '<div class="bloodline-polaroid-photo">' + renderOfflineAvatarImageHtml(avatar, displayName.slice(0, 2) || (isChar ? 'C' : 'U')) + '</div>' +
           '<div class="bloodline-polaroid-caption">' + esc(displayName || (isChar ? 'char' : 'user')) + '</div>' +
         '</div>' +
-        '<div class="bloodline-motto"><span class="bloodline-motto-inner"><span class="bloodline-arrow-dot" aria-hidden="true"></span><span class="bloodline-keyword">血管</span>，是我们藏在身体里的<span class="bloodline-redword">红线</span></span></div>' +
+        '<div class="bloodline-motto"><span class="bloodline-motto-inner"><span class="bloodline-arrow-dot" aria-hidden="true"></span><span class="bloodline-keyword">血管</span>，是我们藏在身体里的<span class="bloodline-redword">红线</span><span class="bloodline-motto-redline" aria-hidden="true"></span></span></div>' +
       '</div>' +
       '<div class="bloodline-red-dash" aria-hidden="true"></div>' +
       '<div class="bloodline-meta"><span>' + esc(subtitleLeft || 'offline archive') + '</span><span>' + esc(floorLabel + ' · ' + subtitleRight + ' · ' + formatOfflineGenTime(meta.generationMs) + ' · ' + String(meta.tokenCount) + 't') + '</span></div>' +
@@ -10395,35 +10394,168 @@ async function refreshOfflineRecentOnlineContext(){
   session.chatHistory = text || '';
   return session.chatHistory;
 }
-function getOfflineWorldbookSnippet(){
-  if(!character || !character.id) return '';
-  function isEntryEnabled(entry){
-    if(!entry) return false;
-    if(entry.enabled === false || entry.active === false) return false;
-    if(entry.disabled === true || entry.disable === true) return false;
-    return !!String(entry.content || '').trim();
+function normalizeOfflineNameLite(value){
+  return String(value || '').replace(/\s+/g, '').toLowerCase();
+}
+function getOfflineSharedCharacterId(){
+  var currentId = String((character && character.id) || '').trim();
+  if(!currentId) return '';
+  var defaultId = defaultAccountId();
+  if(!defaultId) return currentId;
+  try{
+    var list = loadCharactersList();
+    var currentName = normalizeOfflineNameLite((character && (character.nickname || character.name)) || '');
+    var match = (Array.isArray(list) ? list : []).find(function(item){
+      return item && item.ownerAccountId === defaultId && String(item.id || '') === currentId;
+    });
+    if(!match && currentName){
+      match = (Array.isArray(list) ? list : []).find(function(item){
+        if(!item || item.ownerAccountId !== defaultId) return false;
+        var itemName = normalizeOfflineNameLite(item.nickname || item.name || '');
+        return !!itemName && itemName === currentName;
+      });
+    }
+    return String((match && match.id) || currentId);
+  }catch(err){
+    return currentId;
   }
-  function makeBookKey(bucketKey, wb, idx){
-    return [bucketKey || '', (wb && wb.id) || ('wb_' + idx), (wb && wb.name) || '世界书'].join('::');
-  }
+}
+function getOfflineStoredWorldbooksSnapshot(){
+  try{
+    if(window.MetadataStore && typeof window.MetadataStore.getWorldbooksSync === 'function'){
+      var local = window.MetadataStore.getWorldbooksSync();
+      if(local && typeof local === 'object') return local;
+    }
+  }catch(err){}
+  try{
+    if(window.parent && window.parent !== window && window.parent.MetadataStore && typeof window.parent.MetadataStore.getWorldbooksSync === 'function'){
+      var parentData = window.parent.MetadataStore.getWorldbooksSync();
+      if(parentData && typeof parentData === 'object') return parentData;
+    }
+  }catch(parentErr){}
   try{
     var all = JSON.parse(localStorage.getItem('worldbooks') || '{}') || {};
-    var bucketIds = [String(character.id || '').trim()];
+    return all && typeof all === 'object' ? all : {};
+  }catch(e){
+    return {};
+  }
+}
+function readOfflineLocalStorageFirst(keys){
+  for(var i=0;i<keys.length;i++){
+    try{
+      var val = localStorage.getItem(keys[i]);
+      if(val !== null && val !== undefined) return val;
+    }catch(err){}
+  }
+  return null;
+}
+function getOfflineWorldbookScopedKeys(base){
+  var safeBase = String(base || '').trim();
+  var keys = [];
+  function add(key){
+    key = String(key || '').trim();
+    if(key && keys.indexOf(key) === -1) keys.push(key);
+  }
+  var did = defaultAccountId();
+  if(did) add(accountScopedKeyFor(safeBase, did));
+  add(scopedKey(safeBase));
+  accountIdCandidates().forEach(function(id){ add(accountScopedKeyFor(safeBase, id)); });
+  add(safeBase);
+  return keys;
+}
+function getOfflineWorldbookCharacterIds(){
+  var ids = [];
+  function add(id){
+    id = String(id || '').trim();
+    if(id && ids.indexOf(id) === -1) ids.push(id);
+  }
+  add(character && character.id);
+  add(getOfflineSharedCharacterId());
+  add(character && (character.sourceId || character.originalId || character.importedId || character.character_id));
+  return ids;
+}
+function parseOfflineWbBookStates(ids){
+  var merged = {};
+  ids.forEach(function(id){
+    var raw = readOfflineLocalStorageFirst(getOfflineWorldbookScopedKeys('wb_book_states_' + id));
+    if(!raw) return;
+    try{
+      var parsed = JSON.parse(raw);
+      if(parsed && typeof parsed === 'object') Object.keys(parsed).forEach(function(key){ merged[key] = parsed[key]; });
+    }catch(err){}
+  });
+  return merged;
+}
+function isOfflineWbEntryEnabled(entry){
+  if(!entry) return false;
+  function isOff(v){
+    if(v === false || v === 0) return true;
+    if(typeof v === 'string'){
+      var s = v.trim().toLowerCase();
+      return s === 'false' || s === '0' || s === 'off' || s === 'disabled' || s === 'no';
+    }
+    return false;
+  }
+  function isOn(v){
+    if(v === true || v === 1) return true;
+    if(typeof v === 'string'){
+      var s = v.trim().toLowerCase();
+      return s === 'true' || s === '1' || s === 'on' || s === 'enabled' || s === 'yes';
+    }
+    return false;
+  }
+  if(isOff(entry.enabled)) return false;
+  if(isOff(entry.active)) return false;
+  if(isOn(entry.disabled)) return false;
+  if(isOn(entry.disable)) return false;
+  return !!String(entry.content || '').trim();
+}
+function makeOfflineWbBookKey(bucketKey, wb, idx){
+  return [bucketKey || '', (wb && wb.id) || ('wb_' + idx), (wb && wb.name) || '世界书'].join('::');
+}
+function getOfflineWorldbookEntryTitle(entry, index){
+  if(!entry) return '条目 ' + (index + 1);
+  var title = String(entry.title || entry.name || entry.comment || entry.key || entry.keys || '').trim();
+  return title || ('条目 ' + (index + 1));
+}
+function getOfflineWorldbookSnippet(){
+  if(!character || !character.id) return '';
+  try{
+    var all = getOfflineStoredWorldbooksSnapshot();
+    var bucketIds = getOfflineWorldbookCharacterIds();
+    var hasApplicableBook = false;
+    Object.keys(all || {}).forEach(function(bucketKey){
+      (all[bucketKey] || []).forEach(function(wb){
+        if(!wb) return;
+        if(bucketIds.indexOf(String(bucketKey || '').trim()) !== -1 || !!wb.global) hasApplicableBook = true;
+      });
+    });
+    var enabledRaw = null;
+    bucketIds.some(function(id){
+      enabledRaw = readOfflineLocalStorageFirst(getOfflineWorldbookScopedKeys('wb_enabled_' + id));
+      return enabledRaw !== null;
+    });
+    var wbEnabled = enabledRaw === null ? hasApplicableBook : enabledRaw === 'true';
+    if(!wbEnabled) return '';
+    var bookStates = parseOfflineWbBookStates(bucketIds);
     var texts = [];
-    Object.keys(all).forEach(function(bucketKey){
+    Object.keys(all || {}).forEach(function(bucketKey){
       (all[bucketKey] || []).forEach(function(wb, idx){
         if(!wb) return;
-        var isRoleBook = bucketIds.indexOf(bucketKey) !== -1;
+        var isRoleBook = bucketIds.indexOf(String(bucketKey || '').trim()) !== -1;
         var isGlobalBook = !!wb.global;
         if(!isRoleBook && !isGlobalBook) return;
-        (wb.entries || []).forEach(function(entry){
-          if(!isEntryEnabled(entry)) return;
+        var bookKey = makeOfflineWbBookKey(bucketKey, wb, idx);
+        if(bookStates[bookKey] === false) return;
+        (Array.isArray(wb.entries) ? wb.entries : []).forEach(function(entry, entryIdx){
+          if(!isOfflineWbEntryEnabled(entry)) return;
           var text = String(entry.content || '').trim();
-          if(text) texts.push(text);
+          if(!text) return;
+          texts.push('【' + String(wb.name || '世界书').trim() + ' / ' + getOfflineWorldbookEntryTitle(entry, entryIdx) + '】\n' + text);
         });
       });
     });
-    return texts.slice(0, 8).join('\n\n');
+    return texts.join('\n\n');
   }catch(e){
     return '';
   }
@@ -10488,7 +10620,7 @@ function buildOfflineCoreSettingSummary(compactLevel){
   var userPersona = clipOfflinePromptText(getOfflineUserPersona(), offlinePromptLimit(isMobileOfflineRuntime() ? 900 : 1400, level, 280));
   var scenario = clipOfflinePromptText(character ? String(character.scenario || '').trim() : '', offlinePromptLimit(520, level, 220));
   var systemPrompt = clipOfflinePromptText(character ? String(character.system_prompt || '').trim() : '', offlinePromptLimit(isMobileOfflineRuntime() ? 1050 : 1500, level, 360));
-  var worldBook = getOfflineWorldbookSnippetByBudget(offlinePromptLimit(isMobileOfflineRuntime() ? 1500 : 2200, level, 560));
+  var worldBook = getOfflineWorldbookSnippetByBudget(offlinePromptLimit(isMobileOfflineRuntime() ? 4200 : 6200, level, 1200));
   var memoryText = getOfflineMemorySnippetByBudget(offlinePromptLimit(isMobileOfflineRuntime() ? 1100 : 1600, level, 420));
   var charWeather = buildWeatherMoodPrompt(getOfflineWeatherSnapshot('char'));
   var userWeather = buildWeatherMoodPrompt(getOfflineWeatherSnapshot('user'));
@@ -10512,6 +10644,7 @@ function buildOfflineCoreSettingSummary(compactLevel){
     presenceRule ? presenceRule : '聊天设置地点 / Presence：未启用',
     scenario ? ('场景设定：' + scenario) : '场景设定：无',
     systemPrompt ? ('角色补充规则：' + systemPrompt) : '角色补充规则：无',
+    '设定硬规则：角色 persona、场景设定、角色补充规则和世界书里写明的人名、朋友、家人、同事、敌人、组织、地点、过往关系和态度，都是 char 已经知道的既成事实；用户问到这些内容时必须按设定承认并回答，禁止说不知道、禁止临时改关系、禁止把态度写反。',
     worldBook ? ('世界书（优先保留）：\n' + worldBook) : '世界书（优先保留）：无',
     memoryText ? ('记忆总结：\n' + memoryText) : '记忆总结：无',
     scheduleRule ? ('日程感知：\n' + scheduleRule) : '日程感知：无'
@@ -10523,7 +10656,7 @@ function buildOfflineOpeningCoreSettingSummary(compactLevel){
   var userPersona = clipOfflinePromptText(getOfflineUserPersona(), offlinePromptLimit(isMobileOfflineRuntime() ? 420 : 620, level, 160));
   var scenario = clipOfflinePromptText(character ? String(character.scenario || '').trim() : '', offlinePromptLimit(220, level, 80));
   var systemPrompt = clipOfflinePromptText(character ? String(character.system_prompt || '').trim() : '', offlinePromptLimit(isMobileOfflineRuntime() ? 320 : 480, level, 120));
-  var worldBook = getOfflineWorldbookSnippetByBudget(offlinePromptLimit(isMobileOfflineRuntime() ? 420 : 620, level, 140));
+  var worldBook = getOfflineWorldbookSnippetByBudget(offlinePromptLimit(isMobileOfflineRuntime() ? 1600 : 2400, level, 520));
   var memoryText = getOfflineMemorySnippetByBudget(offlinePromptLimit(isMobileOfflineRuntime() ? 260 : 380, level, 100));
   var charWeather = buildWeatherMoodPrompt(getOfflineWeatherSnapshot('char'));
   var userWeather = buildWeatherMoodPrompt(getOfflineWeatherSnapshot('user'));
@@ -10546,6 +10679,7 @@ function buildOfflineOpeningCoreSettingSummary(compactLevel){
     presenceRule ? presenceRule : '聊天设置地点 / Presence：未启用',
     scenario ? ('场景设定：' + scenario) : '场景设定：无',
     systemPrompt ? ('角色补充规则：' + systemPrompt) : '角色补充规则：无',
+    '设定硬规则：世界书和人设里出现的人名、朋友、家人、敌人、关系和态度，都是 char 已知事实；不能当成陌生人或乱改态度。',
     worldBook ? ('世界书（超轻摘要）：\n' + worldBook) : '世界书（超轻摘要）：无',
     memoryText ? ('记忆总结（超轻摘要）：\n' + memoryText) : '记忆总结（超轻摘要）：无'
   ].join('\n');
@@ -10997,7 +11131,7 @@ function buildOfflineSystemPrompt(options){
   var scenario = character ? String(character.scenario || '').trim() : '';
   var systemPrompt = character ? String(character.system_prompt || '').trim() : '';
   var storyPrefs = getOfflineStoryPrefs();
-  var worldBook = clipOfflinePromptText(getOfflineWorldbookSnippet(), offlinePromptLimit(isMobileOfflineRuntime() ? 1500 : 2200, compactLevel, 520));
+  var worldBook = clipOfflinePromptText(getOfflineWorldbookSnippet(), offlinePromptLimit(isMobileOfflineRuntime() ? 4200 : 6200, compactLevel, 1200));
   var memoryText = clipOfflinePromptText(getOfflineMemorySnippet(), offlinePromptLimit(isMobileOfflineRuntime() ? 1200 : 1800, compactLevel, 420));
   var onlineChatText = getOfflineRecentOnlineSnippet();
   onlineChatText = clipOfflinePromptText(onlineChatText, offlinePromptLimit(isMobileOfflineRuntime() ? 1200 : 1800, compactLevel, 360));
@@ -11068,6 +11202,7 @@ function buildOfflineSystemPrompt(options){
     '下笔前必须先读并吸收这些信息，再决定怎么回复：角色 persona、用户 persona、世界书、记忆总结、最近线上聊天、最近线下记录、scenario、system prompt。',
     '这已经是一场自然开始的线下见面，不要提“邀请/赴约/约会申请/你邀请我”这种元叙事说法。',
     '角色 persona 决定 char 的语气、习惯、亲密方式和反应逻辑；用户 persona 决定 char 对 user 的理解、称呼、照顾方式和互动边界。',
+    '如果用户问到人设或世界书里出现的人名、朋友、家人、同事、敌人、组织、关系、态度或过往事件，必须先按设定回答；禁止说不知道、禁止临时改关系、禁止把亲疏态度写反。',
     '最近线上聊天、最近线下记录、世界书、记忆总结、人设、scenario、system prompt 优先级极高，必须先读懂再写；不要驴唇不对马嘴，不要脱离当下话题乱写，不要 OOC，不要擅自无视设定。',
     storyPrefs.style ? ('这次线下正文的文风额外要求（必须严格执行，不要偷懒无视）：' + storyPrefs.style) : '这次线下正文的文风额外要求：保持自然、细腻、有活人感。',
     '不要 markdown，不要代码块，不要额外解释。',
