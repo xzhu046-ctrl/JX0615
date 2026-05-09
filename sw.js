@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-05-09T16:57:39Z';
+const CACHE_VERSION = '2026-05-09T18:24:31Z';
 const CACHE_NAME = 'phone-shell-' + CACHE_VERSION;
 const CORE_URLS = [
   './',
@@ -17,41 +17,7 @@ const CORE_URLS = [
   './sunnySupport.js',
   './manifest.webmanifest',
   './version.json',
-  './apps/qq.html',
-  './apps/qq_moments.html',
-  './apps/qq_profile.html',
-  './apps/chat.html',
   './apps/offlineInvite.js',
-  './apps/offline.html',
-  './apps/offline_mode.html',
-  './apps/map6.html',
-  './apps/characters.html',
-  './apps/settings.html',
-  './apps/customize.html',
-  './apps/worldbook.html',
-  './apps/backend.html',
-  './apps/assets/海边小屋.png',
-  './apps/assets/海边风景长条.png',
-  './apps/assets/长条花.png',
-  './apps/assets/亲亲脸.png',
-  './apps/assets/约会提醒.svg',
-  './apps/assets/吉他小黑猫.jpg',
-  './apps/assets/loading-cat.png',
-  './apps/assets/聊天设置.png',
-  './apps/assets/联系人.png',
-  './apps/assets/创建.svg',
-  './apps/assets/导入.svg',
-  './apps/assets/拉黑.png',
-  './apps/assets/屏幕放大.png',
-  './apps/assets/屏幕缩小.png',
-  './apps/assets/聊天按钮.png',
-  './apps/assets/发送键.png',
-  './apps/assets/红丝带.png',
-  './apps/assets/我们的血缘装饰.png',
-  './apps/assets/思维链.png',
-  './apps/assets/摘要.png',
-  './apps/assets/记忆按钮.png',
-  './apps/assets/设置.png',
 ];
 
 function isSameOrigin(requestUrl){

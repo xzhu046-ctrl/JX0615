@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-09T16:57:39Z';
+const APP_BUILD_ID = '2026-05-09T18:24:31Z';
 const APP_UPDATE_NOTES = [
-  '线下设置移除自定义 CSS 区域',
-  '线下美化只保留内置样式切换',
-  '旧的线下 CSS 配置会自动清理'
+  '首页启动更轻，减少首次加载卡顿',
+  '聊天未读和音乐刷新改为延后处理',
+  '更新缓存不再预拉大页面和大图片'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -119,6 +119,26 @@ const FORCE_UPDATE_CORE_FILES = [
   'apps/settings.html',
   'apps/worldbook.html'
 ];
+
+function runShellDeferredTask(fn, delay){
+  var wait = Math.max(0, Number(delay || 0) || 0);
+  var runner = function(){
+    try{ fn && fn(); }catch(err){ setTimeout(function(){ throw err; }, 0); }
+  };
+  if(wait > 0){
+    return setTimeout(function(){
+      if(typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function'){
+        window.requestIdleCallback(runner, { timeout: Math.max(600, wait) });
+      }else{
+        runner();
+      }
+    }, wait);
+  }
+  if(typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function'){
+    return window.requestIdleCallback(runner, { timeout: 1200 });
+  }
+  return setTimeout(runner, 0);
+}
 const HOME_MUSIC_STATE_KEY = 'home_music_state_v1';
 const HOME_MUSIC_TRACK_PREFIX = 'home_music_track_';
 const HOME_MUSIC_PROXY_BASE_KEY = 'home_music_proxy_base_v1';
@@ -1506,38 +1526,32 @@ async function buildRemoteAppFingerprint(){
     }
     return { buildId: String(value || '').trim(), updateNotes: [] };
   };
+  if(/^https?:$/.test(window.location.protocol)){
+    try{
+      var sameOriginInfo = await fetchJsonWithTimeout(new URL('version.json?updateCheck=' + stamp, window.location.href).toString(), 6000)
+        .then(function(data){ return readVersionInfoFromVersionPayload(data); });
+      if(sameOriginInfo && sameOriginInfo.buildId){
+        rememberHostedUpdateRemoteNotes(sameOriginInfo.buildId, sameOriginInfo.updateNotes);
+        return sameOriginInfo.buildId;
+      }
+    }catch(errLocalVersion){
+      console.warn('[update-check] local version skipped', errLocalVersion);
+    }
+  }
   var remoteTasks = [
     function(){
-      return fetchJsonWithTimeout('https://api.github.com/repos/' + GITHUB_UPDATE_OWNER + '/' + GITHUB_UPDATE_REPO + '/contents/version.json?ref=' + GITHUB_UPDATE_BRANCH + '&t=' + stamp, 12000)
+      return fetchJsonWithTimeout('https://api.github.com/repos/' + GITHUB_UPDATE_OWNER + '/' + GITHUB_UPDATE_REPO + '/contents/version.json?ref=' + GITHUB_UPDATE_BRANCH + '&t=' + stamp, 7000)
         .then(function(data){ return decodeGithubContentsVersionInfo(data); });
     },
     function(){
-      return fetchJsonWithTimeout('https://raw.githubusercontent.com/' + GITHUB_UPDATE_OWNER + '/' + GITHUB_UPDATE_REPO + '/' + GITHUB_UPDATE_BRANCH + '/version.json?t=' + stamp, 12000)
+      return fetchJsonWithTimeout('https://raw.githubusercontent.com/' + GITHUB_UPDATE_OWNER + '/' + GITHUB_UPDATE_REPO + '/' + GITHUB_UPDATE_BRANCH + '/version.json?t=' + stamp, 7000)
         .then(function(data){ return readVersionInfoFromVersionPayload(data); });
     },
     function(){
-      return fetchJsonWithTimeout('https://cdn.jsdelivr.net/gh/' + GITHUB_UPDATE_OWNER + '/' + GITHUB_UPDATE_REPO + '@' + GITHUB_UPDATE_BRANCH + '/version.json?t=' + stamp, 12000)
+      return fetchJsonWithTimeout('https://cdn.jsdelivr.net/gh/' + GITHUB_UPDATE_OWNER + '/' + GITHUB_UPDATE_REPO + '@' + GITHUB_UPDATE_BRANCH + '/version.json?t=' + stamp, 7000)
         .then(function(data){ return readVersionInfoFromVersionPayload(data); });
-    },
-    function(){
-      return fetchTextWithTimeout('https://raw.githubusercontent.com/' + GITHUB_UPDATE_OWNER + '/' + GITHUB_UPDATE_REPO + '/' + GITHUB_UPDATE_BRANCH + '/main.js?t=' + stamp, 12000)
-        .then(function(text){ return readBuildIdFromMainJsText(text); });
-    },
-    function(){
-      return fetchTextWithTimeout('https://cdn.jsdelivr.net/gh/' + GITHUB_UPDATE_OWNER + '/' + GITHUB_UPDATE_REPO + '@' + GITHUB_UPDATE_BRANCH + '/main.js?t=' + stamp, 12000)
-        .then(function(text){ return readBuildIdFromMainJsText(text); });
     }
   ];
-  if(/^https?:$/.test(window.location.protocol)){
-    remoteTasks.push(function(){
-      return fetchJsonWithTimeout(new URL('version.json?updateCheck=' + stamp, window.location.href).toString(), 15000)
-        .then(function(data){ return readVersionInfoFromVersionPayload(data); });
-    });
-    remoteTasks.push(function(){
-      return fetchTextWithTimeout(new URL('main.js?updateCheck=' + stamp, window.location.href).toString(), 15000)
-        .then(function(text){ return readBuildIdFromMainJsText(text); });
-    });
-  }
   var results = await Promise.all(remoteTasks.map(function(task){
     return Promise.resolve()
       .then(task)
@@ -1565,7 +1579,7 @@ async function buildRemoteAppFingerprint(){
   }
   if(/^https?:$/.test(window.location.protocol)){
     try{
-      var sameOriginFingerprint = await fetchJsonWithTimeout(new URL('version.json?updateCheck=' + stamp, window.location.href).toString(), 15000).then(function(data){
+      var sameOriginFingerprint = await fetchJsonWithTimeout(new URL('version.json?updateCheck=' + stamp, window.location.href).toString(), 6000).then(function(data){
         var info = readVersionInfoFromVersionPayload(data);
         rememberHostedUpdateRemoteNotes(info.buildId, info.updateNotes);
         return info.buildId;
@@ -1573,14 +1587,6 @@ async function buildRemoteAppFingerprint(){
       if(sameOriginFingerprint) return sameOriginFingerprint;
     }catch(errSameOrigin){
       console.warn('[update-check] same-origin fallback skipped', errSameOrigin);
-    }
-    try{
-      var sameOriginMainFingerprint = await fetchTextWithTimeout(new URL('main.js?updateCheck=' + stamp, window.location.href).toString(), 15000).then(function(text){
-        return readBuildIdFromMainJsText(text);
-      });
-      if(sameOriginMainFingerprint) return sameOriginMainFingerprint;
-    }catch(errSameOriginMain){
-      console.warn('[update-check] same-origin main fallback skipped', errSameOriginMain);
     }
   }
   return '';
@@ -2136,7 +2142,7 @@ function renderHomeAppIcon(app, icon){
       : 'home-app-icon-wrap';
     if(typeof icon === 'string' && icon.startsWith('data:')){
       btn.classList.add('has-custom-icon');
-      btn.innerHTML = '<span class="' + wrapClass + '"><img class="home-app-icon-img" src="' + icon + '" alt="' + label + '"></span><span class="home-app-label">' + label + '</span>';
+      btn.innerHTML = '<span class="' + wrapClass + '"><img class="home-app-icon-img" src="' + icon + '" alt="' + label + '" loading="lazy" decoding="async"></span><span class="home-app-label">' + label + '</span>';
       return;
     }
     btn.classList.remove('has-custom-icon');
@@ -2145,10 +2151,12 @@ function renderHomeAppIcon(app, icon){
 }
 
 function restoreHomeAppIcons(){
-  Object.keys(HOME_ICON_DEFAULTS).forEach((app)=>{
-    loadStoredAsset('icon_' + app).then((icon)=>{
-      renderHomeAppIcon(app, icon);
-    });
+  Object.keys(HOME_ICON_DEFAULTS).forEach((app, idx)=>{
+    runShellDeferredTask(function(){
+      loadStoredAsset('icon_' + app).then((icon)=>{
+        renderHomeAppIcon(app, icon);
+      });
+    }, idx < 4 ? 120 : 520 + (idx * 20));
   });
 }
 
@@ -6810,6 +6818,9 @@ function setHomePage(index, immediate){
   try{ localStorage.setItem('home_page_index', String(homePageIndex)); }catch(e){}
   renderHomePages(immediate);
   maybeRefreshHomeMusicRemoteForD3();
+  if(homePageIndex === 2){
+    renderHomeMusic();
+  }
 }
 
 function renderHomePageIndicator(){
@@ -7802,7 +7813,7 @@ function renderHomeSlot(slotId, dataUrl){
     el.classList.add('has-image');
     if(slotId === 'top'){
       const frameUrl = getActiveTopFrameUrl();
-      const baseHtml = '<span class="slot-base-mask"><img class="slot-base" src="' + dataUrl + '" alt=""></span>';
+      const baseHtml = '<span class="slot-base-mask"><img class="slot-base" src="' + dataUrl + '" alt="" loading="lazy" decoding="async"></span>';
       if(frameUrl){
         const frameVisual = getTopFrameVisual(frameUrl);
         const frameStyle = '--frame-scale:' + frameVisual.scale + ';--frame-offset-x:' + frameVisual.offsetX + 'px;--frame-offset-y:' + frameVisual.offsetY + 'px;';
@@ -7814,12 +7825,12 @@ function renderHomeSlot(slotId, dataUrl){
       homeMusicAlbumCoverSrc = dataUrl;
       el.classList.add('is-custom-cover');
       el.classList.remove('is-track-cover');
-      el.innerHTML = '<img src="' + dataUrl + '" alt=""><span class="slot-plus">×</span>';
+      el.innerHTML = '<img src="' + dataUrl + '" alt="" loading="lazy" decoding="async"><span class="slot-plus">×</span>';
       renderHomeMusicCover();
     }else if(slotId === '1' || slotId === '2' || slotId === '3' || slotId === '4'){
       const liveTexts = getLiveDanmakuTexts(slotId);
       el.innerHTML =
-        '<img src="' + dataUrl + '" alt="">' +
+        '<img src="' + dataUrl + '" alt="" loading="lazy" decoding="async">' +
         '<span class="live-overlay live-variant-' + slotId + '">' +
           '<span class="live-danmaku danmaku-a">' + liveTexts[0] + '</span>' +
           '<span class="live-danmaku danmaku-b">' + liveTexts[1] + '</span>' +
@@ -7829,7 +7840,7 @@ function renderHomeSlot(slotId, dataUrl){
           '<span class="live-like like-c">♥</span>' +
         '</span>';
     }else{
-      el.innerHTML = '<img src="' + dataUrl + '" alt="">';
+      el.innerHTML = '<img src="' + dataUrl + '" alt="" loading="lazy" decoding="async">';
     }
   } else {
     el.classList.remove('has-image');
@@ -7852,10 +7863,21 @@ function setHomeSlotImage(slotId, dataUrl){
 }
 
 function restoreHomeSlots(){
-  ['top','1','2','3','4','photo1','photo2','musicAlbum'].forEach((id)=>{
+  var firstPageIds = ['top','1','2','3','4'];
+  var secondPageIds = ['photo1','photo2'];
+  var thirdPageIds = ['musicAlbum'];
+  var visibleIds = homePageIndex === 1 ? secondPageIds : (homePageIndex === 2 ? thirdPageIds : firstPageIds);
+  var allIds = firstPageIds.concat(secondPageIds, thirdPageIds);
+  function restoreOne(id){
     loadStoredAsset('home_slot_' + id).then((dataUrl)=>{
       renderHomeSlot(id, dataUrl);
     });
+  }
+  visibleIds.forEach(function(id, idx){
+    runShellDeferredTask(function(){ restoreOne(id); }, idx * 80);
+  });
+  allIds.filter(function(id){ return visibleIds.indexOf(id) === -1; }).forEach(function(id, idx){
+    runShellDeferredTask(function(){ restoreOne(id); }, 900 + (idx * 140));
   });
 }
 
@@ -9307,7 +9329,7 @@ function applyHomeMusicBubbleAppearance(){
   var coverSrc = normalizeHomeMusicPlayableUrl(track && track.cover || '');
   if(isRenderableHomeMusicFloatingIcon(coverSrc)){
     bubble.classList.add('is-track-cover');
-    bubble.innerHTML = '<img class="home-music-bubble-cover" src="' + escapeHtmlAttr(coverSrc) + '" alt="当前歌曲封面" referrerpolicy="no-referrer" onerror="this.parentElement.classList.remove(\'is-track-cover\');this.parentElement.innerHTML=\'<span class=&quot;home-music-bubble-icon&quot;>♪</span>\'">';
+    bubble.innerHTML = '<img class="home-music-bubble-cover" src="' + escapeHtmlAttr(coverSrc) + '" alt="当前歌曲封面" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentElement.classList.remove(\'is-track-cover\');this.parentElement.innerHTML=\'<span class=&quot;home-music-bubble-icon&quot;>♪</span>\'">';
     bubble.style.minWidth = '';
     bubble.style.minHeight = '';
     bubble.style.width = (44 * scale) + 'px';
@@ -9485,7 +9507,7 @@ function syncHomeMusicWidgetCover(){
   el.classList.remove('is-custom-cover');
   if(src){
     el.classList.add('has-image', 'is-track-cover');
-    el.innerHTML = '<img src="' + src + '" alt=""><span class="slot-plus">×</span>';
+    el.innerHTML = '<img src="' + src + '" alt="" loading="lazy" decoding="async"><span class="slot-plus">×</span>';
   }else{
     el.classList.remove('has-image', 'is-track-cover');
     el.innerHTML = '<span class="slot-plus">+</span>';
@@ -9493,6 +9515,8 @@ function syncHomeMusicWidgetCover(){
 }
 
 function renderHomeMusicPlaybackUi(){
+  var panel = document.getElementById('home-music-panel');
+  var panelOpen = !!(panel && panel.dataset.open);
   var title = document.getElementById('home-music-title');
   var subtitle = document.getElementById('home-music-subtitle');
   var nowTitle = document.getElementById('home-music-now-title');
@@ -9519,9 +9543,9 @@ function renderHomeMusicPlaybackUi(){
     progress.value = duration > 0 ? Math.max(0, Math.min(1000, Math.round((homeMusicState.currentTime / duration) * 1000))) : 0;
   }
   updateHomeMusicLyricByTime(homeMusicState.currentTime);
-  renderHomeMusicPanelLyrics();
+  if(panelOpen) renderHomeMusicPanelLyrics();
   applyHomeMusicEqualizerState();
-  renderHomeD3MusicWidget();
+  if(homePageIndex === 2) renderHomeD3MusicWidget();
 }
 
 function renderHomeMusicPanelLyrics(){
@@ -9566,8 +9590,10 @@ function renderHomeMusic(){
   applyHomeMusicBubbleAppearance();
   renderHomeMusicPlaybackUi();
   renderHomeMusicCover();
-  renderHomeMusicAccountPanel();
-  renderHomeMusicPlaylist();
+  if(panel && panel.dataset.open){
+    renderHomeMusicAccountPanel();
+    renderHomeMusicPlaylist();
+  }
   if(floatingEnabled){
     applyHomeMusicBubblePosition();
   }
@@ -10911,16 +10937,15 @@ function bindHomeMusicSystem(){
     });
   }
   renderHomeMusic();
-  hydrateHomeMusicFloatingIcon();
-  loadStoredAsset('home_slot_musicAlbum').then(function(src){
-    homeMusicAlbumCoverSrc = typeof src === 'string' ? src : '';
-    renderHomeMusicCover();
-    syncHomeMusicWidgetCover();
-    renderHomeD3MusicWidget(true);
-  });
-  if(homeMusicState.currentTrackId){
-    ensureHomeMusicTrackLoaded(getCurrentHomeMusicTrack(), false);
-  }
+  runShellDeferredTask(function(){ hydrateHomeMusicFloatingIcon(); }, 900);
+  runShellDeferredTask(function(){
+    loadStoredAsset('home_slot_musicAlbum').then(function(src){
+      homeMusicAlbumCoverSrc = typeof src === 'string' ? src : '';
+      renderHomeMusicCover();
+      syncHomeMusicWidgetCover();
+      if(homePageIndex === 2) renderHomeD3MusicWidget(true);
+    });
+  }, 1100);
 }
 
 window.openHomeMusicImport = openHomeMusicImport;
@@ -12729,6 +12754,9 @@ function normalizeUnreadBadgeCount(n){
 var qqUnreadCountCache = {};
 var qqMomentsUnreadCountCache = {};
 var qqUnreadRefreshToken = 0;
+var qqUnreadRefreshInFlight = false;
+var qqUnreadLastRefreshAt = 0;
+const QQ_UNREAD_REFRESH_MIN_MS = 15000;
 function summarizeShellUnreadHistory(list){
   var items = Array.isArray(list) ? list : [];
   var unread = 0;
@@ -12967,7 +12995,13 @@ function setMomentsSeenAtForActive(activeId, seenAt){
   try{ localStorage.setItem(MOMENTS_LAST_SEEN_KEY, String(safeSeenAt)); }catch(e){}
 }
 
-async function refreshQqUnreadCountCache(){
+async function refreshQqUnreadCountCache(options){
+  options = options && typeof options === 'object' ? options : {};
+  if(qqUnreadRefreshInFlight) return;
+  var refreshNow = Date.now();
+  if(!options.force && qqUnreadLastRefreshAt && refreshNow - qqUnreadLastRefreshAt < QQ_UNREAD_REFRESH_MIN_MS) return;
+  qqUnreadRefreshInFlight = true;
+  qqUnreadLastRefreshAt = refreshNow;
   var activeId = '';
   try{
     if(window.AccountManager){
@@ -12975,7 +13009,10 @@ async function refreshQqUnreadCountCache(){
       activeId = (active && active.id) || '';
     }
   }catch(e){}
-  if(!activeId) return;
+  if(!activeId){
+    qqUnreadRefreshInFlight = false;
+    return;
+  }
   var token = ++qqUnreadRefreshToken;
   try{
     var chatTotal = 0;
@@ -13010,7 +13047,10 @@ async function refreshQqUnreadCountCache(){
     qqUnreadCountCache[activeId] = Math.max(0, Number(chatTotal || 0) || 0);
     qqMomentsUnreadCountCache[activeId] = computeShellMomentsUnreadFromPosts(momentPosts, activeId);
     renderHomeDockBadges();
-  }catch(e){}
+  }catch(e){
+  }finally{
+    qqUnreadRefreshInFlight = false;
+  }
 }
 
 function getShellChatStorageKeysForChar(charId){
@@ -13153,7 +13193,7 @@ async function markShellChatAsRead(charId){
 function refreshQqUnreadCountSoon(){
   var activeId = getActiveAccountId();
   if(activeId) delete qqUnreadCountCache[activeId];
-  refreshQqUnreadCountCache().then(function(){
+  refreshQqUnreadCountCache({ force:true }).then(function(){
     renderHomeDockBadges();
     postShellUnreadBadgeToCurrentApp();
   }).catch(function(){
@@ -13415,8 +13455,8 @@ function setupAiBgScheduler(){
     maybeRunAiBgTick(false);
     maybeRunScheduleTodoReminders();
   }, 20000);
-  setTimeout(function(){ maybeRunAiBgTick(false); }, 1200);
-  setTimeout(function(){ maybeRunScheduleTodoReminders(); }, 1600);
+  setTimeout(function(){ maybeRunAiBgTick(false); }, 9000);
+  setTimeout(function(){ maybeRunScheduleTodoReminders(); }, 11000);
 }
 
 function restoreState(){
@@ -13449,10 +13489,15 @@ function restoreState(){
   bindWidgetBubbleEditors();
   bindHomeAppPressState();
   applyLiveDanmakuVisibility(getLiveDanmakuEnabled());
+  try{
+    homePageIndex = Math.max(0, Math.min(getHomePageMaxIndex(), Number(localStorage.getItem('home_page_index') || '0') || 0));
+  }catch(e){
+    homePageIndex = 0;
+  }
   restoreHomeSlots();
-  restoreWidgetCharacterBackground();
-  restoreWidgetMiniOrbImage();
-  restoreClockWidgetArt();
+  runShellDeferredTask(restoreWidgetCharacterBackground, 700);
+  runShellDeferredTask(restoreWidgetMiniOrbImage, 820);
+  runShellDeferredTask(restoreClockWidgetArt, 940);
   restoreHomeAppIcons();
   renderCharNote();
   renderClockLocation();
@@ -13475,12 +13520,7 @@ function restoreState(){
     }catch(e){}
   });
   renderHomeDockBadges();
-  refreshQqUnreadCountCache();
-  try{
-    homePageIndex = Math.max(0, Math.min(getHomePageMaxIndex(), Number(localStorage.getItem('home_page_index') || '0') || 0));
-  }catch(e){
-    homePageIndex = 0;
-  }
+  runShellDeferredTask(function(){ refreshQqUnreadCountCache({ force:true }); }, 1800);
   renderHomePages(true);
   maybeRefreshHomeMusicRemoteForD3();
   setupAiBgScheduler();
@@ -13667,7 +13707,7 @@ window.addEventListener('focus', ()=>{
 document.addEventListener('visibilitychange', ()=>{
   if(!document.hidden){
     renderBondWidget();
-    renderHomeMusic();
+    if(homePageIndex === 2 || homeMusicState.floatingEnabled !== false) renderHomeMusic();
     renderHomeDockBadges();
     refreshQqUnreadCountCache();
     maybeRunAiBgTick(false);
@@ -13676,10 +13716,10 @@ document.addEventListener('visibilitychange', ()=>{
 });
 window.addEventListener('resize', ()=>{
   renderHomePages(true);
-  renderHomeMusic();
+  if(homePageIndex === 2 || homeMusicState.floatingEnabled !== false) renderHomeMusic();
 });
 window.addEventListener('resize', syncChatKeyboardShift);
 setInterval(()=>{
   renderHomeDockBadges();
   refreshQqUnreadCountCache();
-}, 2500);
+}, 30000);
