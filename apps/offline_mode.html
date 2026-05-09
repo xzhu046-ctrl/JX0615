@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-09T02:58:21Z"></script>
-<script src="../chatStorage.js?v=2026-05-09T02:58:21Z"></script>
-<script src="../metadataStore.js?v=2026-05-09T02:58:21Z"></script>
-<script src="../promptManager.js?v=2026-05-09T02:58:21Z"></script>
-<script src="../accountManager.js?v=2026-05-09T02:58:21Z"></script>
-<script src="../scheduleShared.js?v=2026-05-09T02:58:21Z"></script>
-<script src="../presenceShared.js?v=2026-05-09T02:58:21Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-09T02:58:21Z"></script>
+<script src="../assetStore.js?v=2026-05-09T04:13:22Z"></script>
+<script src="../chatStorage.js?v=2026-05-09T04:13:22Z"></script>
+<script src="../metadataStore.js?v=2026-05-09T04:13:22Z"></script>
+<script src="../promptManager.js?v=2026-05-09T04:13:22Z"></script>
+<script src="../accountManager.js?v=2026-05-09T04:13:22Z"></script>
+<script src="../scheduleShared.js?v=2026-05-09T04:13:22Z"></script>
+<script src="../presenceShared.js?v=2026-05-09T04:13:22Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-09T04:13:22Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 *{margin:0;padding:0;box-sizing:border-box}
@@ -734,6 +734,8 @@ body.offline-theme-bloodline .composer-btn:disabled{background:rgba(226,222,219,
 body.offline-theme-birthday .paper-bg{background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(244,244,242,.62)),var(--offline-page-bg);background-size:cover;background-position:center}
 body.offline-theme-birthday .story-wrap{gap:24px;padding-left:9px;padding-right:9px}
 body.offline-theme-birthday .composer-box{border:1px solid rgba(20,20,20,.16);border-radius:999px;background:rgba(255,255,255,.78);box-shadow:0 18px 38px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.8);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+body.offline-theme-birthday .composer-box textarea{font-family:"PING FANG SHAO HUA",'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',cursive;font-weight:800;color:#6f1015}
+body.offline-theme-birthday .composer-box textarea::placeholder{color:#7a1118;opacity:.78;font-family:"PING FANG SHAO HUA",'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',cursive;font-weight:800}
 body.offline-theme-birthday .composer-btn{border:1px solid rgba(20,20,20,.18);border-radius:999px;background:rgba(255,255,255,.84);box-shadow:0 12px 26px rgba(0,0,0,.08);color:#111}
 .birthday-card{width:min(100%,372px);align-self:flex-start;position:relative;isolation:isolate;color:#111}
 .birthday-card.user{align-self:flex-end}
@@ -754,9 +756,11 @@ body.offline-theme-birthday .composer-btn{border:1px solid rgba(20,20,20,.18);bo
 .birthday-motto-key::before{content:'';position:absolute;left:-16%;right:-18%;top:-45%;bottom:-30%;background:url('../apps/assets/%E7%BA%A2%E5%9C%882.png') center/100% 100% no-repeat;opacity:.92;pointer-events:none}
 .birthday-motto-love{position:relative;display:inline-block;padding:0 .05em}
 .birthday-motto-love::after{content:'';position:absolute;left:-14%;right:-18%;top:-38%;bottom:-28%;background:url('../apps/assets/%E7%BA%A2%E5%9C%882.png') center/100% 100% no-repeat;opacity:.82;pointer-events:none;transform:rotate(-3deg)}
-.birthday-ribbon{position:absolute;left:4px;right:8px;bottom:-108px;z-index:6;height:152px;background:url('../apps/assets/%E7%BA%A2%E4%B8%9D%E5%B8%A6.png') center/contain no-repeat;opacity:.86;mix-blend-mode:multiply;pointer-events:none}
+.birthday-card.user .birthday-motto{left:auto;right:18px;max-width:54%;text-align:right}
+.birthday-ribbon{position:absolute;left:-12px;right:-12px;bottom:-110px;z-index:6;height:158px;background:url('../apps/assets/%E7%BA%A2%E4%B8%9D%E5%B8%A6.png') center/100% auto no-repeat;opacity:.86;mix-blend-mode:multiply;pointer-events:none}
+.birthday-card.user .birthday-ribbon{transform:scaleX(-1)}
 .birthday-calendar{position:absolute;z-index:9;right:16px;bottom:-42px;width:158px;padding:8px 8px 9px;background:rgba(255,255,255,.64);border:1px solid rgba(17,17,17,.14);box-shadow:0 13px 24px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.78);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);transform:rotate(2deg)}
-.birthday-card.user .birthday-calendar{right:16px;transform:rotate(2deg)}
+.birthday-card.user .birthday-calendar{left:16px;right:auto;transform:rotate(-3deg)}
 .birthday-calendar-title{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-bottom:5px;color:#0f0f0f}
 .birthday-month{font:italic 900 28px/.82 Georgia,'Times New Roman',serif;letter-spacing:-.03em}
 .birthday-month-sub{display:none}
@@ -780,10 +784,15 @@ body.offline-theme-birthday .composer-btn{border:1px solid rgba(20,20,20,.18);bo
 .birthday-body .sheet-quote-inline{border:1px solid rgba(17,17,17,.16) !important;border-radius:4px;background:rgba(255,255,255,.76) !important;box-shadow:0 6px 13px rgba(0,0,0,.08);padding:4px 12px;color:#333 !important;font-family:'Songti SC','Noto Serif SC',serif}
 .birthday-body .char-sheet-aside{display:block;width:fit-content;max-width:100%;margin:8px 0 15px;padding:8px 12px;border-radius:3px;background:rgba(246,246,246,.74);border:1px solid rgba(17,17,17,.09);color:rgba(17,17,17,.46);font:700 14px/1.72 'Songti SC','Noto Serif SC',serif;text-decoration:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.78)}
 .birthday-postcards{margin-top:12px;display:flex;flex-direction:column;gap:9px}
-.birthday-lyrics{position:relative;z-index:1;margin-top:14px;padding:14px 15px 13px;border:1px solid rgba(17,17,17,.11);border-radius:5px;background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(245,245,244,.66));box-shadow:0 14px 28px rgba(0,0,0,.06),inset 0 0 0 1px rgba(255,255,255,.82)}
-.birthday-lyrics-kicker{font:900 10px/1 var(--fontd);letter-spacing:.24em;text-transform:uppercase;color:rgba(17,17,17,.42);margin-bottom:8px}
-.birthday-lyric-line{font:700 14px/1.9 'Songti SC','Noto Serif SC',serif;color:#161616;border-bottom:1px solid rgba(17,17,17,.08);padding:2px 0 3px}
-.birthday-lyric-line:last-child{border-bottom:0}
+.birthday-lyrics{position:relative;z-index:1;margin-top:14px;padding:12px 15px 13px;border:1px solid rgba(17,17,17,.09);border-radius:5px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(245,245,244,.58));box-shadow:0 14px 28px rgba(0,0,0,.055),inset 0 0 0 1px rgba(255,255,255,.78);overflow:hidden}
+.birthday-lyrics-kicker{font:900 10px/1 var(--fontd);letter-spacing:.24em;text-transform:uppercase;color:rgba(17,17,17,.38);margin-bottom:8px;text-align:center}
+.birthday-lyrics-window{position:relative;height:82px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.birthday-lyrics-window::before,.birthday-lyrics-window::after{content:'';position:absolute;left:0;right:0;height:28px;z-index:2;pointer-events:none}
+.birthday-lyrics-window::before{top:0;background:linear-gradient(180deg,rgba(250,250,249,.92),rgba(250,250,249,0))}
+.birthday-lyrics-window::after{bottom:0;background:linear-gradient(0deg,rgba(250,250,249,.92),rgba(250,250,249,0))}
+.birthday-lyrics-track{width:100%;transition:transform .48s cubic-bezier(.22,1,.36,1);will-change:transform}
+.birthday-lyric-line{height:28px;display:flex;align-items:center;justify-content:center;text-align:center;font:700 14px/1.35 'Songti SC','Noto Serif SC',serif;color:rgba(17,17,17,.34);transform:scale(.94);transition:opacity .42s ease,color .42s ease,transform .42s ease,font-weight .42s ease;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.birthday-lyric-line.is-active{color:#151515;opacity:1;font-weight:900;transform:scale(1)}
 .birthday-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px}
 .birthday-actions-left{display:flex;align-items:center;gap:8px}
 .birthday-actions .offline-story-iconset{display:flex}
@@ -795,7 +804,8 @@ body.offline-theme-birthday .composer-btn{border:1px solid rgba(20,20,20,.18);bo
   .birthday-card{width:min(100%,356px)}
   .birthday-hero{height:218px}
   .birthday-motto{left:14px;bottom:32px;max-width:56%;font-size:22px}
-  .birthday-ribbon{bottom:-100px;height:140px}
+  .birthday-card.user .birthday-motto{right:14px;max-width:54%}
+  .birthday-ribbon{left:-10px;right:-10px;bottom:-100px;height:140px}
   .birthday-calendar{width:148px;bottom:-40px}
   .birthday-month{font-size:25px}
   .birthday-paper{margin-top:78px;padding:20px 15px 15px}
@@ -965,7 +975,7 @@ repeating-linear-gradient(0deg,rgba(128,0,18,.026) 0 1px,transparent 1px 26px)}
   <div class="composer">
     <button class="composer-btn reply" id="offlineRerollBtn" type="button" onclick="rerollOfflineTurn()">↻</button>
     <div class="composer-box">
-      <textarea id="offlineInput" placeholder="写下你此刻线下想说的话..."></textarea>
+      <textarea id="offlineInput" placeholder="我们的红线藏在血管里"></textarea>
     </div>
     <div class="composer-actions">
       <button class="composer-btn reply" id="offlineReplyBtn" type="button" onclick="requestOfflineReply()">✦</button>
@@ -1410,6 +1420,8 @@ var flightGameState = null;
 var offlineFlightOverlayTimer = 0;
 var runtimeUserAvatar = '';
 var runtimeCharAvatar = '';
+var runtimeUserPersonaProfile = '';
+var birthdayLyricTimers = [];
 var offlineMemorySnippetCache = '';
 var offlineEditingIndex = -1;
 var offlineSummaryQueue = {};
@@ -3600,9 +3612,12 @@ function buildOfflineCharacterFromSnapshot(snapshot){
     nickname: resolvedNickname,
     avatar: String(snapshot.avatar || '').trim() || '🌸',
     imageData: String(snapshot.imageData || '').trim(),
+    avatarUrl: String(snapshot.avatarUrl || '').trim(),
     description: String(snapshot.description || '').trim(),
     personality: String(snapshot.personality || '').trim(),
     userNameProfile: String(snapshot.userNameProfile || '').trim(),
+    userAvatarProfile: String(snapshot.userAvatarProfile || '').trim(),
+    userPersonaProfile: String(snapshot.userPersonaProfile || '').trim(),
     scenario: String(snapshot.scenario || '').trim(),
     system_prompt: String(snapshot.system_prompt || '').trim(),
     first_mes: String(snapshot.first_mes || '').trim(),
@@ -5423,11 +5438,43 @@ function resolveUserName(){
   return 'User';
 }
 function getOfflineUserPersona(){
-  return String(
-    localStorage.getItem(scopedKey('user_persona'))
-    || localStorage.getItem('user_persona')
-    || ''
-  ).trim();
+  var charId = character && character.id ? String(character.id) : '';
+  var candidates = [];
+  function addText(value){
+    var text = '';
+    if(typeof value === 'string') text = value;
+    else if(value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, 'text')) text = value.text;
+    text = String(text || '').trim();
+    if(text && candidates.indexOf(text) === -1) candidates.push(text);
+  }
+  function readKey(key){
+    key = String(key || '').trim();
+    if(!key) return;
+    try{
+      var raw = localStorage.getItem(key);
+      if(!raw) return;
+      try{
+        var parsed = JSON.parse(raw);
+        if(parsed && typeof parsed === 'object' && Object.prototype.hasOwnProperty.call(parsed, 'text')){
+          addText(parsed.text);
+          return;
+        }
+      }catch(parseErr){}
+      addText(raw);
+    }catch(e){}
+  }
+  addText(runtimeUserPersonaProfile);
+  addText(character && character.userPersonaProfile);
+  addText(character && character.userPersona);
+  if(charId){
+    accountScopedCandidates('user_persona_' + charId).forEach(readKey);
+    accountScopedCandidates('chat_user_persona_profile_' + charId).forEach(readKey);
+    readKey('user_persona_' + charId);
+    readKey('chat_user_persona_profile_' + charId);
+  }
+  readKey(scopedKey('user_persona'));
+  readKey('user_persona');
+  return candidates[0] || '';
 }
 function getOfflinePendingFriendIntro(){
   if(!character || !character.id) return '';
@@ -5475,7 +5522,8 @@ function normalizeOfflineChatSettingsBundle(raw){
     charAvatar: normalizeOfflineAssetSrc(src.charAvatar || ''),
     userAvatar: normalizeOfflineAssetSrc(src.userAvatar || ''),
     selectedCharAvatarItemId: String(src.selectedCharAvatarItemId || '').trim(),
-    selectedUserAvatarItemId: String(src.selectedUserAvatarItemId || '').trim()
+    selectedUserAvatarItemId: String(src.selectedUserAvatarItemId || '').trim(),
+    userPersonaProfile: String(src.userPersonaProfile || '').trim()
   };
 }
 function loadBestOfflineJson(keys){
@@ -5496,6 +5544,30 @@ function loadOfflineChatSettingsBundle(charId){
   return loadBestOfflineJson(offlineChatSettingsBundleKeys(charId)).then(function(bundle){
     return bundle ? normalizeOfflineChatSettingsBundle(bundle) : null;
   });
+}
+function offlineUserPersonaProfileKeys(charId){
+  var safeCharId = String(charId || '').trim();
+  return safeCharId ? accountScopedCandidates('chat_user_persona_profile_' + safeCharId) : [];
+}
+function normalizeOfflineUserPersonaProfilePayload(raw){
+  if(raw == null) return '';
+  if(typeof raw === 'string') return String(raw || '').trim();
+  if(raw && typeof raw === 'object'){
+    return String(raw.text || raw.userPersonaProfile || raw.persona || '').trim();
+  }
+  return '';
+}
+function refreshOfflineUserPersonaProfile(){
+  var charId = character && character.id ? String(character.id) : '';
+  if(!charId) return Promise.resolve('');
+  return loadBestOfflineJson(offlineUserPersonaProfileKeys(charId)).then(function(item){
+    var text = normalizeOfflineUserPersonaProfilePayload(item);
+    if(text){
+      runtimeUserPersonaProfile = text;
+      if(character) character.userPersonaProfile = text;
+    }
+    return text;
+  }).catch(function(){ return ''; });
 }
 function loadOfflineAvatarLibrary(charId){
   return loadBestOfflineJson(offlineAvatarLibraryKeys(charId));
@@ -5524,6 +5596,7 @@ function resolveOfflineSelectedAvatarFromBundle(charId, role, bundle){
 function resolveUserAvatar(){
   var charId = character && character.id ? String(character.id) : '';
   if(isRenderableOfflineAvatarSrc(runtimeUserAvatar)) return runtimeUserAvatar;
+  if(character && isRenderableOfflineAvatarSrc(character.userAvatarProfile)) return normalizeOfflineAssetSrc(character.userAvatarProfile);
   var keys = getOfflineUserAvatarAssetKeys(charId);
   for(var i = 0; i < keys.length; i += 1){
     try{
@@ -5540,7 +5613,7 @@ function refreshOfflineAvatarAssets(){
   if(charId){
     charKeys = getOfflineCharAvatarAssetKeys(charId);
   }
-  Promise.all([
+  return Promise.all([
     Promise.all(charKeys.map(function(key){ return loadStoredAsset(key).catch(function(){ return ''; }); })),
     Promise.all(userKeys.map(function(key){ return loadStoredAsset(key).catch(function(){ return ''; }); })),
     loadOfflineChatSettingsBundle(charId).catch(function(){ return null; })
@@ -5558,6 +5631,10 @@ function refreshOfflineAvatarAssets(){
       if(isStableOfflineAvatarSrc(selectedUser)) nextUser = selectedUser;
       if(!nextChar && bundle && isStableOfflineAvatarSrc(bundle.charAvatar)) nextChar = bundle.charAvatar;
       if(!nextUser && bundle && isStableOfflineAvatarSrc(bundle.userAvatar)) nextUser = bundle.userAvatar;
+      if(bundle && bundle.userPersonaProfile){
+        runtimeUserPersonaProfile = String(bundle.userPersonaProfile || '').trim();
+        if(character) character.userPersonaProfile = runtimeUserPersonaProfile;
+      }
       return { nextChar: nextChar, nextUser: nextUser };
     });
   }).then(function(resolved){
@@ -5580,6 +5657,12 @@ function refreshOfflineAvatarAssets(){
       }
     }
   }).catch(function(){ return null; });
+}
+function refreshOfflineLiveProfileFromSettings(){
+  return Promise.all([
+    refreshOfflineAvatarAssets(),
+    refreshOfflineUserPersonaProfile()
+  ]).then(function(){ return true; }).catch(function(){ return false; });
 }
 function extraCharPhotoKey(){
   return character && character.id ? scopedKey('offline_char_extra_photo_' + String(character.id)) : '';
@@ -5631,11 +5714,11 @@ function isOfflineBirthdayTheme(){
   return getOfflineBuiltinTheme() === 'birthday';
 }
 function getOfflineBirthdayLyricsJsonFragment(){
-  return isOfflineBirthdayTheme() ? ',"lyrics":["...","...","...","...","..."]' : '';
+  return isOfflineBirthdayTheme() ? ',"lyrics":["...","...","...","...","...","...","...","..."]' : '';
 }
 function getOfflineBirthdayLyricsPromptLine(){
   if(!isOfflineBirthdayTheme()) return '';
-  return '当前内置美化是“生日快乐”：必须额外返回 lyrics 数组，写 5-6 句 char 原创歌词；歌词必须读角色 persona、世界书、最近线上/线下上下文和本幕正文来写，像 char 自己会写的短歌词，不要引用现实歌曲歌词，不要模板，不要 fallback。lyrics 只用于 char 卡片最末尾的歌词区，不能混进 text 正文。';
+  return '当前内置美化是“生日快乐”：必须额外返回 lyrics 数组，写 6-10 句 char 原创歌词；歌词必须读角色 persona、用户 persona、世界书、最近线上/线下上下文和本幕正文来写，像 char 自己会写的短歌词，高级、克制、有画面感，不要低俗，不要引用现实歌曲歌词，不要模板，不要 fallback。lyrics 只用于 char 卡片最末尾的歌词区，不能混进 text 正文。';
 }
 function applyOfflineBuiltinTheme(){
   var theme = getOfflineBuiltinTheme();
@@ -7641,12 +7724,16 @@ function normalizeOfflineBirthdayLyrics(value){
     if(!line || seen[line]) return false;
     seen[line] = true;
     return true;
-  }).slice(0, 6);
+  }).slice(0, 10);
 }
-function renderBirthdayMottoHtml(){
-  return '<div class="birthday-motto" aria-label="血管，是我们藏在身体里的红线。我们生来就是相爱的。">' +
-    '<span class="birthday-motto-key">血管</span>，是我们藏在身体里的<br>红线。<br>' +
-    '我们生来就是<span class="birthday-motto-love">相爱</span>的。' +
+function renderBirthdayMottoHtml(isChar){
+  if(isChar){
+    return '<div class="birthday-motto" aria-label="血管，是我们藏在身体里的红线">' +
+      '<span class="birthday-motto-key">血管</span>，是我们藏在身体里的<span class="birthday-motto-key">红线</span>' +
+    '</div>';
+  }
+  return '<div class="birthday-motto" aria-label="我们生来就是相爱的">' +
+    '我们生来就是<span class="birthday-motto-love">相爱</span>的' +
   '</div>';
 }
 function renderBirthdayLyrics(entry, isChar){
@@ -7655,8 +7742,45 @@ function renderBirthdayLyrics(entry, isChar){
   if(!lines.length) return '';
   return '<div class="birthday-lyrics" aria-label="原创歌词">' +
     '<div class="birthday-lyrics-kicker">original lyrics</div>' +
-    lines.map(function(line){ return '<div class="birthday-lyric-line">' + esc(line) + '</div>'; }).join('') +
+    '<div class="birthday-lyrics-window"><div class="birthday-lyrics-track">' +
+      lines.map(function(line){ return '<div class="birthday-lyric-line">' + esc(line) + '</div>'; }).join('') +
+    '</div></div>' +
   '</div>';
+}
+function stopBirthdayLyricPlayers(){
+  birthdayLyricTimers.forEach(function(timer){ clearInterval(timer); });
+  birthdayLyricTimers = [];
+}
+function startBirthdayLyricPlayers(){
+  stopBirthdayLyricPlayers();
+  if(!isOfflineBirthdayTheme()) return;
+  var root = document.getElementById('storyList');
+  if(!root) return;
+  root.querySelectorAll('.birthday-lyrics').forEach(function(box){
+    var win = box.querySelector('.birthday-lyrics-window');
+    var track = box.querySelector('.birthday-lyrics-track');
+    var lines = Array.prototype.slice.call(box.querySelectorAll('.birthday-lyric-line'));
+    if(!(win && track && lines.length)) return;
+    var idx = 0;
+    var dir = 1;
+    function paint(){
+      lines.forEach(function(line, lineIdx){
+        line.classList.toggle('is-active', lineIdx === idx);
+      });
+      var active = lines[idx];
+      var offset = active ? (active.offsetTop - Math.max(0, (win.clientHeight - active.offsetHeight) / 2)) : 0;
+      track.style.transform = 'translateY(' + (-Math.max(0, offset)) + 'px)';
+    }
+    paint();
+    if(lines.length > 1){
+      birthdayLyricTimers.push(setInterval(function(){
+        if(idx >= lines.length - 1) dir = -1;
+        if(idx <= 0) dir = 1;
+        idx += dir;
+        paint();
+      }, 2300));
+    }
+  });
 }
 function getOfflineBirthdayUserMonth(){
   if(offlineDrawerDraft && Object.prototype.hasOwnProperty.call(offlineDrawerDraft, 'birthdayUserMonth')){
@@ -7699,8 +7823,8 @@ function renderBirthdayStoryCard(entry, idx, isChar){
       '<div class="birthday-hero"' + avatarClick + '>' +
         '<div class="birthday-cover">' + renderBirthdayCoverHtml(avatar, displayName.slice(0, 2) || (isChar ? 'C' : 'U')) + '</div>' +
         '<div class="birthday-stats"><span>' + esc(floorLabel) + '</span><span>' + esc(tokenLabel) + '</span><span>' + esc(secondsLabel) + '</span></div>' +
-        (isChar ? renderBirthdayMottoHtml() : '') +
-        (isChar ? '<div class="birthday-ribbon" aria-hidden="true"></div>' : '') +
+        renderBirthdayMottoHtml(isChar) +
+        '<div class="birthday-ribbon" aria-hidden="true"></div>' +
         renderBirthdayCalendarHtml(month, day, isChar ? 'char birthday calendar' : 'user birthday calendar') +
       '</div>' +
       '<div class="birthday-paper">' +
@@ -7878,6 +8002,7 @@ function renderOfflineGoodbyeInlineChat(){
 function renderStory(){
   var wrap = document.getElementById('storyList');
   if(!wrap) return;
+  stopBirthdayLyricPlayers();
   renderOfflineStageHeader();
   renderOfflineStageSummaryList();
   document.body.classList.toggle('offline-lobby-open', shouldShowOfflineLobby());
@@ -7939,6 +8064,7 @@ function renderStory(){
       }
     };
   });
+  startBirthdayLyricPlayers();
   wrap.scrollTop = wrap.scrollHeight;
   renderOfflineInviteDebugCard();
 }
@@ -15958,7 +16084,7 @@ async function init(){
   });
   refreshOfflineMemoryButton();
   applyOfflineReadOnlyMode();
-  refreshOfflineAvatarAssets();
+  await refreshOfflineLiveProfileFromSettings();
   renderStory();
   primeOfflineStatusCards();
   queueOfflineStageSummaryGeneration();
@@ -16045,6 +16171,32 @@ window.addEventListener('message', function(e){
   if(data.type === 'APP_CLOSING'){
     autoArchiveOfflineMeetIfNeeded('app_closing');
   }
+  if(data.type === 'SET_ACTIVE_CHARACTER' && data.payload && character && character.id && String(data.payload.id || '').trim() === String(character.id || '').trim()){
+    character = Object.assign({}, character || {}, data.payload || {});
+    var pushedCharAvatar = normalizeOfflineAssetSrc(data.payload.imageData || data.payload.avatarUrl || '');
+    if(isStableOfflineAvatarSrc(pushedCharAvatar)) runtimeCharAvatar = pushedCharAvatar;
+    var pushedUserAvatar = normalizeOfflineAssetSrc(data.payload.userAvatarProfile || data.payload.userAvatar || '');
+    if(isStableOfflineAvatarSrc(pushedUserAvatar)) runtimeUserAvatar = pushedUserAvatar;
+    if(data.payload.userPersonaProfile) runtimeUserPersonaProfile = String(data.payload.userPersonaProfile || '').trim();
+    refreshOfflineLiveProfileFromSettings().then(function(){ renderStory(); });
+  }
+  if(data.type === 'CHAT_SETTINGS_BUNDLE_SAVED' && data.payload && character && character.id && String(data.payload.charId || '').trim() === String(character.id || '').trim()){
+    var bundle = normalizeOfflineChatSettingsBundle(data.payload.bundle || {});
+    var changed = false;
+    if(isStableOfflineAvatarSrc(bundle.charAvatar) && bundle.charAvatar !== runtimeCharAvatar){
+      runtimeCharAvatar = bundle.charAvatar;
+      changed = true;
+    }
+    if(isStableOfflineAvatarSrc(bundle.userAvatar) && bundle.userAvatar !== runtimeUserAvatar){
+      runtimeUserAvatar = bundle.userAvatar;
+      changed = true;
+    }
+    if(bundle.userPersonaProfile){
+      runtimeUserPersonaProfile = bundle.userPersonaProfile;
+      character.userPersonaProfile = bundle.userPersonaProfile;
+    }
+    refreshOfflineLiveProfileFromSettings().then(function(){ if(changed) renderStory(); });
+  }
   if(data.type === 'PARENT_APP_KEYBOARD_INSET'){
     parentOfflineKeyboardInset = 0;
     syncOfflineViewport();
@@ -16061,10 +16213,12 @@ document.addEventListener('visibilitychange', function(){
     autoArchiveOfflineMeetIfNeeded('hidden');
   }else{
     applyOfflineBeautyCss();
+    refreshOfflineLiveProfileFromSettings();
   }
 });
 window.addEventListener('pageshow', function(){
   applyOfflineBeautyCss();
+  refreshOfflineLiveProfileFromSettings();
 });
 window.addEventListener('resize', syncOfflineViewport);
 window.addEventListener('orientationchange', syncOfflineViewport);
