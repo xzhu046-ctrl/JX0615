@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-08T22:35:52Z"></script>
-<script src="../chatStorage.js?v=2026-05-08T22:35:52Z"></script>
-<script src="../metadataStore.js?v=2026-05-08T22:35:52Z"></script>
-<script src="../promptManager.js?v=2026-05-08T22:35:52Z"></script>
-<script src="../accountManager.js?v=2026-05-08T22:35:52Z"></script>
-<script src="../scheduleShared.js?v=2026-05-08T22:35:52Z"></script>
-<script src="../presenceShared.js?v=2026-05-08T22:35:52Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-08T22:35:52Z"></script>
+<script src="../assetStore.js?v=2026-05-09T02:58:21Z"></script>
+<script src="../chatStorage.js?v=2026-05-09T02:58:21Z"></script>
+<script src="../metadataStore.js?v=2026-05-09T02:58:21Z"></script>
+<script src="../promptManager.js?v=2026-05-09T02:58:21Z"></script>
+<script src="../accountManager.js?v=2026-05-09T02:58:21Z"></script>
+<script src="../scheduleShared.js?v=2026-05-09T02:58:21Z"></script>
+<script src="../presenceShared.js?v=2026-05-09T02:58:21Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-09T02:58:21Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 *{margin:0;padding:0;box-sizing:border-box}
@@ -731,7 +731,7 @@ body.offline-theme-bloodline .composer-box textarea{font-weight:800;color:#22141
 body.offline-theme-bloodline .composer-btn{border:1px solid rgba(111,0,17,.26);border-radius:999px;background:rgba(255,255,255,.82);color:#8b101b;box-shadow:0 11px 22px rgba(34,0,8,.1),inset 0 0 0 1px rgba(255,255,255,.86)}
 body.offline-theme-bloodline .composer-btn.primary{background:#9f101f;color:#fff;border-color:#9f101f}
 body.offline-theme-bloodline .composer-btn:disabled{background:rgba(226,222,219,.75);color:#998286;box-shadow:none}
-body.offline-theme-birthday .paper-bg{background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(244,244,242,.62)),var(--offline-page-bg);background-size:cover;background-position:center;filter:grayscale(.2) contrast(.98)}
+body.offline-theme-birthday .paper-bg{background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(244,244,242,.62)),var(--offline-page-bg);background-size:cover;background-position:center}
 body.offline-theme-birthday .story-wrap{gap:24px;padding-left:9px;padding-right:9px}
 body.offline-theme-birthday .composer-box{border:1px solid rgba(20,20,20,.16);border-radius:999px;background:rgba(255,255,255,.78);box-shadow:0 18px 38px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.8);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 body.offline-theme-birthday .composer-btn{border:1px solid rgba(20,20,20,.18);border-radius:999px;background:rgba(255,255,255,.84);box-shadow:0 12px 26px rgba(0,0,0,.08);color:#111}
@@ -740,31 +740,37 @@ body.offline-theme-birthday .composer-btn{border:1px solid rgba(20,20,20,.18);bo
 .birthday-sheet{position:relative;background:rgba(255,255,255,.8);border:1px solid rgba(20,20,20,.08);box-shadow:0 26px 60px rgba(0,0,0,.1),inset 0 0 0 1px rgba(255,255,255,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow:visible}
 .birthday-hero{position:relative;height:230px;overflow:visible;background:#e8e8e8}
 .birthday-cover{position:absolute;inset:0;overflow:hidden;background:linear-gradient(135deg,#e7e7e5,#fafafa)}
-.birthday-cover img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.08) brightness(1.04)}
+.birthday-cover img{width:100%;height:100%;object-fit:cover;display:block}
 .birthday-cover-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:900 44px/1 var(--fontd);letter-spacing:.05em;color:#bbb;background:linear-gradient(135deg,#ededed,#fff)}
 .birthday-cover img + .birthday-cover-fallback{display:none}
 .birthday-cover img[style*="display: none"] + .birthday-cover-fallback{display:flex}
-.birthday-hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:56px;background:linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.42),rgba(0,0,0,0));pointer-events:none}
-.birthday-card.user .birthday-hero::after{background:linear-gradient(270deg,rgba(0,0,0,.82),rgba(0,0,0,.42),rgba(0,0,0,0))}
-.birthday-stats{position:absolute;left:0;top:10px;z-index:3;display:flex;align-items:center;gap:24px;min-width:132px;height:30px;padding:0 13px;background:rgba(0,0,0,.72);color:#ececec;font:800 15px/1 Georgia,'Times New Roman',serif;letter-spacing:.03em}
-.birthday-name{position:absolute;right:18px;bottom:12px;z-index:4;max-width:50%;font-family:'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',serif;font-size:43px;line-height:1;color:#fff;text-align:right;text-shadow:0 5px 12px rgba(0,0,0,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.birthday-card.user .birthday-name{left:18px;right:auto;text-align:left}
-.birthday-calendar{position:absolute;z-index:5;left:16px;bottom:-42px;width:158px;padding:8px 8px 9px;background:rgba(255,255,255,.64);border:1px solid rgba(17,17,17,.14);box-shadow:0 13px 24px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.78);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);transform:rotate(-2deg)}
-.birthday-card.user .birthday-calendar{left:auto;right:16px;transform:rotate(2deg)}
+.birthday-hero::after{content:none}
+.birthday-stats{position:absolute;left:0;top:10px;z-index:8;display:flex;align-items:center;gap:16px;min-width:154px;height:30px;padding:0 13px;background:rgba(0,0,0,.72);color:#ececec;font:800 15px/1 Georgia,'Times New Roman',serif;letter-spacing:.03em}
+.birthday-card.char .birthday-stats{left:auto;right:0;justify-content:flex-end}
+.birthday-name{display:none}
+.birthday-motto{position:absolute;left:18px;bottom:34px;z-index:7;max-width:58%;padding:10px 12px 8px;font-family:"PING FANG SHAO HUA",'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',cursive;font-size:25px;line-height:1.1;font-weight:700;color:#a61216;letter-spacing:.02em;text-shadow:0 1px 0 rgba(255,255,255,.95),0 0 8px rgba(255,255,255,.92)}
+.birthday-motto::before{content:'';position:absolute;inset:-5px -8px;border-radius:18px;background:linear-gradient(90deg,rgba(255,255,255,.82),rgba(255,255,255,.56),rgba(255,255,255,.12));filter:blur(6px);z-index:-1}
+.birthday-motto-key{position:relative;display:inline-block;padding:0 .06em}
+.birthday-motto-key::before{content:'';position:absolute;left:-16%;right:-18%;top:-45%;bottom:-30%;background:url('../apps/assets/%E7%BA%A2%E5%9C%882.png') center/100% 100% no-repeat;opacity:.92;pointer-events:none}
+.birthday-motto-love{position:relative;display:inline-block;padding:0 .05em}
+.birthday-motto-love::after{content:'';position:absolute;left:-14%;right:-18%;top:-38%;bottom:-28%;background:url('../apps/assets/%E7%BA%A2%E5%9C%882.png') center/100% 100% no-repeat;opacity:.82;pointer-events:none;transform:rotate(-3deg)}
+.birthday-ribbon{position:absolute;left:4px;right:8px;bottom:-108px;z-index:6;height:152px;background:url('../apps/assets/%E7%BA%A2%E4%B8%9D%E5%B8%A6.png') center/contain no-repeat;opacity:.86;mix-blend-mode:multiply;pointer-events:none}
+.birthday-calendar{position:absolute;z-index:9;right:16px;bottom:-42px;width:158px;padding:8px 8px 9px;background:rgba(255,255,255,.64);border:1px solid rgba(17,17,17,.14);box-shadow:0 13px 24px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.78);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);transform:rotate(2deg)}
+.birthday-card.user .birthday-calendar{right:16px;transform:rotate(2deg)}
 .birthday-calendar-title{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-bottom:5px;color:#0f0f0f}
 .birthday-month{font:italic 900 28px/.82 Georgia,'Times New Roman',serif;letter-spacing:-.03em}
-.birthday-month-sub{font:900 10px/1 var(--fontd);letter-spacing:.08em;color:rgba(20,20,20,.58);white-space:nowrap}
+.birthday-month-sub{display:none}
 .birthday-weekdays,.birthday-days{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center}
 .birthday-weekdays span{padding:2px 0;background:rgba(0,0,0,.72);color:#f5f5f5;font:900 9px/1 var(--fontd)}
 .birthday-day{position:relative;height:17px;display:flex;align-items:center;justify-content:center;color:rgba(17,17,17,.58);font:900 12px/1 Georgia,'Times New Roman',serif;text-shadow:0 1px 0 rgba(255,255,255,.7)}
 .birthday-day.is-muted{color:transparent;text-shadow:none}
-.birthday-day.is-special{color:#fff;background:#111;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.7),0 8px 14px rgba(0,0,0,.2);transform:translateY(-1px)}
-.birthday-day.is-special::after{content:'✦';position:absolute;right:-4px;top:-6px;font:900 8px/1 var(--fontd);color:#111;text-shadow:0 1px 0 rgba(255,255,255,.8)}
-.birthday-paper{position:relative;margin-top:54px;padding:22px 17px 16px;background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(247,247,246,.86));min-height:250px}
+.birthday-day.is-special{color:#151515;background:transparent;border-radius:0;box-shadow:none;transform:none;z-index:1}
+.birthday-day.is-special::before{content:'';position:absolute;inset:-9px -11px;background:url('../apps/assets/%E7%BA%A2%E5%9C%882.png') center/100% 100% no-repeat;opacity:.92;pointer-events:none;z-index:-1}
+.birthday-day.is-special::after{content:none}
+.birthday-paper{position:relative;margin-top:82px;padding:22px 17px 16px;background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(247,247,246,.86));min-height:250px}
 .birthday-card.user .birthday-paper{padding-top:22px}
 .birthday-paper::before{content:'';position:absolute;left:18px;right:18px;top:86px;border-top:1px solid rgba(17,17,17,.08);box-shadow:0 36px 0 rgba(17,17,17,.055),0 72px 0 rgba(17,17,17,.045);pointer-events:none}
-.birthday-quote-line{position:relative;margin:0 0 17px;font:600 14px/1.7 Georgia,'Times New Roman','Songti SC',serif;color:#111}
-.birthday-soft-line{margin:0 0 18px;font:700 15px/1.75 'Songti SC','Noto Serif SC',serif;color:rgba(17,17,17,.34)}
+.birthday-quote-line,.birthday-soft-line{display:none}
 .birthday-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px}
 .birthday-card.user .birthday-tools{justify-content:flex-end}
 .birthday-edit{width:32px;height:32px;border:0;border-radius:999px;background:rgba(255,255,255,.72);box-shadow:0 10px 20px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#111;cursor:pointer;flex:0 0 32px}
@@ -774,17 +780,25 @@ body.offline-theme-birthday .composer-btn{border:1px solid rgba(20,20,20,.18);bo
 .birthday-body .sheet-quote-inline{border:1px solid rgba(17,17,17,.16) !important;border-radius:4px;background:rgba(255,255,255,.76) !important;box-shadow:0 6px 13px rgba(0,0,0,.08);padding:4px 12px;color:#333 !important;font-family:'Songti SC','Noto Serif SC',serif}
 .birthday-body .char-sheet-aside{display:block;width:fit-content;max-width:100%;margin:8px 0 15px;padding:8px 12px;border-radius:3px;background:rgba(246,246,246,.74);border:1px solid rgba(17,17,17,.09);color:rgba(17,17,17,.46);font:700 14px/1.72 'Songti SC','Noto Serif SC',serif;text-decoration:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.78)}
 .birthday-postcards{margin-top:12px;display:flex;flex-direction:column;gap:9px}
-.birthday-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:14px}
+.birthday-lyrics{position:relative;z-index:1;margin-top:14px;padding:14px 15px 13px;border:1px solid rgba(17,17,17,.11);border-radius:5px;background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(245,245,244,.66));box-shadow:0 14px 28px rgba(0,0,0,.06),inset 0 0 0 1px rgba(255,255,255,.82)}
+.birthday-lyrics-kicker{font:900 10px/1 var(--fontd);letter-spacing:.24em;text-transform:uppercase;color:rgba(17,17,17,.42);margin-bottom:8px}
+.birthday-lyric-line{font:700 14px/1.9 'Songti SC','Noto Serif SC',serif;color:#161616;border-bottom:1px solid rgba(17,17,17,.08);padding:2px 0 3px}
+.birthday-lyric-line:last-child{border-bottom:0}
+.birthday-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px}
+.birthday-actions-left{display:flex;align-items:center;gap:8px}
 .birthday-actions .offline-story-iconset{display:flex}
 .birthday-actions .offline-story-iconbtn{width:28px;height:28px;background:rgba(255,255,255,.78);border:1px solid rgba(17,17,17,.12);box-shadow:0 8px 18px rgba(0,0,0,.06);color:#111}
+.birthday-actions .birthday-edit{width:28px;height:28px;flex:0 0 28px;background:rgba(255,255,255,.78);border:1px solid rgba(17,17,17,.12);box-shadow:0 8px 18px rgba(0,0,0,.06)}
+.birthday-actions .birthday-edit svg{width:14px;height:14px}
 @media (max-width:420px){
   .offline-builtin-theme-tabs{grid-template-columns:1fr}
   .birthday-card{width:min(100%,356px)}
   .birthday-hero{height:218px}
-  .birthday-name{font-size:38px;max-width:62%}
+  .birthday-motto{left:14px;bottom:32px;max-width:56%;font-size:22px}
+  .birthday-ribbon{bottom:-100px;height:140px}
   .birthday-calendar{width:148px;bottom:-40px}
   .birthday-month{font-size:25px}
-  .birthday-paper{margin-top:52px;padding:20px 15px 15px}
+  .birthday-paper{margin-top:78px;padding:20px 15px 15px}
 }
 .bloodline-card{width:min(100%,372px);display:flex;flex-direction:column;position:relative;isolation:isolate;align-self:flex-start}
 .bloodline-card.user{align-self:flex-end}
@@ -5616,6 +5630,13 @@ function isOfflineBloodlineTheme(){
 function isOfflineBirthdayTheme(){
   return getOfflineBuiltinTheme() === 'birthday';
 }
+function getOfflineBirthdayLyricsJsonFragment(){
+  return isOfflineBirthdayTheme() ? ',"lyrics":["...","...","...","...","..."]' : '';
+}
+function getOfflineBirthdayLyricsPromptLine(){
+  if(!isOfflineBirthdayTheme()) return '';
+  return '当前内置美化是“生日快乐”：必须额外返回 lyrics 数组，写 5-6 句 char 原创歌词；歌词必须读角色 persona、世界书、最近线上/线下上下文和本幕正文来写，像 char 自己会写的短歌词，不要引用现实歌曲歌词，不要模板，不要 fallback。lyrics 只用于 char 卡片最末尾的歌词区，不能混进 text 正文。';
+}
 function applyOfflineBuiltinTheme(){
   var theme = getOfflineBuiltinTheme();
   document.body.classList.toggle('offline-theme-bloodline', theme === 'bloodline');
@@ -7600,9 +7621,41 @@ function renderBirthdayCalendarHtml(month, day, label){
     cells.push('<span class="birthday-day is-muted"></span>');
   }
   return '<div class="birthday-calendar" aria-label="' + escAttr(String(label || 'calendar')) + '">' +
-    '<div class="birthday-calendar-title"><span class="birthday-month">' + esc(getBirthdayMonthName(safeMonth)) + '</span><span class="birthday-month-sub">' + esc(String(safeMonth) + '月 · ' + String(safeDay) + '日') + '</span></div>' +
+    '<div class="birthday-calendar-title"><span class="birthday-month">' + esc(getBirthdayMonthName(safeMonth)) + '</span></div>' +
     '<div class="birthday-weekdays"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>' +
     '<div class="birthday-days">' + cells.join('') + '</div>' +
+  '</div>';
+}
+function normalizeOfflineBirthdayLyrics(value){
+  var list = [];
+  if(Array.isArray(value)) list = value;
+  else if(typeof value === 'string' && value.trim()) list = value.split(/\r?\n+/);
+  var seen = {};
+  return list.map(function(line){
+    return String(line || '')
+      .replace(/^\s*(?:[-*•·]|\d+[.)、])\s*/, '')
+      .replace(/^["“”「」『』]+|["“”「」『』]+$/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }).filter(function(line){
+    if(!line || seen[line]) return false;
+    seen[line] = true;
+    return true;
+  }).slice(0, 6);
+}
+function renderBirthdayMottoHtml(){
+  return '<div class="birthday-motto" aria-label="血管，是我们藏在身体里的红线。我们生来就是相爱的。">' +
+    '<span class="birthday-motto-key">血管</span>，是我们藏在身体里的<br>红线。<br>' +
+    '我们生来就是<span class="birthday-motto-love">相爱</span>的。' +
+  '</div>';
+}
+function renderBirthdayLyrics(entry, isChar){
+  if(!isChar) return '';
+  var lines = normalizeOfflineBirthdayLyrics(entry && (entry.lyrics || entry.birthdayLyrics || entry.songLines || entry.song_lines));
+  if(!lines.length) return '';
+  return '<div class="birthday-lyrics" aria-label="原创歌词">' +
+    '<div class="birthday-lyrics-kicker">original lyrics</div>' +
+    lines.map(function(line){ return '<div class="birthday-lyric-line">' + esc(line) + '</div>'; }).join('') +
   '</div>';
 }
 function getOfflineBirthdayUserMonth(){
@@ -7624,17 +7677,17 @@ function renderBirthdayStoryCard(entry, idx, isChar){
   var meta = buildOfflineEntryMeta(entry, isChar ? 'assistant' : 'user');
   var floorLabel = '#' + String(idx + 1);
   var tokenLabel = String(meta.tokenCount) + 't';
+  var secondsLabel = formatOfflineGenTime(meta.generationMs);
   var month = isChar ? 6 : getOfflineBirthdayUserMonth();
   var day = isChar ? 15 : getOfflineBirthdayUserDay();
   var editButton = '<button class="birthday-edit" type="button" onclick="editOfflineEntryText(' + idx + ')" aria-label="编辑"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button>';
-  var thoughtToggle = isChar ? ('<div class="birthday-tools"><div class="birthday-tools-main">' + renderOfflineThoughtChain(entry) + '</div>' + editButton + '</div>') : ('<div class="birthday-tools birthday-user-tools">' + editButton + '</div>');
+  var thoughtToggle = isChar ? ('<div class="birthday-tools"><div class="birthday-tools-main">' + renderOfflineThoughtChain(entry) + '</div></div>') : '';
   var statusChip = isChar ? renderOfflineStatusChip(entry, idx) : '';
   var summaryToggle = isChar ? renderOfflineSummary(entry) : '';
   var postcards = isChar ? ('<div class="birthday-postcards">' + statusChip + summaryToggle + '</div>') : '';
-  var quoteLine = isChar ? (String(meta.quote || '').trim() || 'In June, the flowers and you are all summer scenery') : getOfflineUserDisplayQuote();
-  var softLine = isChar ? (String(meta.title || '').trim() || '六月十五日') : getOfflineUserDisplayTitle();
   var avatarClick = isChar ? ' onclick="openOfflineStatusModal(' + idx + ', false)"' : '';
   var actions = '<div class="birthday-actions">' +
+      '<div class="birthday-actions-left">' + editButton + '</div>' +
       '<div class="offline-story-iconset">' +
         '<div class="offline-story-iconbtn"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2"></circle><circle cx="6" cy="12" r="2"></circle><circle cx="18" cy="19" r="2"></circle><path d="M8 12l8-6"></path><path d="M8 12l8 6"></path></svg></div>' +
         '<div class="offline-story-iconbtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1Z"></path></svg></div>' +
@@ -7645,16 +7698,16 @@ function renderBirthdayStoryCard(entry, idx, isChar){
     '<div class="birthday-sheet">' +
       '<div class="birthday-hero"' + avatarClick + '>' +
         '<div class="birthday-cover">' + renderBirthdayCoverHtml(avatar, displayName.slice(0, 2) || (isChar ? 'C' : 'U')) + '</div>' +
-        '<div class="birthday-stats"><span>' + esc(floorLabel) + '</span><span>' + esc(tokenLabel) + '</span></div>' +
-        '<div class="birthday-name">' + esc(displayName || (isChar ? 'char' : 'user')) + '</div>' +
+        '<div class="birthday-stats"><span>' + esc(floorLabel) + '</span><span>' + esc(tokenLabel) + '</span><span>' + esc(secondsLabel) + '</span></div>' +
+        (isChar ? renderBirthdayMottoHtml() : '') +
+        (isChar ? '<div class="birthday-ribbon" aria-hidden="true"></div>' : '') +
         renderBirthdayCalendarHtml(month, day, isChar ? 'char birthday calendar' : 'user birthday calendar') +
       '</div>' +
       '<div class="birthday-paper">' +
-        '<div class="birthday-quote-line">' + esc(quoteLine) + '</div>' +
-        '<div class="birthday-soft-line">' + esc(softLine) + '</div>' +
         thoughtToggle +
         '<div class="birthday-body">' + renderCharSheetBody(entry.text || '', entry.asides || (entry.aside ? [entry.aside] : []), idx, entry) + '</div>' +
         postcards +
+        renderBirthdayLyrics(entry, isChar) +
         actions +
       '</div>' +
     '</div>' +
@@ -8214,6 +8267,7 @@ function hasValidOfflineAssistantPayload(parsed){
   var quote = String(parsed.quote || '').trim();
   var thought = parsed.thought_chain && typeof parsed.thought_chain === 'object';
   var status = parsed.status_card && typeof parsed.status_card === 'object';
+  if(isOfflineBirthdayTheme()) return !!(text && thought && status);
   return !!(text && title && quote && thought && status);
 }
 function hasValidOfflineCombinedPayload(obj){
@@ -8639,6 +8693,7 @@ function normalizeOfflineBodyDisplayPayload(payload){
   next.artifactHtml = inlineArtifact ? inlineArtifact.artifactHtml : '';
   next.artifactLabel = inlineArtifact ? inlineArtifact.artifactLabel : '';
   next.artifactAfterParagraph = Math.max(1, Number(next.artifactAfterParagraph || next.artifact_after_paragraph || 0) || 0);
+  next.lyrics = normalizeOfflineBirthdayLyrics(next.lyrics || next.birthdayLyrics || next.birthday_lyrics || next.songLines || next.song_lines);
   return next;
 }
 function violatesOfflineBodyDisplayLanguage(payload){
@@ -8792,14 +8847,15 @@ function collectOfflineBodyValidationIssues(payload, options){
   var opts = options || {};
   var reasons = [];
   if(!(payload && typeof payload === 'object')) return ['正文结构不完整'];
+  var birthdayMode = isOfflineBirthdayTheme();
   var text = String(payload.text || '').trim();
   var title = String(payload.title || '').trim();
   var quote = String(payload.quote || '').trim();
   var artifactHtml = String(payload.artifactHtml || payload.artifact_html || '').trim();
   var artifactLabel = String(payload.artifactLabel || payload.artifact_label || '').trim();
   if(!text) reasons.push('正文为空');
-  if(!title) reasons.push('标题为空');
-  if(!quote) reasons.push('顶部语录为空');
+  if(!birthdayMode && !title) reasons.push('标题为空');
+  if(!birthdayMode && !quote) reasons.push('顶部语录为空');
   if((artifactHtml && !artifactLabel) || (artifactLabel && !artifactHtml)){
     reasons.push('正文小卡片结构不完整');
   }
@@ -8860,12 +8916,13 @@ async function repairOfflineBodyPayload(draft, options){
   if(!String(source.text || '').trim()) return null;
   var lang = getOfflineReplyLanguage();
   var langOption = getReplyLanguageOption(lang);
+  var birthdayMode = isOfflineBirthdayTheme();
   var systemPrompt = [
     '你是“线下正文修正文案器”。',
-    '只返回 JSON：{"title":"...","quote":"...","text":"...","asides":["..."],"artifact_label":"...","artifact_html":"..."}。',
+    '只返回 JSON：' + (birthdayMode ? '{"text":"...","asides":["..."],"artifact_label":"...","artifact_html":"...","lyrics":["..."]}' : '{"title":"...","quote":"...","text":"...","asides":["..."],"artifact_label":"...","artifact_html":"..."}') + '。',
     '不要解释，不要代码块，不要 thought_chain，不要 status_card。',
     '保持原草稿这幕的情境、关系、推进和情绪，不要重写成另一场戏。',
-    'title 与 quote 必须是简体中文。',
+    birthdayMode ? '生日快乐美化不检查 title/quote；如果草稿里没有标题或语录，不要补。' : 'title 与 quote 必须是简体中文。',
     '正文旁白、动作、环境描写必须是简体中文。',
     lang && lang !== 'zh'
       ? ('只有灰色旁白心声 asides 和引号里的角色台词使用' + (langOption.nativeLabel || langOption.label || lang) + '原文。')
@@ -8893,7 +8950,8 @@ async function repairOfflineBodyPayload(draft, options){
       text: String(source.text || '').trim(),
       asides: Array.isArray(source.asides) ? source.asides.map(function(it){ return String(it || '').trim(); }).filter(Boolean) : [],
       artifact_label: String(source.artifactLabel || source.artifact_label || '').trim(),
-      artifact_html: String(source.artifactHtml || source.artifact_html || '').trim()
+      artifact_html: String(source.artifactHtml || source.artifact_html || '').trim(),
+      lyrics: normalizeOfflineBirthdayLyrics(source.lyrics || source.birthdayLyrics || source.songLines || source.song_lines)
     }
   });
   var raw = await callAIWithTimeout(systemPrompt, userPrompt, Math.min(isMobileOfflineRuntime() ? 65000 : 50000, Number(opts.timeoutMs) || 50000));
@@ -8905,7 +8963,8 @@ async function repairOfflineBodyPayload(draft, options){
     text: String(parsed.text || '').trim(),
     asides: normalizeOfflineAsides(parsed.asides),
     artifactLabel: String(parsed.artifactLabel || parsed.artifact_label || '').trim(),
-    artifactHtml: String(parsed.artifactHtml || parsed.artifact_html || '').trim()
+    artifactHtml: String(parsed.artifactHtml || parsed.artifact_html || '').trim(),
+    lyrics: normalizeOfflineBirthdayLyrics(parsed.lyrics || source.lyrics || source.birthdayLyrics || source.songLines || source.song_lines)
   };
 }
 async function rewriteOfflineBodyPayload(draft, options){
@@ -8913,13 +8972,14 @@ async function rewriteOfflineBodyPayload(draft, options){
   var opts = options || {};
   var lang = getOfflineReplyLanguage();
   var langOption = getReplyLanguageOption(lang);
+  var birthdayMode = isOfflineBirthdayTheme();
   var systemPrompt = [
     '你是“线下正文终审改稿器”。',
     '你收到的是一版不合格草稿，你的任务不是判断它哪里错，而是直接把它改成最终可用版本。',
-    '只返回 JSON：{"title":"...","quote":"...","text":"...","asides":["..."],"artifact_label":"...","artifact_html":"..."}。',
+    '只返回 JSON：' + (birthdayMode ? '{"text":"...","asides":["..."],"artifact_label":"...","artifact_html":"...","lyrics":["..."]}' : '{"title":"...","quote":"...","text":"...","asides":["..."],"artifact_label":"...","artifact_html":"..."}') + '。',
     '不要解释，不要代码块，不要 thought_chain，不要 status_card。',
     '如果草稿里踩中了禁词、禁用句式、外语旁白、错误视角、缺少引号台词、长度不够，你必须主动改写到合格，不能把问题原样留下。',
-    'title 与 quote 必须是简体中文。',
+    birthdayMode ? '生日快乐美化不检查 title/quote；如果草稿里没有标题或语录，不要补。' : 'title 与 quote 必须是简体中文。',
     '正文旁白、动作、环境描写必须是简体中文。',
     lang && lang !== 'zh'
       ? ('只有灰色旁白心声 asides 和引号里的角色台词使用' + (langOption.nativeLabel || langOption.label || lang) + '原文。')
@@ -8952,7 +9012,8 @@ async function rewriteOfflineBodyPayload(draft, options){
       text: String(source.text || '').trim(),
       asides: Array.isArray(source.asides) ? source.asides.map(function(it){ return String(it || '').trim(); }).filter(Boolean) : [],
       artifact_label: String(source.artifactLabel || source.artifact_label || '').trim(),
-      artifact_html: String(source.artifactHtml || source.artifact_html || '').trim()
+      artifact_html: String(source.artifactHtml || source.artifact_html || '').trim(),
+      lyrics: normalizeOfflineBirthdayLyrics(source.lyrics || source.birthdayLyrics || source.songLines || source.song_lines)
     }
   });
   var raw = await callAIWithTimeout(systemPrompt, userPrompt, Math.min(isMobileOfflineRuntime() ? 70000 : 56000, Number(opts.timeoutMs) || 56000));
@@ -8964,7 +9025,8 @@ async function rewriteOfflineBodyPayload(draft, options){
     text: String(parsed.text || '').trim(),
     asides: normalizeOfflineAsides(parsed.asides),
     artifactLabel: String(parsed.artifactLabel || parsed.artifact_label || '').trim(),
-    artifactHtml: String(parsed.artifactHtml || parsed.artifact_html || '').trim()
+    artifactHtml: String(parsed.artifactHtml || parsed.artifact_html || '').trim(),
+    lyrics: normalizeOfflineBirthdayLyrics(parsed.lyrics || source.lyrics || source.birthdayLyrics || source.songLines || source.song_lines)
   };
 }
 async function generateOfflineBodyTextOnly(context, options){
@@ -9088,8 +9150,8 @@ async function generateOfflineUnifiedScene(context, options){
     var rawText = String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,'').trim();
     if(rawText && rawText.charAt(0) !== '{' && rawText.charAt(0) !== '[') parsed.text = rawText;
   }
-  if(!String(parsed.title || '').trim()) parsed.title = buildOfflineTitleFallback();
-  if(!String(parsed.quote || '').trim()) parsed.quote = buildOfflineQuoteFallback();
+  if(!isOfflineBirthdayTheme() && !String(parsed.title || '').trim()) parsed.title = buildOfflineTitleFallback();
+  if(!isOfflineBirthdayTheme() && !String(parsed.quote || '').trim()) parsed.quote = buildOfflineQuoteFallback();
   if(!parsed.thought_chain || typeof parsed.thought_chain !== 'object'){
     parsed.thought_chain = normalizeOfflineThoughtChain(null, parsed.text || '');
   }
@@ -9116,6 +9178,7 @@ async function generateOfflineUnifiedScene(context, options){
       artifactLabel: '',
       artifactHtml: '',
       artifactAfterParagraph: 0,
+      lyrics: normalizeOfflineBirthdayLyrics(parsed.lyrics),
       statusCard: null,
       sceneSummary: normalizeOfflineSummaryText(parsed.scene_summary || parsed.summary || '', fallbackPayload.text || '')
     };
@@ -9135,6 +9198,7 @@ async function generateOfflineUnifiedScene(context, options){
     artifactLabel: inlineArtifact ? inlineArtifact.artifactLabel : '',
     artifactHtml: inlineArtifact ? inlineArtifact.artifactHtml : '',
     artifactAfterParagraph: inlineArtifact ? Math.max(0, Number(parsed.artifactAfterParagraph || parsed.artifact_after_paragraph || 0) || 0) : 0,
+    lyrics: normalizeOfflineBirthdayLyrics(parsed.lyrics),
     statusCard: statusCard,
     sceneSummary: normalizeOfflineSummaryText(parsed.scene_summary || parsed.summary || '', finalText)
   };
@@ -9459,7 +9523,8 @@ function normalizeOfflineBodyDraftCandidate(draft){
     text: String(source.text || '').trim(),
     asides: normalizeOfflineAsides(source.asides),
     artifactLabel: inlineArtifact ? inlineArtifact.artifactLabel : '',
-    artifactHtml: inlineArtifact ? inlineArtifact.artifactHtml : ''
+    artifactHtml: inlineArtifact ? inlineArtifact.artifactHtml : '',
+    lyrics: normalizeOfflineBirthdayLyrics(source.lyrics || source.birthdayLyrics || source.songLines || source.song_lines)
   };
 }
 function scoreOfflineBodyDraft(payload, issues){
@@ -9525,7 +9590,8 @@ async function finalizeOfflineBodyPayload(draft, options){
             title: current.title,
             quote: current.quote,
             text: String(textOnly || '').trim(),
-            asides: current.asides
+            asides: current.asides,
+            lyrics: current.lyrics
           });
           currentIssues = collectOfflineBodyValidationIssues(current, opts);
           var textOnlyScore = scoreOfflineBodyDraft(current, currentIssues);
@@ -11259,16 +11325,20 @@ function buildOfflineBodySystemPrompt(options){
   var onlineChatText = getOfflineRecentOnlineSnippetByBudget(offlinePromptLimit(isMobileOfflineRuntime() ? 820 : 1200, compactLevel, 260));
   var historyText = getOfflineHistorySnippetByBudget(compactLevel >= 2 ? 3 : 4, offlinePromptLimit(isMobileOfflineRuntime() ? 820 : 1200, compactLevel, 260));
   var storyPrefs = getOfflineStoryPrefs();
+  var titleQuoteJsonFragment = isOfflineBirthdayTheme() ? '' : '"title":"...","quote":"...",';
+  var birthdayLyricsJsonFragment = getOfflineBirthdayLyricsJsonFragment();
+  var birthdayLyricsRule = getOfflineBirthdayLyricsPromptLine();
   return [
     '你现在只负责生成线下模式这一幕的正文内容。',
-    '只返回 JSON：{"title":"...","quote":"...","text":"...","asides":["...","..."],"heart":"...","artifact_label":"...","artifact_html":"..."}',
+    '只返回 JSON：{' + titleQuoteJsonFragment + '"text":"...","asides":["...","..."],"heart":"..."' + birthdayLyricsJsonFragment + ',"artifact_label":"...","artifact_html":"..."}',
     '不要 thought_chain，不要 status_card，不要解释。',
-    getOfflineTitlePromptBlock(),
+    isOfflineBirthdayTheme() ? '生日快乐美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 lyrics。' : getOfflineTitlePromptBlock(),
+    birthdayLyricsRule,
     'text 是正文，不包含 asides 心声；正文总长度必须写在 ' + storyPrefs.bodyMinChars + '-' + storyPrefs.bodyMaxChars + ' 个中文字符之间，心声不要算进正文。',
     '正文必须分成 ' + storyPrefs.paragraphMinCount + '-' + storyPrefs.paragraphMaxCount + ' 个自然段；每段按“正文总字数 ÷ 实际段落数”自然平均分配，不要固定成同一个死板字数，每段都用完整句子收尾。',
     '在你输出前必须自己检查 text：正文段落数和正文总字数都要落在范围内，不要为了凑字把 asides 混进 text。',
-    '线下正文标题、顶部 char 语录、旁白叙述、动作描写、环境描写一律使用简体中文；只有 asides 灰色旁白心声和 char 真正说出口的引号台词跟随当前语言设置。',
-    '最终检查 title、quote 和 text：除了引号里的 char 台词，其余所有正文都必须是简体中文。',
+    isOfflineBirthdayTheme() ? '线下正文旁白、动作描写、环境描写一律使用简体中文；只有 asides 灰色旁白心声和 char 真正说出口的引号台词跟随当前语言设置。' : '线下正文标题、顶部 char 语录、旁白叙述、动作描写、环境描写一律使用简体中文；只有 asides 灰色旁白心声和 char 真正说出口的引号台词跟随当前语言设置。',
+    isOfflineBirthdayTheme() ? '最终检查 text：除了引号里的 char 台词，其余所有正文都必须是简体中文。' : '最终检查 title、quote 和 text：除了引号里的 char 台词，其余所有正文都必须是简体中文。',
     '最终检查 asides 和引号台词：它们必须严格使用当前语言设置的原文，不要偷回中文，也不要夹英文。',
     '注意：thought_chain、幕摘要、阶段记忆总结固定使用简体中文，不跟随语言设置。',
     offlinePerspectiveRuleLine(storyPrefs.perspective),
@@ -11369,7 +11439,9 @@ function hasValidOfflineThoughtPayload(obj){
   return !!(obj && obj.thought_chain && String(obj.thought_chain.subtext_perception || '').trim() && String(obj.thought_chain.emotional_reaction || '').trim() && String(obj.thought_chain.action_strategy || '').trim());
 }
 function hasValidOfflineBodyPayload(obj){
-  return !!(obj && String(obj.title || '').trim() && String(obj.quote || '').trim() && String(obj.text || '').trim());
+  if(!(obj && String(obj.text || '').trim())) return false;
+  if(isOfflineBirthdayTheme()) return true;
+  return !!(String(obj.title || '').trim() && String(obj.quote || '').trim());
 }
 function hasValidOfflineStatusPayload(obj){
   if(!(obj && obj.status_card && typeof obj.status_card === 'object')) return false;
@@ -11412,18 +11484,22 @@ function buildOfflineSystemPrompt(options){
   var statusJsonShape = sideStoryProfile.artifactRule
     ? '{"type":"' + sideStoryProfile.key + '","future_date":"...","future_title":"...","future_note":"...","artifact_label":"...","artifact_html":"..."}'
     : '{"type":"' + sideStoryProfile.key + '","future_date":"...","future_title":"...","future_note":"..."}';
+  var titleQuoteJsonFragment = isOfflineBirthdayTheme() ? '' : ',"title":"...","quote":"..."';
+  var birthdayLyricsJsonFragment = getOfflineBirthdayLyricsJsonFragment();
+  var birthdayLyricsRule = getOfflineBirthdayLyricsPromptLine();
 	  var lines = [
 	    '你在生成“线下见面模式”的下一段剧情。',
 	    '必须保持沉浸感，像真人面对面相处，不要说自己是 AI。',
 	    directTimeRule ? ('### 【当前时间】\n' + directTimeRule) : '### 【当前时间】\n未拿到聊天设置地点时间；不要编造具体时间。',
-	    '只返回 JSON：{"thought_chain":{"subtext_perception":"...","emotional_reaction":"...","action_strategy":"..."},"title":"...","quote":"...","text":"...","asides":["..."],"heart":"...","artifact_label":"...","artifact_html":"...","artifact_after_paragraph":0,"scene_summary":"...","status_card":' + statusJsonShape + '}',
+	    '只返回 JSON：{"thought_chain":{"subtext_perception":"...","emotional_reaction":"...","action_strategy":"..."}' + titleQuoteJsonFragment + ',"text":"...","asides":["..."],"heart":"..."' + birthdayLyricsJsonFragment + ',"artifact_label":"...","artifact_html":"...","artifact_after_paragraph":0,"scene_summary":"...","status_card":' + statusJsonShape + '}',
     'text 必须写成足量的线下面对面正文，细节感更强，不要写成短回复，不要写成一小段，也不要写成小说章节标题。',
     getOfflineThoughtPromptBlock(),
-    getOfflineTitlePromptBlock(),
+    isOfflineBirthdayTheme() ? '生日快乐美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 lyrics。' : getOfflineTitlePromptBlock(),
+    birthdayLyricsRule,
     '这一轮必须同轮生成 status_card，不要让前端之后单独补写番外。',
     '顺序要求：先把 text 正文、asides、scene_summary 完整定稿，再根据已经定稿的正文生成 status_card；status_card 绝对不可以反向改写、污染或补充 text 正文。',
     '番外绝对不能影响正文：不要把番外标题、番外日期、番外说明、未来片段、侧页 artifact 或任何 status_card 内容写进 text 正文或正文 artifact_html。',
-    '生成 title、quote、text、asides 和正文 artifact 时，必须假装不知道本轮番外类型；只有写 status_card 时才允许使用下面的番外规格。',
+    isOfflineBirthdayTheme() ? '生成 text、asides、lyrics 和正文 artifact 时，必须假装不知道本轮番外类型；只有写 status_card 时才允许使用下面的番外规格。' : '生成 title、quote、text、asides 和正文 artifact 时，必须假装不知道本轮番外类型；只有写 status_card 时才允许使用下面的番外规格。',
     '正文绝对不许 OOC：关系、称呼、身份、性格、世界观、性别、取向、亲疏距离都必须严格继承当前设定，不许乱改。',
     'status_card 也必须贴人设、贴世界书、贴用户 persona，不能改 user 性别、身份、称呼或关系设定。',
     '【以下番外规格只允许用于 status_card，绝对不许写进正文 text】',
@@ -11435,8 +11511,8 @@ function buildOfflineSystemPrompt(options){
     sideStoryProfile.artifactRule || '',
     '在线下模式正文里，text 是正文，不包含 asides 心声；正文总长度必须写在 ' + storyPrefs.bodyMinChars + '-' + storyPrefs.bodyMaxChars + ' 个中文字符之间，心声字数绝对不要算进正文。',
     'text 必须分成 ' + storyPrefs.paragraphMinCount + '-' + storyPrefs.paragraphMaxCount + ' 个自然段；每段按“正文总字数 ÷ 实际段落数”自然平均分配，没到正文下限 ' + storyPrefs.minChars + ' 字就继续扩写正文，不要靠心声凑数。',
-    '硬性语言分流规则：thought_chain、幕摘要、阶段记忆总结始终使用简体中文；title、quote 和正文旁白固定简体中文；status_card 严格使用当前语言设置；只有 asides 和引号里的角色台词严格使用当前语言设置。',
-    '不要把整段正文旁白切成外语；title、quote 和外层旁白也绝对不许变成外语。',
+    isOfflineBirthdayTheme() ? '硬性语言分流规则：thought_chain、幕摘要、阶段记忆总结始终使用简体中文；正文旁白和 lyrics 固定简体中文；status_card 严格使用当前语言设置；只有 asides 和引号里的角色台词严格使用当前语言设置。' : '硬性语言分流规则：thought_chain、幕摘要、阶段记忆总结始终使用简体中文；title、quote 和正文旁白固定简体中文；status_card 严格使用当前语言设置；只有 asides 和引号里的角色台词严格使用当前语言设置。',
+    isOfflineBirthdayTheme() ? '不要把整段正文旁白或 lyrics 切成外语；外层旁白也绝对不许变成外语。' : '不要把整段正文旁白切成外语；title、quote 和外层旁白也绝对不许变成外语。',
     '灰色旁白心声、引号台词、status_card future_title、future_note 和小物件里的可见文字，必须严格使用当前语言设置的原文，不要偷回中文，不要乱跳成英文。',
     offlinePerspectiveRuleLine(storyPrefs.perspective),
     offlineForbiddenWordRuleLine(),
@@ -11502,18 +11578,22 @@ function buildOfflineOpeningChunkSystemPrompt(){
 	  var storyPrefs = getOfflineStoryPrefs();
 	  var openingReference = clipOfflinePromptText(String((character && (character.first_mes || '')) || '').trim(), offlinePromptLimit(500, compactLevel, 180));
 	  var directTimeRule = buildOfflineDirectTimePromptLine();
+  var titleQuoteJsonFragment = isOfflineBirthdayTheme() ? '' : ',"title":"...","quote":"..."';
+  var birthdayLyricsJsonFragment = getOfflineBirthdayLyricsJsonFragment();
+  var birthdayLyricsRule = getOfflineBirthdayLyricsPromptLine();
 	  return [
 	    '你在生成“线下见面模式”的第一幕正文。',
 	    '必须保持沉浸感，像真人面对面相处，不要说自己是 AI。',
 	    directTimeRule ? ('### 【当前时间】\n' + directTimeRule) : '### 【当前时间】\n未拿到聊天设置地点时间；不要编造具体时间。',
-	    '只返回 JSON：{"thought_chain":{"subtext_perception":"...","emotional_reaction":"...","action_strategy":"..."},"title":"...","quote":"...","text":"...","asides":["..."],"artifact_label":"...","artifact_html":"...","artifact_after_paragraph":0}，不要代码块，不要解释。',
+	    '只返回 JSON：{"thought_chain":{"subtext_perception":"...","emotional_reaction":"...","action_strategy":"..."}' + titleQuoteJsonFragment + ',"text":"...","asides":["..."]' + birthdayLyricsJsonFragment + ',"artifact_label":"...","artifact_html":"...","artifact_after_paragraph":0}，不要代码块，不要解释。',
     '这次直接写完整第一幕正文：text 是正文，不包含 asides 心声；正文总长度必须写在 ' + storyPrefs.bodyMinChars + '-' + storyPrefs.bodyMaxChars + ' 个中文字符之间，并且必须分成 ' + storyPrefs.paragraphMinCount + '-' + storyPrefs.paragraphMaxCount + ' 个自然段。',
-    '硬性语言分流规则：thought_chain、幕摘要、阶段记忆总结始终使用简体中文；title、quote 和正文旁白固定简体中文；只有 asides 和引号里的台词严格使用当前语言设置。',
-    '不要把整段正文旁白切成外语；title、quote 和外层旁白也绝对不许变成外语。',
+    isOfflineBirthdayTheme() ? '硬性语言分流规则：thought_chain、幕摘要、阶段记忆总结始终使用简体中文；正文旁白和 lyrics 固定简体中文；只有 asides 和引号里的台词严格使用当前语言设置。' : '硬性语言分流规则：thought_chain、幕摘要、阶段记忆总结始终使用简体中文；title、quote 和正文旁白固定简体中文；只有 asides 和引号里的台词严格使用当前语言设置。',
+    isOfflineBirthdayTheme() ? '不要把整段正文旁白或 lyrics 切成外语；外层旁白也绝对不许变成外语。' : '不要把整段正文旁白切成外语；title、quote 和外层旁白也绝对不许变成外语。',
     '灰色旁白心声、引号台词和正文小物件里的可见文字，必须严格使用当前语言设置的原文，不要偷回中文，不要乱跳成英文。',
     getOfflineThoughtPromptBlock(),
-    getOfflineTitlePromptBlock(),
-    '这一轮先专注首幕正文、title、quote、asides 和 thought_chain，不要生成番外侧页。',
+    isOfflineBirthdayTheme() ? '生日快乐美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 lyrics。' : getOfflineTitlePromptBlock(),
+    birthdayLyricsRule,
+    isOfflineBirthdayTheme() ? '这一轮先专注首幕正文、asides、lyrics 和 thought_chain，不要生成番外侧页。' : '这一轮先专注首幕正文、title、quote、asides 和 thought_chain，不要生成番外侧页。',
     offlinePerspectiveRuleLine(storyPrefs.perspective),
     offlineForbiddenWordRuleLine(),
     '正文的镜头和感知中心必须是 char 本人：重点写 char 看到的、听到的、想到的、做出的动作和反应。',
@@ -12341,6 +12421,7 @@ function parseOfflineReply(raw){
     title: '',
     quote: '',
     asides:[],
+    lyrics:[],
     heart:'♥',
     bubbles:['别躲开我']
   };
@@ -12598,14 +12679,18 @@ function getOfflineReplyTimeoutMs(){
 }
 function buildOfflineEmergencyOpeningSystemPrompt(){
   var storyPrefs = getOfflineStoryPrefs();
+  var titleQuoteJsonFragment = isOfflineBirthdayTheme() ? '' : ',"title":"...","quote":"..."';
+  var birthdayLyricsJsonFragment = getOfflineBirthdayLyricsJsonFragment();
+  var birthdayLyricsRule = getOfflineBirthdayLyricsPromptLine();
   return [
     '你在生成“线下见面模式”的第一幕正文。',
     '这是超轻量应急模式，只保留最必要上下文，目标是先把第一幕稳定写出来。',
-    '只返回 JSON：{"thought_chain":{"subtext_perception":"...","emotional_reaction":"...","action_strategy":"..."},"title":"...","quote":"...","text":"...","asides":["..."]}。',
+    '只返回 JSON：{"thought_chain":{"subtext_perception":"...","emotional_reaction":"...","action_strategy":"..."}' + titleQuoteJsonFragment + ',"text":"...","asides":["..."]' + birthdayLyricsJsonFragment + '}。',
     '不要代码块，不要解释，不要 status_card。',
     getOfflineThoughtPromptBlock(),
-    getOfflineTitlePromptBlock(),
-    'title、quote、正文旁白必须是简体中文；只有 asides 和引号里的角色台词跟随当前语言设置。',
+    isOfflineBirthdayTheme() ? '生日快乐美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 lyrics。' : getOfflineTitlePromptBlock(),
+    birthdayLyricsRule,
+    isOfflineBirthdayTheme() ? '正文旁白和 lyrics 必须是简体中文；只有 asides 和引号里的角色台词跟随当前语言设置。' : 'title、quote、正文旁白必须是简体中文；只有 asides 和引号里的角色台词跟随当前语言设置。',
     offlinePerspectiveRuleLine(getOfflineStoryPrefs().perspective),
     '正文长度尽量写在 ' + Math.max(220, storyPrefs.minChars - 120) + ' 到 ' + getOfflineSoftMaxChars() + ' 个字符之间。',
     '正文至少 3 个自然段，必须至少有 1 句 char 说出口的引号台词。',
@@ -12638,7 +12723,8 @@ async function tryEmergencyOfflineOpening(plan, openingMinChars){
     title: String(obj.title || '').trim(),
     quote: String(obj.quote || '').trim(),
     text: ensureOfflineSpeechPresence(String(obj.text || '').trim()),
-    asides: normalizeOfflineAsides(obj.asides)
+    asides: normalizeOfflineAsides(obj.asides),
+    lyrics: normalizeOfflineBirthdayLyrics(obj.lyrics)
   };
   var finalized = await finalizeOfflineBodyPayload(payload, getOfflineBodyValidationOptions({
     opening: true,
@@ -12657,7 +12743,8 @@ async function tryEmergencyOfflineOpening(plan, openingMinChars){
     title: String(finalized && finalized.payload && finalized.payload.title || payload.title || '').trim(),
     quote: String(finalized && finalized.payload && finalized.payload.quote || payload.quote || '').trim(),
     text: String(finalized && finalized.payload && finalized.payload.text || payload.text || '').trim(),
-    asides: normalizeOfflineAsides(finalized && finalized.payload ? finalized.payload.asides : payload.asides)
+    asides: normalizeOfflineAsides(finalized && finalized.payload ? finalized.payload.asides : payload.asides),
+    lyrics: normalizeOfflineBirthdayLyrics(finalized && finalized.payload && finalized.payload.lyrics || payload.lyrics)
   };
 }
 async function tryEmergencyOfflineReply(bodyContext, thoughtChain, minChars){
@@ -13042,6 +13129,7 @@ async function generateOpeningIfNeeded(){
     var preferWholeOutput = shouldPreferOfflineWholeOutput();
     var allowOpeningStreaming = shouldUseOfflineStreaming() && !preferWholeOutput;
     var allowOpeningAuxiliaryPasses = shouldRunOfflineAuxiliaryPasses();
+    var allowOpeningMetaPasses = allowOpeningAuxiliaryPasses && !isOfflineBirthdayTheme();
     var openingContext = [
       '请写这场线下见面的第一个场景。',
       buildOfflineInvitePromptLine('见面起点：'),
@@ -13055,8 +13143,8 @@ async function generateOpeningIfNeeded(){
           role:'assistant',
           isTyping:true,
           text:'',
-          title:'…',
-          quote:'…',
+          title:isOfflineBirthdayTheme() ? '' : '…',
+          quote:isOfflineBirthdayTheme() ? '' : '…',
           asides:[],
           heart:'♥',
           thoughtChain: {
@@ -13097,8 +13185,9 @@ async function generateOpeningIfNeeded(){
         var unifiedOpeningLabels = liveOpeningLabels || nowLabels();
         liveOpeningEntry.text = String(unifiedOpening.text || '').trim();
         liveOpeningEntry.isTyping = false;
-        liveOpeningEntry.title = String(unifiedOpening.title || buildOfflineTitleFallback()).trim();
-        liveOpeningEntry.quote = String(unifiedOpening.quote || buildOfflineQuoteFallback()).trim();
+        liveOpeningEntry.title = isOfflineBirthdayTheme() ? '' : String(unifiedOpening.title || buildOfflineTitleFallback()).trim();
+        liveOpeningEntry.quote = isOfflineBirthdayTheme() ? '' : String(unifiedOpening.quote || buildOfflineQuoteFallback()).trim();
+        liveOpeningEntry.lyrics = normalizeOfflineBirthdayLyrics(unifiedOpening.lyrics);
         liveOpeningEntry.asides = Array.isArray(unifiedOpening.asides) ? unifiedOpening.asides.slice() : [];
         liveOpeningEntry.heart = String(unifiedOpening.heart || liveOpeningEntry.heart || '♥').trim() || '♥';
         liveOpeningEntry.thoughtChain = normalizeOfflineThoughtChain(unifiedOpening.thoughtChain || null, unifiedOpening.text);
@@ -13139,8 +13228,8 @@ async function generateOpeningIfNeeded(){
         role:'assistant',
         isTyping:true,
         text:'',
-        title:'…',
-        quote:'…',
+        title:isOfflineBirthdayTheme() ? '' : '…',
+        quote:isOfflineBirthdayTheme() ? '' : '…',
         asides:[],
         heart:'♥',
         thoughtChain: {
@@ -13184,23 +13273,25 @@ async function generateOpeningIfNeeded(){
             lastError = streamThoughtErr;
             return null;
           });
-          openingMetaPromise = streamOfflineMetaFields(openingContext, {
-            compactLevel: isMobileOfflineRuntime() ? 1 : 0,
-            timeoutMs: Math.min(plan.mainTimeout, 22000)
-          }, function(nextMeta){
-            if(!isMountedOfflineLiveEntry(liveOpeningEntry)) return;
-            liveOpeningEntry.title = String(nextMeta && nextMeta.title || liveOpeningEntry.title || '…').trim() || '…';
-            liveOpeningEntry.quote = String(nextMeta && nextMeta.quote || liveOpeningEntry.quote || '…').trim() || '…';
-            saveSession();
-            renderStory();
-            keepOfflineComposerVisible();
-          }).then(function(finalMeta){
-            streamedOpeningMeta = finalMeta;
-            return finalMeta;
-          }).catch(function(streamMetaErr){
-            lastError = lastError || streamMetaErr;
-            return null;
-          });
+          if(allowOpeningMetaPasses){
+            openingMetaPromise = streamOfflineMetaFields(openingContext, {
+              compactLevel: isMobileOfflineRuntime() ? 1 : 0,
+              timeoutMs: Math.min(plan.mainTimeout, 22000)
+            }, function(nextMeta){
+              if(!isMountedOfflineLiveEntry(liveOpeningEntry)) return;
+              liveOpeningEntry.title = String(nextMeta && nextMeta.title || liveOpeningEntry.title || '…').trim() || '…';
+              liveOpeningEntry.quote = String(nextMeta && nextMeta.quote || liveOpeningEntry.quote || '…').trim() || '…';
+              saveSession();
+              renderStory();
+              keepOfflineComposerVisible();
+            }).then(function(finalMeta){
+              streamedOpeningMeta = finalMeta;
+              return finalMeta;
+            }).catch(function(streamMetaErr){
+              lastError = lastError || streamMetaErr;
+              return null;
+            });
+          }
         }else{
           openingThoughtPromise = generateOfflineThoughtChainBuffered([
             openingContext,
@@ -13221,23 +13312,25 @@ async function generateOpeningIfNeeded(){
             lastError = lastError || thoughtErr;
             return null;
           });
-          openingMetaPromise = generateOfflineMetaFieldsBuffered(openingContext, {
-            compactLevel: isMobileOfflineRuntime() ? 1 : 0,
-            timeoutMs: Math.min(plan.mainTimeout, 16000)
-          }, function(nextMeta){
-            if(!isMountedOfflineLiveEntry(liveOpeningEntry)) return;
-            liveOpeningEntry.title = String(nextMeta && nextMeta.title || liveOpeningEntry.title || '…').trim() || '…';
-            liveOpeningEntry.quote = String(nextMeta && nextMeta.quote || liveOpeningEntry.quote || '…').trim() || '…';
-            saveSession();
-            renderStory();
-            keepOfflineComposerVisible();
-          }).then(function(finalMeta){
-            streamedOpeningMeta = finalMeta;
-            return finalMeta;
-          }).catch(function(metaErr){
-            lastError = lastError || metaErr;
-            return null;
-          });
+          if(allowOpeningMetaPasses){
+            openingMetaPromise = generateOfflineMetaFieldsBuffered(openingContext, {
+              compactLevel: isMobileOfflineRuntime() ? 1 : 0,
+              timeoutMs: Math.min(plan.mainTimeout, 16000)
+            }, function(nextMeta){
+              if(!isMountedOfflineLiveEntry(liveOpeningEntry)) return;
+              liveOpeningEntry.title = String(nextMeta && nextMeta.title || liveOpeningEntry.title || '…').trim() || '…';
+              liveOpeningEntry.quote = String(nextMeta && nextMeta.quote || liveOpeningEntry.quote || '…').trim() || '…';
+              saveSession();
+              renderStory();
+              keepOfflineComposerVisible();
+            }).then(function(finalMeta){
+              streamedOpeningMeta = finalMeta;
+              return finalMeta;
+            }).catch(function(metaErr){
+              lastError = lastError || metaErr;
+              return null;
+            });
+          }
         }
       }
       var leanOpening = await generateOfflineLeanScene(openingContext, {
@@ -13271,18 +13364,19 @@ async function generateOpeningIfNeeded(){
       };
       leanOpeningEntry.text = String(leanOpening.text || '').trim();
       leanOpeningEntry.isTyping = false;
-      leanOpeningEntry.title = String(
+      leanOpeningEntry.title = isOfflineBirthdayTheme() ? '' : String(
         (streamedOpeningMeta && streamedOpeningMeta.title)
         || leanOpeningEntry.title
         || leanOpening.title
         || buildOfflineTitleFallback()
       ).trim();
-      leanOpeningEntry.quote = String(
+      leanOpeningEntry.quote = isOfflineBirthdayTheme() ? '' : String(
         (streamedOpeningMeta && streamedOpeningMeta.quote)
         || leanOpeningEntry.quote
         || leanOpening.quote
         || buildOfflineQuoteFallback()
       ).trim();
+      leanOpeningEntry.lyrics = normalizeOfflineBirthdayLyrics(leanOpening.lyrics || leanOpeningEntry.lyrics);
       leanOpeningEntry.asides = Array.isArray(leanOpening.asides) ? leanOpening.asides.slice() : [];
       leanOpeningEntry.thoughtChain = normalizeOfflineThoughtChain(streamedOpeningThoughtChain || leanOpeningEntry.thoughtChain || null, leanOpeningEntry.text);
       leanOpeningEntry.statusCard = null;
@@ -13378,7 +13472,8 @@ async function generateOpeningIfNeeded(){
           text:openingText,
           asides:[],
           artifactLabel:'',
-          artifactHtml:''
+          artifactHtml:'',
+          lyrics:[]
         };
       }catch(streamOpeningErr){
         lastError = streamOpeningErr;
@@ -13407,7 +13502,8 @@ async function generateOpeningIfNeeded(){
           text: openingText,
           asides: openingAsides.slice(),
           artifactLabel:'',
-          artifactHtml:''
+          artifactHtml:'',
+          lyrics: normalizeOfflineBirthdayLyrics(emergencyWarmup.lyrics)
         };
       }catch(emergencyWarmupErr){
         lastError = emergencyWarmupErr;
@@ -13434,7 +13530,8 @@ async function generateOpeningIfNeeded(){
             asides: openingAsides.slice(),
             artifactLabel: String(fastCombinedObj.artifactLabel || fastCombinedObj.artifact_label || '').trim(),
             artifactHtml: String(fastCombinedObj.artifactHtml || fastCombinedObj.artifact_html || '').trim(),
-            artifactAfterParagraph: Math.max(0, Number(fastCombinedObj.artifactAfterParagraph || fastCombinedObj.artifact_after_paragraph || 0) || 0)
+            artifactAfterParagraph: Math.max(0, Number(fastCombinedObj.artifactAfterParagraph || fastCombinedObj.artifact_after_paragraph || 0) || 0),
+            lyrics: normalizeOfflineBirthdayLyrics(fastCombinedObj.lyrics)
           };
         }
       }catch(fastCombinedErr){
@@ -13442,7 +13539,7 @@ async function generateOpeningIfNeeded(){
       }
     }
     for(var attempt = 0; attempt < plan.attempts; attempt += 1){
-      if(openingTextLength(openingText) >= openingMinChars && openingTitle && openingQuote) break;
+      if(openingTextLength(openingText) >= openingMinChars && (isOfflineBirthdayTheme() || (openingTitle && openingQuote))) break;
       try{
         var compactLevel = attempt >= 2 ? 2 : 1;
         var openingBodySys = buildOfflineBodySystemPrompt({ compactLevel: compactLevel });
@@ -13463,7 +13560,8 @@ async function generateOpeningIfNeeded(){
             asides: openingAsides.slice(),
             artifactLabel: String(bodyObj.artifactLabel || bodyObj.artifact_label || '').trim(),
             artifactHtml: String(bodyObj.artifactHtml || bodyObj.artifact_html || '').trim(),
-            artifactAfterParagraph: Math.max(0, Number(bodyObj.artifactAfterParagraph || bodyObj.artifact_after_paragraph || 0) || 0)
+            artifactAfterParagraph: Math.max(0, Number(bodyObj.artifactAfterParagraph || bodyObj.artifact_after_paragraph || 0) || 0),
+            lyrics: normalizeOfflineBirthdayLyrics(bodyObj.lyrics)
           };
         }
         for(var extendAttempt = 0; extendAttempt < plan.extendAttempts; extendAttempt += 1){
@@ -13496,7 +13594,8 @@ async function generateOpeningIfNeeded(){
                 asides: openingAsides.slice(),
                 artifactLabel: String(continueObj.artifactLabel || continueObj.artifact_label || '').trim(),
                 artifactHtml: String(continueObj.artifactHtml || continueObj.artifact_html || '').trim(),
-                artifactAfterParagraph: Math.max(0, Number(continueObj.artifactAfterParagraph || continueObj.artifact_after_paragraph || 0) || 0)
+                artifactAfterParagraph: Math.max(0, Number(continueObj.artifactAfterParagraph || continueObj.artifact_after_paragraph || 0) || 0),
+                lyrics: normalizeOfflineBirthdayLyrics(bestDraft && bestDraft.lyrics)
               };
             }
           }catch(continueErr){
@@ -13508,7 +13607,7 @@ async function generateOpeningIfNeeded(){
         lastError = err;
         continue;
       }
-      if(openingTextLength(openingText) >= openingMinChars && !containsOpeningViolation(openingText) && !violatesOfflinePerspective(openingText, storyPrefs.perspective) && openingTitle && openingQuote){
+      if(openingTextLength(openingText) >= openingMinChars && !containsOpeningViolation(openingText) && !violatesOfflinePerspective(openingText, storyPrefs.perspective) && (isOfflineBirthdayTheme() || (openingTitle && openingQuote))){
         break;
       }
     }
@@ -13533,7 +13632,7 @@ async function generateOpeningIfNeeded(){
         lastError = lastError || thoughtErr;
       }
     }
-    if((!openingTitle || !openingQuote || !String(openingText || '').trim() || !openingThoughtChain)){
+    if(((!isOfflineBirthdayTheme() && (!openingTitle || !openingQuote)) || !String(openingText || '').trim() || !openingThoughtChain)){
       try{
         var combinedSys = buildOfflineOpeningChunkSystemPrompt({ compactLevel: 2 });
         var combinedRaw = await callAIWithTimeout(combinedSys, openingContext, Math.min(plan.mainTimeout, 110000), buildOfflineRequestOptions(combinedSys, openingContext, openingMinChars));
@@ -13552,7 +13651,8 @@ async function generateOpeningIfNeeded(){
             asides: openingAsides.slice(),
             artifactLabel: String(combinedObj.artifactLabel || combinedObj.artifact_label || '').trim(),
             artifactHtml: String(combinedObj.artifactHtml || combinedObj.artifact_html || '').trim(),
-            artifactAfterParagraph: Math.max(0, Number(combinedObj.artifactAfterParagraph || combinedObj.artifact_after_paragraph || 0) || 0)
+            artifactAfterParagraph: Math.max(0, Number(combinedObj.artifactAfterParagraph || combinedObj.artifact_after_paragraph || 0) || 0),
+            lyrics: normalizeOfflineBirthdayLyrics(combinedObj.lyrics)
           };
         }
       }catch(combinedErr){
@@ -13569,7 +13669,8 @@ async function generateOpeningIfNeeded(){
       text: openingText,
       asides: openingAsides,
       artifactLabel:'',
-      artifactHtml:''
+      artifactHtml:'',
+      lyrics: normalizeOfflineBirthdayLyrics(bestDraft && bestDraft.lyrics)
     }, getOfflineBodyValidationOptions({
       opening: true,
       minChars: openingMinChars,
@@ -13580,10 +13681,11 @@ async function generateOpeningIfNeeded(){
       compactLevel: 1,
       timeoutMs: plan.repairTimeout
     }));
-    openingTitle = String(openingFinalize && openingFinalize.payload && openingFinalize.payload.title || openingTitle || '').trim();
-    openingQuote = String(openingFinalize && openingFinalize.payload && openingFinalize.payload.quote || openingQuote || '').trim();
+    openingTitle = isOfflineBirthdayTheme() ? '' : String(openingFinalize && openingFinalize.payload && openingFinalize.payload.title || openingTitle || '').trim();
+    openingQuote = isOfflineBirthdayTheme() ? '' : String(openingFinalize && openingFinalize.payload && openingFinalize.payload.quote || openingQuote || '').trim();
     openingText = String(openingFinalize && openingFinalize.payload && openingFinalize.payload.text || openingText || '').trim();
     openingAsides = normalizeOfflineAsides(openingFinalize && openingFinalize.payload ? openingFinalize.payload.asides : openingAsides);
+    var openingLyrics = normalizeOfflineBirthdayLyrics(openingFinalize && openingFinalize.payload && openingFinalize.payload.lyrics || bestDraft && bestDraft.lyrics);
     var openingArtifact = normalizeOfflineInlineArtifact(openingFinalize && openingFinalize.payload ? openingFinalize.payload : bestDraft);
     var openingIssues = Array.isArray(openingFinalize && openingFinalize.issues) ? openingFinalize.issues : [];
     if(openingIssues.length){
@@ -13609,8 +13711,9 @@ async function generateOpeningIfNeeded(){
     };
     openingEntry.text = String(openingText || '').trim();
     openingEntry.isTyping = false;
-    openingEntry.title = openingTitle;
-    openingEntry.quote = openingQuote;
+    openingEntry.title = isOfflineBirthdayTheme() ? '' : openingTitle;
+    openingEntry.quote = isOfflineBirthdayTheme() ? '' : openingQuote;
+    openingEntry.lyrics = openingLyrics;
     openingEntry.asides = openingAsides.length ? openingAsides : [];
     openingEntry.thoughtChain = normalizeOfflineThoughtChain(openingThoughtChain, openingText);
     openingEntry.artifactLabel = openingArtifact ? openingArtifact.artifactLabel : '';
@@ -13775,6 +13878,7 @@ async function requestOfflineReply(options){
     var preferWholeOutput = shouldPreferOfflineWholeOutput();
     var allowReplyStreaming = shouldUseOfflineStreaming() && !preferWholeOutput;
     var allowReplyAuxiliaryPasses = shouldRunOfflineAuxiliaryPasses();
+    var allowReplyMetaPasses = allowReplyAuxiliaryPasses && !isOfflineBirthdayTheme();
     var liveReplyLabels = null;
     var liveReplyEntry = null;
     if(shouldUseOfflineLeanMode()){
@@ -13795,8 +13899,8 @@ async function requestOfflineReply(options){
           role:'assistant',
           isTyping:true,
           text:'',
-          title:'…',
-          quote:'…',
+          title:isOfflineBirthdayTheme() ? '' : '…',
+          quote:isOfflineBirthdayTheme() ? '' : '…',
           asides:[],
           heart:'♥',
           thoughtChain: {
@@ -13837,8 +13941,9 @@ async function requestOfflineReply(options){
         var singlePassLabels = liveReplyLabels || nowLabels();
         liveReplyEntry.text = String(unifiedReply.text || '').trim();
         liveReplyEntry.isTyping = false;
-        liveReplyEntry.title = String(unifiedReply.title || buildOfflineTitleFallback()).trim();
-        liveReplyEntry.quote = String(unifiedReply.quote || buildOfflineQuoteFallback()).trim();
+        liveReplyEntry.title = isOfflineBirthdayTheme() ? '' : String(unifiedReply.title || buildOfflineTitleFallback()).trim();
+        liveReplyEntry.quote = isOfflineBirthdayTheme() ? '' : String(unifiedReply.quote || buildOfflineQuoteFallback()).trim();
+        liveReplyEntry.lyrics = normalizeOfflineBirthdayLyrics(unifiedReply.lyrics);
         liveReplyEntry.asides = Array.isArray(unifiedReply.asides) ? unifiedReply.asides.slice() : [];
         liveReplyEntry.heart = String(unifiedReply.heart || liveReplyEntry.heart || '♥').trim() || '♥';
         liveReplyEntry.thoughtChain = normalizeOfflineThoughtChain(unifiedReply.thoughtChain || null, unifiedReply.text);
@@ -13888,8 +13993,8 @@ async function requestOfflineReply(options){
         role:'assistant',
         isTyping:true,
         text:'',
-        title:'…',
-        quote:'…',
+        title:isOfflineBirthdayTheme() ? '' : '…',
+        quote:isOfflineBirthdayTheme() ? '' : '…',
         asides:[],
         heart:'♥',
         thoughtChain: {
@@ -13933,23 +14038,25 @@ async function requestOfflineReply(options){
             pushOfflineBackendLog('warn', 'offline.reply.thought_stream', '线下续写 thought_chain 流式失败', streamThoughtErr);
             return null;
           });
-          replyMetaPromise = streamOfflineMetaFields(leanReplyContext, {
-            compactLevel: isMobileOfflineRuntime() ? 1 : 0,
-            timeoutMs: Math.min(getOfflineReplyTimeoutMs(), 22000)
-          }, function(nextMeta){
-            if(!isMountedOfflineLiveEntry(liveReplyEntry)) return;
-            liveReplyEntry.title = String(nextMeta && nextMeta.title || liveReplyEntry.title || '…').trim() || '…';
-            liveReplyEntry.quote = String(nextMeta && nextMeta.quote || liveReplyEntry.quote || '…').trim() || '…';
-            saveSession();
-            renderStory();
-            keepOfflineComposerVisible();
-          }).then(function(finalMeta){
-            streamedReplyMeta = finalMeta;
-            return finalMeta;
-          }).catch(function(streamMetaErr){
-            pushOfflineBackendLog('warn', 'offline.reply.meta_stream', '线下续写标题语录流式失败', streamMetaErr);
-            return null;
-          });
+          if(allowReplyMetaPasses){
+            replyMetaPromise = streamOfflineMetaFields(leanReplyContext, {
+              compactLevel: isMobileOfflineRuntime() ? 1 : 0,
+              timeoutMs: Math.min(getOfflineReplyTimeoutMs(), 22000)
+            }, function(nextMeta){
+              if(!isMountedOfflineLiveEntry(liveReplyEntry)) return;
+              liveReplyEntry.title = String(nextMeta && nextMeta.title || liveReplyEntry.title || '…').trim() || '…';
+              liveReplyEntry.quote = String(nextMeta && nextMeta.quote || liveReplyEntry.quote || '…').trim() || '…';
+              saveSession();
+              renderStory();
+              keepOfflineComposerVisible();
+            }).then(function(finalMeta){
+              streamedReplyMeta = finalMeta;
+              return finalMeta;
+            }).catch(function(streamMetaErr){
+              pushOfflineBackendLog('warn', 'offline.reply.meta_stream', '线下续写标题语录流式失败', streamMetaErr);
+              return null;
+            });
+          }
         }else{
           replyThoughtPromise = generateOfflineThoughtChainBuffered([
             leanReplyContext,
@@ -13970,23 +14077,25 @@ async function requestOfflineReply(options){
             pushOfflineBackendLog('warn', 'offline.reply.thought_buffered', '线下续写 thought_chain 并行生成失败', thoughtErr);
             return null;
           });
-          replyMetaPromise = generateOfflineMetaFieldsBuffered(leanReplyContext, {
-            compactLevel: isMobileOfflineRuntime() ? 1 : 0,
-            timeoutMs: Math.min(getOfflineReplyTimeoutMs(), 16000)
-          }, function(nextMeta){
-            if(!isMountedOfflineLiveEntry(liveReplyEntry)) return;
-            liveReplyEntry.title = String(nextMeta && nextMeta.title || liveReplyEntry.title || '…').trim() || '…';
-            liveReplyEntry.quote = String(nextMeta && nextMeta.quote || liveReplyEntry.quote || '…').trim() || '…';
-            saveSession();
-            renderStory();
-            keepOfflineComposerVisible();
-          }).then(function(finalMeta){
-            streamedReplyMeta = finalMeta;
-            return finalMeta;
-          }).catch(function(metaErr){
-            pushOfflineBackendLog('warn', 'offline.reply.meta_buffered', '线下续写标题语录并行生成失败', metaErr);
-            return null;
-          });
+          if(allowReplyMetaPasses){
+            replyMetaPromise = generateOfflineMetaFieldsBuffered(leanReplyContext, {
+              compactLevel: isMobileOfflineRuntime() ? 1 : 0,
+              timeoutMs: Math.min(getOfflineReplyTimeoutMs(), 16000)
+            }, function(nextMeta){
+              if(!isMountedOfflineLiveEntry(liveReplyEntry)) return;
+              liveReplyEntry.title = String(nextMeta && nextMeta.title || liveReplyEntry.title || '…').trim() || '…';
+              liveReplyEntry.quote = String(nextMeta && nextMeta.quote || liveReplyEntry.quote || '…').trim() || '…';
+              saveSession();
+              renderStory();
+              keepOfflineComposerVisible();
+            }).then(function(finalMeta){
+              streamedReplyMeta = finalMeta;
+              return finalMeta;
+            }).catch(function(metaErr){
+              pushOfflineBackendLog('warn', 'offline.reply.meta_buffered', '线下续写标题语录并行生成失败', metaErr);
+              return null;
+            });
+          }
         }
       }
       var leanReply = await generateOfflineLeanScene(leanReplyContext, {
@@ -14020,18 +14129,19 @@ async function requestOfflineReply(options){
       };
       leanEntry.text = String(leanReply.text || '').trim();
       leanEntry.isTyping = false;
-      leanEntry.title = String(
+      leanEntry.title = isOfflineBirthdayTheme() ? '' : String(
         (streamedReplyMeta && streamedReplyMeta.title)
         || leanEntry.title
         || leanReply.title
         || buildOfflineTitleFallback()
       ).trim();
-      leanEntry.quote = String(
+      leanEntry.quote = isOfflineBirthdayTheme() ? '' : String(
         (streamedReplyMeta && streamedReplyMeta.quote)
         || leanEntry.quote
         || leanReply.quote
         || buildOfflineQuoteFallback()
       ).trim();
+      leanEntry.lyrics = normalizeOfflineBirthdayLyrics(leanReply.lyrics || leanEntry.lyrics);
       leanEntry.asides = Array.isArray(leanReply.asides) ? leanReply.asides.slice() : [];
       leanEntry.thoughtChain = normalizeOfflineThoughtChain(streamedReplyThoughtChain || leanEntry.thoughtChain || null, leanEntry.text);
       leanEntry.artifactLabel = '';
@@ -14155,14 +14265,15 @@ async function requestOfflineReply(options){
           renderStory();
           keepOfflineComposerVisible();
         });
-        bodyPayload = {
-          title:'',
-          quote:'',
-          text:String(streamedReplyText || '').trim(),
-          asides:[],
-          artifactLabel:'',
-          artifactHtml:''
-        };
+          bodyPayload = {
+            title:'',
+            quote:'',
+            text:String(streamedReplyText || '').trim(),
+            asides:[],
+            artifactLabel:'',
+            artifactHtml:'',
+            lyrics:[]
+          };
       }catch(streamReplyErr){
         bodyError = streamReplyErr;
         if(liveReplyEntry && Array.isArray(session.entries)){
@@ -14210,7 +14321,8 @@ async function requestOfflineReply(options){
             text: String(textOnlyReply || '').trim(),
             asides: [],
             artifactLabel:'',
-            artifactHtml:''
+            artifactHtml:'',
+            lyrics:[]
           };
         }
       }catch(textOnlyReplyErr){
@@ -14221,8 +14333,8 @@ async function requestOfflineReply(options){
       throw bodyError || new Error('正文生成失败');
     }
     var replyText = ensureOfflineSpeechPresence(String(bodyPayload.text || '').trim());
-    var replyTitle = String(bodyPayload.title || '').trim();
-    var replyQuote = String(bodyPayload.quote || '').trim();
+    var replyTitle = isOfflineBirthdayTheme() ? '' : String(bodyPayload.title || '').trim();
+    var replyQuote = isOfflineBirthdayTheme() ? '' : String(bodyPayload.quote || '').trim();
     var replyAsides = normalizeOfflineAsides(bodyPayload.asides);
     for(var extendAttempt = 0; extendAttempt < 2; extendAttempt += 1){
       if(openingTextLength(replyText) >= minChars) break;
@@ -14233,7 +14345,7 @@ async function requestOfflineReply(options){
         '最近线下记录（压缩）：\n' + shortOfflineHistory,
         '已经写好的正文：\n' + replyText,
         '现在还差至少 ' + missing + ' 个字符，请继续补足同一幕的动作、气氛、停顿、对话和身体反应。',
-        '继续严格保持这幕已有的标题气质、语录气质和灰色旁白心声质感。',
+        isOfflineBirthdayTheme() ? '继续严格保持这幕已有的正文、心声和歌词质感，不要补标题或顶部语录。' : '继续严格保持这幕已有的标题气质、语录气质和灰色旁白心声质感。',
         '只返回新增内容 JSON：{"text":"...","asides":["...","..."]}'
       ].join('\n\n');
       var extendRaw = await callAIWithTimeout(extendSys, extendUser, getOfflineReplyTimeoutMs(), buildOfflineRequestOptions(extendSys, extendUser, missing));
@@ -14250,7 +14362,8 @@ async function requestOfflineReply(options){
       asides: replyAsides,
       artifactLabel: String(bodyPayload.artifactLabel || bodyPayload.artifact_label || '').trim(),
       artifactHtml: String(bodyPayload.artifactHtml || bodyPayload.artifact_html || '').trim(),
-      artifactAfterParagraph: Math.max(0, Number(bodyPayload.artifactAfterParagraph || bodyPayload.artifact_after_paragraph || 0) || 0)
+      artifactAfterParagraph: Math.max(0, Number(bodyPayload.artifactAfterParagraph || bodyPayload.artifact_after_paragraph || 0) || 0),
+      lyrics: normalizeOfflineBirthdayLyrics(bodyPayload.lyrics)
     }, getOfflineBodyValidationOptions({
       opening: false,
       minChars: minChars,
@@ -14262,9 +14375,10 @@ async function requestOfflineReply(options){
       timeoutMs: Math.min(getOfflineReplyTimeoutMs(), 52000)
     }));
     replyText = String(replyFinalize && replyFinalize.payload && replyFinalize.payload.text || replyText || '').trim();
-    replyTitle = String(replyFinalize && replyFinalize.payload && replyFinalize.payload.title || replyTitle || '').trim();
-    replyQuote = String(replyFinalize && replyFinalize.payload && replyFinalize.payload.quote || replyQuote || '').trim();
+    replyTitle = isOfflineBirthdayTheme() ? '' : String(replyFinalize && replyFinalize.payload && replyFinalize.payload.title || replyTitle || '').trim();
+    replyQuote = isOfflineBirthdayTheme() ? '' : String(replyFinalize && replyFinalize.payload && replyFinalize.payload.quote || replyQuote || '').trim();
     replyAsides = normalizeOfflineAsides(replyFinalize && replyFinalize.payload ? replyFinalize.payload.asides : replyAsides);
+    var replyLyrics = normalizeOfflineBirthdayLyrics(replyFinalize && replyFinalize.payload && replyFinalize.payload.lyrics || bodyPayload.lyrics);
     var replyArtifact = normalizeOfflineInlineArtifact(replyFinalize && replyFinalize.payload ? replyFinalize.payload : bodyPayload);
     var replyIssues = Array.isArray(replyFinalize && replyFinalize.issues) ? replyFinalize.issues : [];
     if(replyIssues.length){
@@ -14286,8 +14400,9 @@ async function requestOfflineReply(options){
     };
     replyEntry.text = replyText;
     replyEntry.isTyping = false;
-    replyEntry.title = replyTitle;
-    replyEntry.quote = replyQuote;
+    replyEntry.title = isOfflineBirthdayTheme() ? '' : replyTitle;
+    replyEntry.quote = isOfflineBirthdayTheme() ? '' : replyQuote;
+    replyEntry.lyrics = replyLyrics;
     replyEntry.asides = replyAsides;
     replyEntry.thoughtChain = normalizeOfflineThoughtChain(thoughtChain, replyText);
     replyEntry.artifactLabel = replyArtifact ? replyArtifact.artifactLabel : '';
