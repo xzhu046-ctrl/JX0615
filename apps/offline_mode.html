@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-09T07:10:14Z"></script>
-<script src="../chatStorage.js?v=2026-05-09T07:10:14Z"></script>
-<script src="../metadataStore.js?v=2026-05-09T07:10:14Z"></script>
-<script src="../promptManager.js?v=2026-05-09T07:10:14Z"></script>
-<script src="../accountManager.js?v=2026-05-09T07:10:14Z"></script>
-<script src="../scheduleShared.js?v=2026-05-09T07:10:14Z"></script>
-<script src="../presenceShared.js?v=2026-05-09T07:10:14Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-09T07:10:14Z"></script>
+<script src="../assetStore.js?v=2026-05-09T07:33:45Z"></script>
+<script src="../chatStorage.js?v=2026-05-09T07:33:45Z"></script>
+<script src="../metadataStore.js?v=2026-05-09T07:33:45Z"></script>
+<script src="../promptManager.js?v=2026-05-09T07:33:45Z"></script>
+<script src="../accountManager.js?v=2026-05-09T07:33:45Z"></script>
+<script src="../scheduleShared.js?v=2026-05-09T07:33:45Z"></script>
+<script src="../presenceShared.js?v=2026-05-09T07:33:45Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-09T07:33:45Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -676,7 +676,7 @@ box-shadow:0 0 0 2px rgba(255,255,255,.97),6px 6px 0 rgba(17,17,17,.94);padding:
 .offline-status-history-empty{font-size:12px;font-weight:800;line-height:1.7;color:#666;padding:8px 2px}
 .offline-story-literary-label{display:none}
 body.offline-theme-birthday .paper-bg{background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(244,244,242,.62)),var(--offline-page-bg);background-size:cover;background-position:center}
-body.offline-theme-birthday .story-wrap{gap:24px;padding-left:9px;padding-right:9px}
+body.offline-theme-birthday .story-wrap{gap:24px;padding-left:9px;padding-right:9px;padding-bottom:calc(var(--offline-composer-height) + 34px)}
 body.offline-theme-birthday .composer{gap:8px;align-items:center}
 body.offline-theme-birthday .composer-box{min-height:48px;padding:2px 8px;border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;cursor:text;align-items:center;justify-content:center}
 body.offline-theme-birthday .composer-box textarea{height:34px;min-height:34px;max-height:34px;line-height:34px;text-align:center;font-family:"PING FANG SHAO HUA",'Huiwen-mincho',"汇文明朝体",'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',cursive;font-size:18px;font-weight:800;color:#6f1015}
@@ -740,11 +740,15 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
 .birthday-body .offline-inline-fragment > p::first-letter{font-family:'Huiwen-mincho',"汇文明朝体",'Songti SC','Noto Serif SC',serif;font-size:1.82em;font-weight:900;line-height:.82;color:#b12931;margin-right:1px}
 .birthday-body .sheet-quote-inline{display:inline;position:relative;-webkit-box-decoration-break:clone;box-decoration-break:clone;padding:.2em .6em;margin:0 .1em;color:#5D4C48 !important;quotes:none;line-height:2;border:0 !important;border-radius:10px;background-image:radial-gradient(ellipse at center,rgba(255,182,193,.6) 0%,transparent 65%),linear-gradient(to top,#fff,#fff) !important;background-repeat:no-repeat;background-position:center;background-size:100% 100%;box-shadow:0 2px 8px rgba(217,74,86,.1),inset 0 0 0 1.5px rgba(255,255,255,.9),inset 1px 1px 2px rgba(217,74,86,.15);font-family:inherit;font-weight:700}
 .birthday-body .sheet-quote-inline-copy{display:inline}
+.birthday-body .offline-inline-aside-wrap{margin:3px 0 1px}
+.birthday-body .offline-inline-aside-line{line-height:1.55}
+.birthday-body .offline-inline-aside-line .char-sheet-aside{margin:2px 0 0}
 .birthday-body .char-sheet-aside{position:relative;display:block;width:fit-content;max-width:100%;margin:8px 0 15px;padding:8px 13px 8px 26px;border:0;border-radius:0 18px 18px 0;background:linear-gradient(90deg,rgba(255,239,241,.82),rgba(255,255,255,.22));color:#8f565a;font:700 14px/1.72 'Huiwen-mincho',"汇文明朝体",'Songti SC','Noto Serif SC',serif;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-color:rgba(177,41,49,.42);box-shadow:inset 0 0 0 1px rgba(255,255,255,.68)}
 .birthday-body .char-sheet-aside::before{content:'';position:absolute;left:10px;top:9px;bottom:9px;width:3px;border-radius:99px;background:linear-gradient(180deg,rgba(177,41,49,.08),rgba(177,41,49,.78),rgba(177,41,49,.08))}
 .birthday-body .char-sheet-aside::after,.birthday-body .char-sheet-aside .offline-aside-closequote{color:rgba(177,41,49,.34)}
-.birthday-postcards{margin-top:2px;display:flex;flex-direction:column;gap:0}
-.birthday-lyrics{position:relative;z-index:1;margin-top:4px;margin-bottom:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden}
+.birthday-body .char-sheet-aside .offline-aside-closequote{bottom:-18px}
+.birthday-postcards{margin-top:-1px;display:flex;flex-direction:column;gap:0}
+.birthday-lyrics{position:relative;z-index:1;margin-top:4px;margin-bottom:9px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden}
 .birthday-lyrics-kicker{display:none}
 .birthday-lyrics-window{position:relative;height:70px;overflow-y:auto;overflow-x:hidden;display:flex;align-items:flex-start;justify-content:center;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none}
 .birthday-lyrics-window::-webkit-scrollbar{display:none}
@@ -7521,7 +7525,7 @@ function normalizeOfflineBirthdayLyrics(value){
 function renderBirthdayMottoHtml(isChar){
   if(isChar){
     return '<div class="birthday-motto" aria-label="血管，是我们藏在身体里的红线">' +
-      '<span class="birthday-motto-key">血管</span>，是我们藏在身体里的<span class="birthday-motto-key">红线</span>' +
+      '<span class="birthday-motto-key">血管</span>，是我们藏在身体里的红线' +
     '</div>';
   }
   return '<div class="birthday-motto" aria-label="我们生来就注定是要相爱的">' +
