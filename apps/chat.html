@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../chatStorage.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../assetStore.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../accountManager.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../metadataStore.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../scheduleShared.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../presenceShared.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../sunnySupport.js?v=2026-05-09T04:13:22Z"></script>
-<script src="offlineInvite.js?v=2026-05-09T04:13:22Z"></script>
+<script src="../promptManager.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../chatStorage.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../assetStore.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../accountManager.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../metadataStore.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../scheduleShared.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../presenceShared.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../sunnySupport.js?v=2026-05-09T05:09:10Z"></script>
+<script src="offlineInvite.js?v=2026-05-09T05:09:10Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -21089,6 +21089,15 @@ function buildSystemPrompt() {
   }
   var canonSettingPrompt = buildOnlineCanonSettingPromptBlock(wbAll);
   if(canonSettingPrompt) parts.push(canonSettingPrompt);
+  if(userName || userPersona){
+    parts.push([
+      '【用户设定硬设定】',
+      userName ? ('用户名字：' + userName) : '用户名字：未设置',
+      userPersona ? ('用户 persona：\n' + clipChatPromptText(userPersona, 1800)) : '用户 persona：未设置',
+      '用户 persona 是 user 的事实设定；user 的姓名、性别、人称、身份、关系边界、称呼偏好和背景信息必须按这里读取。',
+      '禁止用模板、旧记忆、默认恋爱身份或上一轮状态覆盖用户设定；如果用户问到和自己有关的设定，先按这里回答。'
+    ].join('\n'));
+  }
 
   var memStore = loadMemorySummaryStore();
   var memText = buildMemoryPromptText(memStore);

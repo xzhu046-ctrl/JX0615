@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-09T04:13:22Z';
+const APP_BUILD_ID = '2026-05-09T05:09:10Z';
 const APP_UPDATE_NOTES = [
-  '生日快乐美化分开角色和你的文案',
-  '生日快乐歌词改成滚动播放样式',
-  '线下同步最新头像和你的人设'
+  '内置美化改名为我们的血缘',
+  '我们的血缘正文和输入框换新样式',
+  '强化线上线下人设和世界书读取'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';

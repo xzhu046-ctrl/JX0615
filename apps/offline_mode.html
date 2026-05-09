@@ -6,16 +6,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../chatStorage.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../metadataStore.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../promptManager.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../accountManager.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../scheduleShared.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../presenceShared.js?v=2026-05-09T04:13:22Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-09T04:13:22Z"></script>
+<script src="../assetStore.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../chatStorage.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../metadataStore.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../promptManager.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../accountManager.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../scheduleShared.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../presenceShared.js?v=2026-05-09T05:09:10Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-09T05:09:10Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
+@import url("https://fontsapi.zeoseven.com/256/main/result.css");
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --b:#0a0a0a;--w:#fff;--off:#f4f4f4;--g:#6f6f6f;--bd:2px solid #0a0a0a;--sh:2px 2px 0 #0a0a0a;
@@ -178,7 +179,7 @@ body::before{content:'';position:fixed;left:0;right:0;top:0;bottom:-180px;backgr
 .offline-beauty-tab{flex:0 0 auto;min-width:58px;height:46px;padding:0 8px;border:2px solid #111;border-radius:0;background:#fff;color:#111;font:900 12px/1 var(--fontd);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,4px 4px 0 rgba(17,17,17,.94);cursor:pointer}
 .offline-beauty-tab.is-active{background:#111;color:#fff}
 .offline-beauty-tab:active{transform:translate(1px,1px);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,2px 2px 0 rgba(17,17,17,.94)}
-.offline-builtin-theme-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.offline-builtin-theme-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .offline-builtin-theme-btn{min-height:50px;padding:8px 10px;border:2px solid #111;border-radius:0;background:#fff;color:#111;font:900 12px/1.18 var(--fontd);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,4px 4px 0 rgba(17,17,17,.92);cursor:pointer;text-align:left}
 .offline-builtin-theme-btn span{display:block;font-size:10px;font-weight:900;color:#777;margin-top:5px;letter-spacing:.04em}
 .offline-builtin-theme-btn.is-active{background:#111;color:#fff}
@@ -670,73 +671,15 @@ box-shadow:0 0 0 2px rgba(255,255,255,.97),6px 6px 0 rgba(17,17,17,.94);padding:
 .offline-status-history-date{margin-top:4px;font-size:11px;font-weight:800;color:#6a6a6a}
 .offline-status-history-empty{font-size:12px;font-weight:800;line-height:1.7;color:#666;padding:8px 2px}
 .offline-story-literary-label{display:none}
-body.offline-theme-bloodline .paper-bg{background:
-linear-gradient(180deg,rgba(255,255,255,.64),rgba(255,255,255,.48)),
-radial-gradient(circle at 13% 7%,rgba(120,0,18,.08),transparent 28%),
-radial-gradient(circle at 94% 20%,rgba(120,0,18,.06),transparent 24%),
-repeating-linear-gradient(0deg,rgba(116,0,18,.045) 0 1px,transparent 1px 28px),
-var(--offline-page-bg) center/cover no-repeat;filter:saturate(.92)}
-body.offline-theme-bloodline .story-wrap{gap:20px;padding-left:13px;padding-right:13px}
-body.offline-theme-bloodline .story-card.char,
-body.offline-theme-bloodline .story-card.user{width:min(100%,360px);gap:10px}
-body.offline-theme-bloodline .story-card::before{content:'';display:block;position:absolute;left:18px;right:18px;top:58px;height:34px;border-top:2px solid rgba(142,9,20,.72);border-bottom:1px solid rgba(142,9,20,.25);transform:skewY(-6deg);opacity:.5;pointer-events:none;z-index:0}
-body.offline-theme-bloodline .story-card.user::before{transform:skewY(5deg)}
-body.offline-theme-bloodline .offline-story-strip{min-height:86px;z-index:2}
-body.offline-theme-bloodline .offline-story-avatar{width:88px;height:108px;flex-basis:88px;padding:8px 8px 23px;border:0;border-radius:2px;background:linear-gradient(180deg,#fff,#f7f4f1);box-shadow:0 16px 26px rgba(34,20,20,.13),0 2px 0 rgba(255,255,255,.9) inset;color:#151313;transform:rotate(-3.2deg)}
-body.offline-theme-bloodline .story-card.user .offline-story-avatar{transform:rotate(2.6deg)}
-body.offline-theme-bloodline .offline-story-avatar img{border-radius:1px;filter:saturate(.95) contrast(1.03)}
-body.offline-theme-bloodline .offline-story-avatar-label{bottom:6px;font-size:9px;letter-spacing:.1em;color:#6c1a22}
-body.offline-theme-bloodline .story-card.char .offline-story-avatar{margin-right:-18px}
-body.offline-theme-bloodline .story-card.user .offline-story-avatar{margin-left:-18px}
-body.offline-theme-bloodline .offline-story-strip-shell{min-height:54px;border:0;border-radius:2px;background:rgba(255,255,255,.72);box-shadow:0 10px 24px rgba(36,0,8,.08),inset 0 0 0 1px rgba(116,0,18,.12);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:0 12px;overflow:hidden}
-body.offline-theme-bloodline .offline-story-strip-shell::before{background:
-linear-gradient(90deg,transparent 0 7%,rgba(137,0,18,.75) 7% 8%,transparent 8% 100%),
-repeating-linear-gradient(90deg,rgba(137,0,18,.42) 0 14px,transparent 14px 23px);opacity:.26;filter:none}
-body.offline-theme-bloodline .offline-story-stat{background:rgba(255,255,255,.58);box-shadow:none;color:#4d2025;font-size:10px;padding:4px 5px}
-body.offline-theme-bloodline .offline-story-stat-icon{color:#9e101f}
-body.offline-theme-bloodline .offline-story-panel{border:1px solid rgba(125,0,18,.2);border-radius:2px;background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58));box-shadow:0 18px 44px rgba(24,0,7,.1),inset 0 0 0 1px rgba(255,255,255,.72);backdrop-filter:blur(16px) saturate(1.05);-webkit-backdrop-filter:blur(16px) saturate(1.05);padding:17px 17px 15px;overflow:hidden}
-body.offline-theme-bloodline .offline-story-panel::before{content:'';display:block;position:absolute;left:16px;right:22px;top:66px;height:0;border-top:2px dashed rgba(158,18,28,.46);pointer-events:none;z-index:0}
-body.offline-theme-bloodline .offline-story-panel::after{content:'× × ×';display:block;position:absolute;right:13px;top:19px;color:#a81222;font:900 13px/1 var(--fontd);letter-spacing:4px;opacity:.78;pointer-events:none;z-index:0}
-body.offline-theme-bloodline .offline-story-meta-row{border-bottom:1px solid rgba(148,0,20,.18);color:#7c5659;font-size:9px;letter-spacing:.1em;padding-bottom:9px}
-body.offline-theme-bloodline .offline-story-tools{margin-top:10px}
-body.offline-theme-bloodline .offline-story-editbtn{border:1px solid rgba(112,0,16,.28);border-radius:999px;background:rgba(255,255,255,.64);box-shadow:0 8px 18px rgba(34,0,8,.08);color:#6f1620}
-body.offline-theme-bloodline .offline-story-hero{margin-top:13px;padding:12px 0 13px;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible}
-body.offline-theme-bloodline .offline-story-hero::before{content:'';display:block;position:absolute;left:-2px;right:36%;bottom:0;height:0;border-bottom:2px solid rgba(137,0,18,.66);box-shadow:0 7px 0 rgba(137,0,18,.18);pointer-events:none}
-body.offline-theme-bloodline .offline-story-hero::after{content:'';display:block;position:absolute;right:3px;top:1px;width:78px;height:28px;border-top:2px solid rgba(137,0,18,.74);border-right:2px solid rgba(137,0,18,.6);transform:rotate(8deg);border-radius:50%;pointer-events:none}
-body.offline-theme-bloodline .offline-story-literary-label{display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;padding:0 2px 5px;border-bottom:1px dashed rgba(128,0,19,.52);font:900 10px/1 var(--fontd);letter-spacing:.16em;text-transform:uppercase;color:#8f101b}
-body.offline-theme-bloodline .offline-story-literary-label::before{content:'"';font:900 18px/1 Georgia,serif;color:#b31321}
-body.offline-theme-bloodline .offline-story-title{display:none}
-body.offline-theme-bloodline .offline-story-quote{display:block;margin-top:0;padding:0;background:transparent;border-radius:0;color:#171313;font-family:'ZCOOL KuaiLe','PingFang SC','Microsoft YaHei',sans-serif;font-size:19px;font-weight:900;line-height:1.54;text-shadow:0 1px 0 rgba(255,255,255,.72);box-decoration-break:slice;-webkit-box-decoration-break:slice}
-body.offline-theme-bloodline .offline-story-divider{height:0;margin:13px 0 12px;border-top:1px dashed rgba(138,0,18,.28);background:transparent}
-body.offline-theme-bloodline .offline-story-body{margin-top:0;color:#191414;font-size:14px;line-height:1.9}
-body.offline-theme-bloodline .offline-inline-fragment{margin-bottom:17px;gap:7px}
-body.offline-theme-bloodline .offline-story-body .offline-inline-fragment > p{position:relative;padding-left:2px}
-body.offline-theme-bloodline .offline-story-body .offline-inline-fragment > p::first-letter{font-size:1.2em;color:#95111d}
-body.offline-theme-bloodline .offline-story-body .sheet-quote-inline{border:0 !important;border-radius:999px;background:rgba(255,255,255,.78) !important;color:#161313 !important;box-shadow:0 10px 22px rgba(42,0,10,.08),inset 0 0 0 1px rgba(130,0,18,.13);padding:5px 12px 6px}
-body.offline-theme-bloodline .offline-story-body .char-sheet-aside{margin:6px 0 15px;padding:9px 13px 9px 25px;border-radius:0;background:linear-gradient(90deg,rgba(255,255,255,.7),rgba(255,255,255,.18));color:#7a4e53;font-weight:800;text-decoration-color:rgba(151,0,22,.42)}
-body.offline-theme-bloodline .offline-story-body .char-sheet-aside::before{left:9px;background:linear-gradient(180deg,rgba(133,0,18,.08),rgba(133,0,18,.88),rgba(133,0,18,.08))}
-body.offline-theme-bloodline .offline-story-body .char-sheet-aside::after,
-body.offline-theme-bloodline .offline-story-body .char-sheet-aside .offline-aside-closequote{color:rgba(126,0,18,.42)}
-body.offline-theme-bloodline .offline-think-toggle,
-body.offline-theme-bloodline .offline-summary-toggle{border:1px solid rgba(118,0,18,.22);border-radius:999px;background:rgba(255,255,255,.66);box-shadow:0 10px 20px rgba(34,0,8,.07);color:#2a1517}
-body.offline-theme-bloodline .offline-think-toggle-icon,
-body.offline-theme-bloodline .offline-summary-dot{background:#9f101f;color:#fff;border-color:#9f101f}
-body.offline-theme-bloodline .offline-think-body,
-body.offline-theme-bloodline .offline-summary-body{border:1px solid rgba(118,0,18,.18);background:rgba(255,255,255,.62);box-shadow:none}
-body.offline-theme-bloodline .offline-status-chip{background:#9f101f;color:#fff;box-shadow:0 12px 24px rgba(99,0,14,.16)}
-body.offline-theme-bloodline .offline-story-iconbtn{background:#fff;color:#8d101a;box-shadow:0 8px 18px rgba(34,0,8,.08);border:1px solid rgba(136,0,18,.13)}
-body.offline-theme-bloodline .composer{gap:9px}
-body.offline-theme-bloodline .composer-box{border:1px solid rgba(111,0,17,.25);border-radius:999px;background:rgba(255,255,255,.76);box-shadow:0 14px 34px rgba(34,0,8,.1),inset 0 0 0 1px rgba(255,255,255,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:7px 13px}
-body.offline-theme-bloodline .composer-box textarea{font-weight:800;color:#221416}
-body.offline-theme-bloodline .composer-btn{border:1px solid rgba(111,0,17,.26);border-radius:999px;background:rgba(255,255,255,.82);color:#8b101b;box-shadow:0 11px 22px rgba(34,0,8,.1),inset 0 0 0 1px rgba(255,255,255,.86)}
-body.offline-theme-bloodline .composer-btn.primary{background:#9f101f;color:#fff;border-color:#9f101f}
-body.offline-theme-bloodline .composer-btn:disabled{background:rgba(226,222,219,.75);color:#998286;box-shadow:none}
 body.offline-theme-birthday .paper-bg{background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(244,244,242,.62)),var(--offline-page-bg);background-size:cover;background-position:center}
 body.offline-theme-birthday .story-wrap{gap:24px;padding-left:9px;padding-right:9px}
-body.offline-theme-birthday .composer-box{border:1px solid rgba(20,20,20,.16);border-radius:999px;background:rgba(255,255,255,.78);box-shadow:0 18px 38px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.8);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-body.offline-theme-birthday .composer-box textarea{font-family:"PING FANG SHAO HUA",'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',cursive;font-weight:800;color:#6f1015}
-body.offline-theme-birthday .composer-box textarea::placeholder{color:#7a1118;opacity:.78;font-family:"PING FANG SHAO HUA",'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',cursive;font-weight:800}
+body.offline-theme-birthday .composer{gap:8px;align-items:center}
+body.offline-theme-birthday .composer-box{min-height:52px;padding:11px 26px 9px;border:0;border-radius:0;background:url('assets/%E8%BE%93%E5%85%A5%E6%A1%86.png') center/100% 100% no-repeat;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;cursor:text}
+body.offline-theme-birthday .composer-box textarea{height:28px;min-height:28px;max-height:28px;line-height:28px;text-align:center;font-family:"PING FANG SHAO HUA",'Huiwen-mincho',"汇文明朝体",'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',cursive;font-weight:800;color:#6f1015}
+body.offline-theme-birthday .composer-box textarea::placeholder{text-align:center;color:#7a1118;opacity:.86;font-family:"PING FANG SHAO HUA",'Huiwen-mincho',"汇文明朝体",'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',cursive;font-weight:800}
 body.offline-theme-birthday .composer-btn{border:1px solid rgba(20,20,20,.18);border-radius:999px;background:rgba(255,255,255,.84);box-shadow:0 12px 26px rgba(0,0,0,.08);color:#111}
+body.offline-theme-birthday .composer-btn.primary{width:48px;height:48px;min-width:48px;border:0;border-radius:0;background:url('assets/%E5%8F%91%E9%80%81%E9%94%AE.png') center/contain no-repeat;box-shadow:none;color:transparent;font-size:0;overflow:hidden}
+body.offline-theme-birthday .composer-btn.primary:disabled{opacity:.45;filter:grayscale(.3);background:url('assets/%E5%8F%91%E9%80%81%E9%94%AE.png') center/contain no-repeat;color:transparent}
 .birthday-card{width:min(100%,372px);align-self:flex-start;position:relative;isolation:isolate;color:#111}
 .birthday-card.user{align-self:flex-end}
 .birthday-sheet{position:relative;background:rgba(255,255,255,.8);border:1px solid rgba(20,20,20,.08);box-shadow:0 26px 60px rgba(0,0,0,.1),inset 0 0 0 1px rgba(255,255,255,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow:visible}
@@ -750,13 +693,13 @@ body.offline-theme-birthday .composer-btn{border:1px solid rgba(20,20,20,.18);bo
 .birthday-stats{position:absolute;left:0;top:10px;z-index:8;display:flex;align-items:center;gap:16px;min-width:154px;height:30px;padding:0 13px;background:rgba(0,0,0,.72);color:#ececec;font:800 15px/1 Georgia,'Times New Roman',serif;letter-spacing:.03em}
 .birthday-card.char .birthday-stats{left:auto;right:0;justify-content:flex-end}
 .birthday-name{display:none}
-.birthday-motto{position:absolute;left:18px;bottom:34px;z-index:7;max-width:58%;padding:10px 12px 8px;font-family:"PING FANG SHAO HUA",'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',cursive;font-size:25px;line-height:1.1;font-weight:700;color:#a61216;letter-spacing:.02em;text-shadow:0 1px 0 rgba(255,255,255,.95),0 0 8px rgba(255,255,255,.92)}
+.birthday-motto{position:absolute;left:8px;bottom:34px;z-index:7;max-width:62%;padding:10px 12px 8px;font-family:"PING FANG SHAO HUA",'Huiwen-mincho',"汇文明朝体",'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',cursive;font-size:25px;line-height:1.1;font-weight:700;color:#a61216;letter-spacing:.02em;text-shadow:0 1px 0 rgba(255,255,255,.95),0 0 8px rgba(255,255,255,.92)}
 .birthday-motto::before{content:'';position:absolute;inset:-5px -8px;border-radius:18px;background:linear-gradient(90deg,rgba(255,255,255,.82),rgba(255,255,255,.56),rgba(255,255,255,.12));filter:blur(6px);z-index:-1}
 .birthday-motto-key{position:relative;display:inline-block;padding:0 .06em}
 .birthday-motto-key::before{content:'';position:absolute;left:-16%;right:-18%;top:-45%;bottom:-30%;background:url('../apps/assets/%E7%BA%A2%E5%9C%882.png') center/100% 100% no-repeat;opacity:.92;pointer-events:none}
 .birthday-motto-love{position:relative;display:inline-block;padding:0 .05em}
 .birthday-motto-love::after{content:'';position:absolute;left:-14%;right:-18%;top:-38%;bottom:-28%;background:url('../apps/assets/%E7%BA%A2%E5%9C%882.png') center/100% 100% no-repeat;opacity:.82;pointer-events:none;transform:rotate(-3deg)}
-.birthday-card.user .birthday-motto{left:auto;right:18px;max-width:54%;text-align:right}
+.birthday-card.user .birthday-motto{left:auto;right:8px;max-width:58%;text-align:right}
 .birthday-ribbon{position:absolute;left:-12px;right:-12px;bottom:-110px;z-index:6;height:158px;background:url('../apps/assets/%E7%BA%A2%E4%B8%9D%E5%B8%A6.png') center/100% auto no-repeat;opacity:.86;mix-blend-mode:multiply;pointer-events:none}
 .birthday-card.user .birthday-ribbon{transform:scaleX(-1)}
 .birthday-calendar{position:absolute;z-index:9;right:16px;bottom:-42px;width:158px;padding:8px 8px 9px;background:rgba(255,255,255,.64);border:1px solid rgba(17,17,17,.14);box-shadow:0 13px 24px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.78);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);transform:rotate(2deg)}
@@ -779,10 +722,14 @@ body.offline-theme-birthday .composer-btn{border:1px solid rgba(20,20,20,.18);bo
 .birthday-card.user .birthday-tools{justify-content:flex-end}
 .birthday-edit{width:32px;height:32px;border:0;border-radius:999px;background:rgba(255,255,255,.72);box-shadow:0 10px 20px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#111;cursor:pointer;flex:0 0 32px}
 .birthday-edit svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.birthday-body{position:relative;z-index:1;margin-top:10px;font-size:15px;font-weight:650;line-height:1.95;color:#171717;white-space:pre-wrap;word-break:break-word}
+.birthday-body{position:relative;z-index:1;margin-top:10px;font-family:'Huiwen-mincho',"汇文明朝体",'Songti SC','Noto Serif SC',serif;font-size:15px;font-weight:650;line-height:1.95;color:#5D4C48;white-space:pre-wrap;word-break:break-word}
 .birthday-body .offline-inline-fragment{margin-bottom:17px;gap:8px}
-.birthday-body .sheet-quote-inline{border:1px solid rgba(17,17,17,.16) !important;border-radius:4px;background:rgba(255,255,255,.76) !important;box-shadow:0 6px 13px rgba(0,0,0,.08);padding:4px 12px;color:#333 !important;font-family:'Songti SC','Noto Serif SC',serif}
-.birthday-body .char-sheet-aside{display:block;width:fit-content;max-width:100%;margin:8px 0 15px;padding:8px 12px;border-radius:3px;background:rgba(246,246,246,.74);border:1px solid rgba(17,17,17,.09);color:rgba(17,17,17,.46);font:700 14px/1.72 'Songti SC','Noto Serif SC',serif;text-decoration:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.78)}
+.birthday-body .offline-inline-fragment > p::first-letter{font-family:'Huiwen-mincho',"汇文明朝体",'Songti SC','Noto Serif SC',serif;font-size:1.82em;font-weight:900;line-height:.82;color:#b12931;margin-right:1px}
+.birthday-body .sheet-quote-inline{display:inline;position:relative;-webkit-box-decoration-break:clone;box-decoration-break:clone;padding:.2em .6em;margin:0 .1em;color:#5D4C48 !important;quotes:none;line-height:2;border:0 !important;border-radius:10px;background-image:radial-gradient(ellipse at center,rgba(255,182,193,.6) 0%,transparent 65%),linear-gradient(to top,#fff,#fff) !important;background-repeat:no-repeat;background-position:center;background-size:100% 100%;box-shadow:0 2px 8px rgba(217,74,86,.1),inset 0 0 0 1.5px rgba(255,255,255,.9),inset 1px 1px 2px rgba(217,74,86,.15);font-family:inherit;font-weight:700}
+.birthday-body .sheet-quote-inline-copy{display:inline}
+.birthday-body .char-sheet-aside{position:relative;display:block;width:fit-content;max-width:100%;margin:8px 0 15px;padding:8px 13px 8px 26px;border:0;border-radius:0 18px 18px 0;background:linear-gradient(90deg,rgba(255,239,241,.82),rgba(255,255,255,.22));color:#8f565a;font:700 14px/1.72 'Huiwen-mincho',"汇文明朝体",'Songti SC','Noto Serif SC',serif;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-color:rgba(177,41,49,.42);box-shadow:inset 0 0 0 1px rgba(255,255,255,.68)}
+.birthday-body .char-sheet-aside::before{content:'';position:absolute;left:10px;top:9px;bottom:9px;width:3px;border-radius:99px;background:linear-gradient(180deg,rgba(177,41,49,.08),rgba(177,41,49,.78),rgba(177,41,49,.08))}
+.birthday-body .char-sheet-aside::after,.birthday-body .char-sheet-aside .offline-aside-closequote{color:rgba(177,41,49,.34)}
 .birthday-postcards{margin-top:12px;display:flex;flex-direction:column;gap:9px}
 .birthday-lyrics{position:relative;z-index:1;margin-top:14px;padding:12px 15px 13px;border:1px solid rgba(17,17,17,.09);border-radius:5px;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(245,245,244,.58));box-shadow:0 14px 28px rgba(0,0,0,.055),inset 0 0 0 1px rgba(255,255,255,.78);overflow:hidden}
 .birthday-lyrics-kicker{font:900 10px/1 var(--fontd);letter-spacing:.24em;text-transform:uppercase;color:rgba(17,17,17,.38);margin-bottom:8px;text-align:center}
@@ -803,141 +750,12 @@ body.offline-theme-birthday .composer-btn{border:1px solid rgba(20,20,20,.18);bo
   .offline-builtin-theme-tabs{grid-template-columns:1fr}
   .birthday-card{width:min(100%,356px)}
   .birthday-hero{height:218px}
-  .birthday-motto{left:14px;bottom:32px;max-width:56%;font-size:22px}
-  .birthday-card.user .birthday-motto{right:14px;max-width:54%}
+  .birthday-motto{left:4px;bottom:32px;max-width:60%;font-size:22px}
+  .birthday-card.user .birthday-motto{right:4px;max-width:58%}
   .birthday-ribbon{left:-10px;right:-10px;bottom:-100px;height:140px}
   .birthday-calendar{width:148px;bottom:-40px}
   .birthday-month{font-size:25px}
   .birthday-paper{margin-top:78px;padding:20px 15px 15px}
-}
-.bloodline-card{width:min(100%,372px);display:flex;flex-direction:column;position:relative;isolation:isolate;align-self:flex-start}
-.bloodline-card.user{align-self:flex-end}
-.bloodline-sheet{position:relative;width:100%;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;overflow:visible}
-.bloodline-sheet::before,.bloodline-sheet::after{content:none}
-.bloodline-card.user .bloodline-sheet{background:transparent}
-.bloodline-paper-body{position:relative;margin-top:8px;padding:12px 14px 14px;border:1px solid rgba(127,0,18,.2);border-radius:6px;background:
-linear-gradient(180deg,rgba(255,255,255,.88),rgba(255,252,249,.74)),
-repeating-linear-gradient(0deg,rgba(128,0,18,.028) 0 1px,transparent 1px 26px);
-box-shadow:0 24px 54px rgba(70,28,30,.1),inset 0 0 0 1px rgba(255,255,255,.78);overflow:hidden}
-.bloodline-card.user .bloodline-paper-body{background:
-linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,253,251,.84)),
-repeating-linear-gradient(0deg,rgba(128,0,18,.026) 0 1px,transparent 1px 26px)}
-.bloodline-paper-body::before{content:'';position:absolute;inset:8px 9px;border:1px dashed rgba(127,0,18,.17);border-radius:5px;pointer-events:none}
-.bloodline-paper-body::after{content:'x · · x';position:absolute;right:17px;bottom:6px;font:900 9px/1 var(--fontd);letter-spacing:5px;color:rgba(139,12,24,.3);pointer-events:none}
-.bloodline-edit{position:relative;top:auto;right:auto;left:auto;z-index:9;width:32px;height:32px;border:1px solid rgba(128,0,18,.24);border-radius:999px;background:rgba(255,255,255,.78);color:#8b101b;box-shadow:0 10px 20px rgba(63,0,10,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 32px}
-.bloodline-card.user .bloodline-edit{right:auto;left:auto}
-.bloodline-edit svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.bloodline-head{position:relative;display:grid;grid-template-columns:142px minmax(0,1fr);gap:20px;align-items:center;min-height:136px;margin:0 0 10px;padding:13px 15px 14px;background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(248,248,247,.74)),repeating-linear-gradient(0deg,rgba(18,18,18,.035) 0 1px,transparent 1px 4px);border-top:2px solid rgba(18,18,18,.82);border-bottom:1.5px solid rgba(18,18,18,.32);box-shadow:0 18px 34px rgba(39,25,25,.055);overflow:hidden}
-.bloodline-card.user .bloodline-head{grid-template-columns:142px minmax(0,1fr)}
-.bloodline-head::before{content:'';position:absolute;left:13px;right:13px;top:6px;border-top:1px solid rgba(18,18,18,.16);pointer-events:none}
-.bloodline-head::after{content:'';position:absolute;left:13px;right:13px;bottom:6px;border-top:1px solid rgba(18,18,18,.1);pointer-events:none}
-.bloodline-polaroid{position:relative;z-index:4;width:142px;height:106px;padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;transform:none;grid-column:1;grid-row:1;justify-self:start;align-self:center;overflow:visible;cursor:pointer}
-.bloodline-card.user .bloodline-polaroid{grid-column:1;justify-self:start;transform:none}
-.bloodline-polaroid::before,.bloodline-card.user .bloodline-polaroid::before{content:none}
-.bloodline-polaroid::after,.bloodline-card.user .bloodline-polaroid::after{content:none}
-.bloodline-paperclip{display:none}
-.bloodline-card.user .bloodline-paperclip{left:auto;right:3px;transform:scaleX(-1)}
-.bloodline-polaroid-photo{position:relative;width:100%;height:100%;overflow:visible;background:transparent;border:0;display:block;z-index:3;transform:none;box-shadow:none}
-.bloodline-card.user .bloodline-polaroid-photo{transform:none}
-.bloodline-polaroid-photo img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.08)}
-.bloodline-polaroid-photo .offline-story-avatar-fallback{font-family:var(--fontd);font-size:18px;color:#8f101b}
-.bloodline-polaroid-caption{display:none}
-.bloodline-polaroid-caption::before{display:none}
-.bloodline-card.user .bloodline-polaroid-caption{display:none}
-.bloodline-card.user .bloodline-polaroid-caption::before{display:none}
-.bloodline-card.user .bloodline-polaroid-caption::after{display:none}
-.bloodline-slice-stack{position:relative;width:142px;height:106px;display:block}
-.bloodline-avatar-slice{position:absolute;top:8px;height:88px;background-image:var(--slice-avatar);background-size:142px 96px;background-repeat:no-repeat;filter:grayscale(1) contrast(1.08);box-shadow:0 1px 0 rgba(255,255,255,.5)}
-.bloodline-avatar-slice.slice-a{left:1px;width:22px;top:15px;height:80px;background-position:0 50%}
-.bloodline-avatar-slice.slice-b{left:33px;width:28px;top:3px;height:96px;background-position:-33px 50%}
-.bloodline-avatar-slice.slice-c{left:72px;width:24px;top:12px;height:86px;background-position:-72px 50%}
-.bloodline-avatar-slice.slice-d{left:109px;width:27px;top:0;height:101px;background-position:-109px 50%}
-.bloodline-avatar-probe{display:none !important}
-.bloodline-slice-fallback{position:absolute;inset:8px 0 10px;display:none;align-items:center;justify-content:center;border:1px solid rgba(17,17,17,.22);background:rgba(255,255,255,.62);font-family:var(--fontd);font-size:18px;font-weight:900;color:#333;letter-spacing:.08em}
-.bloodline-slice-stack.slice-failed .bloodline-avatar-slice{display:none}
-.bloodline-slice-stack.slice-failed .bloodline-slice-fallback,.bloodline-slice-fallback.is-visible{display:flex}
-.bloodline-motto{position:relative;z-index:2;grid-column:2;grid-row:1;align-self:center;justify-self:stretch;max-width:none;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;font-family:"PING FANG SHAO HUA",'ZCOOL KuaiLe','Ma Shan Zheng','PingFang SC',sans-serif;font-size:18px;font-weight:normal;line-height:1.36;color:#161616;text-shadow:0 1px 0 rgba(255,255,255,.88);display:flex;align-items:center}
-.bloodline-card.user .bloodline-motto{grid-column:2;justify-self:stretch;padding:0;text-align:left;justify-content:flex-start}
-.bloodline-motto-inner{position:relative;display:inline-block;width:100%;padding:2px 1px 4px;isolation:isolate;background:transparent;border-radius:0}
-.bloodline-motto-inner::before{content:none}
-.bloodline-motto-inner::after{content:none}
-.bloodline-motto-line,.bloodline-love-line{position:relative;display:block}
-.bloodline-love-line{margin-top:6px;padding-left:10px;font-size:.96em}
-.bloodline-card.user .bloodline-love-line{padding-left:10px;padding-right:0}
-.bloodline-keyword{position:relative;display:inline-block;margin:0 2px 0 0;padding:0 2px 1px;color:#171111}
-.bloodline-keyword::before{content:'';position:absolute;left:-12px;right:-12px;top:-17px;bottom:-13px;background:url('../apps/assets/%E7%BA%A2%E5%9C%88.png') center/contain no-repeat;opacity:.9;mix-blend-mode:multiply;filter:brightness(.58) saturate(1.3) contrast(1.12);pointer-events:none}
-.bloodline-keyword::after{content:none}
-.bloodline-redword{position:relative;display:inline-block;padding:0 2px 3px;margin-left:2px}
-.bloodline-redword::after{content:'';position:absolute;left:-10px;right:-12px;bottom:-10px;height:22px;background:url('../apps/assets/%E7%BA%A2%E8%89%B2%E4%B8%8B%E5%88%92%E7%BA%BF.png') center/100% auto no-repeat;opacity:.84;mix-blend-mode:multiply;filter:none;pointer-events:none}
-.bloodline-love-word{position:relative;display:inline-block;margin:0;padding:0 2px 1px;color:#171111}
-.bloodline-love-word::before{content:'';position:absolute;left:-11px;right:-11px;top:-16px;bottom:-13px;background:url('../apps/assets/%E7%BA%A2%E5%9C%88.png') center/contain no-repeat;opacity:.86;mix-blend-mode:multiply;filter:brightness(.58) saturate(1.3) contrast(1.1);pointer-events:none}
-.bloodline-arrow-dot{display:none}
-.bloodline-motto-redline{display:none}
-.bloodline-card.user .bloodline-motto-redline{display:none}
-.bloodline-red-dash{display:none}
-.bloodline-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding:0 3px;font:900 9px/1.4 var(--fontd);letter-spacing:.1em;color:rgba(90,52,55,.72);text-transform:uppercase}
-.bloodline-card.user .bloodline-meta{flex-direction:row-reverse}
-.bloodline-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}
-.bloodline-tools-main{min-width:0;display:flex;align-items:center}
-.bloodline-card.user .bloodline-tools{justify-content:flex-end}
-.bloodline-body{position:relative;z-index:2;padding:1px 3px 0;font-size:14px;font-weight:650;line-height:1.92;color:#171313;white-space:pre-wrap;word-break:break-word}
-.bloodline-body p{margin:0}
-.bloodline-body .offline-inline-fragment{margin-bottom:16px;gap:8px}
-.bloodline-body .offline-inline-fragment > p::first-letter{font-family:'ZCOOL KuaiLe','Ma Shan Zheng','PingFang SC',sans-serif;font-size:1.74em;font-weight:900;line-height:.82;color:#8f0b18;margin-right:1px}
-.bloodline-body .sheet-quote-inline{position:relative;border:0 !important;border-radius:0 !important;background:transparent !important;color:#161111 !important;box-shadow:none !important;padding:0 3px 5px;margin:0 2px 2px;font-weight:900;overflow:visible}
-.bloodline-body .sheet-quote-inline::after{content:'xxxxxxxxxxxxxxxx';position:absolute;left:1px;right:1px;bottom:0;height:7px;overflow:hidden;color:rgba(164,0,20,.72);font:900 7px/1 var(--fontd);letter-spacing:1px;white-space:nowrap;pointer-events:none}
-.bloodline-body .char-sheet-aside{position:relative;display:inline-block;width:fit-content;max-width:min(100%,286px);min-width:118px;min-height:38px;margin:9px 0 16px;padding:11px 17px 12px 21px;border-radius:24px;background:#8a1e22;color:#fff;font-weight:900;text-decoration:none;line-height:1.58;box-shadow:0 12px 24px rgba(96,0,14,.12);backdrop-filter:none;-webkit-backdrop-filter:none;overflow:hidden}
-.bloodline-card.user .bloodline-body .char-sheet-aside{margin-left:auto;padding:11px 21px 12px 17px;text-align:right}
-.bloodline-body .char-sheet-aside::before{content:'';position:absolute;inset:-8px -10px;background:url('../apps/assets/%E5%BF%83%E5%A3%B0%E6%B0%94%E6%B3%A1.png') center -151px/100% 420px no-repeat;opacity:.24;pointer-events:none}
-.bloodline-card.user .bloodline-body .char-sheet-aside::before{background-position:center -231px}
-.bloodline-body .char-sheet-aside::after,.bloodline-body .char-sheet-aside .offline-aside-closequote{display:none}
-.bloodline-postcards{margin-top:12px;display:flex;flex-direction:column;gap:9px}
-.bloodline-postcards .offline-status-chip{background:#9f101f;color:#fff;box-shadow:0 12px 24px rgba(99,0,14,.16)}
-.bloodline-postcards .offline-summary-toggle,.bloodline-postcards .offline-think-toggle{border:1px solid rgba(118,0,18,.22);border-radius:999px;background:rgba(255,255,255,.66);box-shadow:0 10px 20px rgba(34,0,8,.07);color:#2a1517}
-.bloodline-seam{display:none}
-.bloodline-seam::before{content:'';position:absolute;inset:-2px;background:rgba(255,255,255,.34);backdrop-filter:blur(.2px);-webkit-backdrop-filter:blur(.2px);pointer-events:none}
-.bloodline-seam svg{display:block;width:100%;height:100%;overflow:visible}
-.bloodline-seam-paper{fill:none;stroke:rgba(16,13,12,.76);stroke-width:1.8;stroke-linecap:round;stroke-dasharray:74 13 18 9;opacity:.9}
-.bloodline-seam-paper.is-lower{stroke-width:1.55;stroke:rgba(16,13,12,.62);opacity:.72}
-.bloodline-seam-thread-soft{fill:none;stroke:rgba(179,0,22,.16);stroke-width:8.5;stroke-linecap:round;stroke-linejoin:round}
-.bloodline-seam-thread{fill:none;stroke:#a00016;stroke-width:3.6;stroke-linecap:round;stroke-linejoin:round}
-.bloodline-seam-thread.is-thin{stroke-width:2.25;stroke:rgba(160,0,22,.72)}
-.bloodline-seam-dot{fill:#a00016;stroke:rgba(255,255,255,.55);stroke-width:1.1}
-.bloodline-seam-knot{fill:none;stroke:rgba(160,0,22,.42);stroke-width:1.2;stroke-linecap:round}
-.bloodline-literature{position:relative;margin:0 2px 0;padding:12px 14px 13px;border:1px solid rgba(139,0,18,.18);border-radius:3px;background:rgba(255,255,255,.46);box-shadow:inset 0 0 0 1px rgba(255,255,255,.66),0 12px 28px rgba(80,0,12,.04);backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px)}
-.bloodline-literature::before{content:'';position:absolute;left:12px;right:12px;top:7px;border-top:1px dashed rgba(139,0,18,.36)}
-.bloodline-literature-label{display:inline-flex;align-items:center;gap:5px;margin-bottom:8px;color:#8f101b;font:900 12px/1 var(--fontd);letter-spacing:.18em}
-.bloodline-literature-label::after{content:'—— tying my feelings into the red ribbon';font:800 9px/1 var(--fontd);letter-spacing:.08em;color:rgba(143,16,27,.46)}
-.bloodline-literature-text{font-family:'ZCOOL KuaiLe','PingFang SC','Microsoft YaHei',sans-serif;font-size:15px;font-weight:850;line-height:1.72;color:#211516;word-break:break-word}
-.bloodline-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:10px}
-.bloodline-card.user .bloodline-actions{justify-content:flex-start}
-.bloodline-actions .offline-story-iconset{display:flex}
-.bloodline-actions .offline-story-iconbtn{width:28px;height:28px;border:1px solid rgba(136,0,18,.13);background:#fff;color:#8d101a;box-shadow:0 8px 18px rgba(34,0,8,.08)}
-@media (max-width:420px){
-  .bloodline-card{width:min(100%,356px)}
-  .bloodline-sheet{padding:0}
-  .bloodline-paper-body{margin-top:8px;padding:11px 13px 13px}
-  .bloodline-head{grid-template-columns:120px minmax(0,1fr);gap:14px;min-height:122px;padding:12px 12px 13px}
-  .bloodline-card.user .bloodline-head{grid-template-columns:120px minmax(0,1fr)}
-  .bloodline-head::before{left:10px;right:10px;width:auto;height:auto;margin:0;background:none;border-top:1px solid rgba(18,18,18,.15)}
-  .bloodline-polaroid{width:120px;height:96px;padding:0}
-  .bloodline-polaroid::before{content:none}
-  .bloodline-polaroid::after,.bloodline-card.user .bloodline-polaroid::after{content:none}
-  .bloodline-polaroid-photo{width:100%;height:100%}
-  .bloodline-slice-stack{width:120px;height:96px}
-  .bloodline-avatar-slice{background-size:120px 86px}
-  .bloodline-avatar-slice.slice-a{left:0;width:18px;top:14px;height:72px;background-position:0 50%}
-  .bloodline-avatar-slice.slice-b{left:27px;width:23px;top:3px;height:86px;background-position:-27px 50%}
-  .bloodline-avatar-slice.slice-c{left:61px;width:21px;top:11px;height:78px;background-position:-61px 50%}
-  .bloodline-avatar-slice.slice-d{left:93px;width:23px;top:0;height:90px;background-position:-93px 50%}
-  .bloodline-polaroid-caption,.bloodline-card.user .bloodline-polaroid-caption{display:none}
-  .bloodline-motto{padding:0;font-size:16px;line-height:1.28}
-  .bloodline-card.user .bloodline-motto{padding:0}
-  .bloodline-motto-inner{padding:1px 1px 3px}
-  .bloodline-love-line{margin-top:3px;padding-left:4px}
-  .bloodline-card.user .bloodline-love-line{padding-left:0;padding-right:4px}
-  .bloodline-keyword::before{left:-13px;right:-13px;top:-20px;bottom:-16px}
-  .bloodline-love-word::before{left:-12px;right:-12px;top:-19px;bottom:-15px}
 }
 .offline-invite-debug{position:fixed;left:12px;right:12px;top:calc(54px + var(--safe-top));z-index:9999;padding:10px 12px;border:2px solid #111;border-radius:18px;background:rgba(255,255,255,.97);box-shadow:0 10px 24px rgba(0,0,0,.12);display:none;flex-direction:column;gap:5px;max-height:132px;overflow:auto}
 .offline-invite-debug.show{display:flex}
@@ -974,7 +792,7 @@ repeating-linear-gradient(0deg,rgba(128,0,18,.026) 0 1px,transparent 1px 26px)}
   <div class="story-wrap" id="storyList"></div>
   <div class="composer">
     <button class="composer-btn reply" id="offlineRerollBtn" type="button" onclick="rerollOfflineTurn()">↻</button>
-    <div class="composer-box">
+    <div class="composer-box" onclick="focusOfflineComposerInput()">
       <textarea id="offlineInput" placeholder="我们的红线藏在血管里"></textarea>
     </div>
     <div class="composer-actions">
@@ -1099,8 +917,7 @@ repeating-linear-gradient(0deg,rgba(128,0,18,.026) 0 1px,transparent 1px 26px)}
           <div class="offline-setting-grid">
             <div class="offline-builtin-theme-tabs" id="offlineBuiltinThemeTabs">
               <button class="offline-builtin-theme-btn" type="button" data-offline-builtin-theme="classic">默认拍立得<span>原来的线下样子</span></button>
-              <button class="offline-builtin-theme-btn" type="button" data-offline-builtin-theme="bloodline">我们的血缘<span>红线与文学摘抄</span></button>
-              <button class="offline-builtin-theme-btn" type="button" data-offline-builtin-theme="birthday">生日快乐<span>横幅头像和日历</span></button>
+              <button class="offline-builtin-theme-btn" type="button" data-offline-builtin-theme="bloodline">我们的血缘<span>横幅头像和日历</span></button>
             </div>
             <div class="offline-birthday-controls" id="offlineBirthdayControls" hidden>
               <div>
@@ -5699,7 +5516,8 @@ function getOfflineUiPrefs(){
 }
 function normalizeOfflineBuiltinTheme(value){
   var theme = String(value || '').trim();
-  return /^(bloodline|birthday)$/.test(theme) ? theme : 'classic';
+  if(theme === 'birthday') return 'bloodline';
+  return theme === 'bloodline' ? 'bloodline' : 'classic';
 }
 function getOfflineBuiltinTheme(){
   if(offlineDrawerDraft && Object.prototype.hasOwnProperty.call(offlineDrawerDraft, 'builtinTheme')){
@@ -5707,24 +5525,25 @@ function getOfflineBuiltinTheme(){
   }
   return normalizeOfflineBuiltinTheme(character && character.offlineBuiltinTheme);
 }
-function isOfflineBloodlineTheme(){
-  return getOfflineBuiltinTheme() === 'bloodline';
-}
 function isOfflineBirthdayTheme(){
-  return getOfflineBuiltinTheme() === 'birthday';
+  return getOfflineBuiltinTheme() === 'bloodline';
 }
 function getOfflineBirthdayLyricsJsonFragment(){
   return isOfflineBirthdayTheme() ? ',"lyrics":["...","...","...","...","...","...","...","..."]' : '';
 }
 function getOfflineBirthdayLyricsPromptLine(){
   if(!isOfflineBirthdayTheme()) return '';
-  return '当前内置美化是“生日快乐”：必须额外返回 lyrics 数组，写 6-10 句 char 原创歌词；歌词必须读角色 persona、用户 persona、世界书、最近线上/线下上下文和本幕正文来写，像 char 自己会写的短歌词，高级、克制、有画面感，不要低俗，不要引用现实歌曲歌词，不要模板，不要 fallback。lyrics 只用于 char 卡片最末尾的歌词区，不能混进 text 正文。';
+  return '当前内置美化是“我们的血缘”：必须额外返回 lyrics 数组，写 6-10 句 char 原创歌词；歌词必须读角色 persona、用户 persona、世界书、最近线上/线下上下文和本幕正文来写，像 char 自己会写的短歌词，高级、克制、有画面感，不要低俗，不要引用现实歌曲歌词，不要模板，不要 fallback。lyrics 只用于 char 卡片最末尾的歌词区，不能混进 text 正文。';
 }
 function applyOfflineBuiltinTheme(){
   var theme = getOfflineBuiltinTheme();
-  document.body.classList.toggle('offline-theme-bloodline', theme === 'bloodline');
-  document.body.classList.toggle('offline-theme-birthday', theme === 'birthday');
+  document.body.classList.remove('offline-theme-bloodline');
+  document.body.classList.toggle('offline-theme-birthday', theme === 'bloodline');
   document.body.classList.toggle('offline-theme-classic', theme === 'classic');
+}
+function focusOfflineComposerInput(){
+  var input = document.getElementById('offlineInput');
+  if(input && typeof input.focus === 'function') input.focus();
 }
 function getOfflineBirthdayMonthLength(month){
   var safeMonth = Math.max(1, Math.min(12, Math.floor(Number(month) || 6)));
@@ -6296,17 +6115,6 @@ function resetOfflineThoughtPromptToDefault(options){
   }
 }
 function getOfflineTitleDefaultPrompt(){
-  if(isOfflineBloodlineTheme()){
-    return [
-      '当前线下内置美化是“我们的血缘”。这一版不走普通标题卡，而是走“文学摘抄”卡。',
-      'title 字段仍必须返回，用作内部兼容；请写成 4-12 个简体中文字符的极短情绪标记，不要像小说章节名。',
-      'quote 字段必须写成“文学摘抄 + 角色感想”：先让角色凭自己的审美选择一条你确信真实存在的文学作品、诗歌、戏剧或电影台词短摘抄，再根据今天这幕聊天写一句他的感想。',
-      'quote 格式固定为：摘抄｜出处｜感想。摘抄必须很短，中文不超过 40 个字，英文不超过 25 个词；不要使用歌词，不要长篇引用。',
-      '如果你不确定作者或出处，只写你确信的作品名；不确定就把出处写成“出处未明”，绝对不要编造不存在的作者、作品或台词来源。',
-      '感想必须贴角色、贴当天聊天内容，像角色读到这句摘抄后被牵动的一小句，不要写成 AI 读后感。',
-      'title 和 quote 都必须是简体中文；quote 里的外文摘抄如果来自外文作品，可以保留原文，但感想必须是简体中文。'
-    ].join('\n');
-  }
   return [
     'title 是这一幕的标题，6-16 个简体中文字符左右；要搞笑、有网感、带点吐槽和坏笑感，像朋友圈配文、热评式小标题或会被截图传播的小标签，但必须贴人设。',
     'quote 是顶部 char 语录，12-30 个简体中文字符左右；要可爱、圆润、像奶酪体小标签里会出现的那种语气，但必须贴人设。',
@@ -6343,11 +6151,8 @@ function getOfflineTitleCustomPrompt(){
 }
 function getOfflineTitlePromptBlock(){
   var custom = getOfflineTitleCustomPrompt();
-  var themeNote = isOfflineBloodlineTheme()
-    ? '\n当前内置美化为“我们的血缘”：即使用户写了自定义标题提示词，quote 也必须优先遵守“文学摘抄 + 角色感想”的格式；不要退回普通奶酪体小标签。'
-    : '';
   return (custom
-    ? '用户自定义标题提示词（最高优先级，替代默认 title/quote 内容规则；但仍必须保留字段名和可解析格式）：\n' + clipOfflinePromptText(custom, 1400) + themeNote
+    ? '用户自定义标题提示词（最高优先级，替代默认 title/quote 内容规则；但仍必须保留字段名和可解析格式）：\n' + clipOfflinePromptText(custom, 1400)
     : '默认标题提示词：\n' + getOfflineTitleDefaultPrompt());
 }
 function syncOfflineTitlePromptControls(){
@@ -6573,22 +6378,6 @@ function renderOfflineAvatarImageHtml(src, fallbackText){
   }
   return '<img src="' + esc(safeSrc) + '" alt="" onerror="this.style.display=&quot;none&quot;;var n=this.nextElementSibling;if(n)n.style.display=&quot;flex&quot;;"><span class="offline-story-avatar-fallback" style="display:none">' + fallback + '</span>';
 }
-function renderBloodlineSlicedAvatarHtml(src, fallbackText){
-  var safeSrc = normalizeOfflineAssetSrc(src || '');
-  var fallback = esc(String(fallbackText || 'U').slice(0, 2) || 'U');
-  if(!isRenderableOfflineAvatarSrc(safeSrc)){
-    return '<div class="bloodline-slice-fallback is-visible">' + fallback + '</div>';
-  }
-  var attr = escAttr(safeSrc);
-  return '<div class="bloodline-slice-stack" style="--slice-avatar:url(&quot;' + attr + '&quot;)">' +
-    '<span class="bloodline-avatar-slice slice-a"></span>' +
-    '<span class="bloodline-avatar-slice slice-b"></span>' +
-    '<span class="bloodline-avatar-slice slice-c"></span>' +
-    '<span class="bloodline-avatar-slice slice-d"></span>' +
-    '<span class="bloodline-slice-fallback">' + fallback + '</span>' +
-    '<img class="bloodline-avatar-probe" src="' + attr + '" alt="" onerror="this.parentNode.classList.add(&quot;slice-failed&quot;)">' +
-  '</div>';
-}
 function countOfflineAssistantScenes(){
   var list = Array.isArray(session && session.entries) ? session.entries : [];
   return list.reduce(function(sum, entry){
@@ -6766,7 +6555,7 @@ function syncOfflineDrawerControls(){
       btn.classList.toggle('is-active', normalizeOfflineBuiltinTheme(btn.getAttribute('data-offline-builtin-theme')) === normalizeOfflineBuiltinTheme(draft.builtinTheme));
     });
   }
-  if(birthdayControls) birthdayControls.hidden = normalizeOfflineBuiltinTheme(draft.builtinTheme) !== 'birthday';
+  if(birthdayControls) birthdayControls.hidden = normalizeOfflineBuiltinTheme(draft.builtinTheme) !== 'bloodline';
   if(birthdayMonth && document.activeElement !== birthdayMonth) birthdayMonth.value = String(normalizeOfflineBirthdayMonth(draft.birthdayUserMonth, 6));
   if(birthdayDay && document.activeElement !== birthdayDay) birthdayDay.value = String(normalizeOfflineBirthdayDay(draft.birthdayUserDay, normalizeOfflineBirthdayMonth(draft.birthdayUserMonth, 6), 15));
   if(range) range.textContent = '正文 ' + String(draft.bodyMinChars) + ' - ' + String(draft.bodyMaxChars) + ' 字 · 段落 ' + String(draft.paragraphMinCount) + ' - ' + String(draft.paragraphMaxCount) + ' 段 · 心声 ' + String(draft.asideMinChars) + ' - ' + String(draft.asideMaxChars) + ' 字';
@@ -7651,30 +7440,6 @@ function toggleOfflineTranslation(index){
   saveSession();
   renderStory();
 }
-function renderBloodlineSeamHtml(){
-  return '<div class="bloodline-seam" aria-hidden="true">' +
-    '<svg viewBox="0 0 330 82" preserveAspectRatio="none" focusable="false">' +
-      '<path class="bloodline-seam-paper" d="M8 21 C54 16 92 25 138 20 S230 14 322 20"></path>' +
-      '<path class="bloodline-seam-paper is-lower" d="M8 61 C60 67 99 55 150 61 S252 67 322 60"></path>' +
-      '<path class="bloodline-seam-thread-soft" d="M20 21 C34 2 48 4 62 61 M62 61 C77 80 92 78 106 21 M106 21 C122 3 138 3 153 61 M153 61 C169 80 187 79 202 20 M202 20 C218 3 236 3 251 61 M251 61 C266 80 286 78 302 20"></path>' +
-      '<path class="bloodline-seam-thread" d="M20 21 C34 2 48 4 62 61"></path>' +
-      '<path class="bloodline-seam-thread is-thin" d="M62 61 C77 80 92 78 106 21"></path>' +
-      '<path class="bloodline-seam-thread" d="M106 21 C122 3 138 3 153 61"></path>' +
-      '<path class="bloodline-seam-thread is-thin" d="M153 61 C169 80 187 79 202 20"></path>' +
-      '<path class="bloodline-seam-thread" d="M202 20 C218 3 236 3 251 61"></path>' +
-      '<path class="bloodline-seam-thread is-thin" d="M251 61 C266 80 286 78 302 20"></path>' +
-      '<path class="bloodline-seam-knot" d="M23 17 c7 -7 13 -6 18 2"></path>' +
-      '<path class="bloodline-seam-knot" d="M288 18 c8 -8 16 -5 22 1"></path>' +
-      '<circle class="bloodline-seam-dot" cx="20" cy="21" r="4.2"></circle>' +
-      '<circle class="bloodline-seam-dot" cx="62" cy="61" r="4.2"></circle>' +
-      '<circle class="bloodline-seam-dot" cx="106" cy="21" r="4.2"></circle>' +
-      '<circle class="bloodline-seam-dot" cx="153" cy="61" r="4.2"></circle>' +
-      '<circle class="bloodline-seam-dot" cx="202" cy="20" r="4.2"></circle>' +
-      '<circle class="bloodline-seam-dot" cx="251" cy="61" r="4.2"></circle>' +
-      '<circle class="bloodline-seam-dot" cx="302" cy="20" r="4.2"></circle>' +
-    '</svg>' +
-  '</div>';
-}
 function renderBirthdayCoverHtml(src, fallbackText){
   var safeSrc = normalizeOfflineAssetSrc(src || '');
   var fallback = esc(String(fallbackText || 'C').slice(0, 2) || 'C');
@@ -7837,54 +7602,8 @@ function renderBirthdayStoryCard(entry, idx, isChar){
     '</div>' +
   '</div>';
 }
-function renderBloodlineStoryCard(entry, idx, isChar){
-  var avatar = isChar ? resolveCharAvatar() : resolveUserAvatar();
-  var displayName = isChar ? getCharDisplayName() : resolveUserName();
-  var meta = buildOfflineEntryMeta(entry, isChar ? 'assistant' : 'user');
-  var floorLabel = '#' + String(idx + 1);
-  var subtitleLeft = meta.fullLabel || [meta.meta, meta.timeLabel].filter(Boolean).join(' ');
-  var subtitleRight = '第' + String(getOfflineSceneNumber(entry)) + '幕';
-  var editButton = '<button class="bloodline-edit" type="button" onclick="editOfflineEntryText(' + idx + ')" aria-label="编辑"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button>';
-  var avatarClick = isChar ? ' onclick="openOfflineStatusModal(' + idx + ', false)"' : '';
-  var thoughtToggle = isChar ? ('<div class="bloodline-tools"><div class="bloodline-tools-main">' + renderOfflineThoughtChain(entry) + '</div>' + editButton + '</div>') : ('<div class="bloodline-tools bloodline-user-tools">' + editButton + '</div>');
-  var statusChip = isChar ? renderOfflineStatusChip(entry, idx) : '';
-  var summaryToggle = isChar ? renderOfflineSummary(entry) : '';
-  var postcards = isChar ? ('<div class="bloodline-postcards">' + statusChip + summaryToggle + '</div>') : '';
-  var actions = '<div class="bloodline-actions">' +
-      '<div class="offline-story-iconset">' +
-        '<div class="offline-story-iconbtn"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2"></circle><circle cx="6" cy="12" r="2"></circle><circle cx="18" cy="19" r="2"></circle><path d="M8 12l8-6"></path><path d="M8 12l8 6"></path></svg></div>' +
-        '<div class="offline-story-iconbtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1Z"></path></svg></div>' +
-        '<div class="offline-story-iconbtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z"></path></svg></div>' +
-      '</div>' +
-    '</div>';
-  return '<div class="bloodline-card ' + (isChar ? 'char' : 'user') + '">' +
-    '<div class="bloodline-sheet">' +
-      '<div class="bloodline-head">' +
-        '<div class="bloodline-polaroid"' + avatarClick + '>' +
-          '<div class="bloodline-polaroid-photo">' + renderBloodlineSlicedAvatarHtml(avatar, displayName.slice(0, 2) || (isChar ? 'C' : 'U')) + '</div>' +
-          '<div class="bloodline-polaroid-caption">' + esc(displayName || (isChar ? 'char' : 'user')) + '</div>' +
-        '</div>' +
-        '<div class="bloodline-motto"><span class="bloodline-motto-inner"><span class="bloodline-motto-line"><span class="bloodline-keyword">血管</span>，是我们藏在身体里的<span class="bloodline-redword">红线</span></span><span class="bloodline-love-line">我们生来就是<span class="bloodline-love-word">相爱</span>的</span><span class="bloodline-motto-redline" aria-hidden="true"></span></span></div>' +
-      '</div>' +
-      '<div class="bloodline-paper-body">' +
-      '<div class="bloodline-red-dash" aria-hidden="true"></div>' +
-      '<div class="bloodline-meta"><span>' + esc(subtitleLeft || 'offline archive') + '</span><span>' + esc(floorLabel + ' · ' + subtitleRight + ' · ' + formatOfflineGenTime(meta.generationMs) + ' · ' + String(meta.tokenCount) + 't') + '</span></div>' +
-      thoughtToggle +
-      '<div class="bloodline-body">' + renderCharSheetBody(entry.text || '', entry.asides || (entry.aside ? [entry.aside] : []), idx, entry) + '</div>' +
-      postcards +
-      renderBloodlineSeamHtml() +
-      '<div class="bloodline-literature">' +
-        '<div class="bloodline-literature-label">文学摘抄</div>' +
-        '<div class="bloodline-literature-text">' + esc(meta.quote) + '</div>' +
-      '</div>' +
-      actions +
-      '</div>' +
-    '</div>' +
-  '</div>';
-}
 function renderPaperStoryCard(entry, idx, isChar){
   if(isOfflineBirthdayTheme()) return renderBirthdayStoryCard(entry, idx, isChar);
-  if(isOfflineBloodlineTheme()) return renderBloodlineStoryCard(entry, idx, isChar);
   var avatar = isChar ? resolveCharAvatar() : resolveUserAvatar();
   var displayName = isChar ? getCharDisplayName() : resolveUserName();
   var meta = buildOfflineEntryMeta(entry, isChar ? 'assistant' : 'user');
@@ -7912,9 +7631,6 @@ function renderPaperStoryCard(entry, idx, isChar){
         '<div class="offline-story-iconbtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z"></path></svg></div>' +
       '</div>' +
     '</div>';
-  var heroLabel = isOfflineBloodlineTheme()
-    ? '<div class="offline-story-literary-label">文学摘抄</div>'
-    : '';
   return '<div class="story-card ' + (isChar ? 'char' : 'user') + '">' +
     '<div class="offline-story-strip">' +
       (isChar ? (avatarHtml + stripShellHtml) : (stripShellHtml + avatarHtml)) +
@@ -7923,7 +7639,6 @@ function renderPaperStoryCard(entry, idx, isChar){
       '<div class="offline-story-meta-row"><span>' + esc(subtitleLeft || 'offline archive') + '</span><span>' + esc(subtitleRight) + '</span></div>' +
       toolsRow +
       '<div class="offline-story-hero">' +
-        heroLabel +
         '<div class="offline-story-title">' + esc(meta.title) + '</div>' +
         '<div class="offline-story-quote">' + esc(meta.quote) + '</div>' +
       '</div>' +
@@ -8938,17 +8653,10 @@ function buildOfflineOpeningFallback(){
   return ensureOfflineSpeechPresence(body.trim());
 }
 function buildOfflineTitleFallback(){
-  if(isOfflineBloodlineTheme()){
-    var bloodTitles = ['红线存档','血缘片刻','牵连处','今日线结'];
-    return bloodTitles[Math.floor(Math.random() * bloodTitles.length)] || '红线存档';
-  }
   var pool = ['终于抓到你了','你今天别想跑','这次轮到我靠近','见面这事有点坏'];
   return pool[Math.floor(Math.random() * pool.length)] || '终于抓到你了';
 }
 function buildOfflineQuoteFallback(){
-  if(isOfflineBloodlineTheme()){
-    return '短摘抄｜出处未明｜今天像留下了一根红线。';
-  }
   return '先让我把你今天的样子记住。';
 }
 function buildOfflineAsideFallback(){
@@ -9048,7 +8756,7 @@ async function repairOfflineBodyPayload(draft, options){
     '只返回 JSON：' + (birthdayMode ? '{"text":"...","asides":["..."],"artifact_label":"...","artifact_html":"...","lyrics":["..."]}' : '{"title":"...","quote":"...","text":"...","asides":["..."],"artifact_label":"...","artifact_html":"..."}') + '。',
     '不要解释，不要代码块，不要 thought_chain，不要 status_card。',
     '保持原草稿这幕的情境、关系、推进和情绪，不要重写成另一场戏。',
-    birthdayMode ? '生日快乐美化不检查 title/quote；如果草稿里没有标题或语录，不要补。' : 'title 与 quote 必须是简体中文。',
+    birthdayMode ? '我们的血缘美化不检查 title/quote；如果草稿里没有标题或语录，不要补。' : 'title 与 quote 必须是简体中文。',
     '正文旁白、动作、环境描写必须是简体中文。',
     lang && lang !== 'zh'
       ? ('只有灰色旁白心声 asides 和引号里的角色台词使用' + (langOption.nativeLabel || langOption.label || lang) + '原文。')
@@ -9105,7 +8813,7 @@ async function rewriteOfflineBodyPayload(draft, options){
     '只返回 JSON：' + (birthdayMode ? '{"text":"...","asides":["..."],"artifact_label":"...","artifact_html":"...","lyrics":["..."]}' : '{"title":"...","quote":"...","text":"...","asides":["..."],"artifact_label":"...","artifact_html":"..."}') + '。',
     '不要解释，不要代码块，不要 thought_chain，不要 status_card。',
     '如果草稿里踩中了禁词、禁用句式、外语旁白、错误视角、缺少引号台词、长度不够，你必须主动改写到合格，不能把问题原样留下。',
-    birthdayMode ? '生日快乐美化不检查 title/quote；如果草稿里没有标题或语录，不要补。' : 'title 与 quote 必须是简体中文。',
+    birthdayMode ? '我们的血缘美化不检查 title/quote；如果草稿里没有标题或语录，不要补。' : 'title 与 quote 必须是简体中文。',
     '正文旁白、动作、环境描写必须是简体中文。',
     lang && lang !== 'zh'
       ? ('只有灰色旁白心声 asides 和引号里的角色台词使用' + (langOption.nativeLabel || langOption.label || lang) + '原文。')
@@ -11091,6 +10799,7 @@ function buildOfflineCoreSettingSummary(compactLevel){
   return [
     '角色 persona：' + (persona || '未提供'),
     '用户 persona：' + (userPersona || '未提供'),
+    '用户 persona 硬规则：user 的姓名、性别、人称、身份、关系边界、称呼偏好和背景信息都必须按这里读取；禁止被模板、旧记忆或默认恋爱套路覆盖。',
     weatherRule ? ('当前天气/温度/昼夜线索：' + weatherRule) : '当前天气/温度/昼夜线索：无',
     '写正文时必须让衣着、体感、动作和时间感符合这些天气线索；冬天/夜里/低温时不要写得像盛夏白天一样。',
     buildOfflineReplyLanguagePromptLine(),
@@ -11127,6 +10836,7 @@ function buildOfflineOpeningCoreSettingSummary(compactLevel){
   return [
     '角色 persona：' + (persona || '未提供'),
     '用户 persona：' + (userPersona || '未提供'),
+    '用户 persona 硬规则：user 的姓名、性别、人称、身份、关系边界、称呼偏好和背景信息都必须按这里读取；禁止被模板、旧记忆或默认恋爱套路覆盖。',
     weatherRule ? ('当前天气/温度/昼夜线索：' + weatherRule) : '当前天气/温度/昼夜线索：无',
     scheduleRule ? ('当前时间/日程感知：\n' + scheduleRule) : '当前时间/日程感知：无',
     buildOfflineReplyLanguagePromptLine(),
@@ -11458,7 +11168,7 @@ function buildOfflineBodySystemPrompt(options){
     '你现在只负责生成线下模式这一幕的正文内容。',
     '只返回 JSON：{' + titleQuoteJsonFragment + '"text":"...","asides":["...","..."],"heart":"..."' + birthdayLyricsJsonFragment + ',"artifact_label":"...","artifact_html":"..."}',
     '不要 thought_chain，不要 status_card，不要解释。',
-    isOfflineBirthdayTheme() ? '生日快乐美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 lyrics。' : getOfflineTitlePromptBlock(),
+    isOfflineBirthdayTheme() ? '我们的血缘美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 lyrics。' : getOfflineTitlePromptBlock(),
     birthdayLyricsRule,
     'text 是正文，不包含 asides 心声；正文总长度必须写在 ' + storyPrefs.bodyMinChars + '-' + storyPrefs.bodyMaxChars + ' 个中文字符之间，心声不要算进正文。',
     '正文必须分成 ' + storyPrefs.paragraphMinCount + '-' + storyPrefs.paragraphMaxCount + ' 个自然段；每段按“正文总字数 ÷ 实际段落数”自然平均分配，不要固定成同一个死板字数，每段都用完整句子收尾。',
@@ -11620,7 +11330,7 @@ function buildOfflineSystemPrompt(options){
 	    '只返回 JSON：{"thought_chain":{"subtext_perception":"...","emotional_reaction":"...","action_strategy":"..."}' + titleQuoteJsonFragment + ',"text":"...","asides":["..."],"heart":"..."' + birthdayLyricsJsonFragment + ',"artifact_label":"...","artifact_html":"...","artifact_after_paragraph":0,"scene_summary":"...","status_card":' + statusJsonShape + '}',
     'text 必须写成足量的线下面对面正文，细节感更强，不要写成短回复，不要写成一小段，也不要写成小说章节标题。',
     getOfflineThoughtPromptBlock(),
-    isOfflineBirthdayTheme() ? '生日快乐美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 lyrics。' : getOfflineTitlePromptBlock(),
+    isOfflineBirthdayTheme() ? '我们的血缘美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 lyrics。' : getOfflineTitlePromptBlock(),
     birthdayLyricsRule,
     '这一轮必须同轮生成 status_card，不要让前端之后单独补写番外。',
     '顺序要求：先把 text 正文、asides、scene_summary 完整定稿，再根据已经定稿的正文生成 status_card；status_card 绝对不可以反向改写、污染或补充 text 正文。',
@@ -11717,7 +11427,7 @@ function buildOfflineOpeningChunkSystemPrompt(){
     isOfflineBirthdayTheme() ? '不要把整段正文旁白或 lyrics 切成外语；外层旁白也绝对不许变成外语。' : '不要把整段正文旁白切成外语；title、quote 和外层旁白也绝对不许变成外语。',
     '灰色旁白心声、引号台词和正文小物件里的可见文字，必须严格使用当前语言设置的原文，不要偷回中文，不要乱跳成英文。',
     getOfflineThoughtPromptBlock(),
-    isOfflineBirthdayTheme() ? '生日快乐美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 lyrics。' : getOfflineTitlePromptBlock(),
+    isOfflineBirthdayTheme() ? '我们的血缘美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 lyrics。' : getOfflineTitlePromptBlock(),
     birthdayLyricsRule,
     isOfflineBirthdayTheme() ? '这一轮先专注首幕正文、asides、lyrics 和 thought_chain，不要生成番外侧页。' : '这一轮先专注首幕正文、title、quote、asides 和 thought_chain，不要生成番外侧页。',
     offlinePerspectiveRuleLine(storyPrefs.perspective),
@@ -12814,7 +12524,7 @@ function buildOfflineEmergencyOpeningSystemPrompt(){
     '只返回 JSON：{"thought_chain":{"subtext_perception":"...","emotional_reaction":"...","action_strategy":"..."}' + titleQuoteJsonFragment + ',"text":"...","asides":["..."]' + birthdayLyricsJsonFragment + '}。',
     '不要代码块，不要解释，不要 status_card。',
     getOfflineThoughtPromptBlock(),
-    isOfflineBirthdayTheme() ? '生日快乐美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 lyrics。' : getOfflineTitlePromptBlock(),
+    isOfflineBirthdayTheme() ? '我们的血缘美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 lyrics。' : getOfflineTitlePromptBlock(),
     birthdayLyricsRule,
     isOfflineBirthdayTheme() ? '正文旁白和 lyrics 必须是简体中文；只有 asides 和引号里的角色台词跟随当前语言设置。' : 'title、quote、正文旁白必须是简体中文；只有 asides 和引号里的角色台词跟随当前语言设置。',
     offlinePerspectiveRuleLine(getOfflineStoryPrefs().perspective),
