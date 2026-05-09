@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-09T06:57:48Z"></script>
-<script src="../chatStorage.js?v=2026-05-09T06:57:48Z"></script>
-<script src="../metadataStore.js?v=2026-05-09T06:57:48Z"></script>
-<script src="../promptManager.js?v=2026-05-09T06:57:48Z"></script>
-<script src="../accountManager.js?v=2026-05-09T06:57:48Z"></script>
-<script src="../scheduleShared.js?v=2026-05-09T06:57:48Z"></script>
-<script src="../presenceShared.js?v=2026-05-09T06:57:48Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-09T06:57:48Z"></script>
+<script src="../assetStore.js?v=2026-05-09T07:10:14Z"></script>
+<script src="../chatStorage.js?v=2026-05-09T07:10:14Z"></script>
+<script src="../metadataStore.js?v=2026-05-09T07:10:14Z"></script>
+<script src="../promptManager.js?v=2026-05-09T07:10:14Z"></script>
+<script src="../accountManager.js?v=2026-05-09T07:10:14Z"></script>
+<script src="../scheduleShared.js?v=2026-05-09T07:10:14Z"></script>
+<script src="../presenceShared.js?v=2026-05-09T07:10:14Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-09T07:10:14Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -721,7 +721,7 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
 .birthday-day.is-special{color:#151515;background:transparent;border-radius:0;box-shadow:none;transform:none;z-index:1}
 .birthday-day.is-special::before{content:'';position:absolute;inset:-9px -11px;background:url('../apps/assets/%E7%BA%A2%E5%9C%882.png') center/100% 100% no-repeat;opacity:.92;pointer-events:none;z-index:-1}
 .birthday-day.is-special::after{content:none}
-.birthday-paper{position:relative;margin-top:70px;padding:12px 17px 10px;background:#fff;min-height:0}
+.birthday-paper{position:relative;margin-top:70px;padding:12px 17px 9px;background:#fff;min-height:0}
 .birthday-card.char .birthday-paper{margin-top:62px;padding-top:8px}
 .birthday-card.user .birthday-paper{padding-top:14px;background:#fff}
 .birthday-paper::before{content:none}
@@ -736,6 +736,7 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
 .birthday-edit svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .birthday-body{position:relative;z-index:1;margin-top:4px;font-family:'Huiwen-mincho',"汇文明朝体",'Songti SC','Noto Serif SC',serif;font-size:15px;font-weight:650;line-height:1.95;color:#5D4C48;white-space:pre-wrap;word-break:break-word}
 .birthday-body .offline-inline-fragment{margin-bottom:17px;gap:8px}
+.birthday-body .offline-inline-fragment:last-child{margin-bottom:3px}
 .birthday-body .offline-inline-fragment > p::first-letter{font-family:'Huiwen-mincho',"汇文明朝体",'Songti SC','Noto Serif SC',serif;font-size:1.82em;font-weight:900;line-height:.82;color:#b12931;margin-right:1px}
 .birthday-body .sheet-quote-inline{display:inline;position:relative;-webkit-box-decoration-break:clone;box-decoration-break:clone;padding:.2em .6em;margin:0 .1em;color:#5D4C48 !important;quotes:none;line-height:2;border:0 !important;border-radius:10px;background-image:radial-gradient(ellipse at center,rgba(255,182,193,.6) 0%,transparent 65%),linear-gradient(to top,#fff,#fff) !important;background-repeat:no-repeat;background-position:center;background-size:100% 100%;box-shadow:0 2px 8px rgba(217,74,86,.1),inset 0 0 0 1.5px rgba(255,255,255,.9),inset 1px 1px 2px rgba(217,74,86,.15);font-family:inherit;font-weight:700}
 .birthday-body .sheet-quote-inline-copy{display:inline}
@@ -768,7 +769,7 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
   .birthday-ribbon{left:-10px;right:-10px;bottom:-100px;height:140px}
   .birthday-calendar{width:148px;bottom:-40px}
   .birthday-month{font-size:25px}
-  .birthday-paper{margin-top:66px;padding:12px 15px 10px}
+  .birthday-paper{margin-top:66px;padding:12px 15px 9px}
   .birthday-card.char .birthday-paper{margin-top:58px;padding-top:8px}
 }
 .offline-invite-debug{position:fixed;left:12px;right:12px;top:calc(54px + var(--safe-top));z-index:9999;padding:10px 12px;border:2px solid #111;border-radius:18px;background:rgba(255,255,255,.97);box-shadow:0 10px 24px rgba(0,0,0,.12);display:none;flex-direction:column;gap:5px;max-height:132px;overflow:auto}
