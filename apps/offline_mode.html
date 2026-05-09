@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-09T05:30:42Z"></script>
-<script src="../chatStorage.js?v=2026-05-09T05:30:42Z"></script>
-<script src="../metadataStore.js?v=2026-05-09T05:30:42Z"></script>
-<script src="../promptManager.js?v=2026-05-09T05:30:42Z"></script>
-<script src="../accountManager.js?v=2026-05-09T05:30:42Z"></script>
-<script src="../scheduleShared.js?v=2026-05-09T05:30:42Z"></script>
-<script src="../presenceShared.js?v=2026-05-09T05:30:42Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-09T05:30:42Z"></script>
+<script src="../assetStore.js?v=2026-05-09T05:55:45Z"></script>
+<script src="../chatStorage.js?v=2026-05-09T05:55:45Z"></script>
+<script src="../metadataStore.js?v=2026-05-09T05:55:45Z"></script>
+<script src="../promptManager.js?v=2026-05-09T05:55:45Z"></script>
+<script src="../accountManager.js?v=2026-05-09T05:55:45Z"></script>
+<script src="../scheduleShared.js?v=2026-05-09T05:55:45Z"></script>
+<script src="../presenceShared.js?v=2026-05-09T05:55:45Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-09T05:55:45Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -42,14 +42,16 @@ body::before{content:'';position:fixed;left:0;right:0;top:0;bottom:-180px;backgr
 .top-heart{display:none}
 .offline-stage-header{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top) + 6px);z-index:45;pointer-events:none}
 .offline-stage-actions{position:relative;width:42px;height:82px;margin-left:auto;margin-right:10px;pointer-events:none}
-.offline-stage-action{min-width:38px;height:38px;padding:0 8px;border-radius:0;border:2px solid rgba(17,17,17,.94);background:linear-gradient(180deg,rgba(255,255,255,.99),rgba(239,237,232,.95));color:#111;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px rgba(255,255,255,.9) inset,4px 4px 0 rgba(17,17,17,.9);backdrop-filter:blur(10px) saturate(108%);-webkit-backdrop-filter:blur(10px) saturate(108%);cursor:pointer;transition:transform .14s ease,box-shadow .14s ease,background .14s ease}
+.offline-stage-action{min-width:38px;height:38px;padding:0;border-radius:0;border:0;background:transparent;color:#111;display:flex;align-items:center;justify-content:center;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;cursor:pointer;transition:transform .14s ease,filter .14s ease}
+.offline-stage-action img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;transform:scale(1.36)}
 .offline-stage-action svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
-.offline-stage-action:active{transform:translate(1px,1px) scale(.98);box-shadow:0 0 0 2px rgba(255,255,255,.9) inset,2px 2px 0 rgba(17,17,17,.9)}
+.offline-stage-action:active{transform:translate(1px,1px) scale(.98);filter:brightness(.96)}
 .offline-stage-actions .offline-stage-action{position:absolute;top:0;pointer-events:auto}
 .offline-stage-actions .offline-stage-action:first-child{display:none}
-.offline-stage-actions .offline-stage-action.settings{right:0}
-.offline-stage-actions .offline-stage-action.memory{top:44px;right:0;min-width:38px;height:30px;padding:0 5px;font:900 9px/1 var(--fontd);letter-spacing:.04em}
+.offline-stage-actions .offline-stage-action.settings{right:0;width:42px;height:42px}
+.offline-stage-actions .offline-stage-action.memory{top:44px;right:0;width:42px;height:42px;min-width:42px;font-size:0;color:transparent}
 .offline-readonly .offline-stage-action.settings{border-color:#8e1111;background:#b91c1c;color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.9) inset,4px 4px 0 rgba(99,0,0,.92)}
+.offline-readonly .offline-stage-action.settings img{display:none}
 .offline-readonly .offline-stage-action.settings svg{display:none}
 .offline-readonly .offline-stage-action.settings::before{content:'×';font:900 24px/1 var(--fontd)}
 .offline-readonly .offline-stage-action.memory,.offline-readonly .composer{display:none !important}
@@ -521,21 +523,22 @@ box-shadow:0 0 0 2px rgba(255,255,255,.97),6px 6px 0 rgba(17,17,17,.94);padding:
 .offline-story-editbtn{width:30px;height:30px;border:2px solid #111;border-radius:0;background:rgba(255,255,255,.94);display:flex;align-items:center;justify-content:center;color:#565656;cursor:pointer;box-shadow:0 0 0 2px rgba(255,255,255,.9) inset,3px 3px 0 rgba(17,17,17,.9);position:relative;z-index:4;pointer-events:auto}
 .offline-story-editbtn:active{transform:translateY(1px)}
 .offline-story-editbtn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.offline-story-thought-row{display:flex;align-items:center;justify-content:flex-start}
-.offline-think{width:100%}
+.offline-story-thought-row{display:flex;align-items:center;justify-content:center;width:100%}
+.offline-think{width:auto;display:flex;flex-direction:column;align-items:center}
 .offline-think[open] .offline-think-toggle{box-shadow:1px 1px 0 #1f1f1f}
-.offline-think-toggle{list-style:none;display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border:2px solid #111;border-radius:0;background:rgba(255,255,255,.96);box-shadow:0 0 0 2px rgba(255,255,255,.92) inset,4px 4px 0 rgba(17,17,17,.9);font-family:var(--fontd);font-size:12px;font-weight:900;color:#1f1f1f;cursor:pointer}
+.offline-think-toggle{list-style:none;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;cursor:pointer}
 .offline-think-toggle::-webkit-details-marker{display:none}
-.offline-think-toggle-icon{width:20px;height:20px;border-radius:999px;background:#151515;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1}
-.offline-think-toggle-caret{font-size:12px;line-height:1;color:#666}
+.offline-think-toggle-img{width:112px;height:auto;display:block;object-fit:contain}
+.offline-think-toggle-icon,.offline-think-toggle-caret{display:none}
 .offline-think-body{margin-top:12px;padding:12px 14px;border:2px solid rgba(31,31,31,.18);border-radius:18px;background:rgba(255,255,255,.86);font-size:11px;font-weight:700;line-height:1.7;color:#333;white-space:pre-wrap;word-break:break-word}
-.offline-summary{width:100%;margin-top:10px}
+.offline-summary{width:100%;margin-top:10px;display:flex;flex-direction:column;align-items:center}
 .offline-summary[open] .offline-summary-toggle{box-shadow:1px 1px 0 rgba(22,22,22,.24)}
-.offline-summary-toggle{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:2px solid #111;border-radius:0;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(242,242,242,.92));box-shadow:0 0 0 2px rgba(255,255,255,.92) inset,4px 4px 0 rgba(17,17,17,.88);cursor:pointer}
+.offline-summary-toggle{list-style:none;display:inline-flex;align-items:center;justify-content:center;gap:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;cursor:pointer}
 .offline-summary-toggle::-webkit-details-marker{display:none}
-.offline-summary-title{display:inline-flex;align-items:center;gap:8px;font-family:var(--fontd);font-size:12px;font-weight:900;color:#1f1f1f;letter-spacing:.03em}
+.offline-summary-img{width:112px;height:auto;display:block;object-fit:contain}
+.offline-summary-title{display:inline-flex;align-items:center;justify-content:center;gap:0;font-size:0;color:transparent}
 .offline-summary-dot{width:18px;height:18px;border-radius:999px;border:1.5px solid rgba(20,20,20,.72);background:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;line-height:1}
-.offline-summary-state{font-size:11px;font-weight:800;color:#666}
+.offline-summary-state{display:none}
 .offline-summary-body{margin-top:10px;padding:14px 16px;border:1.5px solid rgba(26,26,26,.12);border-radius:20px;background:rgba(255,255,255,.82);font-size:12px;font-weight:700;line-height:1.78;color:#252525;white-space:pre-wrap;word-break:break-word}
 .offline-summary-body.is-loading{color:#8a8a8a;font-style:italic}
 .offline-story-postcards{margin-top:14px;display:flex;flex-direction:column;gap:10px}
@@ -702,8 +705,8 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
 .birthday-motto-love{position:relative;display:inline-block;padding:0 .05em}
 .birthday-motto-love::after{content:'';position:absolute;left:-14%;right:-18%;top:-38%;bottom:-28%;background:url('../apps/assets/%E7%BA%A2%E5%9C%882.png') center/100% 100% no-repeat;opacity:.82;pointer-events:none;transform:rotate(-3deg)}
 .birthday-card.user .birthday-motto{left:auto;right:8px;max-width:58%;text-align:right}
-.birthday-ribbon{position:absolute;left:-18px;right:-18px;bottom:-104px;z-index:12;height:0;overflow:visible;opacity:.88;mix-blend-mode:multiply;pointer-events:none}
-.birthday-ribbon-img{display:block;width:100%;height:auto;max-width:none;filter:none}
+.birthday-ribbon{position:absolute;left:-12px;right:-12px;bottom:-110px;z-index:6;height:0;overflow:visible;opacity:.88;mix-blend-mode:multiply;pointer-events:none}
+.birthday-ribbon-img{display:block;width:100%;height:158px;object-fit:contain;object-position:center top;max-width:none;filter:none}
 .birthday-card.user .birthday-ribbon{transform:scaleX(-1)}
 .birthday-calendar{position:absolute;z-index:9;right:16px;bottom:-42px;width:158px;padding:8px 8px 9px;background:rgba(255,255,255,.64);border:1px solid rgba(17,17,17,.14);box-shadow:0 13px 24px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.78);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);transform:rotate(2deg)}
 .birthday-card.user .birthday-calendar{left:16px;right:auto;transform:rotate(-3deg)}
@@ -722,7 +725,8 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
 .birthday-card.user .birthday-paper{padding-top:14px;background:#fff}
 .birthday-paper::before{content:none}
 .birthday-quote-line,.birthday-soft-line{display:none}
-.birthday-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px}
+.birthday-tools{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 12px}
+.birthday-tools-main{width:100%;display:flex;justify-content:center}
 .birthday-card.user .birthday-tools{justify-content:flex-end}
 .birthday-edit{width:32px;height:32px;border:0;border-radius:999px;background:rgba(255,255,255,.72);box-shadow:0 10px 20px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#111;cursor:pointer;flex:0 0 32px}
 .birthday-edit svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -737,11 +741,12 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
 .birthday-postcards{margin-top:12px;display:flex;flex-direction:column;gap:9px}
 .birthday-lyrics{position:relative;z-index:1;margin-top:10px;padding:4px 0 0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden}
 .birthday-lyrics-kicker{display:none}
-.birthday-lyrics-window{position:relative;height:82px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.birthday-lyrics-window{position:relative;height:82px;overflow-y:auto;overflow-x:hidden;display:flex;align-items:flex-start;justify-content:center;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none}
+.birthday-lyrics-window::-webkit-scrollbar{display:none}
 .birthday-lyrics-window::before,.birthday-lyrics-window::after{content:'';position:absolute;left:0;right:0;height:28px;z-index:2;pointer-events:none}
 .birthday-lyrics-window::before{top:0;background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,0))}
 .birthday-lyrics-window::after{bottom:0;background:linear-gradient(0deg,rgba(255,255,255,.9),rgba(255,255,255,0))}
-.birthday-lyrics-track{width:100%;transition:transform .48s cubic-bezier(.22,1,.36,1);will-change:transform}
+.birthday-lyrics-track{width:100%;transition:none;will-change:scroll-position;padding:27px 0}
 .birthday-lyric-line{height:28px;display:flex;align-items:center;justify-content:center;text-align:center;font:700 14px/1.35 'Songti SC','Noto Serif SC',serif;color:rgba(17,17,17,.34);transform:scale(.94);transition:opacity .42s ease,color .42s ease,transform .42s ease,font-weight .42s ease;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .birthday-lyric-line.is-active{color:#7a1118;opacity:1;font-weight:900;transform:scale(1);text-decoration-line:underline;text-decoration-style:dashed;text-decoration-color:rgba(177,41,49,.72);text-underline-offset:5px}
 .birthday-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px}
@@ -756,7 +761,8 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
   .birthday-hero{height:218px}
   .birthday-motto{left:4px;bottom:32px;max-width:60%;font-size:22px}
   .birthday-card.user .birthday-motto{right:4px;max-width:58%}
-  .birthday-ribbon{left:-14px;right:-14px;bottom:-96px}
+  .birthday-ribbon{left:-10px;right:-10px;bottom:-100px}
+  .birthday-ribbon-img{height:140px}
   .birthday-calendar{width:148px;bottom:-40px}
   .birthday-month{font-size:25px}
   .birthday-paper{margin-top:66px;padding:12px 15px 10px}
@@ -788,9 +794,9 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
       </button>
       <button class="offline-stage-action settings" id="offlineSettingsBtn" type="button" onclick="handleOfflineSettingsAction(event)" aria-label="线下设置">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M7 12h13"></path><path d="M10 17h10"></path></svg>
+        <img src="assets/%E8%AE%BE%E7%BD%AE.png" alt="">
       </button>
-      <button class="offline-stage-action memory" id="offlineMemoryBtn" type="button" onclick="openOfflineMemoryPanel()" aria-label="聊天记忆">★ 0</button>
+      <button class="offline-stage-action memory" id="offlineMemoryBtn" type="button" onclick="openOfflineMemoryPanel()" aria-label="聊天记忆"><img src="assets/%E8%AE%B0%E5%BF%86%E6%8C%89%E9%92%AE.png" alt=""></button>
     </div>
   </div>
   <button class="offline-readonly-exit-btn" id="offlineReadOnlyExitBtn" type="button" onclick="exitReadOnlyOfflineInviteToDateApp(event)" aria-label="返回约会">×</button>
@@ -7534,13 +7540,23 @@ function startBirthdayLyricPlayers(){
     if(!(win && track && lines.length)) return;
     var idx = 0;
     var dir = 1;
+    var userScrollPauseUntil = 0;
+    function pauseAutoScroll(){
+      userScrollPauseUntil = Date.now() + 4200;
+    }
+    win.addEventListener('pointerdown', pauseAutoScroll, { passive:true });
+    win.addEventListener('touchstart', pauseAutoScroll, { passive:true });
+    win.addEventListener('wheel', pauseAutoScroll, { passive:true });
     function paint(){
       lines.forEach(function(line, lineIdx){
         line.classList.toggle('is-active', lineIdx === idx);
       });
       var active = lines[idx];
       var offset = active ? (active.offsetTop - Math.max(0, (win.clientHeight - active.offsetHeight) / 2)) : 0;
-      track.style.transform = 'translateY(' + (-Math.max(0, offset)) + 'px)';
+      track.style.transform = '';
+      if(Date.now() >= userScrollPauseUntil){
+        win.scrollTop = Math.max(0, offset);
+      }
     }
     paint();
     if(lines.length > 1){
@@ -8159,7 +8175,7 @@ function renderOfflineThoughtChain(entry){
     'action_strategy: ' + chain.action_strategy,
     '</think>'
   ];
-  return '<details class="offline-think"><summary class="offline-think-toggle"><span class="offline-think-toggle-icon">✦</span><span>THOUGHTS</span><span class="offline-think-toggle-caret">⌄</span></summary><div class="offline-think-body">' + esc(lines.join('\n')) + '</div></details>';
+  return '<details class="offline-think"><summary class="offline-think-toggle" aria-label="思维链"><img class="offline-think-toggle-img" src="assets/%E6%80%9D%E7%BB%B4%E9%93%BE.png" alt="思维链"></summary><div class="offline-think-body">' + esc(lines.join('\n')) + '</div></details>';
 }
 function getOfflineSceneNumber(entry){
   var list = Array.isArray(session && session.entries) ? session.entries : [];
@@ -8196,7 +8212,7 @@ function renderOfflineSummary(entry){
   var hasSummary = !!String(entry.summaryText || '').trim();
   var bodyClass = hasSummary ? 'offline-summary-body' : 'offline-summary-body is-loading';
   var bodyText = hasSummary ? String(entry.summaryText || '').trim() : '这一幕的小摘要正在收进档案夹…';
-  return '<details class="offline-summary"><summary class="offline-summary-toggle"><span class="offline-summary-title"><span class="offline-summary-dot">✦</span><span>第' + esc(sceneNo) + '幕摘要</span></span><span class="offline-summary-state">' + esc(hasSummary ? '已归档' : '整理中') + '</span></summary><div class="' + bodyClass + '">' + esc(bodyText) + '</div></details>';
+  return '<details class="offline-summary"><summary class="offline-summary-toggle" aria-label="第' + esc(sceneNo) + '幕摘要"><span class="offline-summary-title"><img class="offline-summary-img" src="assets/%E6%91%98%E8%A6%81.png" alt="摘要"></span><span class="offline-summary-state">' + esc(hasSummary ? '已归档' : '整理中') + '</span></summary><div class="' + bodyClass + '">' + esc(bodyText) + '</div></details>';
 }
 function renderOfflineStatusChip(entry, idx){
   if(!entry || entry.role === 'user') return '';
@@ -9837,7 +9853,11 @@ async function refreshOfflineMemoryButton(){
         return total + (Array.isArray(mem.shortTerm) ? mem.shortTerm.length : 0);
       })(store && store.advancedMemory)
     : ((store && Array.isArray(store.items)) ? store.items.length : 0);
-  btn.textContent = '★ ' + count;
+  btn.dataset.count = String(count);
+  btn.setAttribute('aria-label', '聊天记忆 ' + String(count));
+  if(!btn.querySelector('img')){
+    btn.innerHTML = '<img src="assets/%E8%AE%B0%E5%BF%86%E6%8C%89%E9%92%AE.png" alt="">';
+  }
 }
 function buildOfflineDiaryMemoryCardsHtml(items){
   var list = sortOfflineMemoryItemsForUi(items);

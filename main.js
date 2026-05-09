@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-09T05:30:42Z';
+const APP_BUILD_ID = '2026-05-09T05:55:45Z';
 const APP_UPDATE_NOTES = [
-  '线下头像会跟随聊天设置同步',
-  '我们的血缘细节和歌词样式调整',
-  '我们的血缘输入区和装饰按钮换新'
+  '我们的血缘按钮换成新素材',
+  '歌词可以手动滑动也会自动播放',
+  '红丝带位置调回上一版'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
