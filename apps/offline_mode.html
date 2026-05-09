@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-08T22:04:16Z"></script>
-<script src="../chatStorage.js?v=2026-05-08T22:04:16Z"></script>
-<script src="../metadataStore.js?v=2026-05-08T22:04:16Z"></script>
-<script src="../promptManager.js?v=2026-05-08T22:04:16Z"></script>
-<script src="../accountManager.js?v=2026-05-08T22:04:16Z"></script>
-<script src="../scheduleShared.js?v=2026-05-08T22:04:16Z"></script>
-<script src="../presenceShared.js?v=2026-05-08T22:04:16Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-08T22:04:16Z"></script>
+<script src="../assetStore.js?v=2026-05-08T22:35:52Z"></script>
+<script src="../chatStorage.js?v=2026-05-08T22:35:52Z"></script>
+<script src="../metadataStore.js?v=2026-05-08T22:35:52Z"></script>
+<script src="../promptManager.js?v=2026-05-08T22:35:52Z"></script>
+<script src="../accountManager.js?v=2026-05-08T22:35:52Z"></script>
+<script src="../scheduleShared.js?v=2026-05-08T22:35:52Z"></script>
+<script src="../presenceShared.js?v=2026-05-08T22:35:52Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-08T22:35:52Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 *{margin:0;padding:0;box-sizing:border-box}
@@ -178,12 +178,15 @@ body::before{content:'';position:fixed;left:0;right:0;top:0;bottom:-180px;backgr
 .offline-beauty-tab{flex:0 0 auto;min-width:58px;height:46px;padding:0 8px;border:2px solid #111;border-radius:0;background:#fff;color:#111;font:900 12px/1 var(--fontd);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,4px 4px 0 rgba(17,17,17,.94);cursor:pointer}
 .offline-beauty-tab.is-active{background:#111;color:#fff}
 .offline-beauty-tab:active{transform:translate(1px,1px);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,2px 2px 0 rgba(17,17,17,.94)}
-.offline-builtin-theme-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.offline-builtin-theme-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .offline-builtin-theme-btn{min-height:50px;padding:8px 10px;border:2px solid #111;border-radius:0;background:#fff;color:#111;font:900 12px/1.18 var(--fontd);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,4px 4px 0 rgba(17,17,17,.92);cursor:pointer;text-align:left}
 .offline-builtin-theme-btn span{display:block;font-size:10px;font-weight:900;color:#777;margin-top:5px;letter-spacing:.04em}
 .offline-builtin-theme-btn.is-active{background:#111;color:#fff}
 .offline-builtin-theme-btn.is-active span{color:rgba(255,255,255,.72)}
 .offline-builtin-theme-btn:active{transform:translate(1px,1px);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,2px 2px 0 rgba(17,17,17,.92)}
+.offline-birthday-controls{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end;padding:10px 11px;border:1.5px solid rgba(17,17,17,.16);border-radius:16px;background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.8)}
+.offline-birthday-controls[hidden]{display:none}
+.offline-birthday-controls .offline-setting-note{margin-top:3px}
 .offline-beauty-textarea{
   min-height:220px;
   border:none;
@@ -728,6 +731,61 @@ body.offline-theme-bloodline .composer-box textarea{font-weight:800;color:#22141
 body.offline-theme-bloodline .composer-btn{border:1px solid rgba(111,0,17,.26);border-radius:999px;background:rgba(255,255,255,.82);color:#8b101b;box-shadow:0 11px 22px rgba(34,0,8,.1),inset 0 0 0 1px rgba(255,255,255,.86)}
 body.offline-theme-bloodline .composer-btn.primary{background:#9f101f;color:#fff;border-color:#9f101f}
 body.offline-theme-bloodline .composer-btn:disabled{background:rgba(226,222,219,.75);color:#998286;box-shadow:none}
+body.offline-theme-birthday .paper-bg{background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(244,244,242,.62)),var(--offline-page-bg);background-size:cover;background-position:center;filter:grayscale(.2) contrast(.98)}
+body.offline-theme-birthday .story-wrap{gap:24px;padding-left:9px;padding-right:9px}
+body.offline-theme-birthday .composer-box{border:1px solid rgba(20,20,20,.16);border-radius:999px;background:rgba(255,255,255,.78);box-shadow:0 18px 38px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.8);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+body.offline-theme-birthday .composer-btn{border:1px solid rgba(20,20,20,.18);border-radius:999px;background:rgba(255,255,255,.84);box-shadow:0 12px 26px rgba(0,0,0,.08);color:#111}
+.birthday-card{width:min(100%,372px);align-self:flex-start;position:relative;isolation:isolate;color:#111}
+.birthday-card.user{align-self:flex-end}
+.birthday-sheet{position:relative;background:rgba(255,255,255,.8);border:1px solid rgba(20,20,20,.08);box-shadow:0 26px 60px rgba(0,0,0,.1),inset 0 0 0 1px rgba(255,255,255,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow:visible}
+.birthday-hero{position:relative;height:230px;overflow:visible;background:#e8e8e8}
+.birthday-cover{position:absolute;inset:0;overflow:hidden;background:linear-gradient(135deg,#e7e7e5,#fafafa)}
+.birthday-cover img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.08) brightness(1.04)}
+.birthday-cover-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:900 44px/1 var(--fontd);letter-spacing:.05em;color:#bbb;background:linear-gradient(135deg,#ededed,#fff)}
+.birthday-cover img + .birthday-cover-fallback{display:none}
+.birthday-cover img[style*="display: none"] + .birthday-cover-fallback{display:flex}
+.birthday-hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:56px;background:linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.42),rgba(0,0,0,0));pointer-events:none}
+.birthday-card.user .birthday-hero::after{background:linear-gradient(270deg,rgba(0,0,0,.82),rgba(0,0,0,.42),rgba(0,0,0,0))}
+.birthday-stats{position:absolute;left:0;top:10px;z-index:3;display:flex;align-items:center;gap:24px;min-width:132px;height:30px;padding:0 13px;background:rgba(0,0,0,.72);color:#ececec;font:800 15px/1 Georgia,'Times New Roman',serif;letter-spacing:.03em}
+.birthday-name{position:absolute;right:18px;bottom:12px;z-index:4;max-width:50%;font-family:'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',serif;font-size:43px;line-height:1;color:#fff;text-align:right;text-shadow:0 5px 12px rgba(0,0,0,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.birthday-card.user .birthday-name{left:18px;right:auto;text-align:left}
+.birthday-calendar{position:absolute;z-index:5;left:16px;bottom:-42px;width:158px;padding:8px 8px 9px;background:rgba(255,255,255,.64);border:1px solid rgba(17,17,17,.14);box-shadow:0 13px 24px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.78);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);transform:rotate(-2deg)}
+.birthday-card.user .birthday-calendar{left:auto;right:16px;transform:rotate(2deg)}
+.birthday-calendar-title{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-bottom:5px;color:#0f0f0f}
+.birthday-month{font:italic 900 28px/.82 Georgia,'Times New Roman',serif;letter-spacing:-.03em}
+.birthday-month-sub{font:900 10px/1 var(--fontd);letter-spacing:.08em;color:rgba(20,20,20,.58);white-space:nowrap}
+.birthday-weekdays,.birthday-days{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center}
+.birthday-weekdays span{padding:2px 0;background:rgba(0,0,0,.72);color:#f5f5f5;font:900 9px/1 var(--fontd)}
+.birthday-day{position:relative;height:17px;display:flex;align-items:center;justify-content:center;color:rgba(17,17,17,.58);font:900 12px/1 Georgia,'Times New Roman',serif;text-shadow:0 1px 0 rgba(255,255,255,.7)}
+.birthday-day.is-muted{color:transparent;text-shadow:none}
+.birthday-day.is-special{color:#fff;background:#111;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.7),0 8px 14px rgba(0,0,0,.2);transform:translateY(-1px)}
+.birthday-day.is-special::after{content:'✦';position:absolute;right:-4px;top:-6px;font:900 8px/1 var(--fontd);color:#111;text-shadow:0 1px 0 rgba(255,255,255,.8)}
+.birthday-paper{position:relative;margin-top:54px;padding:22px 17px 16px;background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(247,247,246,.86));min-height:250px}
+.birthday-card.user .birthday-paper{padding-top:22px}
+.birthday-paper::before{content:'';position:absolute;left:18px;right:18px;top:86px;border-top:1px solid rgba(17,17,17,.08);box-shadow:0 36px 0 rgba(17,17,17,.055),0 72px 0 rgba(17,17,17,.045);pointer-events:none}
+.birthday-quote-line{position:relative;margin:0 0 17px;font:600 14px/1.7 Georgia,'Times New Roman','Songti SC',serif;color:#111}
+.birthday-soft-line{margin:0 0 18px;font:700 15px/1.75 'Songti SC','Noto Serif SC',serif;color:rgba(17,17,17,.34)}
+.birthday-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px}
+.birthday-card.user .birthday-tools{justify-content:flex-end}
+.birthday-edit{width:32px;height:32px;border:0;border-radius:999px;background:rgba(255,255,255,.72);box-shadow:0 10px 20px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#111;cursor:pointer;flex:0 0 32px}
+.birthday-edit svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.birthday-body{position:relative;z-index:1;margin-top:10px;font-size:15px;font-weight:650;line-height:1.95;color:#171717;white-space:pre-wrap;word-break:break-word}
+.birthday-body .offline-inline-fragment{margin-bottom:17px;gap:8px}
+.birthday-body .sheet-quote-inline{border:1px solid rgba(17,17,17,.16) !important;border-radius:4px;background:rgba(255,255,255,.76) !important;box-shadow:0 6px 13px rgba(0,0,0,.08);padding:4px 12px;color:#333 !important;font-family:'Songti SC','Noto Serif SC',serif}
+.birthday-body .char-sheet-aside{display:block;width:fit-content;max-width:100%;margin:8px 0 15px;padding:8px 12px;border-radius:3px;background:rgba(246,246,246,.74);border:1px solid rgba(17,17,17,.09);color:rgba(17,17,17,.46);font:700 14px/1.72 'Songti SC','Noto Serif SC',serif;text-decoration:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.78)}
+.birthday-postcards{margin-top:12px;display:flex;flex-direction:column;gap:9px}
+.birthday-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:14px}
+.birthday-actions .offline-story-iconset{display:flex}
+.birthday-actions .offline-story-iconbtn{width:28px;height:28px;background:rgba(255,255,255,.78);border:1px solid rgba(17,17,17,.12);box-shadow:0 8px 18px rgba(0,0,0,.06);color:#111}
+@media (max-width:420px){
+  .offline-builtin-theme-tabs{grid-template-columns:1fr}
+  .birthday-card{width:min(100%,356px)}
+  .birthday-hero{height:218px}
+  .birthday-name{font-size:38px;max-width:62%}
+  .birthday-calendar{width:148px;bottom:-40px}
+  .birthday-month{font-size:25px}
+  .birthday-paper{margin-top:52px;padding:20px 15px 15px}
+}
 .bloodline-card{width:min(100%,372px);display:flex;flex-direction:column;position:relative;isolation:isolate;align-self:flex-start}
 .bloodline-card.user{align-self:flex-end}
 .bloodline-sheet{position:relative;width:100%;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;overflow:visible}
@@ -1018,6 +1076,21 @@ repeating-linear-gradient(0deg,rgba(128,0,18,.026) 0 1px,transparent 1px 26px)}
             <div class="offline-builtin-theme-tabs" id="offlineBuiltinThemeTabs">
               <button class="offline-builtin-theme-btn" type="button" data-offline-builtin-theme="classic">默认拍立得<span>原来的线下样子</span></button>
               <button class="offline-builtin-theme-btn" type="button" data-offline-builtin-theme="bloodline">我们的血缘<span>红线与文学摘抄</span></button>
+              <button class="offline-builtin-theme-btn" type="button" data-offline-builtin-theme="birthday">生日快乐<span>横幅头像和日历</span></button>
+            </div>
+            <div class="offline-birthday-controls" id="offlineBirthdayControls" hidden>
+              <div>
+                <div class="offline-setting-label">USER 日历</div>
+                <div class="offline-setting-note spaced">角色固定 6 月 15 日；这里改 user 卡片日期。</div>
+              </div>
+              <div>
+                <label class="offline-setting-label" for="offlineBirthdayUserMonth">月</label>
+                <input class="offline-setting-input offline-underline-input offline-number-input" id="offlineBirthdayUserMonth" type="number" min="1" max="12" step="1">
+              </div>
+              <div>
+                <label class="offline-setting-label" for="offlineBirthdayUserDay">日</label>
+                <input class="offline-setting-input offline-underline-input offline-number-input" id="offlineBirthdayUserDay" type="number" min="1" max="31" step="1">
+              </div>
             </div>
             <div class="offline-beauty-tabs" id="offlineBeautyTabs"></div>
             <div class="offline-setting-note" id="offlineBeautyHint">选择一个小方块开始改 CSS。</div>
@@ -5528,7 +5601,8 @@ function getOfflineUiPrefs(){
   };
 }
 function normalizeOfflineBuiltinTheme(value){
-  return String(value || '').trim() === 'bloodline' ? 'bloodline' : 'classic';
+  var theme = String(value || '').trim();
+  return /^(bloodline|birthday)$/.test(theme) ? theme : 'classic';
 }
 function getOfflineBuiltinTheme(){
   if(offlineDrawerDraft && Object.prototype.hasOwnProperty.call(offlineDrawerDraft, 'builtinTheme')){
@@ -5539,10 +5613,29 @@ function getOfflineBuiltinTheme(){
 function isOfflineBloodlineTheme(){
   return getOfflineBuiltinTheme() === 'bloodline';
 }
+function isOfflineBirthdayTheme(){
+  return getOfflineBuiltinTheme() === 'birthday';
+}
 function applyOfflineBuiltinTheme(){
   var theme = getOfflineBuiltinTheme();
   document.body.classList.toggle('offline-theme-bloodline', theme === 'bloodline');
-  document.body.classList.toggle('offline-theme-classic', theme !== 'bloodline');
+  document.body.classList.toggle('offline-theme-birthday', theme === 'birthday');
+  document.body.classList.toggle('offline-theme-classic', theme === 'classic');
+}
+function getOfflineBirthdayMonthLength(month){
+  var safeMonth = Math.max(1, Math.min(12, Math.floor(Number(month) || 6)));
+  return new Date(2026, safeMonth, 0).getDate();
+}
+function normalizeOfflineBirthdayMonth(value, fallback){
+  var numeric = Math.floor(Number(value));
+  if(!Number.isFinite(numeric)) numeric = Math.floor(Number(fallback) || 6);
+  return Math.max(1, Math.min(12, numeric));
+}
+function normalizeOfflineBirthdayDay(value, month, fallback){
+  var maxDay = getOfflineBirthdayMonthLength(month);
+  var numeric = Math.floor(Number(value));
+  if(!Number.isFinite(numeric)) numeric = Math.floor(Number(fallback) || 15);
+  return Math.max(1, Math.min(maxDay, numeric));
 }
 function estimateOfflineOutputTokensFromChars(chars){
   var safeChars = Math.max(60, Number(chars) || 0);
@@ -5605,6 +5698,8 @@ function buildOfflineDrawerDraft(){
     memoryMode: loadOfflineSharedMemoryModeSync(),
     sideStoryType: ui.sideStoryType,
     builtinTheme: ui.builtinTheme,
+    birthdayUserMonth: normalizeOfflineBirthdayMonth(character && character.offlineBirthdayUserMonth, 6),
+    birthdayUserDay: normalizeOfflineBirthdayDay(character && character.offlineBirthdayUserDay, normalizeOfflineBirthdayMonth(character && character.offlineBirthdayUserMonth, 6), 15),
     thoughtPrompt: String(character && character.offlineThoughtPrompt || '').trim(),
     titlePrompt: String(character && character.offlineTitlePrompt || '').trim(),
     userTitle: String(character && character.offlineUserTitle || '').trim(),
@@ -5647,6 +5742,8 @@ function applyOfflineDrawerDraftToCharacter(){
   character.offlineMemoryReadCount = Math.max(1, Math.min(12, Number(draft.memoryReadCount) || 5));
   character.offlineSideStoryType = String(draft.sideStoryType || 'future');
   character.offlineBuiltinTheme = normalizeOfflineBuiltinTheme(draft.builtinTheme);
+  character.offlineBirthdayUserMonth = normalizeOfflineBirthdayMonth(draft.birthdayUserMonth, 6);
+  character.offlineBirthdayUserDay = normalizeOfflineBirthdayDay(draft.birthdayUserDay, character.offlineBirthdayUserMonth, 15);
   character.offlineThoughtPrompt = String(draft.thoughtPrompt || '').trim();
   character.offlineTitlePrompt = String(draft.titlePrompt || '').trim();
   character.offlineUserTitle = String(draft.userTitle || '').trim();
@@ -6502,6 +6599,9 @@ function syncOfflineDrawerControls(){
   var sideStoryTrigger = document.getElementById('offlineDrawerSideStoryTrigger');
   var sideStoryDropdown = document.getElementById('offlineDrawerSideStoryDropdown');
   var builtinThemeTabs = document.getElementById('offlineBuiltinThemeTabs');
+  var birthdayControls = document.getElementById('offlineBirthdayControls');
+  var birthdayMonth = document.getElementById('offlineBirthdayUserMonth');
+  var birthdayDay = document.getElementById('offlineBirthdayUserDay');
   var userTitle = document.getElementById('offlineDrawerUserTitle');
   var userQuote = document.getElementById('offlineDrawerUserQuote');
   var range = document.getElementById('offlineDrawerCurrentRange');
@@ -6562,6 +6662,9 @@ function syncOfflineDrawerControls(){
       btn.classList.toggle('is-active', normalizeOfflineBuiltinTheme(btn.getAttribute('data-offline-builtin-theme')) === normalizeOfflineBuiltinTheme(draft.builtinTheme));
     });
   }
+  if(birthdayControls) birthdayControls.hidden = normalizeOfflineBuiltinTheme(draft.builtinTheme) !== 'birthday';
+  if(birthdayMonth && document.activeElement !== birthdayMonth) birthdayMonth.value = String(normalizeOfflineBirthdayMonth(draft.birthdayUserMonth, 6));
+  if(birthdayDay && document.activeElement !== birthdayDay) birthdayDay.value = String(normalizeOfflineBirthdayDay(draft.birthdayUserDay, normalizeOfflineBirthdayMonth(draft.birthdayUserMonth, 6), 15));
   if(range) range.textContent = '正文 ' + String(draft.bodyMinChars) + ' - ' + String(draft.bodyMaxChars) + ' 字 · 段落 ' + String(draft.paragraphMinCount) + ' - ' + String(draft.paragraphMaxCount) + ' 段 · 心声 ' + String(draft.asideMinChars) + ' - ' + String(draft.asideMaxChars) + ' 字';
   syncOfflineDrawerFieldWidths();
   applyOfflineBuiltinTheme();
@@ -6595,6 +6698,8 @@ function bindOfflineDrawerControls(){
   var sideStoryDropdown = document.getElementById('offlineDrawerSideStoryDropdown');
   var sideStoryTrigger = document.getElementById('offlineDrawerSideStoryTrigger');
   var builtinThemeTabs = document.getElementById('offlineBuiltinThemeTabs');
+  var birthdayMonth = document.getElementById('offlineBirthdayUserMonth');
+  var birthdayDay = document.getElementById('offlineBirthdayUserDay');
   var userTitle = document.getElementById('offlineDrawerUserTitle');
   var userQuote = document.getElementById('offlineDrawerUserQuote');
   var pageBgUploadBtn = document.getElementById('offlineDrawerPageBgUploadBtn');
@@ -6936,6 +7041,24 @@ function bindOfflineDrawerControls(){
         renderStory();
         persistOfflineDrawerSettings({ silent:true });
       });
+    });
+  }
+  if(birthdayMonth){
+    bindNumericCommit(birthdayMonth, function(){
+      var draft = getOfflineDrawerDraft();
+      draft.birthdayUserMonth = normalizeOfflineBirthdayMonth(birthdayMonth.value, 6);
+      draft.birthdayUserDay = normalizeOfflineBirthdayDay(draft.birthdayUserDay, draft.birthdayUserMonth, 15);
+      renderStory();
+      persistOfflineDrawerSettings({ silent:true });
+    });
+  }
+  if(birthdayDay){
+    bindNumericCommit(birthdayDay, function(){
+      var draft = getOfflineDrawerDraft();
+      draft.birthdayUserMonth = normalizeOfflineBirthdayMonth(draft.birthdayUserMonth, 6);
+      draft.birthdayUserDay = normalizeOfflineBirthdayDay(birthdayDay.value, draft.birthdayUserMonth, 15);
+      renderStory();
+      persistOfflineDrawerSettings({ silent:true });
     });
   }
   document.addEventListener('click', function(evt){
@@ -7448,6 +7571,95 @@ function renderBloodlineSeamHtml(){
     '</svg>' +
   '</div>';
 }
+function renderBirthdayCoverHtml(src, fallbackText){
+  var safeSrc = normalizeOfflineAssetSrc(src || '');
+  var fallback = esc(String(fallbackText || 'C').slice(0, 2) || 'C');
+  if(!isRenderableOfflineAvatarSrc(safeSrc)){
+    return '<div class="birthday-cover-fallback">' + fallback + '</div>';
+  }
+  return '<img src="' + escAttr(safeSrc) + '" alt="" onerror="this.style.display=&quot;none&quot;"><div class="birthday-cover-fallback">' + fallback + '</div>';
+}
+function getBirthdayMonthName(month){
+  var names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return names[Math.max(1, Math.min(12, Number(month) || 6)) - 1] || 'June';
+}
+function renderBirthdayCalendarHtml(month, day, label){
+  var safeMonth = normalizeOfflineBirthdayMonth(month, 6);
+  var safeDay = normalizeOfflineBirthdayDay(day, safeMonth, 15);
+  var daysInMonth = getOfflineBirthdayMonthLength(safeMonth);
+  var firstDay = new Date(2026, safeMonth - 1, 1).getDay();
+  var mondayOffset = (firstDay + 6) % 7;
+  var cells = [];
+  for(var blank = 0; blank < mondayOffset; blank++){
+    cells.push('<span class="birthday-day is-muted"></span>');
+  }
+  for(var current = 1; current <= daysInMonth; current++){
+    cells.push('<span class="birthday-day' + (current === safeDay ? ' is-special' : '') + '">' + String(current) + '</span>');
+  }
+  while(cells.length % 7 !== 0){
+    cells.push('<span class="birthday-day is-muted"></span>');
+  }
+  return '<div class="birthday-calendar" aria-label="' + escAttr(String(label || 'calendar')) + '">' +
+    '<div class="birthday-calendar-title"><span class="birthday-month">' + esc(getBirthdayMonthName(safeMonth)) + '</span><span class="birthday-month-sub">' + esc(String(safeMonth) + '月 · ' + String(safeDay) + '日') + '</span></div>' +
+    '<div class="birthday-weekdays"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>' +
+    '<div class="birthday-days">' + cells.join('') + '</div>' +
+  '</div>';
+}
+function getOfflineBirthdayUserMonth(){
+  if(offlineDrawerDraft && Object.prototype.hasOwnProperty.call(offlineDrawerDraft, 'birthdayUserMonth')){
+    return normalizeOfflineBirthdayMonth(offlineDrawerDraft.birthdayUserMonth, 6);
+  }
+  return normalizeOfflineBirthdayMonth(character && character.offlineBirthdayUserMonth, 6);
+}
+function getOfflineBirthdayUserDay(){
+  var month = getOfflineBirthdayUserMonth();
+  if(offlineDrawerDraft && Object.prototype.hasOwnProperty.call(offlineDrawerDraft, 'birthdayUserDay')){
+    return normalizeOfflineBirthdayDay(offlineDrawerDraft.birthdayUserDay, month, 15);
+  }
+  return normalizeOfflineBirthdayDay(character && character.offlineBirthdayUserDay, month, 15);
+}
+function renderBirthdayStoryCard(entry, idx, isChar){
+  var avatar = isChar ? resolveCharAvatar() : resolveUserAvatar();
+  var displayName = isChar ? getCharDisplayName() : resolveUserName();
+  var meta = buildOfflineEntryMeta(entry, isChar ? 'assistant' : 'user');
+  var floorLabel = '#' + String(idx + 1);
+  var tokenLabel = String(meta.tokenCount) + 't';
+  var month = isChar ? 6 : getOfflineBirthdayUserMonth();
+  var day = isChar ? 15 : getOfflineBirthdayUserDay();
+  var editButton = '<button class="birthday-edit" type="button" onclick="editOfflineEntryText(' + idx + ')" aria-label="编辑"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button>';
+  var thoughtToggle = isChar ? ('<div class="birthday-tools"><div class="birthday-tools-main">' + renderOfflineThoughtChain(entry) + '</div>' + editButton + '</div>') : ('<div class="birthday-tools birthday-user-tools">' + editButton + '</div>');
+  var statusChip = isChar ? renderOfflineStatusChip(entry, idx) : '';
+  var summaryToggle = isChar ? renderOfflineSummary(entry) : '';
+  var postcards = isChar ? ('<div class="birthday-postcards">' + statusChip + summaryToggle + '</div>') : '';
+  var quoteLine = isChar ? (String(meta.quote || '').trim() || 'In June, the flowers and you are all summer scenery') : getOfflineUserDisplayQuote();
+  var softLine = isChar ? (String(meta.title || '').trim() || '六月十五日') : getOfflineUserDisplayTitle();
+  var avatarClick = isChar ? ' onclick="openOfflineStatusModal(' + idx + ', false)"' : '';
+  var actions = '<div class="birthday-actions">' +
+      '<div class="offline-story-iconset">' +
+        '<div class="offline-story-iconbtn"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2"></circle><circle cx="6" cy="12" r="2"></circle><circle cx="18" cy="19" r="2"></circle><path d="M8 12l8-6"></path><path d="M8 12l8 6"></path></svg></div>' +
+        '<div class="offline-story-iconbtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1Z"></path></svg></div>' +
+        '<div class="offline-story-iconbtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z"></path></svg></div>' +
+      '</div>' +
+    '</div>';
+  return '<div class="birthday-card ' + (isChar ? 'char' : 'user') + '">' +
+    '<div class="birthday-sheet">' +
+      '<div class="birthday-hero"' + avatarClick + '>' +
+        '<div class="birthday-cover">' + renderBirthdayCoverHtml(avatar, displayName.slice(0, 2) || (isChar ? 'C' : 'U')) + '</div>' +
+        '<div class="birthday-stats"><span>' + esc(floorLabel) + '</span><span>' + esc(tokenLabel) + '</span></div>' +
+        '<div class="birthday-name">' + esc(displayName || (isChar ? 'char' : 'user')) + '</div>' +
+        renderBirthdayCalendarHtml(month, day, isChar ? 'char birthday calendar' : 'user birthday calendar') +
+      '</div>' +
+      '<div class="birthday-paper">' +
+        '<div class="birthday-quote-line">' + esc(quoteLine) + '</div>' +
+        '<div class="birthday-soft-line">' + esc(softLine) + '</div>' +
+        thoughtToggle +
+        '<div class="birthday-body">' + renderCharSheetBody(entry.text || '', entry.asides || (entry.aside ? [entry.aside] : []), idx, entry) + '</div>' +
+        postcards +
+        actions +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
 function renderBloodlineStoryCard(entry, idx, isChar){
   var avatar = isChar ? resolveCharAvatar() : resolveUserAvatar();
   var displayName = isChar ? getCharDisplayName() : resolveUserName();
@@ -7494,6 +7706,7 @@ function renderBloodlineStoryCard(entry, idx, isChar){
   '</div>';
 }
 function renderPaperStoryCard(entry, idx, isChar){
+  if(isOfflineBirthdayTheme()) return renderBirthdayStoryCard(entry, idx, isChar);
   if(isOfflineBloodlineTheme()) return renderBloodlineStoryCard(entry, idx, isChar);
   var avatar = isChar ? resolveCharAvatar() : resolveUserAvatar();
   var displayName = isChar ? getCharDisplayName() : resolveUserName();
