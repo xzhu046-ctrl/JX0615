@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-09T07:33:45Z"></script>
-<script src="../chatStorage.js?v=2026-05-09T07:33:45Z"></script>
-<script src="../metadataStore.js?v=2026-05-09T07:33:45Z"></script>
-<script src="../promptManager.js?v=2026-05-09T07:33:45Z"></script>
-<script src="../accountManager.js?v=2026-05-09T07:33:45Z"></script>
-<script src="../scheduleShared.js?v=2026-05-09T07:33:45Z"></script>
-<script src="../presenceShared.js?v=2026-05-09T07:33:45Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-09T07:33:45Z"></script>
+<script src="../assetStore.js?v=2026-05-09T16:57:39Z"></script>
+<script src="../chatStorage.js?v=2026-05-09T16:57:39Z"></script>
+<script src="../metadataStore.js?v=2026-05-09T16:57:39Z"></script>
+<script src="../promptManager.js?v=2026-05-09T16:57:39Z"></script>
+<script src="../accountManager.js?v=2026-05-09T16:57:39Z"></script>
+<script src="../scheduleShared.js?v=2026-05-09T16:57:39Z"></script>
+<script src="../presenceShared.js?v=2026-05-09T16:57:39Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-09T16:57:39Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -176,11 +176,6 @@ body::before{content:'';position:fixed;left:0;right:0;top:0;bottom:-180px;backgr
 .offline-bg-controls{flex:0 0 auto;width:108px;display:flex;flex-direction:column;gap:10px;align-items:flex-start;justify-content:stretch}
 .offline-bg-controls .offline-setting-btn{width:100%;padding:0 8px}
 .offline-bg-controls .offline-setting-input{align-self:flex-start}
-.offline-beauty-tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin:0 -2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.offline-beauty-tabs::-webkit-scrollbar{display:none}
-.offline-beauty-tab{flex:0 0 auto;min-width:58px;height:46px;padding:0 8px;border:2px solid #111;border-radius:0;background:#fff;color:#111;font:900 12px/1 var(--fontd);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,4px 4px 0 rgba(17,17,17,.94);cursor:pointer}
-.offline-beauty-tab.is-active{background:#111;color:#fff}
-.offline-beauty-tab:active{transform:translate(1px,1px);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,2px 2px 0 rgba(17,17,17,.94)}
 .offline-builtin-theme-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .offline-builtin-theme-btn{min-height:50px;padding:8px 10px;border:2px solid #111;border-radius:0;background:#fff;color:#111;font:900 12px/1.18 var(--fontd);box-shadow:0 0 0 2px rgba(255,255,255,.95) inset,4px 4px 0 rgba(17,17,17,.92);cursor:pointer;text-align:left}
 .offline-builtin-theme-btn span{display:block;font-size:10px;font-weight:900;color:#777;margin-top:5px;letter-spacing:.04em}
@@ -190,38 +185,6 @@ body::before{content:'';position:fixed;left:0;right:0;top:0;bottom:-180px;backgr
 .offline-birthday-controls{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end;padding:10px 11px;border:1.5px solid rgba(17,17,17,.16);border-radius:16px;background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.8)}
 .offline-birthday-controls[hidden]{display:none}
 .offline-birthday-controls .offline-setting-note{margin-top:3px}
-.offline-beauty-textarea{
-  min-height:220px;
-  border:none;
-  border-radius:0 20px 20px 0;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.5),rgba(240,240,240,.3)),
-    linear-gradient(180deg,rgba(17,17,17,.14) 0%,rgba(17,17,17,.88) 24%,rgba(17,17,17,.88) 76%,rgba(17,17,17,.14) 100%);
-  background-repeat:no-repeat,no-repeat;
-  background-position:0 0,0 0;
-  background-size:100% 100%,3px 100%;
-  backdrop-filter:blur(26px) saturate(130%);
-  -webkit-backdrop-filter:blur(26px) saturate(130%);
-  padding:14px 14px 12px 18px;
-  box-shadow:none;
-  color:#111;
-  font-family:var(--font);
-  font-size:12px;
-  font-weight:700;
-  line-height:1.6;
-  letter-spacing:0;
-  text-decoration-line:underline;
-  text-decoration-style:dashed;
-  text-decoration-color:rgba(109,109,109,.45);
-  text-decoration-thickness:1.2px;
-  text-underline-offset:4px;
-  white-space:pre-wrap;
-  word-break:break-word;
-  overflow:auto;
-  resize:vertical;
-}
-.offline-beauty-textarea:focus{box-shadow:none;background-size:100% 100%,4px 100%}
-.offline-beauty-textarea::placeholder{color:#b5b5b5;font-size:10px;font-family:var(--font);letter-spacing:.01em}
 .offline-setting-btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 .offline-setting-actions.stack{flex-direction:column;align-items:stretch}
 .offline-setting-dropdown{position:relative}
@@ -930,7 +893,7 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
           <div class="offline-setting-head">
             <div class="offline-setting-head-main">
               <div class="offline-setting-title">线下美化</div>
-              <div class="offline-setting-note spaced">内置样式可以直接切换，下面仍可分块改 CSS。</div>
+              <div class="offline-setting-note spaced">内置样式可以直接切换，之后新增样式也会放在这里。</div>
             </div>
           </div>
           <div class="offline-setting-grid">
@@ -951,52 +914,6 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
                 <label class="offline-setting-label" for="offlineBirthdayUserDay">日</label>
                 <input class="offline-setting-input offline-underline-input offline-number-input" id="offlineBirthdayUserDay" type="number" min="1" max="31" step="1">
               </div>
-            </div>
-            <div class="offline-beauty-tabs" id="offlineBeautyTabs"></div>
-            <div class="offline-setting-note" id="offlineBeautyHint">选择一个小方块开始改 CSS。</div>
-            <textarea class="offline-setting-textarea offline-beauty-textarea" id="offlineBeautyCssInput" spellcheck="false"></textarea>
-            <div class="offline-setting-actions">
-              <button class="offline-setting-btn primary" id="offlineBeautyApplyBtn" type="button">应用</button>
-              <button class="offline-setting-btn" id="offlineBeautyResetBtn" type="button">恢复默认</button>
-              <button class="offline-setting-btn" id="offlineBeautyClearBtn" type="button">清空</button>
-            </div>
-            <div class="offline-beauty-prompt-panel" id="offlineThoughtPromptPanel" hidden>
-            <div class="offline-setting-head" style="margin-top:6px">
-              <div class="offline-setting-head-main">
-                <div class="offline-setting-label">思维链提示词</div>
-                <div class="offline-setting-note spaced" id="offlineThoughtPromptHint">留空时使用默认；填入后会替代默认 thought_chain 提示词。</div>
-              </div>
-            </div>
-            <textarea class="offline-setting-textarea offline-beauty-textarea" id="offlineThoughtPromptInput" spellcheck="false"></textarea>
-            <div class="offline-setting-actions">
-              <button class="offline-setting-btn primary" id="offlineThoughtPromptApplyBtn" type="button">保存提示词</button>
-              <button class="offline-setting-btn" id="offlineThoughtPromptResetBtn" type="button">恢复默认</button>
-            </div>
-            </div>
-            <div class="offline-beauty-prompt-panel" id="offlineTitlePromptPanel" hidden>
-            <div class="offline-setting-head" style="margin-top:6px">
-              <div class="offline-setting-head-main">
-                <div class="offline-setting-label">标题提示词</div>
-                <div class="offline-setting-note spaced" id="offlineTitlePromptHint">留空时使用默认；填入后会替代默认标题和顶部语录提示词。</div>
-              </div>
-            </div>
-            <textarea class="offline-setting-textarea offline-beauty-textarea" id="offlineTitlePromptInput" spellcheck="false"></textarea>
-            <div class="offline-setting-actions">
-              <button class="offline-setting-btn primary" id="offlineTitlePromptApplyBtn" type="button">保存提示词</button>
-              <button class="offline-setting-btn" id="offlineTitlePromptResetBtn" type="button">恢复默认</button>
-            </div>
-            <div class="offline-setting-head" style="margin-top:10px">
-              <div class="offline-setting-head-main">
-                <div class="offline-setting-label">USER 标题 / quote</div>
-                <div class="offline-setting-note spaced">CHAR 继续按上面的提示词生成；USER 这里由 uu 直接写。</div>
-              </div>
-            </div>
-            <div class="offline-setting-row">
-              <span class="offline-setting-label">USER 标题</span>
-              <input class="offline-setting-input offline-underline-input" id="offlineDrawerUserTitle" type="text" maxlength="32" placeholder="因为爱与希望是永恒存在的">
-            </div>
-            <label class="offline-setting-label" for="offlineDrawerUserQuote">USER quote</label>
-            <textarea class="offline-setting-textarea offline-line-textarea" id="offlineDrawerUserQuote" maxlength="80" placeholder="在时间的尽头我们终将重逢。"></textarea>
             </div>
           </div>
         </section>
@@ -1274,9 +1191,6 @@ var offlineDrawerCardBgPendingAsset = '';
 var offlineDrawerCardBgResolvedSource = '';
 var offlineDrawerPageBgDirty = false;
 var offlineDrawerCardBgDirty = false;
-var offlineBeautyActivePart = 'avatar';
-var offlineBeautyDrafts = null;
-var offlineBeautyAutosaveTimer = 0;
 var offlineMemoryEditingId = '';
 var offlineMemoryEditingMeta = null;
 var offlineMemoryConfirmResolver = null;
@@ -5702,8 +5616,8 @@ async function saveOfflineDrawerSettings(){
 }
 function persistOfflineDrawerSettings(options){
   if(!character) return;
-  persistOfflineBeautyCssMap({ silent:true });
   applyOfflineDrawerDraftToCharacter();
+  clearOfflineCustomCssState();
   applyOfflineBuiltinTheme();
   persistOfflineCharacterSettings();
   offlineDrawerDraft = buildOfflineDrawerDraft();
@@ -5712,381 +5626,18 @@ function persistOfflineDrawerSettings(options){
     toast('线下设置已保存');
   }
 }
-function getOfflineBeautyParts(){
-  return [
-    { id:'avatar', label:'头像', hint:'线下每一幕左右两侧的拍立得头像、头像文字和头像图片。' },
-    { id:'stats', label:'数据', hint:'楼层、生成耗时、token 数据条和标题卡里的 meta 行。' },
-    { id:'thought', label:'思维链', hint:'每条角色回复下面可展开的思维链按钮和内容。' },
-    { id:'title', label:'标题', hint:'正文上方的标题、引语和标题背景区。' },
-    { id:'body', label:'正文', hint:'正文段落、首字放大、引号高亮和正文翻译卡附近的文字。' },
-    { id:'aside', label:'心声', hint:'正文段落后跟着的心声小条、竖线、双引号和虚线下划线。' },
-    { id:'bubble', label:'整体气泡', hint:'整条线下正文卡片、外框、阴影和角色/user 对齐。' }
-  ];
-}
-function getOfflineBeautyDefaultCss(partId){
-  var id = String(partId || '').trim();
-  var defaults = {
-    avatar: [
-      '/* 头像：线下故事里的方形拍立得头像 */',
-      '.offline-story-avatar{',
-      '  width:98px;',
-      '  height:126px;',
-      '  padding:7px 7px 28px;',
-      '  border:2px solid #111;',
-      '  border-radius:0;',
-      '  background:#fff;',
-      '  box-shadow:0 0 0 2px rgba(255,255,255,.96),6px 6px 0 rgba(17,17,17,.94);',
-      '  font-family:var(--fontd);',
-      '  font-size:18px;',
-      '  font-weight:900;',
-      '  color:#111;',
-      '}',
-      '.offline-story-avatar img{width:100%;height:100%;object-fit:cover;display:block;}',
-      '.offline-story-avatar-label{',
-      '  position:absolute;',
-      '  left:7px;',
-      '  right:7px;',
-      '  bottom:6px;',
-      '  font-family:var(--fontd);',
-      '  font-size:10px;',
-      '  font-weight:900;',
-      '  letter-spacing:.08em;',
-      '  color:#111;',
-      '}',
-      '.story-card.char .offline-story-avatar{margin-right:-24px;transform:rotate(-7deg);}',
-      '.story-card.user .offline-story-avatar{margin-left:-24px;transform:rotate(5deg);}'
-    ].join('\n'),
-    stats: [
-      '/* 数据：楼层、耗时、token 与标题卡 meta */',
-      '.offline-story-strip-shell{',
-      '  min-height:62px;',
-      '  border:2px solid #111;',
-      '  border-radius:0;',
-      '  background:linear-gradient(180deg,rgba(255,255,255,.99),rgba(241,241,241,.97));',
-      '  box-shadow:0 0 0 2px rgba(255,255,255,.96),5px 5px 0 rgba(17,17,17,.94);',
-      '  padding:0 14px 0 22px;',
-      '}',
-      '.offline-story-stats{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;width:100%;}',
-      '.offline-story-stat{',
-      '  display:inline-flex;',
-      '  align-items:center;',
-      '  gap:4px;',
-      '  padding:4px 6px;',
-      '  border-radius:999px;',
-      '  background:rgba(255,255,255,.72);',
-      '  box-shadow:inset 0 0 0 1px rgba(17,17,17,.12);',
-      '  font-family:var(--fontd);',
-      '  font-size:11px;',
-      '  font-weight:900;',
-      '  color:#444;',
-      '}',
-      '.offline-story-meta-row{',
-      '  display:flex;',
-      '  justify-content:space-between;',
-      '  gap:12px;',
-      '  padding-bottom:10px;',
-      '  border-bottom:1px solid rgba(0,0,0,.16);',
-      '  font-family:var(--fontd);',
-      '  font-size:10px;',
-      '  font-weight:900;',
-      '  letter-spacing:.08em;',
-      '  color:#6d6d6d;',
-      '  text-transform:uppercase;',
-      '}'
-    ].join('\n'),
-    thought: [
-      '/* 思维链：展开按钮和内容区 */',
-      '.offline-story-thought-row{',
-      '  display:flex;',
-      '  justify-content:center;',
-      '  width:100%;',
-      '  line-height:0;',
-      '}',
-      '.offline-think{',
-      '  width:auto;',
-      '  margin:0;',
-      '  display:flex;',
-      '  flex-direction:column;',
-      '  align-items:center;',
-      '}',
-      '.offline-think-toggle{',
-      '  display:inline-flex;',
-      '  align-items:center;',
-      '  justify-content:center;',
-      '  margin:0;',
-      '  padding:0;',
-      '  border:0;',
-      '  border-radius:0;',
-      '  background:transparent;',
-      '  box-shadow:none;',
-      '  line-height:0;',
-      '}',
-      '.offline-think-toggle-img{',
-      '  width:108px;',
-      '  height:44px;',
-      '  display:block;',
-      '  object-fit:cover;',
-      '  object-position:center;',
-      '}',
-      '.offline-think-body{',
-      '  margin-top:4px;',
-      '  padding:12px 14px;',
-      '  border:2px solid rgba(31,31,31,.18);',
-      '  border-radius:18px;',
-      '  background:rgba(255,255,255,.86);',
-      '  font-size:11px;',
-      '  font-weight:700;',
-      '  line-height:1.7;',
-      '  color:#333;',
-      '}'
-    ].join('\n'),
-    title: [
-      '/* 标题：正文上方标题卡 */',
-      '.offline-story-hero{',
-      '  margin-top:14px;',
-      '  padding:18px 18px 16px;',
-      '  border:2px solid #111;',
-      '  border-radius:0;',
-      '  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(242,242,242,.94));',
-      '  box-shadow:0 0 0 2px rgba(255,255,255,.92) inset,4px 4px 0 rgba(17,17,17,.88);',
-      '}',
-      '.offline-story-title{',
-      '  display:inline;',
-      '  font-family:"ZCOOL KuaiLe","Fredoka","Nunito",sans-serif;',
-      '  font-size:30px;',
-      '  font-weight:900;',
-      '  line-height:1.22;',
-      '  color:#111;',
-      '  padding:2px 10px 4px;',
-      '  border-radius:10px;',
-      '  background:rgba(255,255,255,.62);',
-      '  box-decoration-break:clone;',
-      '  -webkit-box-decoration-break:clone;',
-      '}',
-      '.offline-story-quote{',
-      '  display:inline;',
-      '  margin-top:10px;',
-      '  font-family:"ZCOOL KuaiLe","Fredoka","Nunito",sans-serif;',
-      '  font-size:18px;',
-      '  font-weight:900;',
-      '  line-height:1.62;',
-      '  color:#202020;',
-      '  padding:3px 9px 4px;',
-      '  border-radius:10px;',
-      '  background:rgba(255,255,255,.58);',
-      '}'
-    ].join('\n'),
-    body: [
-      '/* 正文：段落、首字和对白高亮 */',
-      '.offline-story-body{',
-      '  margin-top:18px;',
-      '  font-size:14px;',
-      '  font-weight:600;',
-      '  line-height:1.82;',
-      '  color:#111;',
-      '  white-space:pre-wrap;',
-      '  word-break:break-word;',
-      '}',
-      '.offline-story-body p{margin:0;}',
-      '.offline-story-body .offline-inline-fragment > p::first-letter{',
-      '  font-size:1.72em;',
-      '  font-weight:900;',
-      '  line-height:.82;',
-      '  margin-right:1px;',
-      '}',
-      '.offline-story-body .sheet-quote-inline{',
-      '  display:inline-flex;',
-      '  width:fit-content;',
-      '  max-width:min(100%,calc(100% - 8px));',
-      '  padding:4px 11px 5px;',
-      '  margin:0 4px 1px;',
-      '  border:2px solid #0a0a0a;',
-      '  background:#fff !important;',
-      '  color:#111 !important;',
-      '  box-shadow:3px 3px 0 #0a0a0a;',
-      '  font-weight:900;',
-      '}',
-      '.offline-inline-fragment{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:0 0 18px;}'
-    ].join('\n'),
-    aside: [
-      '/* 心声：旁白样式的灰色虚线心声 */',
-      '.offline-story-body .char-sheet-aside{',
-      '  position:relative;',
-      '  display:block;',
-      '  margin:6px 0 14px;',
-      '  padding:8px 12px 8px 26px;',
-      '  border:none;',
-      '  border-radius:0 18px 18px 0;',
-      '  color:#6d6d6d;',
-      '  font-style:normal;',
-      '  font-weight:700;',
-      '  background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(240,240,240,.22));',
-      '  line-height:1.66;',
-      '  text-decoration-line:underline;',
-      '  text-decoration-style:dashed;',
-      '  text-decoration-color:rgba(109,109,109,.68);',
-      '  text-decoration-thickness:1.4px;',
-      '  text-underline-offset:4px;',
-      '}',
-      '.offline-story-body .char-sheet-aside::before{',
-      '  content:"";',
-      '  position:absolute;',
-      '  left:10px;',
-      '  top:9px;',
-      '  bottom:9px;',
-      '  width:3px;',
-      '  background:linear-gradient(180deg,rgba(17,17,17,.16) 0%,rgba(17,17,17,.9) 23%,rgba(17,17,17,.9) 77%,rgba(17,17,17,.16) 100%);',
-      '}',
-      '.offline-story-body .char-sheet-aside::after{',
-      '  content:"\\201c";',
-      '  position:absolute;',
-      '  left:16px;',
-      '  top:-12px;',
-      '  font-family:Georgia,"Times New Roman",serif;',
-      '  font-size:44px;',
-      '  color:rgba(17,17,17,.48);',
-      '  font-weight:900;',
-      '}',
-      '.offline-story-body .char-sheet-aside .offline-aside-closequote{',
-      '  position:absolute;',
-      '  right:5px;',
-      '  bottom:-26px;',
-      '  font-family:Georgia,"Times New Roman",serif;',
-      '  font-size:44px;',
-      '  color:rgba(17,17,17,.42);',
-      '}'
-    ].join('\n'),
-    bubble: [
-      '/* 整体正文气泡：每一幕的外框和左右排列 */',
-      '.story-wrap{gap:22px;background:transparent;}',
-      '.story-card.char,.story-card.user{',
-      '  width:min(100%,352px);',
-      '  display:flex;',
-      '  flex-direction:column;',
-      '  gap:12px;',
-      '  border:none;',
-      '  background:transparent;',
-      '  box-shadow:none;',
-      '}',
-      '.story-card.char{align-self:flex-start;}',
-      '.story-card.user{align-self:flex-end;}',
-      '.offline-story-strip{display:flex;align-items:center;min-height:92px;}',
-      '.offline-story-panel{',
-      '  position:relative;',
-      '  border:2px solid #111;',
-      '  border-radius:0;',
-      '  background:linear-gradient(180deg,rgba(255,255,255,.99),rgba(242,242,242,.97));',
-      '  box-shadow:0 0 0 2px rgba(255,255,255,.97),6px 6px 0 rgba(17,17,17,.94);',
-      '  padding:18px 18px 16px;',
-      '  overflow:hidden;',
-      '}',
-      '.offline-story-divider{height:1px;background:linear-gradient(90deg,rgba(0,0,0,.16),rgba(0,0,0,.24),rgba(0,0,0,.08));margin:18px 0 10px;}',
-      '.offline-story-actions{margin-top:18px;display:flex;justify-content:flex-end;gap:14px;}'
-    ].join('\n')
-  };
-  return defaults[id] || defaults.avatar;
-}
-function normalizeOfflineBeautyCssMap(source){
-  var raw = source && typeof source === 'object' ? source : {};
-  var map = {};
-  getOfflineBeautyParts().forEach(function(part){
-    var value = Object.prototype.hasOwnProperty.call(raw, part.id) ? raw[part.id] : getOfflineBeautyDefaultCss(part.id);
-    map[part.id] = typeof value === 'string' ? value : getOfflineBeautyDefaultCss(part.id);
-  });
-  return map;
-}
-function getOfflineBeautyCssMap(){
-  if(!offlineBeautyDrafts){
-    offlineBeautyDrafts = normalizeOfflineBeautyCssMap(character && character.offlineBeautyCss);
-  }
-  return offlineBeautyDrafts;
-}
-function getOfflineBeautyStyleNode(){
+function clearOfflineCustomCssState(){
+  var changed = false;
   var node = document.getElementById('offlineBeautyCustomStyle');
-  if(!node){
-    node = document.createElement('style');
-    node.id = 'offlineBeautyCustomStyle';
-    document.head.appendChild(node);
+  if(node && node.parentNode){
+    node.parentNode.removeChild(node);
+    changed = true;
   }
-  return node;
-}
-function setOfflineLiveStyleText(node, cssText){
-  if(!node) return;
-  node.textContent = String(cssText || '');
-  try{
-    node.disabled = true;
-    void node.sheet;
-    node.disabled = false;
-  }catch(err){}
-  try{
-    if(node.parentNode) node.parentNode.appendChild(node);
-  }catch(err){}
-}
-function sanitizeOfflineBeautyCss(cssText){
-  return String(cssText || '').replace(/<\/style/gi, '<\\/style');
-}
-function applyOfflineBeautyCss(){
-  var map = getOfflineBeautyCssMap();
-  var css = getOfflineBeautyParts().map(function(part){
-    return sanitizeOfflineBeautyCss(map[part.id]);
-  }).join('\n\n');
-  setOfflineLiveStyleText(getOfflineBeautyStyleNode(), css);
-}
-function syncOfflineBeautyDraftFromInput(){
-  var input = document.getElementById('offlineBeautyCssInput');
-  if(!input) return;
-  var partId = String(offlineBeautyActivePart || 'avatar');
-  getOfflineBeautyCssMap()[partId] = String(input.value || '');
-  applyOfflineBeautyCss();
-}
-function queueOfflineBeautyAutosave(){
-  if(!character) return;
-  clearTimeout(offlineBeautyAutosaveTimer);
-  offlineBeautyAutosaveTimer = setTimeout(function(){
-    syncOfflineBeautyDraftFromInput();
-    character.offlineBeautyCss = normalizeOfflineBeautyCssMap(getOfflineBeautyCssMap());
-    applyOfflineBeautyCss();
-    persistOfflineCharacterSettings();
-  }, 520);
-}
-function persistOfflineBeautyCssMap(options){
-  clearTimeout(offlineBeautyAutosaveTimer);
-  syncOfflineBeautyDraftFromInput();
-  if(character){
-    character.offlineBeautyCss = normalizeOfflineBeautyCssMap(getOfflineBeautyCssMap());
+  if(character && Object.prototype.hasOwnProperty.call(character, 'offlineBeautyCss')){
+    try{ delete character.offlineBeautyCss; }catch(err){ character.offlineBeautyCss = undefined; }
+    changed = true;
   }
-  applyOfflineBeautyCss();
-  if(!(options && options.silent)){
-    persistOfflineCharacterSettings();
-    toast('线下美化已保存');
-  }
-}
-function renderOfflineBeautyControls(){
-  var tabs = document.getElementById('offlineBeautyTabs');
-  var input = document.getElementById('offlineBeautyCssInput');
-  var hint = document.getElementById('offlineBeautyHint');
-  if(!tabs || !input) return;
-  var parts = getOfflineBeautyParts();
-  if(!parts.some(function(part){ return part.id === offlineBeautyActivePart; })) offlineBeautyActivePart = 'avatar';
-  tabs.innerHTML = parts.map(function(part){
-    return '<button class="offline-beauty-tab' + (part.id === offlineBeautyActivePart ? ' is-active' : '') + '" type="button" data-offline-beauty-part="' + esc(part.id) + '">' + esc(part.label) + '</button>';
-  }).join('');
-  tabs.querySelectorAll('[data-offline-beauty-part]').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      selectOfflineBeautyPart(btn.getAttribute('data-offline-beauty-part') || 'avatar');
-    });
-  });
-  var active = parts.find(function(part){ return part.id === offlineBeautyActivePart; }) || parts[0];
-  if(document.activeElement !== input) input.value = String(getOfflineBeautyCssMap()[offlineBeautyActivePart] || '');
-  if(hint) hint.textContent = active.hint;
-  syncOfflineThoughtPromptControls();
-  syncOfflineTitlePromptControls();
-}
-function selectOfflineBeautyPart(partId){
-  syncOfflineBeautyDraftFromInput();
-  queueOfflineBeautyAutosave();
-  offlineBeautyActivePart = getOfflineBeautyParts().some(function(part){ return part.id === partId; }) ? partId : 'avatar';
-  renderOfflineBeautyControls();
+  return changed;
 }
 function getOfflineThoughtDefaultPrompt(){
   return [
@@ -6123,7 +5674,7 @@ function syncOfflineThoughtPromptControls(){
   var panel = document.getElementById('offlineThoughtPromptPanel');
   var input = document.getElementById('offlineThoughtPromptInput');
   var hint = document.getElementById('offlineThoughtPromptHint');
-  if(panel) panel.hidden = offlineBeautyActivePart !== 'thought';
+  if(panel) panel.hidden = true;
   if(!input) return;
   var custom = getOfflineThoughtCustomPrompt();
   if(document.activeElement !== input) input.value = custom || getOfflineThoughtDefaultPrompt();
@@ -6190,7 +5741,7 @@ function syncOfflineTitlePromptControls(){
   var panel = document.getElementById('offlineTitlePromptPanel');
   var input = document.getElementById('offlineTitlePromptInput');
   var hint = document.getElementById('offlineTitlePromptHint');
-  if(panel) panel.hidden = offlineBeautyActivePart !== 'title';
+  if(panel) panel.hidden = true;
   if(!input) return;
   var custom = getOfflineTitleCustomPrompt();
   if(document.activeElement !== input) input.value = custom || getOfflineTitleDefaultPrompt();
@@ -6592,10 +6143,8 @@ function syncOfflineDrawerControls(){
   if(range) range.textContent = '正文 ' + String(draft.bodyMinChars) + ' - ' + String(draft.bodyMaxChars) + ' 字 · 段落 ' + String(draft.paragraphMinCount) + ' - ' + String(draft.paragraphMaxCount) + ' 段 · 心声 ' + String(draft.asideMinChars) + ' - ' + String(draft.asideMaxChars) + ' 字';
   syncOfflineDrawerFieldWidths();
   applyOfflineBuiltinTheme();
-  renderOfflineBeautyControls();
   syncOfflineThoughtPromptControls();
   syncOfflineTitlePromptControls();
-  applyOfflineBeautyCss();
   renderOfflineStageSummaryList();
 }
 function bindOfflineDrawerControls(){
@@ -6640,10 +6189,6 @@ function bindOfflineDrawerControls(){
   var statusHistoryBtn = document.getElementById('offlineDrawerStatusHistoryBtn');
   var saveBtn = document.querySelector('.offline-stage-drawer-save');
   var manualCount = document.getElementById('offlineDrawerManualSummaryCount');
-  var beautyInput = document.getElementById('offlineBeautyCssInput');
-  var beautyApplyBtn = document.getElementById('offlineBeautyApplyBtn');
-  var beautyResetBtn = document.getElementById('offlineBeautyResetBtn');
-  var beautyClearBtn = document.getElementById('offlineBeautyClearBtn');
   var thoughtPromptInput = document.getElementById('offlineThoughtPromptInput');
   var thoughtPromptApplyBtn = document.getElementById('offlineThoughtPromptApplyBtn');
   var thoughtPromptResetBtn = document.getElementById('offlineThoughtPromptResetBtn');
@@ -6993,31 +6538,6 @@ function bindOfflineDrawerControls(){
   if(statusHistoryBtn){
     statusHistoryBtn.addEventListener('click', function(){
       openOfflineStatusHistory();
-    });
-  }
-  if(beautyInput){
-    beautyInput.addEventListener('input', function(){
-      syncOfflineBeautyDraftFromInput();
-      queueOfflineBeautyAutosave();
-    });
-  }
-  if(beautyApplyBtn){
-    beautyApplyBtn.addEventListener('click', function(){
-      persistOfflineBeautyCssMap();
-    });
-  }
-  if(beautyResetBtn){
-    beautyResetBtn.addEventListener('click', function(){
-      getOfflineBeautyCssMap()[offlineBeautyActivePart] = getOfflineBeautyDefaultCss(offlineBeautyActivePart);
-      renderOfflineBeautyControls();
-      persistOfflineBeautyCssMap();
-    });
-  }
-  if(beautyClearBtn){
-    beautyClearBtn.addEventListener('click', function(){
-      getOfflineBeautyCssMap()[offlineBeautyActivePart] = '';
-      renderOfflineBeautyControls();
-      persistOfflineBeautyCssMap();
     });
   }
   if(thoughtPromptInput){
@@ -15824,6 +15344,7 @@ async function init(){
   }, 1800);
   bindOfflineDrawerControls();
   if(!offlineReadOnlyMode) patchCurrentOfflineInviteMeetState('ongoing');
+  if(clearOfflineCustomCssState() && character && character.id) persistOfflineCharacterSettings();
   await refreshOfflineDrawerMemoryModeFromStore().catch(function(){ return null; });
   syncOfflineDrawerControls();
   await refreshOfflineBackgroundFromSettings().catch(function(){
@@ -15960,12 +15481,12 @@ document.addEventListener('visibilitychange', function(){
   if(document.visibilityState === 'hidden'){
     autoArchiveOfflineMeetIfNeeded('hidden');
   }else{
-    applyOfflineBeautyCss();
+    clearOfflineCustomCssState();
     refreshOfflineLiveProfileFromSettings();
   }
 });
 window.addEventListener('pageshow', function(){
-  applyOfflineBeautyCss();
+  clearOfflineCustomCssState();
   refreshOfflineLiveProfileFromSettings();
 });
 window.addEventListener('resize', syncOfflineViewport);
