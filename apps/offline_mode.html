@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-09T05:55:45Z"></script>
-<script src="../chatStorage.js?v=2026-05-09T05:55:45Z"></script>
-<script src="../metadataStore.js?v=2026-05-09T05:55:45Z"></script>
-<script src="../promptManager.js?v=2026-05-09T05:55:45Z"></script>
-<script src="../accountManager.js?v=2026-05-09T05:55:45Z"></script>
-<script src="../scheduleShared.js?v=2026-05-09T05:55:45Z"></script>
-<script src="../presenceShared.js?v=2026-05-09T05:55:45Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-09T05:55:45Z"></script>
+<script src="../assetStore.js?v=2026-05-09T06:23:13Z"></script>
+<script src="../chatStorage.js?v=2026-05-09T06:23:13Z"></script>
+<script src="../metadataStore.js?v=2026-05-09T06:23:13Z"></script>
+<script src="../promptManager.js?v=2026-05-09T06:23:13Z"></script>
+<script src="../accountManager.js?v=2026-05-09T06:23:13Z"></script>
+<script src="../scheduleShared.js?v=2026-05-09T06:23:13Z"></script>
+<script src="../presenceShared.js?v=2026-05-09T06:23:13Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-09T06:23:13Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -523,23 +523,25 @@ box-shadow:0 0 0 2px rgba(255,255,255,.97),6px 6px 0 rgba(17,17,17,.94);padding:
 .offline-story-editbtn{width:30px;height:30px;border:2px solid #111;border-radius:0;background:rgba(255,255,255,.94);display:flex;align-items:center;justify-content:center;color:#565656;cursor:pointer;box-shadow:0 0 0 2px rgba(255,255,255,.9) inset,3px 3px 0 rgba(17,17,17,.9);position:relative;z-index:4;pointer-events:auto}
 .offline-story-editbtn:active{transform:translateY(1px)}
 .offline-story-editbtn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.offline-story-thought-row{display:flex;align-items:center;justify-content:center;width:100%}
-.offline-think{width:auto;display:flex;flex-direction:column;align-items:center}
-.offline-think[open] .offline-think-toggle{box-shadow:1px 1px 0 #1f1f1f}
-.offline-think-toggle{list-style:none;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;cursor:pointer}
+.offline-story-thought-row{display:flex;align-items:center;justify-content:center;width:100%;line-height:0}
+.offline-think{width:auto;margin:0;display:flex;flex-direction:column;align-items:center}
+.offline-think[open] .offline-think-toggle{box-shadow:none}
+.offline-think-toggle{appearance:none;-webkit-appearance:none;list-style:none;display:inline-flex;align-items:center;justify-content:center;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;outline:none;line-height:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.offline-think-toggle:focus,.offline-think-toggle:focus-visible{outline:none;box-shadow:none}
 .offline-think-toggle::-webkit-details-marker{display:none}
-.offline-think-toggle-img{width:112px;height:auto;display:block;object-fit:contain}
+.offline-think-toggle-img{width:112px;height:52px;display:block;object-fit:cover;object-position:center}
 .offline-think-toggle-icon,.offline-think-toggle-caret{display:none}
-.offline-think-body{margin-top:12px;padding:12px 14px;border:2px solid rgba(31,31,31,.18);border-radius:18px;background:rgba(255,255,255,.86);font-size:11px;font-weight:700;line-height:1.7;color:#333;white-space:pre-wrap;word-break:break-word}
-.offline-summary{width:100%;margin-top:10px;display:flex;flex-direction:column;align-items:center}
-.offline-summary[open] .offline-summary-toggle{box-shadow:1px 1px 0 rgba(22,22,22,.24)}
-.offline-summary-toggle{list-style:none;display:inline-flex;align-items:center;justify-content:center;gap:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;cursor:pointer}
+.offline-think-body{margin-top:4px;padding:12px 14px;border:2px solid rgba(31,31,31,.18);border-radius:18px;background:rgba(255,255,255,.86);font-size:11px;font-weight:700;line-height:1.7;color:#333;white-space:pre-wrap;word-break:break-word}
+.offline-summary{width:100%;margin-top:2px;display:flex;flex-direction:column;align-items:center;line-height:0}
+.offline-summary[open] .offline-summary-toggle{box-shadow:none}
+.offline-summary-toggle{appearance:none;-webkit-appearance:none;list-style:none;display:inline-flex;align-items:center;justify-content:center;gap:0;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;outline:none;line-height:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.offline-summary-toggle:focus,.offline-summary-toggle:focus-visible{outline:none;box-shadow:none}
 .offline-summary-toggle::-webkit-details-marker{display:none}
-.offline-summary-img{width:112px;height:auto;display:block;object-fit:contain}
+.offline-summary-img{width:112px;height:52px;display:block;object-fit:cover;object-position:center}
 .offline-summary-title{display:inline-flex;align-items:center;justify-content:center;gap:0;font-size:0;color:transparent}
 .offline-summary-dot{width:18px;height:18px;border-radius:999px;border:1.5px solid rgba(20,20,20,.72);background:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;line-height:1}
 .offline-summary-state{display:none}
-.offline-summary-body{margin-top:10px;padding:14px 16px;border:1.5px solid rgba(26,26,26,.12);border-radius:20px;background:rgba(255,255,255,.82);font-size:12px;font-weight:700;line-height:1.78;color:#252525;white-space:pre-wrap;word-break:break-word}
+.offline-summary-body{margin-top:4px;padding:14px 16px;border:1.5px solid rgba(26,26,26,.12);border-radius:20px;background:rgba(255,255,255,.82);font-size:12px;font-weight:700;line-height:1.78;color:#252525;white-space:pre-wrap;word-break:break-word}
 .offline-summary-body.is-loading{color:#8a8a8a;font-style:italic}
 .offline-story-postcards{margin-top:14px;display:flex;flex-direction:column;gap:10px}
 .offline-status-chip{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;padding:10px 14px;border:none;border-radius:999px;background:#151515;color:#fff;font-family:var(--fontd);font-size:11px;font-weight:900;letter-spacing:.03em;box-shadow:0 10px 22px rgba(0,0,0,.14);cursor:pointer;transition:transform .16s ease,box-shadow .16s ease,opacity .22s ease}
@@ -705,8 +707,8 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
 .birthday-motto-love{position:relative;display:inline-block;padding:0 .05em}
 .birthday-motto-love::after{content:'';position:absolute;left:-14%;right:-18%;top:-38%;bottom:-28%;background:url('../apps/assets/%E7%BA%A2%E5%9C%882.png') center/100% 100% no-repeat;opacity:.82;pointer-events:none;transform:rotate(-3deg)}
 .birthday-card.user .birthday-motto{left:auto;right:8px;max-width:58%;text-align:right}
-.birthday-ribbon{position:absolute;left:-12px;right:-12px;bottom:-110px;z-index:6;height:0;overflow:visible;opacity:.88;mix-blend-mode:multiply;pointer-events:none}
-.birthday-ribbon-img{display:block;width:100%;height:158px;object-fit:contain;object-position:center top;max-width:none;filter:none}
+.birthday-ribbon{position:absolute;left:-12px;right:-12px;bottom:-110px;z-index:6;height:158px;background:url('../apps/assets/%E7%BA%A2%E4%B8%9D%E5%B8%A6.png') center/100% auto no-repeat;opacity:.86;mix-blend-mode:multiply;pointer-events:none}
+.birthday-ribbon-img{display:none}
 .birthday-card.user .birthday-ribbon{transform:scaleX(-1)}
 .birthday-calendar{position:absolute;z-index:9;right:16px;bottom:-42px;width:158px;padding:8px 8px 9px;background:rgba(255,255,255,.64);border:1px solid rgba(17,17,17,.14);box-shadow:0 13px 24px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.78);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);transform:rotate(2deg)}
 .birthday-card.user .birthday-calendar{left:16px;right:auto;transform:rotate(-3deg)}
@@ -738,7 +740,7 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
 .birthday-body .char-sheet-aside{position:relative;display:block;width:fit-content;max-width:100%;margin:8px 0 15px;padding:8px 13px 8px 26px;border:0;border-radius:0 18px 18px 0;background:linear-gradient(90deg,rgba(255,239,241,.82),rgba(255,255,255,.22));color:#8f565a;font:700 14px/1.72 'Huiwen-mincho',"汇文明朝体",'Songti SC','Noto Serif SC',serif;text-decoration-line:underline;text-decoration-style:dashed;text-decoration-color:rgba(177,41,49,.42);box-shadow:inset 0 0 0 1px rgba(255,255,255,.68)}
 .birthday-body .char-sheet-aside::before{content:'';position:absolute;left:10px;top:9px;bottom:9px;width:3px;border-radius:99px;background:linear-gradient(180deg,rgba(177,41,49,.08),rgba(177,41,49,.78),rgba(177,41,49,.08))}
 .birthday-body .char-sheet-aside::after,.birthday-body .char-sheet-aside .offline-aside-closequote{color:rgba(177,41,49,.34)}
-.birthday-postcards{margin-top:12px;display:flex;flex-direction:column;gap:9px}
+.birthday-postcards{margin-top:6px;display:flex;flex-direction:column;gap:2px}
 .birthday-lyrics{position:relative;z-index:1;margin-top:10px;padding:4px 0 0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden}
 .birthday-lyrics-kicker{display:none}
 .birthday-lyrics-window{position:relative;height:82px;overflow-y:auto;overflow-x:hidden;display:flex;align-items:flex-start;justify-content:center;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none}
@@ -761,8 +763,7 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
   .birthday-hero{height:218px}
   .birthday-motto{left:4px;bottom:32px;max-width:60%;font-size:22px}
   .birthday-card.user .birthday-motto{right:4px;max-width:58%}
-  .birthday-ribbon{left:-10px;right:-10px;bottom:-100px}
-  .birthday-ribbon-img{height:140px}
+  .birthday-ribbon{left:-10px;right:-10px;bottom:-100px;height:140px}
   .birthday-calendar{width:148px;bottom:-40px}
   .birthday-month{font-size:25px}
   .birthday-paper{margin-top:66px;padding:12px 15px 10px}
@@ -7608,7 +7609,7 @@ function renderBirthdayStoryCard(entry, idx, isChar){
         '<div class="birthday-cover">' + renderBirthdayCoverHtml(avatar, displayName.slice(0, 2) || (isChar ? 'C' : 'U')) + '</div>' +
         '<div class="birthday-stats"><span>' + esc(floorLabel) + '</span><span>' + esc(tokenLabel) + '</span><span>' + esc(secondsLabel) + '</span></div>' +
         renderBirthdayMottoHtml(isChar) +
-        '<div class="birthday-ribbon" aria-hidden="true"><img class="birthday-ribbon-img" src="assets/%E7%BA%A2%E4%B8%9D%E5%B8%A6.png" alt=""></div>' +
+        '<div class="birthday-ribbon" aria-hidden="true"></div>' +
         renderBirthdayCalendarHtml(month, day, isChar ? 'char birthday calendar' : 'user birthday calendar') +
       '</div>' +
       '<div class="birthday-paper">' +
