@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-10T05:12:23Z';
+const APP_BUILD_ID = '2026-05-10T06:10:16Z';
 const APP_UPDATE_NOTES = [
-  '减少后台未读扫描',
-  '后台活动按设置间隔检查',
-  '音乐播放进度刷新更轻'
+  '修复打开 App 后空白',
+  '避免返回后误清空新页面',
+  '增强 App 页面缓存识别'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -10996,6 +10996,7 @@ let pendingOpenOfflineLaunchToken='';
 let pendingOpenOfflineLaunchRecord=null;
 let pendingOpenOfflineRecordId='';
 let appTransitionPromise = Promise.resolve();
+let appFrameClearTimer = 0;
 
 function clonePendingOfflineLaunchRecord(record){
   if(!record || typeof record !== 'object') return null;
@@ -11119,7 +11120,16 @@ async function performCloseApp(){
   }catch(e){
     renderBondWidget(null);
   }
-  setTimeout(()=>{ document.getElementById('app-iframe').src=''; },400);
+  if(appFrameClearTimer){
+    clearTimeout(appFrameClearTimer);
+    appFrameClearTimer = 0;
+  }
+  appFrameClearTimer = setTimeout(function(){
+    appFrameClearTimer = 0;
+    if(currentApp) return;
+    var frame = document.getElementById('app-iframe');
+    if(frame) frame.src = '';
+  }, 400);
 }
 
 function buildAppFrameUrl(src){
@@ -11285,7 +11295,7 @@ function armAppFrameLoadWatchdog(frame, appId, attempt){
       try{
         var retryUrl = new URL(frame.src || buildAppFrameUrl((APP_MAP[appId] || {}).src || ''), window.location.href);
         retryUrl.searchParams.set('__retry', String(Date.now()));
-        frame.style.opacity = '0';
+        frame.style.opacity = '1';
         frame.src = retryUrl.toString();
         showHomeToast('页面加载慢，正在重试');
         armAppFrameLoadWatchdog(frame, appId, currentAttempt + 1);
@@ -11302,6 +11312,10 @@ function armAppFrameLoadWatchdog(frame, appId, attempt){
 
 function renderApp(id){
   const a=APP_MAP[id]; if(!a) return;
+  if(appFrameClearTimer){
+    clearTimeout(appFrameClearTimer);
+    appFrameClearTimer = 0;
+  }
   currentApp=id;
   pushBackendLogEntry({
     level: 'info',
@@ -11330,7 +11344,7 @@ function renderApp(id){
   }
   if(frame){
     frame.style.marginTop = '';
-    frame.style.opacity = id === 'chat' ? '1' : '0';
+    frame.style.opacity = '1';
     if(frame.dataset){
       frame.dataset.csPrevMarginTop = '';
     }

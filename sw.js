@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-05-10T05:12:23Z';
+const CACHE_VERSION = '2026-05-10T06:10:16Z';
 const CACHE_NAME = 'phone-shell-' + CACHE_VERSION;
 const CORE_URLS = [
   './',
@@ -60,10 +60,39 @@ function shouldBypassDocumentCache(url){
 
 function isAppDocumentUrl(url){
   try{
-    return /\/apps\/[^/]+\.html?$/i.test(String(url && url.pathname || ''));
+    const path = normalizeDocumentPathname(url && url.pathname || '');
+    return /^\/apps\/(?!assets\/)[^/.]+(?:\.html?)?$/i.test(path);
   }catch(err){
     return false;
   }
+}
+
+function normalizeDocumentPathname(pathname){
+  var path = String(pathname || '/').replace(/\/+$/g, '');
+  return path || '/';
+}
+
+function requestForCachePath(pathname){
+  return new Request(new URL(pathname, self.location.href).toString(), { method:'GET' });
+}
+
+function getDocumentCacheRequests(url){
+  const path = normalizeDocumentPathname(url && url.pathname || '');
+  const paths = [path];
+  if(/^\/apps\/(?!assets\/)[^/.]+$/i.test(path)){
+    paths.push(path + '.html');
+  }else if(/^\/apps\/(?!assets\/)[^/]+\.html?$/i.test(path)){
+    paths.push(path.replace(/\.html?$/i, ''));
+  }
+  const seen = new Set();
+  return paths
+    .filter((item)=>{
+      const key = normalizeDocumentPathname(item);
+      if(seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .map((item)=>requestForCachePath(item));
 }
 
 function shouldBypassAppDocumentCache(url){
@@ -78,11 +107,23 @@ function shouldBypassAppDocumentCache(url){
   }
 }
 
+async function matchDocumentCache(url){
+  const requests = getDocumentCacheRequests(url);
+  for(const request of requests){
+    try{
+      const cached = await caches.match(request, { ignoreSearch:true });
+      if(cached) return cached;
+    }catch(err){}
+  }
+  return null;
+}
+
 function cacheDocumentResponse(url, response){
   if(!response || !response.ok) return Promise.resolve(null);
-  const copy = response.clone();
   return caches.open(CACHE_NAME)
-    .then((cache)=>cache.put(new Request(url.pathname, { method:'GET' }), copy))
+    .then((cache)=>Promise.all(getDocumentCacheRequests(url).map((request)=>{
+      return cache.put(request, response.clone()).catch(()=>null);
+    })))
     .catch(()=>null);
 }
 
@@ -191,9 +232,8 @@ self.addEventListener('fetch', (event)=>{
   if(isDocument && isAppDocumentUrl(url)){
     event.respondWith(
       Promise.resolve().then(async ()=>{
-        const cacheKey = new Request(url.pathname, { method:'GET' });
         const bypass = shouldBypassAppDocumentCache(url);
-        const cached = await caches.match(cacheKey, { ignoreSearch:true });
+        const cached = await matchDocumentCache(url);
         if(cached && !bypass){
           return cached;
         }
@@ -202,9 +242,13 @@ self.addEventListener('fetch', (event)=>{
             cacheDocumentResponse(url, response);
             return response;
           })
-          .catch(()=>cached || caches.match('./index.html', { ignoreSearch:true }));
+          .catch(()=>cached || new Response('<!doctype html><meta charset="utf-8"><title>App loading</title><body></body>', {
+            headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          }));
       })
-        .catch(()=>caches.match('./index.html', { ignoreSearch:true }))
+        .catch(()=>new Response('<!doctype html><meta charset="utf-8"><title>App loading</title><body></body>', {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        }))
     );
     return;
   }
