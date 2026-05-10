@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-10T00:58:01Z';
+const APP_BUILD_ID = '2026-05-10T05:12:23Z';
 const APP_UPDATE_NOTES = [
-  '首页音乐不再自动刷新',
-  '切页和回到页面不再偷偷同步歌单',
-  '音乐手动刷新按钮仍然保留'
+  '减少后台未读扫描',
+  '后台活动按设置间隔检查',
+  '音乐播放进度刷新更轻'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -7974,6 +7974,8 @@ var homeMusicPendingAutoplay = false;
 var homeMusicAutoplayToastTimer = 0;
 var homeMusicPersistPromise = Promise.resolve();
 var homeMusicPlaybackFallbackBusy = false;
+var homeMusicPlaybackRenderTimer = 0;
+var homeMusicPlaybackRenderLastAt = 0;
 var homeD3MusicLyricsExpanded = false;
 var shellVoiceCallFloatingState = {
   visible: false,
@@ -9499,6 +9501,7 @@ function syncHomeMusicWidgetCover(){
 }
 
 function renderHomeMusicPlaybackUi(){
+  homeMusicPlaybackRenderLastAt = Date.now();
   var panel = document.getElementById('home-music-panel');
   var panelOpen = !!(panel && panel.dataset.open);
   var title = document.getElementById('home-music-title');
@@ -9530,6 +9533,28 @@ function renderHomeMusicPlaybackUi(){
   if(panelOpen) renderHomeMusicPanelLyrics();
   applyHomeMusicEqualizerState();
   if(homePageIndex === 2) renderHomeD3MusicWidget();
+}
+
+function scheduleHomeMusicPlaybackUiRender(force){
+  if(force){
+    if(homeMusicPlaybackRenderTimer){
+      clearTimeout(homeMusicPlaybackRenderTimer);
+      homeMusicPlaybackRenderTimer = 0;
+    }
+    renderHomeMusicPlaybackUi();
+    return;
+  }
+  var now = Date.now();
+  var wait = Math.max(0, 260 - (now - homeMusicPlaybackRenderLastAt));
+  if(wait <= 0){
+    renderHomeMusicPlaybackUi();
+    return;
+  }
+  if(homeMusicPlaybackRenderTimer) return;
+  homeMusicPlaybackRenderTimer = setTimeout(function(){
+    homeMusicPlaybackRenderTimer = 0;
+    renderHomeMusicPlaybackUi();
+  }, wait);
 }
 
 function renderHomeMusicPanelLyrics(){
@@ -10455,7 +10480,7 @@ function getImmediateHomeMusicTrackSrc(track){
 
 function applyHomeMusicAudioSource(audio, track, src){
   if(!audio || !track || !src) return false;
-  audio.preload = 'auto';
+  audio.preload = homeMusicState.isPlaying ? 'auto' : 'metadata';
   audio.setAttribute('playsinline', '');
   audio.setAttribute('webkit-playsinline', '');
   var normalizedSrc = normalizeHomeMusicAudioSrc(src);
@@ -10483,7 +10508,7 @@ async function attemptHomeMusicPlay(audio){
   }catch(err){
     console.error('[home-music] play failed', err);
     homeMusicState.isPlaying = false;
-    renderHomeMusicPlaybackUi();
+    scheduleHomeMusicPlaybackUiRender(true);
     if(err && (err.name === 'NotAllowedError' || err.name === 'AbortError')){
       if(!homeMusicAutoplayToastTimer){
         homeMusicAutoplayToastTimer = setTimeout(function(){
@@ -10535,7 +10560,7 @@ async function ensureHomeMusicTrackLoaded(track, autoplay){
     }
     homeMusicPendingAutoplay = false;
     homeMusicState.isPlaying = false;
-    renderHomeMusicPlaybackUi();
+    scheduleHomeMusicPlaybackUiRender(true);
     showHomeToast(err && err.message ? err.message : '歌曲加载失败');
   }
 }
@@ -10868,7 +10893,7 @@ function bindHomeMusicSystem(){
     audio.addEventListener('error', function(){
       homeMusicPendingAutoplay = false;
       homeMusicState.isPlaying = false;
-      renderHomeMusicPlaybackUi();
+      scheduleHomeMusicPlaybackUiRender(true);
       var failedTrack = getCurrentHomeMusicTrack();
       tryHomeMusicProviderFallback(failedTrack, true).then(function(recovered){
         if(recovered) return true;
@@ -10883,16 +10908,16 @@ function bindHomeMusicSystem(){
     });
     audio.addEventListener('timeupdate', function(){
       homeMusicState.currentTime = Number(audio.currentTime) || 0;
-      renderHomeMusicPlaybackUi();
+      scheduleHomeMusicPlaybackUiRender(false);
     });
     audio.addEventListener('play', function(){
       homeMusicPendingAutoplay = false;
       homeMusicState.isPlaying = true;
-      renderHomeMusicPlaybackUi();
+      scheduleHomeMusicPlaybackUiRender(true);
     });
     audio.addEventListener('pause', function(){
       homeMusicState.isPlaying = false;
-      renderHomeMusicPlaybackUi();
+      scheduleHomeMusicPlaybackUiRender(true);
     });
     audio.addEventListener('ended', function(){
       if(getHomeMusicPlayMode() === 'repeat-one'){
@@ -10911,7 +10936,7 @@ function bindHomeMusicSystem(){
       var nextTime = (Number(progress.value) / 1000) * Number(track.duration);
       audioEl.currentTime = nextTime;
       homeMusicState.currentTime = nextTime;
-      renderHomeMusicPlaybackUi();
+      scheduleHomeMusicPlaybackUiRender(true);
     });
   }
   renderHomeMusic();
@@ -12731,7 +12756,8 @@ var qqMomentsUnreadCountCache = {};
 var qqUnreadRefreshToken = 0;
 var qqUnreadRefreshInFlight = false;
 var qqUnreadLastRefreshAt = 0;
-const QQ_UNREAD_REFRESH_MIN_MS = 15000;
+var qqUnreadRefreshSoonTimer = 0;
+const QQ_UNREAD_REFRESH_MIN_MS = 90000;
 function summarizeShellUnreadHistory(list){
   var items = Array.isArray(list) ? list : [];
   var unread = 0;
@@ -13168,13 +13194,20 @@ async function markShellChatAsRead(charId){
 function refreshQqUnreadCountSoon(){
   var activeId = getActiveAccountId();
   if(activeId) delete qqUnreadCountCache[activeId];
-  refreshQqUnreadCountCache({ force:true }).then(function(){
-    renderHomeDockBadges();
-    postShellUnreadBadgeToCurrentApp();
-  }).catch(function(){
-    renderHomeDockBadges();
-    postShellUnreadBadgeToCurrentApp();
-  });
+  if(qqUnreadRefreshSoonTimer){
+    clearTimeout(qqUnreadRefreshSoonTimer);
+    qqUnreadRefreshSoonTimer = 0;
+  }
+  qqUnreadRefreshSoonTimer = setTimeout(function(){
+    qqUnreadRefreshSoonTimer = 0;
+    refreshQqUnreadCountCache({ force:true }).then(function(){
+      renderHomeDockBadges();
+      postShellUnreadBadgeToCurrentApp();
+    }).catch(function(){
+      renderHomeDockBadges();
+      postShellUnreadBadgeToCurrentApp();
+    });
+  }, 260);
 }
 
 var ShellUnreadStore = {
@@ -13426,12 +13459,17 @@ function setupAiBgScheduler(){
     clearInterval(aiBgTickTimer);
     aiBgTickTimer = null;
   }
+  if(!isAiBgActivityGloballyEnabled()) return;
+  var intervalMs = Math.max(60000, getAiBgIntervalMs());
   aiBgTickTimer = setInterval(function(){
     maybeRunAiBgTick(false);
     maybeRunScheduleTodoReminders();
-  }, 20000);
-  setTimeout(function(){ maybeRunAiBgTick(false); }, 9000);
-  setTimeout(function(){ maybeRunScheduleTodoReminders(); }, 11000);
+  }, intervalMs);
+  setTimeout(function(){
+    if(!isAiBgActivityGloballyEnabled()) return;
+    maybeRunAiBgTick(false);
+    maybeRunScheduleTodoReminders();
+  }, Math.min(intervalMs, 60000));
 }
 
 function restoreState(){
@@ -13495,7 +13533,6 @@ function restoreState(){
     }catch(e){}
   });
   renderHomeDockBadges();
-  runShellDeferredTask(function(){ refreshQqUnreadCountCache({ force:true }); }, 1800);
   renderHomePages(true);
   setupAiBgScheduler();
   try{
@@ -13681,19 +13718,16 @@ window.addEventListener('focus', ()=>{
 document.addEventListener('visibilitychange', ()=>{
   if(!document.hidden){
     renderBondWidget();
-    if(homePageIndex === 2 || homeMusicState.floatingEnabled !== false) renderHomeMusic();
     renderHomeDockBadges();
-    refreshQqUnreadCountCache();
-    maybeRunAiBgTick(false);
-    maybeRunScheduleTodoReminders();
   }
 });
 window.addEventListener('resize', ()=>{
   renderHomePages(true);
-  if(homePageIndex === 2 || homeMusicState.floatingEnabled !== false) renderHomeMusic();
+  if(homePageIndex === 2) renderHomeMusic();
 });
 window.addEventListener('resize', syncChatKeyboardShift);
 setInterval(()=>{
+  if(document.hidden || currentApp !== 'home') return;
   renderHomeDockBadges();
   refreshQqUnreadCountCache();
-}, 30000);
+}, 180000);
