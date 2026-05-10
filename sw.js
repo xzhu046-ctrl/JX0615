@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-05-09T18:24:31Z';
+const CACHE_VERSION = '2026-05-10T00:07:28Z';
 const CACHE_NAME = 'phone-shell-' + CACHE_VERSION;
 const CORE_URLS = [
   './',
@@ -58,6 +58,34 @@ function shouldBypassDocumentCache(url){
   }
 }
 
+function isAppDocumentUrl(url){
+  try{
+    return /\/apps\/[^/]+\.html?$/i.test(String(url && url.pathname || ''));
+  }catch(err){
+    return false;
+  }
+}
+
+function shouldBypassAppDocumentCache(url){
+  try{
+    return url.searchParams.has('refreshBuild')
+      || url.searchParams.has('swBuild')
+      || url.searchParams.has('__force')
+      || url.searchParams.has('__retry')
+      || url.searchParams.has('__ts');
+  }catch(err){
+    return false;
+  }
+}
+
+function cacheDocumentResponse(url, response){
+  if(!response || !response.ok) return Promise.resolve(null);
+  const copy = response.clone();
+  return caches.open(CACHE_NAME)
+    .then((cache)=>cache.put(new Request(url.pathname, { method:'GET' }), copy))
+    .catch(()=>null);
+}
+
 function shouldBypassShellAssetCache(url){
   try{
     return url.searchParams.has('refreshBuild')
@@ -78,8 +106,7 @@ async function shouldBypassViaClientBuild(event){
     const client = await self.clients.get(clientId);
     if(!client || !client.url) return false;
     const clientUrl = new URL(client.url, self.location.href);
-    return clientUrl.searchParams.has('__appBuild')
-      || clientUrl.searchParams.has('refreshBuild')
+    return clientUrl.searchParams.has('refreshBuild')
       || clientUrl.searchParams.has('__ts');
   }catch(err){
     return false;
@@ -161,15 +188,36 @@ self.addEventListener('fetch', (event)=>{
   const isCodeAsset = /(?:^|\/).+\.(?:js|css|json)$/i.test(url.pathname);
   const isImageOrFont = /(?:png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|otf)$/i.test(url.pathname);
 
+  if(isDocument && isAppDocumentUrl(url)){
+    event.respondWith(
+      Promise.resolve().then(async ()=>{
+        const cacheKey = new Request(url.pathname, { method:'GET' });
+        const bypass = shouldBypassAppDocumentCache(url);
+        const cached = await caches.match(cacheKey, { ignoreSearch:true });
+        if(cached && !bypass){
+          fetch(event.request, { cache:'no-store' })
+            .then((response)=>cacheDocumentResponse(url, response))
+            .catch(()=>null);
+          return cached;
+        }
+        return fetch(event.request, { cache: bypass ? 'reload' : 'no-store' })
+          .then((response)=>{
+            cacheDocumentResponse(url, response);
+            return response;
+          })
+          .catch(()=>cached || caches.match('./index.html', { ignoreSearch:true }));
+      })
+        .catch(()=>caches.match('./index.html', { ignoreSearch:true }))
+    );
+    return;
+  }
+
   if(isNavigate || isDocument){
     event.respondWith(
       Promise.resolve().then(()=>{
         const fetchMode = shouldBypassDocumentCache(url) ? 'reload' : 'no-store';
         return fetch(event.request, { cache: fetchMode }).then((response)=>{
-          if(response && response.ok){
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache)=>cache.put(new Request(url.pathname, { method:'GET' }), copy)).catch(()=>null);
-          }
+          cacheDocumentResponse(url, response);
           return response;
         }).catch(()=>{
           return caches.match(event.request, { ignoreSearch: true })
@@ -223,15 +271,28 @@ self.addEventListener('fetch', (event)=>{
             return response;
           });
         }
-        return fetch(event.request, { cache:'no-store' })
-          .then((response)=>{
-            if(response && response.ok){
-              const copy = response.clone();
-              caches.open(CACHE_NAME).then((cache)=>cache.put(event.request, copy)).catch(()=>null);
-            }
-            return response;
-          })
-          .catch(()=>caches.match(event.request, { ignoreSearch:true }));
+        return caches.match(event.request, { ignoreSearch:true }).then((cached)=>{
+          if(cached){
+            fetch(event.request, { cache:'no-store' })
+              .then((response)=>{
+                if(response && response.ok){
+                  const copy = response.clone();
+                  caches.open(CACHE_NAME).then((cache)=>cache.put(event.request, copy)).catch(()=>null);
+                }
+                return null;
+              })
+              .catch(()=>null);
+            return cached;
+          }
+          return fetch(event.request, { cache:'no-store' })
+            .then((response)=>{
+              if(response && response.ok){
+                const copy = response.clone();
+                caches.open(CACHE_NAME).then((cache)=>cache.put(event.request, copy)).catch(()=>null);
+              }
+              return response;
+            });
+        });
       })
     );
     return;

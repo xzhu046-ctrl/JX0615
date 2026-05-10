@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-09T18:24:31Z';
+const APP_BUILD_ID = '2026-05-10T00:07:28Z';
 const APP_UPDATE_NOTES = [
-  '首页启动更轻，减少首次加载卡顿',
-  '聊天未读和音乐刷新改为延后处理',
-  '更新缓存不再预拉大页面和大图片'
+  '线上和线下打开更快，减少白屏等待',
+  'APP 页面改为版本缓存优先，更新后仍会换新',
+  '首页空闲时提前预热聊天和线下页面'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -11123,9 +11123,6 @@ function buildAppFrameUrl(src){
   try{
     var url = new URL(String(src || ''), window.location.href);
     url.searchParams.set('__appBuild', APP_BUILD_ID);
-    if(/\/apps\/[^/]+\.html$/i.test(url.pathname || '')){
-      url.searchParams.set('__ts', String(Date.now()));
-    }
     if(/\/apps\/chat\.html$/i.test(url.pathname || '') && pendingOpenChatCharId){
       url.searchParams.set('char', String(pendingOpenChatCharId || '').trim());
       if(pendingOpenChatNonce){
@@ -11151,6 +11148,37 @@ function buildAppFrameUrl(src){
   }catch(err){
     return String(src || '');
   }
+}
+
+var shellAppDocumentPrefetchStarted = false;
+function buildStableAppDocumentUrl(src){
+  try{
+    var url = new URL(String(src || ''), window.location.href);
+    url.searchParams.set('__appBuild', APP_BUILD_ID);
+    return url.toString();
+  }catch(err){
+    return String(src || '');
+  }
+}
+
+function prefetchShellAppDocuments(){
+  if(shellAppDocumentPrefetchStarted) return;
+  shellAppDocumentPrefetchStarted = true;
+  var ids = ['chat', 'offline_mode'];
+  ids.forEach(function(id, index){
+    runShellDeferredTask(function(){
+      try{
+        var app = APP_MAP[id];
+        if(!app || !app.src) return;
+        var url = buildStableAppDocumentUrl(app.src);
+        fetch(url, {
+          method: 'GET',
+          cache: 'force-cache',
+          credentials: 'same-origin'
+        }).catch(function(){});
+      }catch(err){}
+    }, index * 700);
+  });
 }
 
 var shellLoadingHideTimer = 0;
@@ -13521,6 +13549,7 @@ function restoreState(){
   });
   renderHomeDockBadges();
   runShellDeferredTask(function(){ refreshQqUnreadCountCache({ force:true }); }, 1800);
+  runShellDeferredTask(prefetchShellAppDocuments, 2800);
   renderHomePages(true);
   maybeRefreshHomeMusicRemoteForD3();
   setupAiBgScheduler();
