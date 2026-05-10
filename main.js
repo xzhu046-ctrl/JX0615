@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-10T00:07:28Z';
+const APP_BUILD_ID = '2026-05-10T00:45:38Z';
 const APP_UPDATE_NOTES = [
-  '线上和线下打开更快，减少白屏等待',
-  'APP 页面改为版本缓存优先，更新后仍会换新',
-  '首页空闲时提前预热聊天和线下页面'
+  '撤掉后台预热，减少空闲卡顿',
+  '缓存命中后不再偷偷重刷大页面',
+  '线上和线下改为用到时再缓存'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -11150,37 +11150,6 @@ function buildAppFrameUrl(src){
   }
 }
 
-var shellAppDocumentPrefetchStarted = false;
-function buildStableAppDocumentUrl(src){
-  try{
-    var url = new URL(String(src || ''), window.location.href);
-    url.searchParams.set('__appBuild', APP_BUILD_ID);
-    return url.toString();
-  }catch(err){
-    return String(src || '');
-  }
-}
-
-function prefetchShellAppDocuments(){
-  if(shellAppDocumentPrefetchStarted) return;
-  shellAppDocumentPrefetchStarted = true;
-  var ids = ['chat', 'offline_mode'];
-  ids.forEach(function(id, index){
-    runShellDeferredTask(function(){
-      try{
-        var app = APP_MAP[id];
-        if(!app || !app.src) return;
-        var url = buildStableAppDocumentUrl(app.src);
-        fetch(url, {
-          method: 'GET',
-          cache: 'force-cache',
-          credentials: 'same-origin'
-        }).catch(function(){});
-      }catch(err){}
-    }, index * 700);
-  });
-}
-
 var shellLoadingHideTimer = 0;
 var shellLoadingForceTimer = 0;
 var shellLoadingShownAt = 0;
@@ -13549,7 +13518,6 @@ function restoreState(){
   });
   renderHomeDockBadges();
   runShellDeferredTask(function(){ refreshQqUnreadCountCache({ force:true }); }, 1800);
-  runShellDeferredTask(prefetchShellAppDocuments, 2800);
   renderHomePages(true);
   maybeRefreshHomeMusicRemoteForD3();
   setupAiBgScheduler();

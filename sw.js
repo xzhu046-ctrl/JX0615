@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-05-10T00:07:28Z';
+const CACHE_VERSION = '2026-05-10T00:45:38Z';
 const CACHE_NAME = 'phone-shell-' + CACHE_VERSION;
 const CORE_URLS = [
   './',
@@ -195,9 +195,6 @@ self.addEventListener('fetch', (event)=>{
         const bypass = shouldBypassAppDocumentCache(url);
         const cached = await caches.match(cacheKey, { ignoreSearch:true });
         if(cached && !bypass){
-          fetch(event.request, { cache:'no-store' })
-            .then((response)=>cacheDocumentResponse(url, response))
-            .catch(()=>null);
           return cached;
         }
         return fetch(event.request, { cache: bypass ? 'reload' : 'no-store' })
@@ -273,15 +270,6 @@ self.addEventListener('fetch', (event)=>{
         }
         return caches.match(event.request, { ignoreSearch:true }).then((cached)=>{
           if(cached){
-            fetch(event.request, { cache:'no-store' })
-              .then((response)=>{
-                if(response && response.ok){
-                  const copy = response.clone();
-                  caches.open(CACHE_NAME).then((cache)=>cache.put(event.request, copy)).catch(()=>null);
-                }
-                return null;
-              })
-              .catch(()=>null);
             return cached;
           }
           return fetch(event.request, { cache:'no-store' })
