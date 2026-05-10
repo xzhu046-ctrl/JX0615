@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-10T00:45:38Z';
+const APP_BUILD_ID = '2026-05-10T00:58:01Z';
 const APP_UPDATE_NOTES = [
-  '撤掉后台预热，减少空闲卡顿',
-  '缓存命中后不再偷偷重刷大页面',
-  '线上和线下改为用到时再缓存'
+  '首页音乐不再自动刷新',
+  '切页和回到页面不再偷偷同步歌单',
+  '音乐手动刷新按钮仍然保留'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -6817,7 +6817,6 @@ function setHomePage(index, immediate){
   homePageIndex = Math.max(0, Math.min(getHomePageMaxIndex(), index));
   try{ localStorage.setItem('home_page_index', String(homePageIndex)); }catch(e){}
   renderHomePages(immediate);
-  maybeRefreshHomeMusicRemoteForD3();
   if(homePageIndex === 2){
     renderHomeMusic();
   }
@@ -6828,19 +6827,6 @@ function renderHomePageIndicator(){
   dots.forEach((dot, idx)=>{
     dot.classList.toggle('active', idx === homePageIndex);
   });
-}
-
-function maybeRefreshHomeMusicRemoteForD3(){
-  if(homePageIndex !== 2) return;
-  if(!normalizeHomeMusicCookie(homeMusicState.neteaseCookie || '')) return;
-  var now = Date.now();
-  if(now - homeMusicRemoteAutoRefreshAt < 60000) return;
-  homeMusicRemoteAutoRefreshAt = now;
-  if(homeMusicState.neteaseActivePlaylistId){
-    refreshHomeMusicActiveRemotePlaylist(true);
-  }else{
-    loadHomeMusicRemotePlaylists(true);
-  }
 }
 
 function bindHomePager(){
@@ -7984,8 +7970,6 @@ var homeMusicRenameIndex = -1;
 var homeMusicSearchBusy = false;
 var homeMusicQrPollTimer = 0;
 var homeMusicRemotePlaylistBusy = false;
-var homeMusicRemoteAutoRefreshAt = 0;
-var homeMusicVisibilityRefreshBound = false;
 var homeMusicPendingAutoplay = false;
 var homeMusicAutoplayToastTimer = 0;
 var homeMusicPersistPromise = Promise.resolve();
@@ -10930,12 +10914,6 @@ function bindHomeMusicSystem(){
       renderHomeMusicPlaybackUi();
     });
   }
-  if(!homeMusicVisibilityRefreshBound){
-    homeMusicVisibilityRefreshBound = true;
-    document.addEventListener('visibilitychange', function(){
-      if(!document.hidden) maybeRefreshHomeMusicRemoteForD3();
-    });
-  }
   renderHomeMusic();
   runShellDeferredTask(function(){ hydrateHomeMusicFloatingIcon(); }, 900);
   runShellDeferredTask(function(){
@@ -13519,7 +13497,6 @@ function restoreState(){
   renderHomeDockBadges();
   runShellDeferredTask(function(){ refreshQqUnreadCountCache({ force:true }); }, 1800);
   renderHomePages(true);
-  maybeRefreshHomeMusicRemoteForD3();
   setupAiBgScheduler();
   try{
     if(sessionStorage.getItem(REFRESH_RECALC_FLAG_KEY) === '1'){
