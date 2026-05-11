@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../chatStorage.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../assetStore.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../accountManager.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../metadataStore.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../scheduleShared.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../presenceShared.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../sunnySupport.js?v=2026-05-11T22:13:57Z"></script>
-<script src="offlineInvite.js?v=2026-05-11T22:13:57Z"></script>
+<script src="../promptManager.js?v=2026-05-11T22:20:06Z"></script>
+<script src="../chatStorage.js?v=2026-05-11T22:20:06Z"></script>
+<script src="../assetStore.js?v=2026-05-11T22:20:06Z"></script>
+<script src="../accountManager.js?v=2026-05-11T22:20:06Z"></script>
+<script src="../metadataStore.js?v=2026-05-11T22:20:06Z"></script>
+<script src="../scheduleShared.js?v=2026-05-11T22:20:06Z"></script>
+<script src="../presenceShared.js?v=2026-05-11T22:20:06Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-11T22:20:06Z"></script>
+<script src="../sunnySupport.js?v=2026-05-11T22:20:06Z"></script>
+<script src="offlineInvite.js?v=2026-05-11T22:20:06Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -583,6 +583,12 @@ button{-webkit-appearance:none;appearance:none;-webkit-touch-callout:none;color:
 .msg.selected .msg-bubble{outline:2px solid var(--b);outline-offset:2px}
 .msg.selected .offline-invite-shell{outline:2px solid var(--b);outline-offset:2px}
 .msg-bubble{padding:10px 12px;border-radius:var(--chat-bubble-radius,16px);font-size:var(--chat-font-size,13px);line-height:1.5;font-weight:600;max-width:100%;white-space:pre-wrap;word-break:break-word;min-height:40px;display:flex;align-items:center;transition:transform .08s linear;touch-action:pan-y;position:relative;overflow:visible}
+.msg-inline-actions{display:flex;align-items:center;gap:6px;margin-top:5px;max-width:100%;opacity:.78}
+.msg.user .msg-inline-actions{justify-content:flex-end}
+.msg.ai .msg-inline-actions{justify-content:flex-start}
+.msg-inline-action-btn{height:24px;min-width:38px;padding:0 8px;border:1.5px solid rgba(17,17,17,.82);border-radius:999px;background:rgba(255,255,255,.92);color:#111;font-family:var(--fontd);font-size:10px;font-weight:900;line-height:1;letter-spacing:.04em;box-shadow:1px 1px 0 rgba(17,17,17,.42);cursor:pointer;touch-action:manipulation}
+.msg-inline-action-btn:active{transform:translate(1px,1px);box-shadow:0 0 0 rgba(17,17,17,0)}
+.msg.select-mode .msg-inline-actions,.msg-bubble.is-editing + .msg-inline-actions{display:none}
 .msg-reaction-badge{position:absolute;left:-8px;bottom:-10px;width:20px;height:20px;border:2px solid #111;border-radius:999px;background:#fff;box-shadow:2px 2px 0 rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;z-index:6}
 .msg-reaction-badge span{display:block;transform:translateY(-.5px)}
 .msg-bubble.has-reply{flex-direction:column;align-items:flex-start}
@@ -17728,6 +17734,12 @@ function enterMultiSelectMode(){
   closeMessageActions();
   syncMultiSelectDom();
 }
+function enterMultiSelectFromMessage(msgId){
+  var cleanId = String(msgId || '').trim();
+  if(!cleanId) return;
+  activeActionMessageId = cleanId;
+  enterMultiSelectMode();
+}
 async function removeMessagesByIds(ids){
   if(!ids || !ids.length) return 0;
   var set = new Set(ids.map(function(id){ return String(id || '').trim(); }).filter(Boolean));
@@ -17758,6 +17770,13 @@ async function deleteActiveMessage(){
   var targetId = activeActionMessageId;
   closeMessageActions();
   var removed = await removeMessagesByIds([targetId]);
+  toast(removed ? '消息已删除' : '未找到消息');
+}
+async function deleteMessageById(msgId){
+  var cleanId = String(msgId || '').trim();
+  if(!cleanId) return;
+  closeMessageActions();
+  var removed = await removeMessagesByIds([cleanId]);
   toast(removed ? '消息已删除' : '未找到消息');
 }
 async function recallActiveMessage(){
@@ -24247,6 +24266,29 @@ function addMessage(role, content, doScroll, msgType, msgId) {
   var main = document.createElement('div');
   main.className = 'msg-main';
   main.appendChild(bubble);
+  if(msgId && (viewRole === 'user' || viewRole === 'ai') && !isNarrator && !isRecallNotice && editingMessageId !== msgId){
+    var inlineActions = document.createElement('div');
+    inlineActions.className = 'msg-inline-actions';
+    inlineActions.setAttribute('aria-label', '消息操作');
+    [
+      { label:'多选', action:function(){ enterMultiSelectFromMessage(msgId); } },
+      { label:'删除', action:function(){ deleteMessageById(msgId); } },
+      { label:'收藏', action:function(){ favoriteMessageById(msgId); } }
+    ].forEach(function(item){
+      var btn = document.createElement('button');
+      btn.className = 'msg-inline-action-btn';
+      btn.type = 'button';
+      btn.textContent = item.label;
+      btn.addEventListener('click', function(evt){
+        evt.preventDefault();
+        evt.stopPropagation();
+        if(editingMessageId) return;
+        item.action();
+      });
+      inlineActions.appendChild(btn);
+    });
+    main.appendChild(inlineActions);
+  }
   if(viewRole === 'ai' && shouldOfferMessageTranslation(entry)){
     var translateWrap = document.createElement('div');
     translateWrap.className = 'msg-translate-wrap';
