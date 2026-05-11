@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-11T05:02:23Z"></script>
-<script src="../chatStorage.js?v=2026-05-11T05:02:23Z"></script>
-<script src="../metadataStore.js?v=2026-05-11T05:02:23Z"></script>
-<script src="../promptManager.js?v=2026-05-11T05:02:23Z"></script>
-<script src="../accountManager.js?v=2026-05-11T05:02:23Z"></script>
-<script src="../scheduleShared.js?v=2026-05-11T05:02:23Z"></script>
-<script src="../presenceShared.js?v=2026-05-11T05:02:23Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-11T05:02:23Z"></script>
+<script src="../assetStore.js?v=2026-05-11T05:18:00Z"></script>
+<script src="../chatStorage.js?v=2026-05-11T05:18:00Z"></script>
+<script src="../metadataStore.js?v=2026-05-11T05:18:00Z"></script>
+<script src="../promptManager.js?v=2026-05-11T05:18:00Z"></script>
+<script src="../accountManager.js?v=2026-05-11T05:18:00Z"></script>
+<script src="../scheduleShared.js?v=2026-05-11T05:18:00Z"></script>
+<script src="../presenceShared.js?v=2026-05-11T05:18:00Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-11T05:18:00Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -743,9 +743,10 @@ body.offline-theme-love .composer-box textarea{font-family:'Huiwen-mincho',"汇�
 .love-record img[style*="display: none"] + .love-record-fallback{display:flex}
 .love-staff{position:absolute;left:78px;top:4px;width:178px;height:78px;background:url('../apps/assets/%E4%BA%94%E7%BA%BF%E8%B0%B1.png') left center/contain no-repeat;opacity:.82;filter:contrast(1.08) saturate(.7);z-index:4;pointer-events:none}
 .love-stats{position:absolute;left:6px;bottom:18px;z-index:5;display:flex;align-items:center;gap:10px;min-width:132px;height:34px;padding:0 12px;border:1.5px solid rgba(20,20,20,.86);border-radius:10px;background:rgba(255,255,255,.72);box-shadow:4px 5px 0 rgba(17,17,17,.86);font:900 15px/1 var(--fontd);letter-spacing:.02em}
-.love-words{position:absolute;right:6px;top:16px;height:176px;width:172px;z-index:2;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;justify-items:center;pointer-events:none;color:rgba(34,42,36,.72);font-family:'Zhi Mang Xing','Ma Shan Zheng','Huiwen-mincho',"汇文明朝体",serif;text-shadow:0 1px 0 rgba(255,255,255,.55)}
+.love-words{position:absolute;right:0;top:14px;height:178px;width:202px;z-index:2;display:grid;grid-template-columns:repeat(6,1fr);align-items:center;justify-items:center;pointer-events:none;color:rgba(34,42,36,.72);font-family:'Zhi Mang Xing','Ma Shan Zheng','Huiwen-mincho',"汇文明朝体",serif;text-shadow:0 1px 0 rgba(255,255,255,.55)}
 .love-word{writing-mode:vertical-rl;text-orientation:upright;font-weight:700;letter-spacing:.16em;filter:blur(.25px);opacity:.65}
 .love-word-main{font-size:47px;opacity:.9;filter:blur(.08px)}
+.love-word-seven{font-size:36px;opacity:.82;filter:blur(.12px);transform:translateY(-10px)}
 .love-word-soft{font-size:27px}
 .love-word-tiny{font-size:22px;opacity:.54;transform:translateY(20px)}
 .love-card.user .love-head{transform:scaleX(-1)}
@@ -951,7 +952,7 @@ body.offline-theme-love .composer-box textarea{font-family:'Huiwen-mincho',"汇�
             <div class="offline-builtin-theme-tabs" id="offlineBuiltinThemeTabs">
               <button class="offline-builtin-theme-btn" type="button" data-offline-builtin-theme="classic">默认拍立得<span>原来的线下样子</span></button>
               <button class="offline-builtin-theme-btn" type="button" data-offline-builtin-theme="bloodline">我们的血缘<span>横幅头像和日历</span></button>
-              <button class="offline-builtin-theme-btn" type="button" data-offline-builtin-theme="love">我们的爱<span>唱片和雨雾歌单</span></button>
+              <button class="offline-builtin-theme-btn" type="button" data-offline-builtin-theme="love">七年有多久？<span>唱片和雨雾歌单</span></button>
             </div>
             <div class="offline-birthday-controls" id="offlineBirthdayControls" hidden>
               <div>
@@ -5531,14 +5532,14 @@ function getOfflineBirthdayLyricsJsonFragment(){
 }
 function getOfflineBirthdayLyricsPromptLine(){
   if(isOfflineLoveTheme()){
-    return '当前内置美化是“我们的爱”：必须额外返回 song 对象，推荐一首现实存在的歌曲。song.title 写歌名，song.artist 写歌手，song.reason 写 1 句为什么这幕适合这首歌。推荐必须读角色 persona、用户 persona、世界书、最近线上/线下上下文和本幕正文；只推荐歌名和歌手，不要输出现实歌曲歌词。song 只用于 char 卡片最末尾的音乐区，不能混进 text 正文。';
+    return '当前内置美化是“七年有多久？”：必须额外返回 song 对象，推荐一首现实存在的歌曲。song.title 写歌名，song.artist 写歌手，song.reason 写 1 句为什么这幕适合这首歌。推荐必须读角色 persona、用户 persona、世界书、最近线上/线下上下文和本幕正文；只推荐歌名和歌手，不要输出现实歌曲歌词。song 只用于 char 卡片最末尾的音乐区，不能混进 text 正文。';
   }
   if(!isOfflineBloodlineTheme()) return '';
   return '当前内置美化是“我们的血缘”：必须额外返回 lyrics 数组，写 6-10 句 char 原创歌词；歌词必须读角色 persona、用户 persona、世界书、最近线上/线下上下文和本幕正文来写，像 char 自己会写的短歌词，高级、克制、有画面感，不要低俗，不要引用现实歌曲歌词，不要模板，不要 fallback。lyrics 只用于 char 卡片最末尾的歌词区，不能混进 text 正文。';
 }
 function getOfflineNoTitleThemePromptLine(){
   if(isOfflineLoveTheme()){
-    return '我们的爱美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 song 推荐。';
+    return '七年有多久？美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 song 推荐。';
   }
   if(isOfflineBloodlineTheme()){
     return '我们的血缘美化不需要 title/quote；不要额外生成标题或顶部语录，把审美重点放在正文、心声和 lyrics。';
@@ -7162,6 +7163,7 @@ function parseOfflineLoveLyrics(text){
 function renderLoveWordsHtml(){
   return '<div class="love-words" aria-hidden="true">' +
     '<span class="love-word love-word-main">爱</span>' +
+    '<span class="love-word love-word-seven">七年</span>' +
     '<span class="love-word love-word-soft">春晨</span>' +
     '<span class="love-word love-word-soft">灰尘</span>' +
     '<span class="love-word love-word-tiny">雨水</span>' +

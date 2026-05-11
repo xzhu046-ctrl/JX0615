@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-11T05:02:23Z';
+const APP_BUILD_ID = '2026-05-11T05:18:00Z';
 const APP_UPDATE_NOTES = [
-  '新增我们的爱线下美化',
-  '唱片和五线谱头部上线',
-  '线下推荐歌曲可接入播放'
+  '七年有多久美化命名完成',
+  '雨雾词加入七年',
+  '唱片头部细节同步更新'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
