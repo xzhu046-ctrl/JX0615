@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-11T21:35:01Z';
+const APP_BUILD_ID = '2026-05-11T22:01:40Z';
 const APP_UPDATE_NOTES = [
   '保留线下等待打字特效',
-  '线下正文落字时改用移动端稳定渲染',
-  '生成中继续拦截异常回到主屏'
+  '线下正文生成中不再反复重绘整页',
+  '生成中异常跳回主屏会写入后台日志'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -11901,6 +11901,20 @@ function shouldBlockOfflineModeShellExitMessage(type, payload){
   if(targetApp === 'offline_mode') return false;
   if(!isOfflineModeBusyWindow()) return false;
   console.warn('Blocked offline_mode navigation during active offline flow', safeType, payload || null);
+  try{
+    pushBackendLogEntry({
+      level: 'warn',
+      app: 'offline_mode',
+      source: 'offline.shell_nav.blocked',
+      message: '生成中拦截一次异常离开线下模式',
+      detail: {
+        type: safeType,
+        payload: payload || null,
+        busy: !!offlineModeBusy,
+        busyUntil: offlineModeBusyUntil
+      }
+    });
+  }catch(err){}
   return true;
 }
 

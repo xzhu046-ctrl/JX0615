@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-11T21:35:01Z"></script>
-<script src="../chatStorage.js?v=2026-05-11T21:35:01Z"></script>
-<script src="../metadataStore.js?v=2026-05-11T21:35:01Z"></script>
-<script src="../promptManager.js?v=2026-05-11T21:35:01Z"></script>
-<script src="../accountManager.js?v=2026-05-11T21:35:01Z"></script>
-<script src="../scheduleShared.js?v=2026-05-11T21:35:01Z"></script>
-<script src="../presenceShared.js?v=2026-05-11T21:35:01Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-11T21:35:01Z"></script>
+<script src="../assetStore.js?v=2026-05-11T22:01:40Z"></script>
+<script src="../chatStorage.js?v=2026-05-11T22:01:40Z"></script>
+<script src="../metadataStore.js?v=2026-05-11T22:01:40Z"></script>
+<script src="../promptManager.js?v=2026-05-11T22:01:40Z"></script>
+<script src="../accountManager.js?v=2026-05-11T22:01:40Z"></script>
+<script src="../scheduleShared.js?v=2026-05-11T22:01:40Z"></script>
+<script src="../presenceShared.js?v=2026-05-11T22:01:40Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-11T22:01:40Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -12977,9 +12977,7 @@ async function generateOpeningIfNeeded(){
           onUpdate: function(partialText){
             if(!liveOpeningEntry) return;
             liveOpeningEntry.text = String(partialText || '').trim();
-            saveSession();
-            renderStory();
-            keepOfflineComposerVisible();
+            persistOfflineLiveEntryWithoutRender('opening_text_update');
           }
         });
         var unifiedOpeningLabels = liveOpeningLabels || nowLabels();
@@ -13065,9 +13063,7 @@ async function generateOpeningIfNeeded(){
           }, function(nextThought){
             if(!isMountedOfflineLiveEntry(liveOpeningEntry)) return;
             liveOpeningEntry.thoughtChain = Object.assign({}, nextThought || {});
-            saveSession();
-            renderStory();
-            keepOfflineComposerVisible();
+            persistOfflineLiveEntryWithoutRender('opening_thought_update');
           }).then(function(finalThought){
             streamedOpeningThoughtChain = finalThought;
             return finalThought;
@@ -13083,9 +13079,7 @@ async function generateOpeningIfNeeded(){
               if(!isMountedOfflineLiveEntry(liveOpeningEntry)) return;
               liveOpeningEntry.title = String(nextMeta && nextMeta.title || liveOpeningEntry.title || '…').trim() || '…';
               liveOpeningEntry.quote = String(nextMeta && nextMeta.quote || liveOpeningEntry.quote || '…').trim() || '…';
-              saveSession();
-              renderStory();
-              keepOfflineComposerVisible();
+              persistOfflineLiveEntryWithoutRender('opening_meta_update');
             }).then(function(finalMeta){
               streamedOpeningMeta = finalMeta;
               return finalMeta;
@@ -13104,9 +13098,7 @@ async function generateOpeningIfNeeded(){
           }, function(nextThought){
             if(!isMountedOfflineLiveEntry(liveOpeningEntry)) return;
             liveOpeningEntry.thoughtChain = Object.assign({}, nextThought || {});
-            saveSession();
-            renderStory();
-            keepOfflineComposerVisible();
+            persistOfflineLiveEntryWithoutRender('opening_thought_update');
           }).then(function(finalThought){
             streamedOpeningThoughtChain = finalThought;
             return finalThought;
@@ -13122,9 +13114,7 @@ async function generateOpeningIfNeeded(){
               if(!isMountedOfflineLiveEntry(liveOpeningEntry)) return;
               liveOpeningEntry.title = String(nextMeta && nextMeta.title || liveOpeningEntry.title || '…').trim() || '…';
               liveOpeningEntry.quote = String(nextMeta && nextMeta.quote || liveOpeningEntry.quote || '…').trim() || '…';
-              saveSession();
-              renderStory();
-              keepOfflineComposerVisible();
+              persistOfflineLiveEntryWithoutRender('opening_meta_update');
             }).then(function(finalMeta){
               streamedOpeningMeta = finalMeta;
               return finalMeta;
@@ -13144,9 +13134,7 @@ async function generateOpeningIfNeeded(){
         onUpdate: function(partialText){
           if(!liveOpeningEntry) return;
           liveOpeningEntry.text = ensureOfflineSpeechPresence(String(partialText || '').trim());
-          saveSession();
-          renderStory();
-          keepOfflineComposerVisible();
+          persistOfflineLiveEntryWithoutRender('opening_text_update');
         }
       });
       if(!String(leanOpening && leanOpening.text || '').trim()){
@@ -13204,6 +13192,7 @@ async function generateOpeningIfNeeded(){
       saveSession();
       queueOfflineSharedMemorySummaryCheck();
       queueOfflineStageSummaryGeneration();
+      renderStory();
       renderOfflineInviteDebugCard();
       hideFlightOverlay();
       pushOfflineBackendLog('info', 'opening.success', '线下首幕生成成功(lean)', {
@@ -13264,9 +13253,7 @@ async function generateOpeningIfNeeded(){
         }, function(partialText){
           if(!liveOpeningEntry) return;
           liveOpeningEntry.text = ensureOfflineSpeechPresence(String(partialText || '').trim());
-          saveSession();
-          renderStory();
-          keepOfflineComposerVisible();
+          persistOfflineLiveEntryWithoutRender('opening_text_update');
         });
         bestText = openingText;
         bestAsides = [];
@@ -13556,6 +13543,7 @@ async function generateOpeningIfNeeded(){
     queueOfflineSummaryGeneration(openingEntry);
     queueOfflineStageSummaryGeneration();
     if(openingEntry.statusCard) queueOfflineStatusTranslationPrefetch(openingEntry);
+    renderStory();
     hideFlightOverlay();
     pushOfflineBackendLog('info', 'opening.success', '线下首幕生成成功', {
       chars: openingTextLength(openingEntry.text || ''),
@@ -13606,6 +13594,7 @@ async function generateOpeningIfNeeded(){
         queueOfflineInlineTranslationsPrefetch(emergencyEntry);
         queueOfflineSummaryGeneration(emergencyEntry);
         queueOfflineStageSummaryGeneration();
+        renderStory();
         hideFlightOverlay();
         toast(isOfflineContextLikeError(e)
           ? '这轮更像是上下文或 token 太满了，我已经切成超轻开场重试成功'
@@ -13747,9 +13736,7 @@ async function requestOfflineReply(options){
           onUpdate: function(partialText){
             if(!liveReplyEntry) return;
             liveReplyEntry.text = String(partialText || '').trim();
-            saveSession();
-            renderStory();
-            keepOfflineComposerVisible();
+            persistOfflineLiveEntryWithoutRender('reply_text_update');
           }
         });
         var singlePassLabels = liveReplyLabels || nowLabels();
@@ -13843,9 +13830,7 @@ async function requestOfflineReply(options){
           }, function(nextThought){
             if(!isMountedOfflineLiveEntry(liveReplyEntry)) return;
             liveReplyEntry.thoughtChain = Object.assign({}, nextThought || {});
-            saveSession();
-            renderStory();
-            keepOfflineComposerVisible();
+            persistOfflineLiveEntryWithoutRender('reply_thought_update');
           }).then(function(finalThought){
             streamedReplyThoughtChain = finalThought;
             return finalThought;
@@ -13861,9 +13846,7 @@ async function requestOfflineReply(options){
               if(!isMountedOfflineLiveEntry(liveReplyEntry)) return;
               liveReplyEntry.title = String(nextMeta && nextMeta.title || liveReplyEntry.title || '…').trim() || '…';
               liveReplyEntry.quote = String(nextMeta && nextMeta.quote || liveReplyEntry.quote || '…').trim() || '…';
-              saveSession();
-              renderStory();
-              keepOfflineComposerVisible();
+              persistOfflineLiveEntryWithoutRender('reply_meta_update');
             }).then(function(finalMeta){
               streamedReplyMeta = finalMeta;
               return finalMeta;
@@ -13882,9 +13865,7 @@ async function requestOfflineReply(options){
           }, function(nextThought){
             if(!isMountedOfflineLiveEntry(liveReplyEntry)) return;
             liveReplyEntry.thoughtChain = Object.assign({}, nextThought || {});
-            saveSession();
-            renderStory();
-            keepOfflineComposerVisible();
+            persistOfflineLiveEntryWithoutRender('reply_thought_update');
           }).then(function(finalThought){
             streamedReplyThoughtChain = finalThought;
             return finalThought;
@@ -13900,9 +13881,7 @@ async function requestOfflineReply(options){
               if(!isMountedOfflineLiveEntry(liveReplyEntry)) return;
               liveReplyEntry.title = String(nextMeta && nextMeta.title || liveReplyEntry.title || '…').trim() || '…';
               liveReplyEntry.quote = String(nextMeta && nextMeta.quote || liveReplyEntry.quote || '…').trim() || '…';
-              saveSession();
-              renderStory();
-              keepOfflineComposerVisible();
+              persistOfflineLiveEntryWithoutRender('reply_meta_update');
             }).then(function(finalMeta){
               streamedReplyMeta = finalMeta;
               return finalMeta;
@@ -13922,9 +13901,7 @@ async function requestOfflineReply(options){
         onUpdate: function(partialText){
           if(!liveReplyEntry) return;
           liveReplyEntry.text = ensureOfflineSpeechPresence(String(partialText || '').trim());
-          saveSession();
-          renderStory();
-          keepOfflineComposerVisible();
+          persistOfflineLiveEntryWithoutRender('reply_text_update');
         }
       });
       if(!String(leanReply && leanReply.text || '').trim()){
@@ -14077,9 +14054,7 @@ async function requestOfflineReply(options){
         }, function(partialText){
           if(!liveReplyEntry) return;
           liveReplyEntry.text = ensureOfflineSpeechPresence(String(partialText || '').trim());
-          saveSession();
-          renderStory();
-          keepOfflineComposerVisible();
+          persistOfflineLiveEntryWithoutRender('reply_text_update');
         });
           bodyPayload = {
             title:'',
@@ -14784,6 +14759,11 @@ function postOfflineBusyState(reason){
       }, '*');
     }
   }catch(e){}
+}
+function persistOfflineLiveEntryWithoutRender(reason){
+  try{ saveSession(); }catch(e){}
+  postOfflineBusyState(reason || 'live_entry_update');
+  keepOfflineComposerVisible();
 }
 function shouldBlockOfflineDateAppReturn(options){
   var opts = options && typeof options === 'object' ? options : {};
