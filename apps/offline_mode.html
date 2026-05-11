@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../chatStorage.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../metadataStore.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../promptManager.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../accountManager.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../scheduleShared.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../presenceShared.js?v=2026-05-11T22:13:57Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-11T22:13:57Z"></script>
+<script src="../assetStore.js?v=2026-05-11T22:24:06Z"></script>
+<script src="../chatStorage.js?v=2026-05-11T22:24:06Z"></script>
+<script src="../metadataStore.js?v=2026-05-11T22:24:06Z"></script>
+<script src="../promptManager.js?v=2026-05-11T22:24:06Z"></script>
+<script src="../accountManager.js?v=2026-05-11T22:24:06Z"></script>
+<script src="../scheduleShared.js?v=2026-05-11T22:24:06Z"></script>
+<script src="../presenceShared.js?v=2026-05-11T22:24:06Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-11T22:24:06Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -54,6 +54,18 @@ body.offline-mobile-safe .birthday-lyrics-track{will-change:auto!important}
 body.offline-mobile-safe .story-card,
 body.offline-mobile-safe .birthday-card,
 body.offline-mobile-safe .love-card{contain:content}
+body.offline-mobile-safe.offline-runtime-safe::before{background:#dcdcdc!important}
+body.offline-mobile-safe.offline-runtime-safe .offline-story-strip-shell::before,
+body.offline-mobile-safe.offline-runtime-safe .offline-story-hero::before{background:transparent!important}
+body.offline-mobile-safe.offline-runtime-safe .offline-stage-drawer-overlay,
+body.offline-mobile-safe.offline-runtime-safe .offline-memory-overlay,
+body.offline-mobile-safe.offline-runtime-safe .offline-memory-editor-overlay,
+body.offline-mobile-safe.offline-runtime-safe .offline-confirm-overlay,
+body.offline-mobile-safe.offline-runtime-safe .exit-menu,
+body.offline-mobile-safe.offline-runtime-safe .flight-overlay,
+body.offline-mobile-safe.offline-runtime-safe .offline-edit-overlay,
+body.offline-mobile-safe.offline-runtime-safe .offline-status-overlay,
+body.offline-mobile-safe.offline-runtime-safe .offline-status-history-overlay{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .shell{position:relative;z-index:1;height:100%;display:flex;flex-direction:column}
 .topbar{display:none}
 .top-pill{display:none}
@@ -1298,6 +1310,7 @@ var offlineLastErrorPayload = null;
 var offlineJsonSaveState = Object.create(null);
 var offlineAllowEntryShrinkUntil = 0;
 var offlineProfileRefreshSuppressRender = false;
+var offlineViewportSyncRaf = 0;
 var offlineMoodFaces = {
   soft:['(˶ᵔ ᵕ ᵔ˶)','(◍•ᴗ•◍)','(˵¯͒〰¯͒˵)','(｡•ㅅ•｡)'],
   moody:['(¬_¬ )','(◔_◔)','( －з)','(눈_눈)'],
@@ -4062,6 +4075,15 @@ function protectOfflineEntriesBeforeSave(){
 }
 function saveSession(options){
   if(!session || !character || !character.id) return;
+  if(typeof session.chatHistory === 'string'){
+    var normalizedHistory = normalizeOfflineStoredChatHistory(session.chatHistory);
+    if(normalizedHistory !== session.chatHistory){
+      session.chatHistory = normalizedHistory;
+      pushOfflineBackendLog('warn', 'session.chat_history_trimmed', '线下打开时已压缩线上聊天上下文，避免移动端存档过大', {
+        chars: session.chatHistory.length
+      });
+    }
+  }
   var forceSave = !!(options && options.force);
   if(!forceSave && typeof hasOfflineGenerationInProgress === 'function' && hasOfflineGenerationInProgress()){
     var saveNow = Date.now();
@@ -5627,6 +5649,13 @@ function applyOfflineBuiltinTheme(){
   document.body.classList.toggle('offline-theme-love', theme === 'love');
   document.body.classList.toggle('offline-theme-classic', theme === 'classic');
   document.body.classList.toggle('offline-mobile-safe', isMobileOfflineRuntime());
+  syncOfflineRuntimeSafeClass('theme');
+}
+function syncOfflineRuntimeSafeClass(reason){
+  try{
+    var active = isMobileOfflineRuntime() && (offlineInitInProgress || (typeof hasOfflineGenerationInProgress === 'function' && hasOfflineGenerationInProgress()));
+    document.body.classList.toggle('offline-runtime-safe', !!active);
+  }catch(e){}
 }
 function focusOfflineComposerInput(){
   var input = document.getElementById('offlineInput');
@@ -7971,9 +8000,16 @@ function resolveStableOfflineKeyboardInset(rawInset, inputFocused){
 function scheduleOfflineViewportSync(){
   [0, 44, 96, 150, 240, 380, 560].forEach(function(delay){
     setTimeout(function(){
-      syncOfflineViewport();
+      requestOfflineViewportSync();
       keepOfflineComposerVisible();
     }, delay);
+  });
+}
+function requestOfflineViewportSync(){
+  if(offlineViewportSyncRaf) return;
+  offlineViewportSyncRaf = requestAnimationFrame(function(){
+    offlineViewportSyncRaf = 0;
+    syncOfflineViewport();
   });
 }
 function keepOfflineComposerVisible(){
@@ -10511,7 +10547,7 @@ async function loadOfflineRecentOnlineContextForCharacter(charId){
 async function refreshOfflineRecentOnlineContext(){
   if(!session || !character || !character.id) return '';
   var text = await loadOfflineRecentOnlineContextForCharacter(character.id);
-  session.chatHistory = text || '';
+  session.chatHistory = normalizeOfflineStoredChatHistory(text || '');
   return session.chatHistory;
 }
 function normalizeOfflineNameLite(value){
@@ -11052,6 +11088,9 @@ function clipOfflinePromptText(text, maxChars){
   var head = clean.slice(0, Math.floor(limit * 0.65)).trim();
   var tail = clean.slice(-Math.floor(limit * 0.25)).trim();
   return (head + '\n...\n' + tail).trim();
+}
+function normalizeOfflineStoredChatHistory(text){
+  return clipOfflinePromptText(text, isMobileOfflineRuntime() ? 1600 : 2200);
 }
 function offlinePromptLimit(base, compactLevel, min){
   var level = Math.max(0, Number(compactLevel) || 0);
@@ -14748,6 +14787,7 @@ function hasOfflineGenerationInProgress(){
 }
 function postOfflineBusyState(reason){
   try{
+    syncOfflineRuntimeSafeClass(reason || 'busy_state');
     if(window.parent && window.parent !== window){
       window.parent.postMessage({
         type:'OFFLINE_BUSY_STATE',
@@ -15480,6 +15520,7 @@ async function init(){
   try{
     offlineInitInProgress = true;
     offlineInitCompleted = false;
+    syncOfflineRuntimeSafeClass('init_start');
     pushOfflineBackendLog('info', 'init.start', '线下初始化开始');
     try{
       if(window.MetadataStore && typeof window.MetadataStore.init === 'function'){
@@ -15655,7 +15696,7 @@ async function init(){
         pendingAnimation: !offlineReadOnlyMode,
         pendingOpening: false,
         waitForUserFirstTurn: !offlineReadOnlyMode,
-        chatHistory: String(launchSeed.chatHistory || ''),
+        chatHistory: normalizeOfflineStoredChatHistory(launchSeed.chatHistory || ''),
         updatedAt: Date.now()
       };
       session.openingFailed = false;
@@ -15731,7 +15772,7 @@ async function init(){
       });
       if(launchFreshStart){
         session.entries = [];
-        session.chatHistory = String(launchSeed && launchSeed.chatHistory || '');
+        session.chatHistory = normalizeOfflineStoredChatHistory(launchSeed && launchSeed.chatHistory || '');
         session.pendingOpening = false;
         session.pendingAnimation = false;
         session.waitForUserFirstTurn = !offlineReadOnlyMode;
@@ -15862,6 +15903,7 @@ async function init(){
   }
   offlineInitCompleted = true;
   offlineInitInProgress = false;
+  syncOfflineRuntimeSafeClass('init_done');
   pushOfflineBackendLog('info', 'init.done', '线下页面初始化结束');
   var input = document.getElementById('offlineInput');
   if(input) input.value = '';
@@ -15889,6 +15931,7 @@ async function init(){
   }catch(err){
     offlineInitCompleted = false;
     offlineInitInProgress = false;
+    syncOfflineRuntimeSafeClass('init_error');
     reportOfflineStartupFailure('init', err);
   }
 }
@@ -15949,7 +15992,7 @@ window.addEventListener('message', function(e){
   }
   if(data.type === 'PARENT_APP_KEYBOARD_INSET'){
     parentOfflineKeyboardInset = 0;
-    syncOfflineViewport();
+    requestOfflineViewportSync();
   }
 });
 window.addEventListener('pagehide', function(){
@@ -15970,8 +16013,8 @@ window.addEventListener('pageshow', function(){
   clearOfflineCustomCssState();
   refreshOfflineLiveProfileFromSettings();
 });
-window.addEventListener('resize', syncOfflineViewport);
-window.addEventListener('orientationchange', syncOfflineViewport);
+window.addEventListener('resize', requestOfflineViewportSync);
+window.addEventListener('orientationchange', requestOfflineViewportSync);
 window.addEventListener('focusin', function(e){
   if(e.target && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')){
     offlineKeyboardFocusStartedAt = Date.now();
@@ -16000,7 +16043,7 @@ window.addEventListener('focusout', function(e){
       offlineKeyboardStableCandidate = 0;
       offlineKeyboardStableCandidateAt = 0;
       document.documentElement.style.setProperty('--offline-keyboard-inset', '0px');
-      syncOfflineViewport();
+      requestOfflineViewportSync();
     }, 40);
   }
 });
@@ -16026,15 +16069,15 @@ document.addEventListener('click', function(evt){
     }
   }
 });
-window.addEventListener('load', syncOfflineViewport);
+window.addEventListener('load', requestOfflineViewportSync);
 if(window.visualViewport){
   window.visualViewport.addEventListener('resize', function(){
-    syncOfflineViewport();
+    requestOfflineViewportSync();
   });
   window.visualViewport.addEventListener('scroll', function(){
     var activeEl = document.activeElement;
     if(activeEl && (activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'INPUT')) return;
-    syncOfflineViewport();
+    requestOfflineViewportSync();
   });
 }
 window.addEventListener('error', function(evt){

@@ -990,6 +990,13 @@ function buildOfflineThreadLaunchSnapshot(targetCharId, payload){
   return merged;
 }
 
+function compactOfflineLaunchChatHistory(text){
+  var clean = String(text || '').trim();
+  var maxChars = 1800;
+  if(!clean || clean.length <= maxChars) return clean;
+  return clean.slice(-maxChars).trim();
+}
+
 async function openOfflineSession(payload){
   var liveCharId = getOfflineInviteThreadCharId();
   var targetCharId = String(liveCharId || (payload && payload.charId) || '').trim();
@@ -1048,7 +1055,7 @@ async function openOfflineSession(payload){
     payload.charName = String((charSnapshot && (charSnapshot.nickname || charSnapshot.name)) || payload.charName || '').trim();
   }
   primeOfflineLaunchCharacterSnapshot(charSnapshot);
-  var history = formatChatForModel(chatLog.slice(-10));
+  var history = compactOfflineLaunchChatHistory(formatChatForModel(chatLog.slice(-10)));
   var launchToken = 'ol_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
   var latestLaunchRecord = {
     mode: 'invite',
