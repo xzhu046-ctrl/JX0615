@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-10T18:40:23Z';
+const APP_BUILD_ID = '2026-05-11T05:02:23Z';
 const APP_UPDATE_NOTES = [
-  '线下打开先显示内容',
-  '头像背景慢慢补齐',
-  '减少线下首屏等待'
+  '新增我们的爱线下美化',
+  '唱片和五线谱头部上线',
+  '线下推荐歌曲可接入播放'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -8352,6 +8352,37 @@ function getCurrentHomeMusicTrack(){
   }
   return null;
 }
+function getHomeMusicPublicTrackPayload(track){
+  if(!track) return null;
+  var parsedLyrics = parseHomeMusicLrc(track.lyricsText || '');
+  return {
+    id: String(track.id || ''),
+    name: String(track.name || ''),
+    artist: String(track.artist || ''),
+    album: String(track.album || ''),
+    cover: String(track.cover || ''),
+    remoteId: String(track.remoteId || ''),
+    remoteProvider: String(track.remoteProvider || ''),
+    duration: Number(track.duration) || 0,
+    lyricsText: String(track.lyricsText || ''),
+    parsedLyrics: parsedLyrics.slice(0, 80)
+  };
+}
+function getHomeMusicNowPlayingSnapshot(){
+  var track = getCurrentHomeMusicTrack();
+  if(!track) return null;
+  var audio = getHomeMusicAudio();
+  var parsed = Array.isArray(homeMusicState.parsedLyrics) && homeMusicState.parsedLyrics.length
+    ? homeMusicState.parsedLyrics
+    : parseHomeMusicLrc(track.lyricsText || '');
+  var payload = getHomeMusicPublicTrackPayload(track) || {};
+  payload.isPlaying = !!(audio && !audio.paused);
+  payload.currentTime = Number(audio && audio.currentTime) || Number(homeMusicState.currentTime) || 0;
+  payload.duration = Number(audio && audio.duration) || Number(track.duration) || 0;
+  payload.currentLyricIndex = Math.max(0, Number(homeMusicState.currentLyricIndex) || 0);
+  payload.parsedLyrics = parsed.slice(0, 80);
+  return payload;
+}
 
 function getHomeMusicVisibleTracks(){
   var tracks = Array.isArray(homeMusicState.tracks) ? homeMusicState.tracks : [];
@@ -8417,6 +8448,33 @@ function getHomeMusicProvider(){
       }
     }
   };
+}
+async function findOrAddHomeMusicTrackByQuery(query, autoplay){
+  var safeQuery = String(query || '').trim();
+  if(!safeQuery) throw new Error('没有歌名');
+  var provider = getHomeMusicProvider().search;
+  var results = await provider.searchTracks(safeQuery);
+  if(!Array.isArray(results) || !results.length) throw new Error('没有搜到这首歌');
+  var candidate = cloneHomeMusicTrack(results[0]);
+  var existing = getHomeMusicPlaylistTrackByRemoteId(candidate.remoteId, candidate.remoteProvider || 'netease');
+  var track = existing || sanitizeHomeMusicTrackForStorage(candidate);
+  if(!existing){
+    track.id = createTrackId('search');
+    track.playlistId = String(track.playlistId || 'default');
+    await hydrateHomeMusicThirdPartyTrack(track);
+    if(!String(track.remoteUrl || '').trim()) throw new Error('这首歌暂时不能播放');
+    track = sanitizeHomeMusicTrackForStorage(track);
+    homeMusicState.tracks = [track].concat(Array.isArray(homeMusicState.tracks) ? homeMusicState.tracks : []);
+  }else{
+    await hydrateHomeMusicThirdPartyTrack(track);
+  }
+  homeMusicState.currentTrackId = track.id;
+  homeMusicState.currentTime = 0;
+  homeMusicState.currentLyricIndex = -1;
+  await persistHomeMusicStateAsync();
+  renderHomeMusic();
+  setCurrentHomeMusicTrack(track.id, autoplay !== false);
+  return getHomeMusicPublicTrackPayload(track);
 }
 
 function getHomeMusicNestedValue(source, path){
@@ -10957,6 +11015,8 @@ window.closeHomeMusicSearchEditor = closeHomeMusicSearchEditor;
 window.submitHomeMusicSearch = submitHomeMusicSearch;
 window.previewHomeMusicSearchResult = previewHomeMusicSearchResult;
 window.addHomeMusicSearchResult = addHomeMusicSearchResult;
+window.findOrAddHomeMusicTrackByQuery = findOrAddHomeMusicTrackByQuery;
+window.getHomeMusicNowPlayingSnapshot = getHomeMusicNowPlayingSnapshot;
 window.openHomeMusicPanel = openHomeMusicPanel;
 window.closeHomeMusicPanel = closeHomeMusicPanel;
 window.handleHomeMusicBubbleTap = handleHomeMusicBubbleTap;
