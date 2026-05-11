@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-11T12:19:50Z"></script>
-<script src="../chatStorage.js?v=2026-05-11T12:19:50Z"></script>
-<script src="../metadataStore.js?v=2026-05-11T12:19:50Z"></script>
-<script src="../promptManager.js?v=2026-05-11T12:19:50Z"></script>
-<script src="../accountManager.js?v=2026-05-11T12:19:50Z"></script>
-<script src="../scheduleShared.js?v=2026-05-11T12:19:50Z"></script>
-<script src="../presenceShared.js?v=2026-05-11T12:19:50Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-11T12:19:50Z"></script>
+<script src="../assetStore.js?v=2026-05-11T13:30:16Z"></script>
+<script src="../chatStorage.js?v=2026-05-11T13:30:16Z"></script>
+<script src="../metadataStore.js?v=2026-05-11T13:30:16Z"></script>
+<script src="../promptManager.js?v=2026-05-11T13:30:16Z"></script>
+<script src="../accountManager.js?v=2026-05-11T13:30:16Z"></script>
+<script src="../scheduleShared.js?v=2026-05-11T13:30:16Z"></script>
+<script src="../presenceShared.js?v=2026-05-11T13:30:16Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-11T13:30:16Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -1272,6 +1272,7 @@ var offlineInitCompleted = false;
 var offlineLastErrorPayload = null;
 var offlineJsonSaveState = Object.create(null);
 var offlineAllowEntryShrinkUntil = 0;
+var offlineProfileRefreshSuppressRender = false;
 var offlineMoodFaces = {
   soft:['(˶ᵔ ᵕ ᵔ˶)','(◍•ᴗ•◍)','(˵¯͒〰¯͒˵)','(｡•ㅅ•｡)'],
   moody:['(¬_¬ )','(◔_◔)','( －з)','(눈_눈)'],
@@ -3588,6 +3589,12 @@ function loadCharactersList(){
     }catch(err){}
   }
   try{
+    if(window.parent && window.parent !== window && window.parent.MetadataStore && typeof window.parent.MetadataStore.getCharactersSync === 'function'){
+      var parentMetaList = window.parent.MetadataStore.getCharactersSync();
+      if(Array.isArray(parentMetaList) && parentMetaList.length) return parentMetaList;
+    }
+  }catch(parentMetaErr){}
+  try{
     var list = JSON.parse(localStorage.getItem('characters') || '[]');
     if(Array.isArray(list) && list.length) return list;
   }catch(e){
@@ -3617,6 +3624,11 @@ function saveCharactersList(list){
       window.MetadataStore.saveCharacters(Array.isArray(list) ? list : []).catch(function(){});
     }catch(err){}
   }
+  try{
+    if(window.parent && window.parent !== window && window.parent.MetadataStore && typeof window.parent.MetadataStore.saveCharacters === 'function'){
+      window.parent.MetadataStore.saveCharacters(Array.isArray(list) ? list : []).catch(function(){});
+    }
+  }catch(parentSaveErr){}
   try{
     localStorage.setItem('characters', JSON.stringify(Array.isArray(list) ? list : []));
   }catch(e){}
@@ -5474,7 +5486,7 @@ function refreshOfflineAvatarAssets(){
       changed = true;
     }
     if(changed){
-      renderStory();
+      if(!offlineProfileRefreshSuppressRender) renderStory();
       var goodbyeOverlay = document.getElementById('offlineGoodbyeCameraOverlay');
       if(goodbyeOverlay && goodbyeOverlay.classList.contains('open') && offlineGoodbyePhotoText){
         setOfflineGoodbyePhotoText(offlineGoodbyePhotoText);
@@ -5482,11 +5494,16 @@ function refreshOfflineAvatarAssets(){
     }
   }).catch(function(){ return null; });
 }
-function refreshOfflineLiveProfileFromSettings(){
+function refreshOfflineLiveProfileFromSettings(options){
+  var opts = options && typeof options === 'object' ? options : {};
+  var prevSuppress = offlineProfileRefreshSuppressRender;
+  if(opts.suppressRender) offlineProfileRefreshSuppressRender = true;
   return Promise.all([
     refreshOfflineAvatarAssets(),
     refreshOfflineUserPersonaProfile()
-  ]).then(function(){ return true; }).catch(function(){ return false; });
+  ]).then(function(){ return true; }).catch(function(){ return false; }).finally(function(){
+    offlineProfileRefreshSuppressRender = prevSuppress;
+  });
 }
 function extraCharPhotoKey(){
   return character && character.id ? scopedKey('offline_char_extra_photo_' + String(character.id)) : '';
@@ -7544,6 +7561,7 @@ function renderOfflineGoodbyeInlineChat(){
 function renderStory(){
   var wrap = document.getElementById('storyList');
   if(!wrap) return;
+  applyOfflineBuiltinTheme();
   stopBirthdayLyricPlayers();
   stopLoveSongPlayers();
   renderOfflineStageHeader();
@@ -14642,8 +14660,37 @@ function writeOfflineExitCompleteIntentPayload(payload){
   try{ localStorage.setItem(offlineExitCompleteIntentKey(), JSON.stringify(item)); }catch(e){}
   try{ localStorage.setItem('offline_invite_exit_complete_intent_v1', JSON.stringify(item)); }catch(e2){}
 }
+function hasOfflineGenerationInProgress(){
+  if(sending) return true;
+  if(session && (session.pendingOpening || session.pendingAnimation)) return true;
+  if(Array.isArray(session && session.entries)){
+    return session.entries.some(function(entry){
+      return !!(entry && entry.isTyping);
+    });
+  }
+  return false;
+}
+function shouldBlockOfflineDateAppReturn(options){
+  var opts = options && typeof options === 'object' ? options : {};
+  if(opts.userExit === true || opts.allowDuringGeneration === true) return false;
+  if(offlineCloseIntent || exitingOfflineMeet || offlineReadOnlyMode) return false;
+  if(document.body && document.body.classList && document.body.classList.contains('offline-readonly')) return false;
+  return hasOfflineGenerationInProgress();
+}
 function openOfflineDateApp(recordId, options){
   var opts = options && typeof options === 'object' ? options : {};
+  if(shouldBlockOfflineDateAppReturn(opts)){
+    try{
+      pushOfflineBackendLog('warn', 'nav.block_generation_return', '生成中拦截一次返回约会主页', {
+        reason: String(opts.reason || ''),
+        sending: !!sending,
+        pendingOpening: !!(session && session.pendingOpening),
+        pendingAnimation: !!(session && session.pendingAnimation),
+        entries: Array.isArray(session && session.entries) ? session.entries.length : 0
+      });
+    }catch(blockLogErr){}
+    return false;
+  }
   var focusId = String(recordId || offlineGoodbyeCompletedInviteIds[0] || currentOfflineInviteFocusId() || '').trim();
   var completedIds = (Array.isArray(offlineGoodbyeCompletedInviteIds) ? offlineGoodbyeCompletedInviteIds.slice() : []).filter(function(id){ return String(id || '').trim(); });
   var hasExplicitCompletedIds = completedIds.length > 0;
@@ -14783,7 +14830,7 @@ function exitReadOnlyOfflineInviteToDateApp(event){
       try{ window.parent.postMessage({ type:'OFFLINE_INVITE_FORCE_COMPLETE', payload:{ ids:immediateIds, inviteId:initialFocusId, charId:immediateCharId, charName:immediateCharName, reason:'readonly_exit_after_open_failed' } }, '*'); }catch(repostFailErr){}
     });
   }catch(err){}
-  openOfflineDateApp(initialFocusId || (immediateIds && immediateIds[0]) || '');
+  openOfflineDateApp(initialFocusId || (immediateIds && immediateIds[0]) || '', { userExit:true, reason:'readonly_exit' });
   setTimeout(function(){ window.__offlineReadonlyExitBusy = false; }, 800);
 }
 function handleReadOnlyExitControlEvent(event){
@@ -15104,7 +15151,7 @@ async function finishOfflineGoodbyeCamera(event){
     finishPersistPromise,
     new Promise(function(resolve){ setTimeout(resolve, 700); })
   ]).catch(function(){ return null; });
-  openOfflineDateApp(offlineGoodbyeCompletedInviteIds[0] || '');
+  openOfflineDateApp(offlineGoodbyeCompletedInviteIds[0] || '', { userExit:true, reason:'goodbye_finish' });
   setTimeout(function(){ if(btn) btn.disabled = false; }, 600);
 }
 function setExitMenuBusy(busy){
@@ -15123,7 +15170,7 @@ async function exitOfflineMeet(){
   closeExitMenu();
   closeOfflineDrawer();
   if(!session || !character || !character.id){
-    openOfflineDateApp();
+    openOfflineDateApp('', { userExit:true, reason:'goodbye_no_session' });
     setTimeout(function(){
       exitingOfflineMeet = false;
       offlineCloseIntent = '';
@@ -15194,7 +15241,7 @@ function minimizeOfflineMeet(){
     pushOfflineBackendLog('error', 'archive.minimize.fast_exit', '暂时退出快速保存失败，仍继续退出', e);
     try{ if(character && character.id) persistOfflineResumeSnapshot(character.id, snapshot || snapshotOfflineSessionState(session)); }catch(ignore){}
   }
-  openOfflineDateApp('', { forceComplete:false });
+  openOfflineDateApp('', { forceComplete:false, userExit:true, reason:'minimize' });
 }
 function restoreOfflineMeet(){
   offlineCloseIntent = '';
@@ -15656,6 +15703,11 @@ async function init(){
   if(clearOfflineCustomCssState() && character && character.id) persistOfflineCharacterSettings();
   syncOfflineDrawerControls();
   refreshOfflineMemoryButton();
+  var liveProfilePrimePromise = refreshOfflineLiveProfileFromSettings({ suppressRender:true }).catch(function(){ return false; });
+  var liveProfilePrimedBeforePaint = await Promise.race([
+    liveProfilePrimePromise,
+    new Promise(function(resolve){ setTimeout(function(){ resolve(false); }, 480); })
+  ]).catch(function(){ return false; });
   applyOfflineReadOnlyMode();
   renderStory();
   syncOfflineViewport();
@@ -15666,10 +15718,12 @@ async function init(){
     applyOfflinePageBackgroundSource('');
     applyOfflineCardBackgroundSource('');
   });
-  refreshOfflineLiveProfileFromSettings().then(function(){
-    renderStory();
-    syncOfflineViewport();
-  }).catch(function(){});
+  if(!liveProfilePrimedBeforePaint){
+    liveProfilePrimePromise.then(function(){
+      renderStory();
+      syncOfflineViewport();
+    }).catch(function(){});
+  }
   runOfflineInitTask(function(){
     primeOfflineStatusCards();
     queueOfflineStageSummaryGeneration();
