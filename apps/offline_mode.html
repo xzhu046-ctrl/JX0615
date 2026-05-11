@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-11T21:25:44Z"></script>
-<script src="../chatStorage.js?v=2026-05-11T21:25:44Z"></script>
-<script src="../metadataStore.js?v=2026-05-11T21:25:44Z"></script>
-<script src="../promptManager.js?v=2026-05-11T21:25:44Z"></script>
-<script src="../accountManager.js?v=2026-05-11T21:25:44Z"></script>
-<script src="../scheduleShared.js?v=2026-05-11T21:25:44Z"></script>
-<script src="../presenceShared.js?v=2026-05-11T21:25:44Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-11T21:25:44Z"></script>
+<script src="../assetStore.js?v=2026-05-11T21:35:01Z"></script>
+<script src="../chatStorage.js?v=2026-05-11T21:35:01Z"></script>
+<script src="../metadataStore.js?v=2026-05-11T21:35:01Z"></script>
+<script src="../promptManager.js?v=2026-05-11T21:35:01Z"></script>
+<script src="../accountManager.js?v=2026-05-11T21:35:01Z"></script>
+<script src="../scheduleShared.js?v=2026-05-11T21:35:01Z"></script>
+<script src="../presenceShared.js?v=2026-05-11T21:35:01Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-11T21:35:01Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -543,7 +543,7 @@ box-shadow:0 0 0 2px rgba(255,255,255,.97),6px 6px 0 rgba(17,17,17,.94);padding:
 .offline-story-body .offline-inline-fragment > p::first-letter{font-size:1.72em;font-weight:900;line-height:.82;margin-right:1px}
 .offline-typing-wrap{display:flex;justify-content:flex-start;align-items:center;min-height:0;margin:6px 0 2px}
 .offline-typing-bubble{display:inline-flex;align-items:center;min-height:0;padding:0;border:0;background:transparent;box-shadow:none;border-radius:0;font-family:"PING FANG SHAO HUA",'Huiwen-mincho',"汇文明朝体",'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',cursive;font-size:18px;font-weight:800;line-height:1.55;color:#7a1118}
-.offline-typing-text{display:inline-block;max-width:none;overflow:visible;white-space:nowrap;animation:none}
+.offline-typing-text{display:inline-block;max-width:0;overflow:hidden;white-space:nowrap;animation:offlineTypingText 4.2s steps(10,end) infinite both}
 @keyframes offlineTypingText{
   0%{max-width:0;opacity:.72}
   45%,60%{max-width:10em;opacity:.92}

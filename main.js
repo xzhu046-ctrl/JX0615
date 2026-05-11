@@ -60,10 +60,10 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-11T21:25:44Z';
+const APP_BUILD_ID = '2026-05-11T21:35:01Z';
 const APP_UPDATE_NOTES = [
+  '保留线下等待打字特效',
   '线下正文落字时改用移动端稳定渲染',
-  '停掉线下装饰计时器，减少闪退',
   '生成中继续拦截异常回到主屏'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
