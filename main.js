@@ -60,12 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-11T20:21:31Z';
+const APP_BUILD_ID = '2026-05-11T21:05:12Z';
 const APP_UPDATE_NOTES = [
-  '继续压低线下生成时的重绘和保存频率',
-  '生成中拦住异常跳回主屏',
-  '暂时停掉线下音乐播放器后台轮询',
-  '更新完成提示也保留刷新按钮'
+  '线下生成结果一次性上屏，减少卡顿',
+  '线下背景先读设置，避免先露默认壁纸',
+  '继续拦截生成中异常跳回主屏'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';

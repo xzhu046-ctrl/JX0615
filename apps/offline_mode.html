@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-11T20:21:31Z"></script>
-<script src="../chatStorage.js?v=2026-05-11T20:21:31Z"></script>
-<script src="../metadataStore.js?v=2026-05-11T20:21:31Z"></script>
-<script src="../promptManager.js?v=2026-05-11T20:21:31Z"></script>
-<script src="../accountManager.js?v=2026-05-11T20:21:31Z"></script>
-<script src="../scheduleShared.js?v=2026-05-11T20:21:31Z"></script>
-<script src="../presenceShared.js?v=2026-05-11T20:21:31Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-11T20:21:31Z"></script>
+<script src="../assetStore.js?v=2026-05-11T21:05:12Z"></script>
+<script src="../chatStorage.js?v=2026-05-11T21:05:12Z"></script>
+<script src="../metadataStore.js?v=2026-05-11T21:05:12Z"></script>
+<script src="../promptManager.js?v=2026-05-11T21:05:12Z"></script>
+<script src="../accountManager.js?v=2026-05-11T21:05:12Z"></script>
+<script src="../scheduleShared.js?v=2026-05-11T21:05:12Z"></script>
+<script src="../presenceShared.js?v=2026-05-11T21:05:12Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-11T21:05:12Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -26,7 +26,7 @@
   --offline-keyboard-inset:0px;
   --offline-composer-height:64px;
   --offline-header-height:52px;
-  --offline-page-bg:url('assets/线下背景.jpg');
+  --offline-page-bg:none;
   --offline-card-bg:url('assets/花瓣掉落.gif');
 }
 html,body{width:100%;height:100%;min-height:100vh;min-height:100dvh;overflow:hidden;background:#dcdcdc}
@@ -1241,6 +1241,7 @@ var lockedOfflineInviteRecordId = '';
 var archivingOfflineMeet = false;
 var offlineCloseIntent = '';
 var OFFLINE_MUSIC_RUNTIME_DISABLED = true;
+var OFFLINE_TYPEWRITER_REVEAL_DISABLED = true;
 var offlineRenderLastAt = 0;
 var offlineRenderThrottleTimer = 0;
 var offlineLastSessionSaveAt = 0;
@@ -9063,9 +9064,13 @@ function buildOfflineMetaStreamSystemPrompt(options){
 function waitOfflineTypewriterTick(ms){
   return new Promise(function(resolve){ setTimeout(resolve, Math.max(8, Number(ms) || 16)); });
 }
+function shouldDisableOfflineTypewriterReveal(){
+  return !!OFFLINE_TYPEWRITER_REVEAL_DISABLED;
+}
 async function progressivelyRevealOfflineText(finalText, onUpdate, options){
   var text = String(finalText || '').trim();
   if(!text || typeof onUpdate !== 'function') return text;
+  if(shouldDisableOfflineTypewriterReveal()) return text;
   var opts = options && typeof options === 'object' ? options : {};
   var cursor = Math.max(0, Math.min(text.length, Number(opts.fromLength) || 0));
   var total = text.length;
@@ -9091,6 +9096,7 @@ async function progressivelyRevealOfflineMeta(finalMeta, onUpdate, options){
   var title = String(meta.title || '').trim();
   var quote = String(meta.quote || '').trim();
   if(typeof onUpdate !== 'function') return { title:title, quote:quote };
+  if(shouldDisableOfflineTypewriterReveal()) return { title:title, quote:quote };
   var maxLen = Math.max(title.length, quote.length);
   for(var i = 1; i <= maxLen; i += 1){
     onUpdate({
@@ -9104,6 +9110,7 @@ async function progressivelyRevealOfflineMeta(finalMeta, onUpdate, options){
 async function progressivelyRevealOfflineThought(finalThought, onUpdate, seedText, options){
   var thought = normalizeOfflineThoughtChain(finalThought || null, seedText || '');
   if(typeof onUpdate !== 'function') return thought;
+  if(shouldDisableOfflineTypewriterReveal()) return thought;
   var a = String(thought.subtext_perception || '').trim();
   var b = String(thought.emotional_reaction || '').trim();
   var c = String(thought.action_strategy || '').trim();
@@ -15778,16 +15785,24 @@ async function init(){
     liveProfilePrimePromise,
     new Promise(function(resolve){ setTimeout(function(){ resolve(false); }, 480); })
   ]).catch(function(){ return false; });
+  if(character && character.offlineBackgroundUrl) applyOfflinePageBackgroundSource(character.offlineBackgroundUrl);
+  if(character && character.offlineCardBackgroundUrl) applyOfflineCardBackgroundSource(character.offlineCardBackgroundUrl);
+  var backgroundPrimePromise = refreshOfflineBackgroundFromSettings().catch(function(){ return false; });
+  var backgroundPrimedBeforePaint = await Promise.race([
+    backgroundPrimePromise,
+    new Promise(function(resolve){ setTimeout(function(){ resolve(false); }, 320); })
+  ]).catch(function(){ return false; });
   applyOfflineReadOnlyMode();
   renderStory();
   syncOfflineViewport();
   refreshOfflineDrawerMemoryModeFromStore().then(function(){
     syncOfflineDrawerControls();
   }).catch(function(){});
-  refreshOfflineBackgroundFromSettings().catch(function(){
-    applyOfflinePageBackgroundSource('');
-    applyOfflineCardBackgroundSource('');
-  });
+  if(!backgroundPrimedBeforePaint){
+    backgroundPrimePromise.then(function(){
+      syncOfflineViewport();
+    }).catch(function(){});
+  }
   if(!liveProfilePrimedBeforePaint){
     liveProfilePrimePromise.then(function(){
       renderStory();
