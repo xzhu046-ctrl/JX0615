@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-11T22:11:27Z"></script>
-<script src="../chatStorage.js?v=2026-05-11T22:11:27Z"></script>
-<script src="../assetStore.js?v=2026-05-11T22:11:27Z"></script>
-<script src="../accountManager.js?v=2026-05-11T22:11:27Z"></script>
-<script src="../metadataStore.js?v=2026-05-11T22:11:27Z"></script>
-<script src="../scheduleShared.js?v=2026-05-11T22:11:27Z"></script>
-<script src="../presenceShared.js?v=2026-05-11T22:11:27Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-11T22:11:27Z"></script>
-<script src="../sunnySupport.js?v=2026-05-11T22:11:27Z"></script>
-<script src="offlineInvite.js?v=2026-05-11T22:11:27Z"></script>
+<script src="../promptManager.js?v=2026-05-11T22:13:57Z"></script>
+<script src="../chatStorage.js?v=2026-05-11T22:13:57Z"></script>
+<script src="../assetStore.js?v=2026-05-11T22:13:57Z"></script>
+<script src="../accountManager.js?v=2026-05-11T22:13:57Z"></script>
+<script src="../metadataStore.js?v=2026-05-11T22:13:57Z"></script>
+<script src="../scheduleShared.js?v=2026-05-11T22:13:57Z"></script>
+<script src="../presenceShared.js?v=2026-05-11T22:13:57Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-11T22:13:57Z"></script>
+<script src="../sunnySupport.js?v=2026-05-11T22:13:57Z"></script>
+<script src="offlineInvite.js?v=2026-05-11T22:13:57Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -2311,12 +2311,12 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .bubble-charm.ai{right:var(--bubble-charm-ai-right);top:var(--bubble-charm-ai-top);transform:scale(var(--bubble-charm-ai-scale))}
 .bubble-charm.single-char.ai{right:auto;left:50%;top:calc(var(--bubble-charm-ai-top) + 1px);transform:translateX(-49%) scale(var(--bubble-charm-ai-scale))}
 .bubble-charm.single-char.user{left:50%;right:auto;top:calc(var(--bubble-charm-user-top) + 1px);transform:translateX(-51%) scaleX(-1) scale(var(--bubble-charm-user-scale))}
-.multi-trash-btn,.multi-cancel-btn,.multi-favorite-btn{position:fixed;right:16px;width:46px;height:46px;border-radius:50%;border:var(--bd);box-shadow:var(--sh);display:none;align-items:center;justify-content:center;z-index:210;cursor:pointer}
-.multi-trash-btn.show,.multi-cancel-btn.show,.multi-favorite-btn.show{display:flex}
+.multi-trash-btn,.multi-cancel-btn,.multi-share-btn{position:fixed;right:16px;width:46px;height:46px;border-radius:50%;border:var(--bd);box-shadow:var(--sh);display:none;align-items:center;justify-content:center;z-index:210;cursor:pointer}
+.multi-trash-btn.show,.multi-cancel-btn.show,.multi-share-btn.show{display:flex}
 .multi-trash-btn{bottom:92px;background:linear-gradient(180deg,#ff8e8e 0%,#e23434 58%,#9e0f16 100%);color:#fff;font-size:18px}
-.multi-favorite-btn{bottom:146px;background:#111;color:#fff;font-size:17px;font-weight:900}
+.multi-share-btn{bottom:146px;background:#111;color:#fff;font-size:17px;font-weight:900}
 .multi-cancel-btn{bottom:200px;background:var(--w);color:var(--b);font-size:20px;font-weight:900}
-.multi-trash-btn img,.multi-favorite-btn img{width:22px;height:22px;object-fit:contain;display:block;filter:brightness(0) invert(1)}
+.multi-trash-btn img,.multi-share-btn img{width:22px;height:22px;object-fit:contain;display:block;filter:brightness(0) invert(1)}
 .image-view-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:205;padding:18px}
 .image-view-overlay.open{display:flex}
 .image-view-card{width:min(328px,100%);background:var(--w);border:var(--bd);border-radius:20px;box-shadow:var(--sh);padding:14px;display:flex;flex-direction:column;gap:12px}
@@ -3614,7 +3614,7 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 </div>
 
 <button class="multi-cancel-btn" id="multiCancelBtn" type="button">×</button>
-<button class="multi-favorite-btn" id="multiFavoriteBtn" type="button"><img src="assets/收藏.png" alt="收藏"></button>
+<button class="multi-share-btn" id="multiShareBtn" type="button"><img src="assets/分享.png" alt="分享"></button>
 <button class="multi-trash-btn" id="multiTrashBtn" type="button"><img src="assets/Recycle-Bin-2--Streamline-Sharp.png" alt="删除"></button>
 
 <div class="confirm-overlay" id="multiDeleteConfirm">
@@ -17512,15 +17512,15 @@ function updateFloatingUi(){
   bindMultiSelectFloatingButtons();
   var trash = document.getElementById('multiTrashBtn');
   var cancel = document.getElementById('multiCancelBtn');
-  var favorite = document.getElementById('multiFavoriteBtn');
+  var share = document.getElementById('multiShareBtn');
   if(trash) trash.classList.toggle('show', multiSelectMode);
   if(cancel) cancel.classList.toggle('show', multiSelectMode);
-  if(favorite) favorite.classList.toggle('show', multiSelectMode);
+  if(share) share.classList.toggle('show', multiSelectMode);
 }
 function bindMultiSelectFloatingButtons(){
   var cancel = document.getElementById('multiCancelBtn');
   var trash = document.getElementById('multiTrashBtn');
-  var favorite = document.getElementById('multiFavoriteBtn');
+  var share = document.getElementById('multiShareBtn');
   if(cancel && !cancel.dataset.bound){
     cancel.dataset.bound = '1';
     cancel.addEventListener('click', function(evt){
@@ -17537,12 +17537,12 @@ function bindMultiSelectFloatingButtons(){
       openMultiDeleteConfirm();
     });
   }
-  if(favorite && !favorite.dataset.bound){
-    favorite.dataset.bound = '1';
-    favorite.addEventListener('click', function(evt){
+  if(share && !share.dataset.bound){
+    share.dataset.bound = '1';
+    share.addEventListener('click', function(evt){
       evt.preventDefault();
       evt.stopPropagation();
-      favoriteSelectedMessages();
+      shareSelectedMessages();
     });
   }
 }
@@ -17910,15 +17910,6 @@ async function favoriteActiveMessage(){
   var targetId = activeActionMessageId;
   closeMessageActions();
   await favoriteMessageById(targetId);
-}
-async function favoriteSelectedMessages(){
-  if(!selectedMessageIds.length){ toast('先选中消息'); return; }
-  var ids = selectedMessageIds.slice();
-  var count = 0;
-  for(var i = 0; i < ids.length; i += 1){
-    if(await favoriteMessageById(ids[i], { silent:true })) count += 1;
-  }
-  toast(count ? ('已收藏 ' + count + ' 条消息') : '收藏失败，请稍后再试');
 }
 function cancelEditMessage(){
   var state = captureMessagesViewportState();
