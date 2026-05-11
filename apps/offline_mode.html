@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-11T05:18:00Z"></script>
-<script src="../chatStorage.js?v=2026-05-11T05:18:00Z"></script>
-<script src="../metadataStore.js?v=2026-05-11T05:18:00Z"></script>
-<script src="../promptManager.js?v=2026-05-11T05:18:00Z"></script>
-<script src="../accountManager.js?v=2026-05-11T05:18:00Z"></script>
-<script src="../scheduleShared.js?v=2026-05-11T05:18:00Z"></script>
-<script src="../presenceShared.js?v=2026-05-11T05:18:00Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-11T05:18:00Z"></script>
+<script src="../assetStore.js?v=2026-05-11T06:18:06Z"></script>
+<script src="../chatStorage.js?v=2026-05-11T06:18:06Z"></script>
+<script src="../metadataStore.js?v=2026-05-11T06:18:06Z"></script>
+<script src="../promptManager.js?v=2026-05-11T06:18:06Z"></script>
+<script src="../accountManager.js?v=2026-05-11T06:18:06Z"></script>
+<script src="../scheduleShared.js?v=2026-05-11T06:18:06Z"></script>
+<script src="../presenceShared.js?v=2026-05-11T06:18:06Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-11T06:18:06Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -729,26 +729,42 @@ body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:gray
 body.offline-theme-love .paper-bg{background:linear-gradient(180deg,rgba(255,255,255,.52),rgba(245,247,244,.46)),var(--offline-page-bg);background-size:cover;background-position:center}
 body.offline-theme-love .story-wrap{gap:22px;padding-left:10px;padding-right:10px;padding-bottom:calc(var(--offline-composer-height) + 34px)}
 body.offline-theme-love .composer{gap:8px;align-items:center}
-body.offline-theme-love .composer-box{border:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
-body.offline-theme-love .composer-box textarea{font-family:'Huiwen-mincho',"汇文明朝体",'Songti SC','Noto Serif SC',serif;text-align:center;color:#2e3430;font-weight:700}
+body.offline-theme-love .composer-box{min-height:48px;padding:7px 24px 8px;border:0;background:url('assets/%E8%BE%93%E5%85%A5%E6%A1%86fyk.png') center/100% 100% no-repeat;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+body.offline-theme-love .composer-box textarea{height:28px;min-height:28px;max-height:28px;line-height:28px;font-family:'Huiwen-mincho',"汇文明朝体",'Songti SC','Noto Serif SC',serif;text-align:center;color:#2e3430;font-size:15px;font-weight:800}
+body.offline-theme-love .composer-box textarea::placeholder{text-align:center;color:rgba(46,52,48,.72);font-weight:800}
+body.offline-theme-love .composer-btn{width:44px;height:44px;min-width:44px;border:0;border-radius:0;background:url('assets/%E5%8F%91%E9%80%81%E5%8F%91%E9%80%81.png') center/contain no-repeat;box-shadow:none;color:transparent;font-size:0;overflow:hidden}
+body.offline-theme-love .composer-btn:disabled{opacity:.42;filter:grayscale(.25);background:url('assets/%E5%8F%91%E9%80%81%E5%8F%91%E9%80%81.png') center/contain no-repeat;color:transparent}
+body.offline-theme-love .offline-stage-action.settings,
+body.offline-theme-love .offline-stage-action.memory{width:46px;height:46px;min-width:46px;background:center/contain no-repeat;box-shadow:none}
+body.offline-theme-love .offline-stage-action.settings{background-image:url('assets/%E8%80%B3%E6%9C%BA.png')}
+body.offline-theme-love .offline-stage-action.memory{background-image:url('assets/%E5%B0%8F%E6%8F%90%E7%90%B4.png')}
+body.offline-theme-love .offline-stage-action.settings img,
+body.offline-theme-love .offline-stage-action.memory img{display:none}
 .love-card{width:min(100%,372px);position:relative;align-self:flex-start;color:#111}
 .love-card.user{align-self:flex-end}
 .love-head{position:relative;height:218px;margin:0 0 12px;background:transparent;isolation:isolate}
 .love-record{position:absolute;left:-48px;top:16px;width:176px;height:176px;border-radius:50%;overflow:hidden;background:#f6f7f4;box-shadow:0 18px 38px rgba(20,28,24,.16),inset 0 0 0 1px rgba(255,255,255,.72);z-index:3}
-.love-record::before{content:'';position:absolute;inset:0;border-radius:50%;background:repeating-radial-gradient(circle at 50% 50%,rgba(255,255,255,.24) 0 2px,rgba(0,0,0,.08) 3px 4px,transparent 5px 8px),radial-gradient(circle at 50% 50%,transparent 0 16px,rgba(255,255,255,.32) 17px 21px,transparent 22px 100%);mix-blend-mode:screen;pointer-events:none;z-index:2}
+.love-record::before{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 50%,transparent 0 17px,rgba(255,255,255,.38) 18px 22px,transparent 23px 100%),radial-gradient(circle at 50% 50%,transparent 0 47%,rgba(255,255,255,.18) 48%,transparent 49%),radial-gradient(circle at 50% 50%,transparent 0 66%,rgba(255,255,255,.12) 67%,transparent 68%);mix-blend-mode:screen;opacity:.86;pointer-events:none;z-index:2}
 .love-record::after{content:'';position:absolute;left:50%;top:50%;width:18px;height:18px;border-radius:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.9);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);z-index:4}
 .love-record img{width:100%;height:100%;object-fit:cover;display:block}
 .love-record-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:900 46px/1 var(--fontd);letter-spacing:.04em;color:#9ca39e;background:radial-gradient(circle,#fff,#dfe4df)}
 .love-record img + .love-record-fallback{display:none}
 .love-record img[style*="display: none"] + .love-record-fallback{display:flex}
-.love-staff{position:absolute;left:78px;top:4px;width:178px;height:78px;background:url('../apps/assets/%E4%BA%94%E7%BA%BF%E8%B0%B1.png') left center/contain no-repeat;opacity:.82;filter:contrast(1.08) saturate(.7);z-index:4;pointer-events:none}
+.love-floating-note{position:absolute;z-index:5;color:rgba(255,255,255,.88);font:900 18px/1 'Times New Roman',serif;text-shadow:0 1px 6px rgba(0,0,0,.18);opacity:0;animation:love-note-float 5.8s ease-in-out infinite;pointer-events:none}
+.love-floating-note.n1{left:42px;top:28px;animation-delay:.2s}
+.love-floating-note.n2{right:42px;top:62px;font-size:15px;animation-delay:1.4s}
+.love-floating-note.n3{left:74px;bottom:30px;font-size:16px;animation-delay:2.8s}
+.love-staff{position:absolute;left:58px;top:-2px;width:216px;height:88px;background:url('assets/%E4%BA%94%E7%BA%BF%E8%B0%B1.png') left center/contain no-repeat;opacity:.92;filter:contrast(1.1) saturate(.72);z-index:6;pointer-events:none}
 .love-stats{position:absolute;left:6px;bottom:18px;z-index:5;display:flex;align-items:center;gap:10px;min-width:132px;height:34px;padding:0 12px;border:1.5px solid rgba(20,20,20,.86);border-radius:10px;background:rgba(255,255,255,.72);box-shadow:4px 5px 0 rgba(17,17,17,.86);font:900 15px/1 var(--fontd);letter-spacing:.02em}
-.love-words{position:absolute;right:0;top:14px;height:178px;width:202px;z-index:2;display:grid;grid-template-columns:repeat(6,1fr);align-items:center;justify-items:center;pointer-events:none;color:rgba(34,42,36,.72);font-family:'Zhi Mang Xing','Ma Shan Zheng','Huiwen-mincho',"汇文明朝体",serif;text-shadow:0 1px 0 rgba(255,255,255,.55)}
-.love-word{writing-mode:vertical-rl;text-orientation:upright;font-weight:700;letter-spacing:.16em;filter:blur(.25px);opacity:.65}
-.love-word-main{font-size:47px;opacity:.9;filter:blur(.08px)}
-.love-word-seven{font-size:36px;opacity:.82;filter:blur(.12px);transform:translateY(-10px)}
-.love-word-soft{font-size:27px}
-.love-word-tiny{font-size:22px;opacity:.54;transform:translateY(20px)}
+.love-words{position:absolute;right:4px;top:0;height:194px;width:190px;z-index:2;display:block;pointer-events:none;color:rgba(38,44,39,.7);font-family:'Zhi Mang Xing','Ma Shan Zheng','Huiwen-mincho',"汇文明朝体",serif;text-shadow:0 1px 0 rgba(255,255,255,.42)}
+.love-word{position:absolute;writing-mode:vertical-rl;text-orientation:upright;font-weight:700;letter-spacing:.08em;line-height:1.05;opacity:.68;filter:blur(.16px)}
+.love-word-main{left:60px;top:0;font-size:54px;writing-mode:horizontal-tb;opacity:.78;filter:blur(.04px)}
+.love-word-me{left:18px;top:58px;font-size:29px;opacity:.7;filter:blur(.18px)}
+.love-word-you{left:6px;top:114px;font-size:35px;opacity:.78;filter:blur(.08px)}
+.love-word-spring{left:72px;top:92px;font-size:26px;opacity:.72;filter:blur(.18px)}
+.love-word-dust{left:40px;top:148px;font-size:31px;opacity:.64;filter:blur(.28px)}
+.love-word-rain{right:28px;top:52px;font-size:27px;opacity:.66;filter:blur(.18px)}
+.love-word-seven{right:4px;top:132px;font-size:43px;opacity:.84;filter:blur(.05px);transform:none}
 .love-card.user .love-head{transform:scaleX(-1)}
 .love-card.user .love-head .love-record img,.love-card.user .love-head .love-record-fallback,.love-card.user .love-head .love-stats,.love-card.user .love-head .love-words{transform:scaleX(-1)}
 .love-card.user .love-head .love-words{right:auto;left:6px}
@@ -778,6 +794,7 @@ body.offline-theme-love .composer-box textarea{font-family:'Huiwen-mincho',"汇�
 .love-song-play::before{content:'';width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-left:12px solid currentColor;margin-left:3px}
 .love-song-player.is-playing .love-song-play::before{width:12px;height:15px;border:0;border-left:4px solid currentColor;border-right:4px solid currentColor;margin-left:0}
 @keyframes love-title-marquee{0%,18%{transform:translateX(0)}78%,100%{transform:translateX(-42%)}}
+@keyframes love-note-float{0%,100%{opacity:0;transform:translate3d(0,8px,0) scale(.86) rotate(-4deg)}22%,54%{opacity:.88;transform:translate3d(0,-4px,0) scale(1) rotate(3deg)}72%{opacity:0;transform:translate3d(0,-16px,0) scale(.96) rotate(6deg)}}
 .birthday-actions .birthday-edit svg{width:14px;height:14px}
 @media (max-width:420px){
   .offline-builtin-theme-tabs{grid-template-columns:1fr}
@@ -7163,12 +7180,16 @@ function parseOfflineLoveLyrics(text){
 function renderLoveWordsHtml(){
   return '<div class="love-words" aria-hidden="true">' +
     '<span class="love-word love-word-main">爱</span>' +
+    '<span class="love-word love-word-me">我</span>' +
+    '<span class="love-word love-word-you">你</span>' +
+    '<span class="love-word love-word-spring">春晨</span>' +
+    '<span class="love-word love-word-dust">灰尘</span>' +
+    '<span class="love-word love-word-rain">雨水</span>' +
     '<span class="love-word love-word-seven">七年</span>' +
-    '<span class="love-word love-word-soft">春晨</span>' +
-    '<span class="love-word love-word-soft">灰尘</span>' +
-    '<span class="love-word love-word-tiny">雨水</span>' +
-    '<span class="love-word love-word-soft">我们是什么</span>' +
   '</div>';
+}
+function renderLoveFloatingNotesHtml(){
+  return '<span class="love-floating-note n1">♪</span><span class="love-floating-note n2">♫</span><span class="love-floating-note n3">♩</span>';
 }
 function renderLoveSongPlayer(entry, idx, isChar){
   if(!isChar) return '';
@@ -7356,7 +7377,7 @@ function renderLoveStoryCard(entry, idx, isChar){
   var avatarClick = isChar ? ' onclick="openOfflineStatusModal(' + idx + ', false)"' : '';
   return '<div class="love-card ' + (isChar ? 'char' : 'user') + '">' +
     '<div class="love-head"' + avatarClick + '>' +
-      '<div class="love-record">' + renderLoveRecordHtml(avatar, displayName.slice(0, 2) || (isChar ? 'C' : 'U')) + '</div>' +
+      '<div class="love-record">' + renderLoveRecordHtml(avatar, displayName.slice(0, 2) || (isChar ? 'C' : 'U')) + renderLoveFloatingNotesHtml() + '</div>' +
       '<div class="love-staff" aria-hidden="true"></div>' +
       '<div class="love-stats"><span>' + esc(floorLabel) + '</span><span>' + esc(secondsLabel) + '</span><span>' + esc(tokenLabel) + '</span></div>' +
       renderLoveWordsHtml() +

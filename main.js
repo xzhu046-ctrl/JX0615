@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-11T05:18:00Z';
+const APP_BUILD_ID = '2026-05-11T06:18:06Z';
 const APP_UPDATE_NOTES = [
-  '七年有多久美化命名完成',
-  '雨雾词加入七年',
-  '唱片头部细节同步更新'
+  '七年有多久词组重新排版',
+  '唱片音符和五线谱修正',
+  '线下按钮换成素材样式'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
