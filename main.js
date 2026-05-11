@@ -60,11 +60,12 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-11T13:30:16Z';
+const APP_BUILD_ID = '2026-05-11T20:21:31Z';
 const APP_UPDATE_NOTES = [
-  '先停用首页音乐后台运行',
-  '拦截线下生成时异常退回主屏',
-  '线下打开时直接按已选美化渲染'
+  '继续压低线下生成时的重绘和保存频率',
+  '生成中拦住异常跳回主屏',
+  '暂时停掉线下音乐播放器后台轮询',
+  '更新完成提示也保留刷新按钮'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -1285,12 +1286,12 @@ function setUpdateToastCopy(mode){
   var btn = document.getElementById('update-toast-btn');
   if(mode === 'installed'){
     if(heading) heading.textContent = '已经更新好啦';
-    if(subtitle) subtitle.textContent = '先看一眼这版到底改了什么。';
+    if(subtitle) subtitle.textContent = '点一下刷新，把旧缓存也一起切干净。';
     if(btn){
       btn.disabled = false;
-      btn.textContent = '我知道了';
-      btn.setAttribute('aria-label', '我知道了');
-      btn.onclick = acknowledgeInstalledUpdateNotice;
+      btn.textContent = '刷新';
+      btn.setAttribute('aria-label', '刷新');
+      btn.onclick = refreshInstalledNoticeAndApp;
     }
   }else{
     if(heading) heading.textContent = '更新了哦';
@@ -1343,6 +1344,17 @@ function acknowledgeInstalledUpdateNotice(evt){
     setUpdateToastCopy('remote');
     updateHostedUpdateMeta();
     scheduleHostedUpdateCheck(true);
+  });
+}
+
+function refreshInstalledNoticeAndApp(evt){
+  if(evt){
+    try{ evt.preventDefault(); }catch(e){}
+    try{ evt.stopPropagation(); }catch(e){}
+  }
+  Promise.resolve(setInstalledUpdateSeenBuild(APP_BUILD_ID)).catch(function(){}).then(function(){
+    installedUpdateNoticeActive = false;
+    refreshInstalledApp(evt);
   });
 }
 
@@ -2054,12 +2066,13 @@ function refreshInstalledApp(evt){
 }
 function handleUpdateToastAction(evt){
   if(installedUpdateNoticeActive){
-    acknowledgeInstalledUpdateNotice(evt);
+    refreshInstalledNoticeAndApp(evt);
     return;
   }
   refreshInstalledApp(evt);
 }
 window.refreshInstalledApp = refreshInstalledApp;
+window.refreshInstalledNoticeAndApp = refreshInstalledNoticeAndApp;
 window.handleUpdateToastAction = handleUpdateToastAction;
 window.compareHostedBuildIds = compareHostedBuildIds;
 window.announceHostedUpdate = announceHostedUpdate;
@@ -11664,6 +11677,7 @@ function applyIframeSafeAreaOverrides(){
 
 function openApp(id) {
   if(!APP_MAP[id]) return Promise.resolve();
+  if(shouldBlockOfflineModeShellExitMessage('OPEN_APP', id)) return Promise.resolve();
   if(isLockedWorkbenchApp(id)){
     showHomeToast('蕾蕾在赶工^^');
     return Promise.resolve();
@@ -11692,6 +11706,7 @@ function openApp(id) {
 
 function forceOpenApp(id){
   if(!APP_MAP[id]) return;
+  if(shouldBlockOfflineModeShellExitMessage('FORCE_OPEN_APP', { app:id })) return;
   if(isLockedWorkbenchApp(id)){
     showHomeToast('蕾蕾在赶工^^');
     return;
@@ -11719,6 +11734,7 @@ window.forceOpenOfflineMode = forceOpenOfflineMode;
 
 function replaceApp(id){
   if(!APP_MAP[id]) return Promise.resolve();
+  if(shouldBlockOfflineModeShellExitMessage('OPEN_APP_REPLACE', id)) return Promise.resolve();
   if(isLockedWorkbenchApp(id)){
     showHomeToast('蕾蕾在赶工^^');
     return Promise.resolve();
@@ -11850,11 +11866,38 @@ function shouldAcceptAppNavigationMessage(type, event){
   return !!currentApp && isMessageFromCurrentAppFrame(event);
 }
 
+var offlineModeBusy = false;
+var offlineModeBusyUntil = 0;
+function updateOfflineModeBusyState(payload){
+  var now = Date.now();
+  var nextBusy = !!(payload && payload.busy);
+  offlineModeBusy = nextBusy;
+  offlineModeBusyUntil = nextBusy ? (now + 65000) : Math.max(offlineModeBusyUntil, now + 1400);
+}
+function isOfflineModeBusyWindow(){
+  return !!offlineModeBusy || Date.now() < offlineModeBusyUntil;
+}
+function isTrustedOfflineModeNavigationPayload(payload){
+  if(!payload || typeof payload !== 'object') return false;
+  if(payload.userExit === true || payload.allowDuringGeneration === true) return true;
+  var reason = String(payload.reason || '').trim();
+  if(reason === 'readonly_exit' || reason === 'goodbye_finish' || reason === 'goodbye_no_session' || reason === 'minimize'){
+    return true;
+  }
+  return false;
+}
 function shouldBlockOfflineModeShellExitMessage(type, payload){
   if(currentApp !== 'offline_mode') return false;
   var safeType = String(type || '').trim();
-  if(safeType !== 'CLOSE_APP') return false;
-  console.warn('Blocked offline_mode CLOSE_APP message during active offline flow', payload || null);
+  var guarded = ['CLOSE_APP', 'OPEN_APP_WITH', 'OPEN_APP', 'OPEN_APP_REPLACE', 'OFFLINE_EXITED', 'OFFLINE_MINIMIZED', 'FORCE_OPEN_APP'];
+  if(guarded.indexOf(safeType) === -1) return false;
+  if(isTrustedOfflineModeNavigationPayload(payload)) return false;
+  var targetApp = '';
+  if(payload && typeof payload === 'object') targetApp = String(payload.app || '').trim();
+  else targetApp = String(payload || '').trim();
+  if(targetApp === 'offline_mode') return false;
+  if(safeType !== 'CLOSE_APP' && !isOfflineModeBusyWindow()) return false;
+  console.warn('Blocked offline_mode navigation during active offline flow', safeType, payload || null);
   return true;
 }
 
@@ -11870,6 +11913,9 @@ window.addEventListener('message',(e)=>{
       if(f && f.contentWindow) f.contentWindow.postMessage(msg,'*');
     } catch(err){}
   };
+  if(type==='OFFLINE_BUSY_STATE'){
+    updateOfflineModeBusyState(payload || {});
+  }
   if(type==='SET_ACTIVE_CHARACTER'){
     const slim = persistShellActiveCharacter(payload) || slimChar(payload);
     setWidgetCharacter(payload);
@@ -11993,6 +12039,7 @@ window.addEventListener('message',(e)=>{
   }
   if(type==='OPEN_APP_WITH'){
     var appId=payload.app;
+    if(shouldBlockOfflineModeShellExitMessage(type, payload)) return;
     if(payload.charId) localStorage.setItem('wbCharId', payload.charId);
     if(appId === 'qq_moments' && payload.charId){
       try{ localStorage.setItem(scopedKeyForAccount('qq_moments_profile_char_id', getActiveAccountId()), String(payload.charId)); }catch(err){}
@@ -12041,10 +12088,12 @@ window.addEventListener('message',(e)=>{
     openApp(appId);
   }
   if(type==='OFFLINE_MINIMIZED'){
+    if(shouldBlockOfflineModeShellExitMessage(type, payload)) return;
     setMinimizedOfflineCharId(payload && payload.charId ? payload.charId : '');
     openApp('chat');
   }
   if(type==='OFFLINE_EXITED'){
+    if(shouldBlockOfflineModeShellExitMessage(type, payload)) return;
     if(payload && payload.forceComplete){
       var exitIds = normalizeOfflineInviteCompleteIds(payload);
       if(!exitIds.length){

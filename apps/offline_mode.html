@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-11T13:30:16Z"></script>
-<script src="../chatStorage.js?v=2026-05-11T13:30:16Z"></script>
-<script src="../metadataStore.js?v=2026-05-11T13:30:16Z"></script>
-<script src="../promptManager.js?v=2026-05-11T13:30:16Z"></script>
-<script src="../accountManager.js?v=2026-05-11T13:30:16Z"></script>
-<script src="../scheduleShared.js?v=2026-05-11T13:30:16Z"></script>
-<script src="../presenceShared.js?v=2026-05-11T13:30:16Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-11T13:30:16Z"></script>
+<script src="../assetStore.js?v=2026-05-11T20:21:31Z"></script>
+<script src="../chatStorage.js?v=2026-05-11T20:21:31Z"></script>
+<script src="../metadataStore.js?v=2026-05-11T20:21:31Z"></script>
+<script src="../promptManager.js?v=2026-05-11T20:21:31Z"></script>
+<script src="../accountManager.js?v=2026-05-11T20:21:31Z"></script>
+<script src="../scheduleShared.js?v=2026-05-11T20:21:31Z"></script>
+<script src="../presenceShared.js?v=2026-05-11T20:21:31Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-11T20:21:31Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -1240,6 +1240,11 @@ var activeOfflineInviteRecordId = '';
 var lockedOfflineInviteRecordId = '';
 var archivingOfflineMeet = false;
 var offlineCloseIntent = '';
+var OFFLINE_MUSIC_RUNTIME_DISABLED = true;
+var offlineRenderLastAt = 0;
+var offlineRenderThrottleTimer = 0;
+var offlineLastSessionSaveAt = 0;
+var offlinePendingSessionSaveTimer = 0;
 var flightGameState = null;
 var offlineFlightOverlayTimer = 0;
 var runtimeUserAvatar = '';
@@ -4035,8 +4040,22 @@ function protectOfflineEntriesBeforeSave(){
     after: mergedEntries.length
   });
 }
-function saveSession(){
+function saveSession(options){
   if(!session || !character || !character.id) return;
+  var forceSave = !!(options && options.force);
+  if(!forceSave && typeof hasOfflineGenerationInProgress === 'function' && hasOfflineGenerationInProgress()){
+    var saveNow = Date.now();
+    if(offlineLastSessionSaveAt && saveNow - offlineLastSessionSaveAt < 1200){
+      if(!offlinePendingSessionSaveTimer){
+        offlinePendingSessionSaveTimer = setTimeout(function(){
+          offlinePendingSessionSaveTimer = 0;
+          saveSession({ force:true });
+        }, 1200);
+      }
+      return;
+    }
+  }
+  offlineLastSessionSaveAt = Date.now();
   protectOfflineEntriesBeforeSave();
   session.charId = String(character.id || '').trim();
   session.charSnapshot = Object.assign({}, session.charSnapshot || {}, buildOfflineCharacterFromSnapshot(character));
@@ -7210,6 +7229,7 @@ function renderLoveFloatingNotesHtml(){
   return '<span class="love-floating-note n1">♪</span><span class="love-floating-note n2">♫</span><span class="love-floating-note n3">♩</span>';
 }
 function renderLoveSongPlayer(entry, idx, isChar){
+  if(OFFLINE_MUSIC_RUNTIME_DISABLED) return '';
   if(!isChar) return '';
   var song = normalizeOfflineLoveSong(entry && (entry.song || entry.recommendedSong || entry.recommended_song));
   if(!song) return '';
@@ -7239,6 +7259,7 @@ function stopLoveSongPlayers(){
 }
 function startLoveSongPlayers(){
   stopLoveSongPlayers();
+  if(OFFLINE_MUSIC_RUNTIME_DISABLED) return;
   if(!isOfflineLoveTheme()) return;
   var root = document.getElementById('storyList');
   if(!root) return;
@@ -7270,6 +7291,7 @@ function startLoveSongPlayers(){
   });
 }
 function playOfflineLoveSong(index){
+  if(OFFLINE_MUSIC_RUNTIME_DISABLED) return false;
   if(!session || !Array.isArray(session.entries)) return;
   var entry = session.entries[index];
   if(!entry) return;
@@ -7328,6 +7350,7 @@ function stopBirthdayLyricPlayers(){
 }
 function startBirthdayLyricPlayers(){
   stopBirthdayLyricPlayers();
+  if(hasOfflineGenerationInProgress()) return;
   if(!isOfflineBirthdayTheme()) return;
   var root = document.getElementById('storyList');
   if(!root) return;
@@ -7561,6 +7584,20 @@ function renderOfflineGoodbyeInlineChat(){
 function renderStory(){
   var wrap = document.getElementById('storyList');
   if(!wrap) return;
+  var renderNow = Date.now();
+  var renderBusy = hasOfflineGenerationInProgress();
+  if(renderBusy && offlineRenderLastAt && renderNow - offlineRenderLastAt < 520){
+    if(!offlineRenderThrottleTimer){
+      offlineRenderThrottleTimer = setTimeout(function(){
+        offlineRenderThrottleTimer = 0;
+        renderStory();
+      }, 520);
+    }
+    postOfflineBusyState('render_throttled');
+    return;
+  }
+  offlineRenderLastAt = renderNow;
+  postOfflineBusyState('render');
   applyOfflineBuiltinTheme();
   stopBirthdayLyricPlayers();
   stopLoveSongPlayers();
@@ -7625,8 +7662,10 @@ function renderStory(){
       }
     };
   });
-  startBirthdayLyricPlayers();
-  startLoveSongPlayers();
+  if(!hasOfflineGenerationInProgress()){
+    startBirthdayLyricPlayers();
+    startLoveSongPlayers();
+  }
   wrap.scrollTop = wrap.scrollHeight;
   renderOfflineInviteDebugCard();
 }
@@ -7764,6 +7803,10 @@ function closeThoughtBubbles(){
 }
 function setOfflineComposerBusy(flag){
   sending = !!flag;
+  postOfflineBusyState(flag ? 'composer_busy' : 'composer_idle');
+  if(!flag){
+    try{ saveSession({ force:true }); }catch(e){}
+  }
   var sendBtn = document.getElementById('offlineSendBtn');
   var replyBtn = document.getElementById('offlineReplyBtn');
   var rerollBtn = document.getElementById('offlineRerollBtn');
@@ -12915,6 +12958,7 @@ async function generateOpeningIfNeeded(){
         session.lastOpeningError = '';
         session.lastErrorDetail = null;
         session.pendingOpening = false;
+        session.pendingAnimation = false;
         saveSession();
         queueOfflineSharedMemorySummaryCheck();
         queueOfflineStageSummaryGeneration();
@@ -13102,6 +13146,7 @@ async function generateOpeningIfNeeded(){
       session.lastOpeningError = '';
       session.lastErrorDetail = null;
       session.pendingOpening = false;
+      session.pendingAnimation = false;
       saveSession();
       queueOfflineSharedMemorySummaryCheck();
       queueOfflineStageSummaryGeneration();
@@ -13450,6 +13495,7 @@ async function generateOpeningIfNeeded(){
     session.lastOpeningError = '';
     session.lastErrorDetail = null;
     session.pendingOpening = false;
+    session.pendingAnimation = false;
     saveSession();
     queueOfflineSharedMemorySummaryCheck();
     queueOfflineInlineTranslationsPrefetch(openingEntry);
@@ -13500,6 +13546,7 @@ async function generateOpeningIfNeeded(){
         session.lastOpeningError = '';
         session.lastErrorDetail = null;
         session.pendingOpening = false;
+        session.pendingAnimation = false;
         saveSession();
         queueOfflineSharedMemorySummaryCheck();
         queueOfflineInlineTranslationsPrefetch(emergencyEntry);
@@ -14670,6 +14717,20 @@ function hasOfflineGenerationInProgress(){
   }
   return false;
 }
+function postOfflineBusyState(reason){
+  try{
+    if(window.parent && window.parent !== window){
+      window.parent.postMessage({
+        type:'OFFLINE_BUSY_STATE',
+        payload:{
+          busy:hasOfflineGenerationInProgress(),
+          reason:String(reason || '').trim(),
+          at:Date.now()
+        }
+      }, '*');
+    }
+  }catch(e){}
+}
 function shouldBlockOfflineDateAppReturn(options){
   var opts = options && typeof options === 'object' ? options : {};
   if(opts.userExit === true || opts.allowDuringGeneration === true) return false;
@@ -14711,7 +14772,7 @@ function openOfflineDateApp(recordId, options){
   }
   focusId = String(focusId || completedIds[0] || activeOfflineInviteRecordId || currentOfflineInviteRecordId() || getFocusedOfflineInviteRecordId() || '').trim();
   focusOfflineInviteInDateApp(focusId);
-  var forcePayload = Object.assign(getOfflineEndLifecyclePayload(offlineGoodbyePhotoSnapshot || session), { ids:completedIds, inviteId:focusId, recordId:focusId, charId:charId, charName:charName, reason:'goodbye_finish' });
+  var forcePayload = Object.assign(getOfflineEndLifecyclePayload(offlineGoodbyePhotoSnapshot || session), { ids:completedIds, inviteId:focusId, recordId:focusId, charId:charId, charName:charName, reason:String(opts.reason || 'goodbye_finish') });
   var shouldForceCompleteReturn = opts.forceComplete === true
     || offlineCloseIntent === 'ended'
     || !!offlineReadOnlyMode
@@ -14728,9 +14789,28 @@ function openOfflineDateApp(recordId, options){
   }else{
     forcePayload.ids = [];
   }
+  var navPayload = Object.assign({}, forcePayload, {
+    forceComplete:shouldForceCompleteReturn,
+    userExit:opts.userExit === true,
+    allowDuringGeneration:opts.allowDuringGeneration === true,
+    reason:String(opts.reason || forcePayload.reason || '').trim()
+  });
+  var openPayload = {
+    app:'offline',
+    forceOpen:true,
+    replace:true,
+    inviteId:focusId,
+    charId:charId,
+    charName:charName,
+    completedInviteIds:shouldForceCompleteReturn ? completedIds : [],
+    forceComplete:shouldForceCompleteReturn,
+    userExit:opts.userExit === true,
+    allowDuringGeneration:opts.allowDuringGeneration === true,
+    reason:String(opts.reason || forcePayload.reason || '').trim()
+  };
   try{
     if(window.parent && window.parent !== window){
-      window.parent.postMessage({ type:'OFFLINE_EXITED', payload:Object.assign({}, forcePayload, { forceComplete:shouldForceCompleteReturn }) }, '*');
+      window.parent.postMessage({ type:'OFFLINE_EXITED', payload:navPayload }, '*');
       try{
         if(shouldForceCompleteReturn && typeof window.parent.forceCompleteOfflineInviteRecordsFromPayload === 'function'){
           var parentIds = window.parent.forceCompleteOfflineInviteRecordsFromPayload(forcePayload, 'readonly_direct_open');
@@ -14740,18 +14820,8 @@ function openOfflineDateApp(recordId, options){
             forcePayload.inviteId = String(forcePayload.inviteId || completedIds[0] || '').trim();
           }
         }
-        if(typeof window.parent.removeAppFromStack === 'function') window.parent.removeAppFromStack('offline_mode');
-        if(typeof window.parent.forceOpenApp === 'function'){
-          window.parent.forceOpenApp('offline');
-          setTimeout(function(){
-            if(shouldForceCompleteReturn){
-              try{ window.parent.postMessage({ type:'OFFLINE_INVITE_FORCE_COMPLETE', payload:forcePayload }, '*'); }catch(repostErr){}
-            }
-          }, 80);
-          return;
-        }
       }catch(directOpenErr){}
-      window.parent.postMessage({ type:'OPEN_APP_WITH', payload:{ app:'offline', forceOpen:true, replace:true, inviteId:focusId, charId:charId, charName:charName, completedInviteIds:shouldForceCompleteReturn ? completedIds : [], forceComplete:shouldForceCompleteReturn } }, '*');
+      window.parent.postMessage({ type:'OPEN_APP_WITH', payload:openPayload }, '*');
       setTimeout(function(){
         if(shouldForceCompleteReturn){
           try{ window.parent.postMessage({ type:'OFFLINE_INVITE_FORCE_COMPLETE', payload:forcePayload }, '*'); }catch(repostErr){}
@@ -14760,10 +14830,10 @@ function openOfflineDateApp(recordId, options){
       return;
     }
   }catch(openErr){}
-  try{ window.parent.postMessage({ type:'OFFLINE_EXITED', payload:Object.assign({}, forcePayload, { forceComplete:shouldForceCompleteReturn }) }, '*'); }catch(e){}
+  try{ window.parent.postMessage({ type:'OFFLINE_EXITED', payload:navPayload }, '*'); }catch(e){}
   try{
     if(window.parent && window.parent !== window){
-      window.parent.postMessage({ type:'OPEN_APP_WITH', payload:{ app:'offline', forceOpen:true, replace:true, inviteId:focusId, charId:charId, charName:charName, completedInviteIds:shouldForceCompleteReturn ? completedIds : [], forceComplete:shouldForceCompleteReturn } }, '*');
+      window.parent.postMessage({ type:'OPEN_APP_WITH', payload:openPayload }, '*');
       return;
     }
   }catch(e){}
