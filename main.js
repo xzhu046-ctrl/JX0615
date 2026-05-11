@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-11T07:33:27Z';
+const APP_BUILD_ID = '2026-05-11T12:19:50Z';
 const APP_UPDATE_NOTES = [
-  '减少打开和滑动时的卡顿',
-  '后台活动严格跟随开关',
-  '头像切换只响应明确动作'
+  '修复约会页面打开后跳回主屏',
+  '强制 app 页面按当前版本加载',
+  '避免旧缓存混入线下页面'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -11708,8 +11708,26 @@ function isMessageFromCurrentAppFrame(event){
   }
 }
 
+function shouldAcceptAppNavigationMessage(type, event){
+  var safeType = String(type || '').trim();
+  var gated = [
+    'OPEN_APP_WITH',
+    'OPEN_APP',
+    'OPEN_APP_REPLACE',
+    'OFFLINE_EXITED',
+    'OFFLINE_MINIMIZED',
+    'CLOSE_APP'
+  ];
+  if(gated.indexOf(safeType) === -1) return true;
+  return !!currentApp && isMessageFromCurrentAppFrame(event);
+}
+
 window.addEventListener('message',(e)=>{
   const {type,payload}=e.data||{};
+  if(!shouldAcceptAppNavigationMessage(type, e)){
+    console.warn('Blocked stale app navigation message', type);
+    return;
+  }
   const postToChat = (msg)=>{
     try {
       const f = document.getElementById('app-iframe');

@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-05-11T07:33:27Z';
+const CACHE_VERSION = '2026-05-11T12:19:50Z';
 const CACHE_NAME = 'phone-shell-' + CACHE_VERSION;
 const CORE_URLS = [
   './',
@@ -99,6 +99,7 @@ function shouldBypassAppDocumentCache(url){
   try{
     return url.searchParams.has('refreshBuild')
       || url.searchParams.has('swBuild')
+      || url.searchParams.has('__appBuild')
       || url.searchParams.has('__force')
       || url.searchParams.has('__retry')
       || url.searchParams.has('__ts');
@@ -255,21 +256,14 @@ self.addEventListener('fetch', (event)=>{
 
   if(isNavigate || isDocument){
     event.respondWith(
-      Promise.resolve().then(async ()=>{
-        const bypass = shouldBypassDocumentCache(url);
-        const cached = await matchDocumentCache(url);
-        if(cached && !bypass){
-          fetch(event.request, { cache:'no-store' })
-            .then((response)=>cacheDocumentResponse(url, response))
-            .catch(()=>null);
-          return cached;
-        }
-        return fetch(event.request, { cache: bypass ? 'reload' : 'no-store' }).then((response)=>{
+      Promise.resolve().then(()=>{
+        const fetchMode = shouldBypassDocumentCache(url) ? 'reload' : 'no-store';
+        return fetch(event.request, { cache: fetchMode }).then((response)=>{
           cacheDocumentResponse(url, response);
           return response;
         }).catch(()=>{
-          return cached || caches.match(event.request, { ignoreSearch: true })
-            .then((fallback)=>fallback || caches.match('./index.html', { ignoreSearch: true }));
+          return caches.match(event.request, { ignoreSearch: true })
+            .then((cached)=>cached || caches.match('./index.html', { ignoreSearch: true }));
         });
       })
         .catch(()=>caches.match('./index.html', { ignoreSearch: true }))
