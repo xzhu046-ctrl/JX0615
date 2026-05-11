@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../chatStorage.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../assetStore.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../accountManager.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../metadataStore.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../scheduleShared.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../presenceShared.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../sunnySupport.js?v=2026-05-11T06:18:06Z"></script>
-<script src="offlineInvite.js?v=2026-05-11T06:18:06Z"></script>
+<script src="../promptManager.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../chatStorage.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../assetStore.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../accountManager.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../metadataStore.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../scheduleShared.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../presenceShared.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../sunnySupport.js?v=2026-05-11T07:33:27Z"></script>
+<script src="offlineInvite.js?v=2026-05-11T07:33:27Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -529,7 +529,7 @@ button{-webkit-appearance:none;appearance:none;-webkit-touch-callout:none;color:
 .chat-load-older-btn img{width:40px;height:40px;object-fit:contain;display:block;flex-shrink:0}
 .chat-load-older-copy{display:flex;align-items:center;line-height:1}
 .chat-load-older-copy strong{font-size:12px;font-weight:900;white-space:nowrap}
-.msg{display:flex;gap:8px;max-width:88%;animation:msgIn .34s cubic-bezier(.22,1.35,.35,1)}
+.msg{display:flex;gap:8px;max-width:88%;animation:msgIn .34s cubic-bezier(.22,1.35,.35,1);contain:layout style}
 .msg.voice-msg{gap:8px}
 @keyframes msgIn{0%{opacity:0;transform:translateY(9px) scale(.985)}65%{opacity:1;transform:translateY(-2px) scale(1.01)}100%{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes ivHeartPop{
@@ -4096,6 +4096,11 @@ var API_SETTINGS_KV_ID = 'api_settings_v1';
 var chatApiSettingsCache = null;
 var chatVisibleCount = 0;
 var chatVisibleCharId = '';
+var chatBulkRendering = false;
+var chatBulkCharAvatarSrc = '';
+var chatBulkUserAvatarSrc = '';
+var chatAvatarRefreshSeq = 0;
+var userAvatarRefreshSeq = 0;
 var composerMode = 'text';
 var globalThemePresetsCache = [];
 var bubbleThemePresetsCache = [];
@@ -6624,6 +6629,7 @@ async function applyAvatarAction(payload, actorRole, fallbackTarget){
 }
 
 async function maybeApplyAvatarActionFromPlainText(text){
+  return null;
   if(!character || !character.id) return null;
   var raw = String(text || '').trim();
   if(!raw) return null;
@@ -8275,6 +8281,7 @@ function buildWeatherCommonSensePrompt(){
       '当前天气：' + formatInviteWeatherBrief(charSnapshot)
     ].join('；'));
   }
+  lines.push('这些时间和天气只是后台生活事实，用来判断作息、距离、出门和日程。除非用户直接问时间/日期/安排，普通聊天不要开头报具体几点几分，也不要反复说“现在已经X点X分”。');
   lines.push('如果用户问“现在几点/几点钟/上午还是下午/今天几号”，这是事实问答，不是自由创作：问“你那里/你现在”就答角色当地时间；问“我这里/用户那里”就答用户当地时间；只说上面给出的时间，禁止编造、禁止默认中国时间或设备时间。');
   if(userSnapshot && charSnapshot){
     var displayState = getInviteDisplayDistanceState();
@@ -8299,13 +8306,13 @@ function buildWeatherCommonSensePrompt(){
     lines.push('用户当地现在偏深夜或凌晨；如果此刻聊天内容自然涉及状态、困意、熬夜、打扰休息，可以像真人一样稍微意识到对方在晚睡。');
   }
   if(userSnapshot && userSnapshot.hour24 !== null && userSnapshot.hour24 >= 11 && userSnapshot.hour24 <= 18){
-    lines.push('用户当地现在是白天/下午（约 ' + userSnapshot.hour24 + ' 点），通常不必频繁催睡；但如果对方明确说困、在聊作息、或连续熬夜，也可以自然关心休息。');
+    lines.push('用户当地现在偏白天/下午，通常不必频繁催睡；但如果对方明确说困、在聊作息、或连续熬夜，也可以自然关心休息。');
   }
   if(charSnapshot && charSnapshot.hour24 !== null && (charSnapshot.hour24 >= 23 || charSnapshot.hour24 <= 5)){
     lines.push('角色当地现在偏深夜或凌晨；你可以在语境合适时自然带出刚醒、犯困、被消息打断休息之类的感觉，但不要每次都强调。');
   }
   if(charSnapshot && charSnapshot.hour24 !== null && charSnapshot.hour24 >= 11 && charSnapshot.hour24 <= 18){
-    lines.push('角色当地现在是白天/下午（约 ' + charSnapshot.hour24 + ' 点），语气保持白天生活感；除非上下文明确，不要动不动写成深夜熬夜状态。');
+    lines.push('角色当地现在偏白天/下午，语气保持白天生活感；除非上下文明确，不要动不动写成深夜熬夜状态。');
   }
   lines.push('说话时按当地时段自然拿捏语感就好：像 1 点、2 点、3 点更接近“凌晨/夜里”，5 点到 7 点才慢慢像“清晨”，别说得太生硬，也别把凌晨说成“一大早”。');
   lines.push('时间感要像真人的生活状态，不只是报时：凌晨收到消息，可能是刚被吵醒，也可能是根本还没睡；清晨则更像早起、出门前、在路上。');
@@ -9460,11 +9467,12 @@ function buildCurrentTimeFactPromptBlock(){
     charPlace = charSnapshot ? (String(charSnapshot.aliasName || '').trim() || getInviteDisplayPlaceName(charSnapshot) || '') : '';
   }catch(err5){}
   var lines = [
-    '### 【当前时间】',
+    '### 【时间背景】',
     '角色居住地展示名字：' + (charPlace || '未设定'),
     '角色当前当地时间：' + (charTime || '未拿到'),
     '用户居住地展示名字：' + (userPlace || '未设定'),
     '用户当前当地时间：' + (userTime || '未拿到'),
+    '这些时间只作为后台事实。除非用户直接问时间/日期/安排，普通聊天不要机械说出具体几点几分。',
     '用户问“现在几点/几点钟/上午还是下午/今天几号”时，默认回答角色当前当地时间；问“我这里/用户这里”才回答用户当前当地时间。',
     '只许使用本段时间事实，不许猜时间、不许默认中国时间、不许默认设备时间。没拿到就说没拿到。'
   ];
@@ -15254,6 +15262,7 @@ async function maybeRunAiMomentsFromChat(text, msgType){
   var pending = momentsIntentFromUser;
   if(pending && (now - pending.ts > 5 * 60 * 1000)) pending = null;
   momentsIntentFromUser = null;
+  var backgroundAllowed = isCharMomentsAutomationEnabled();
 
   var forceActions = [];
   var forcedPostType = '';
@@ -15267,16 +15276,18 @@ async function maybeRunAiMomentsFromChat(text, msgType){
     if(pending.wantsPostDynamic) forcedPostType = 'dynamic';
     else if(pending.wantsPostSay) forcedPostType = 'say';
   }
-  if(sig.wantsLike) forceActions.push('like');
-  if(sig.wantsComment) forceActions.push('comment');
-  if(sig.wantsReply) forceActions.push('reply');
-  if(sig.wantsPostAny) forceActions.push('post');
-  if(sig.wantsPostDynamic) forcedPostType = 'dynamic';
-  else if(sig.wantsPostSay && !forcedPostType) forcedPostType = 'say';
-  var explicitPostRequest = !!(forcedPostType || sig.wantsPostAny || userExplicitPostRequest);
-  var explicitSocialRequest = !!(sig.wantsLike || sig.wantsComment || sig.wantsReply || userExplicitSocialRequest);
-  if(!isCharMomentsAutomationEnabled() && !explicitPostRequest && !explicitSocialRequest) return;
-  if(!forceActions.length && pending && pending.mentionsMoments && !pending.wantsLike && !pending.wantsComment && !pending.wantsReply){
+  if(backgroundAllowed){
+    if(sig.wantsLike) forceActions.push('like');
+    if(sig.wantsComment) forceActions.push('comment');
+    if(sig.wantsReply) forceActions.push('reply');
+    if(sig.wantsPostAny) forceActions.push('post');
+    if(sig.wantsPostDynamic) forcedPostType = 'dynamic';
+    else if(sig.wantsPostSay && !forcedPostType) forcedPostType = 'say';
+  }
+  var explicitPostRequest = !!(forcedPostType || userExplicitPostRequest || (backgroundAllowed && sig.wantsPostAny));
+  var explicitSocialRequest = !!(userExplicitSocialRequest || (backgroundAllowed && (sig.wantsLike || sig.wantsComment || sig.wantsReply)));
+  if(!backgroundAllowed && !userExplicitPostRequest && !userExplicitSocialRequest) return;
+  if(backgroundAllowed && !forceActions.length && pending && pending.mentionsMoments && !pending.wantsLike && !pending.wantsComment && !pending.wantsReply){
     if(Math.random() < freq.mentionPostChance) forceActions.push('post');
   }
 
@@ -15406,10 +15417,10 @@ async function maybeRunAiMomentsFromChat(text, msgType){
     changed = true;
   }
 
-  var shouldPostByMood = !forceActions.length && (sig.emotional || sig.reflective || sig.imageHint || (pending && (pending.emotional || pending.reflective))) && Math.random() < freq.moodPostChance;
+  var shouldPostByMood = backgroundAllowed && !forceActions.length && (sig.emotional || sig.reflective || sig.imageHint || (pending && (pending.emotional || pending.reflective))) && Math.random() < freq.moodPostChance;
   if(onlySocialAction) shouldPostByMood = false;
   if(shouldPostByMood) forceActions.push('post');
-  if(!forceActions.length && posts.length && Math.random() < freq.idleLikeChance) forceActions.push('like');
+  if(backgroundAllowed && !forceActions.length && posts.length && Math.random() < freq.idleLikeChance) forceActions.push('like');
   if(!forceActions.length) return;
 
   if(explicitPostRequest && forceActions.indexOf('post') === -1) forceActions.push('post');
@@ -17606,15 +17617,24 @@ function renderChatLog(keepScroll){
   if(rendered.hiddenCount > 0){
     msgs.appendChild(buildLoadOlderMessagesButton(rendered.hiddenCount, rendered.pageSize));
   }
-  rendered.items.forEach(function(m){
-    if(m && m.hidden) return;
-    if(m && normalizeMessageType(m.type || 'text') === 'narrator' && !narratorSettingEnabled()) return;
-    try{
-      addMessage(m.role, m.content, false, m.type, m.id);
-    }catch(err){
-      console.error('render message failed', err, m);
-    }
-  });
+  chatBulkRendering = true;
+  chatBulkCharAvatarSrc = currentVisibleCharAvatarSrc() || (character && character.imageData) || '';
+  chatBulkUserAvatarSrc = getImmediateUserAvatarForChat(character && character.id);
+  try{
+    rendered.items.forEach(function(m){
+      if(m && m.hidden) return;
+      if(m && normalizeMessageType(m.type || 'text') === 'narrator' && !narratorSettingEnabled()) return;
+      try{
+        addMessage(m.role, m.content, false, m.type, m.id);
+      }catch(err){
+        console.error('render message failed', err, m);
+      }
+    });
+  }finally{
+    chatBulkRendering = false;
+    chatBulkCharAvatarSrc = '';
+    chatBulkUserAvatarSrc = '';
+  }
   if(keepScroll){
     msgs.scrollTop = Math.max(0, msgs.scrollHeight - prevBottom);
   }else{
@@ -24007,12 +24027,16 @@ function addMessage(role, content, doScroll, msgType, msgId) {
   av.className = 'msg-avatar';
   if (viewRole === 'ai' && character) {
     var aiFallback = String(character.avatar || character.name || 'AI');
-    var immediateCharSrc = currentVisibleCharAvatarSrc() || character.imageData || '';
+    var charIdAtRender = String(character && character.id || '');
+    var immediateCharSrc = chatBulkRendering ? chatBulkCharAvatarSrc : (currentVisibleCharAvatarSrc() || character.imageData || '');
     setAvatarNodeFromSource(av, immediateCharSrc, aiFallback, false);
-    resolveBestCharAvatarSource().then(function(src){
-      var finalCharSrc = src || currentVisibleCharAvatarSrc() || character.imageData || '';
-      setAvatarNodeFromSource(av, finalCharSrc, aiFallback, false);
-    }).catch(function(){});
+    if(!chatBulkRendering){
+      resolveBestCharAvatarSource().then(function(src){
+        if(String(character && character.id || '') !== charIdAtRender) return;
+        var finalCharSrc = src || currentVisibleCharAvatarSrc() || character.imageData || '';
+        setAvatarNodeFromSource(av, finalCharSrc, aiFallback, false);
+      }).catch(function(){});
+    }
     av.style.cursor = 'pointer';
     av.title = '查看朋友圈';
     av.addEventListener('click', function(evt){
@@ -24022,14 +24046,18 @@ function addMessage(role, content, doScroll, msgType, msgId) {
     });
   } else if (viewRole === 'user') {
     var userFallback = String(getChatUserName(character && character.id) || resolveDisplayUserName() || '你').trim() || '你';
-    var immediateUserSrc = getImmediateUserAvatarForChat(character && character.id);
+    var userCharIdAtRender = String(character && character.id || '');
+    var immediateUserSrc = chatBulkRendering ? chatBulkUserAvatarSrc : getImmediateUserAvatarForChat(character && character.id);
     setAvatarNodeFromSource(av, immediateUserSrc, userFallback, false);
-    resolveChatUserAvatarAsync(character && character.id).then(function(uav){
-      var finalUserSrc = isRenderableAvatarSrc(uav) ? uav : immediateUserSrc;
-      if(finalUserSrc || !getAvatarSourceFromNode(av)){
-        setAvatarNodeFromSource(av, finalUserSrc, userFallback, false);
-      }
-    });
+    if(!chatBulkRendering){
+      resolveChatUserAvatarAsync(character && character.id).then(function(uav){
+        if(String(character && character.id || '') !== userCharIdAtRender) return;
+        var finalUserSrc = isRenderableAvatarSrc(uav) ? uav : immediateUserSrc;
+        if(finalUserSrc || !getAvatarSourceFromNode(av)){
+          setAvatarNodeFromSource(av, finalUserSrc, userFallback, false);
+        }
+      });
+    }
   } else if(viewRole === 'system'){
     av.style.display = 'none';
   }
@@ -29599,6 +29627,8 @@ function hideTyping() {
 }
 
 function refreshUserAvatars(){
+  var refreshSeq = ++userAvatarRefreshSeq;
+  var charIdAtRefresh = String(character && character.id || '');
   var fallback = String(getChatUserName(character && character.id) || resolveDisplayUserName() || '你').trim() || '你';
   var immediateUserSrc = getImmediateUserAvatarForChat(character && character.id);
   var headerUser = document.getElementById('hdrUserAvatar');
@@ -29607,6 +29637,7 @@ function refreshUserAvatars(){
     setAvatarNodeFromSource(el, immediateUserSrc, fallback, false);
   });
   resolveChatUserAvatarAsync(character && character.id).then(function(uav){
+    if(refreshSeq !== userAvatarRefreshSeq || String(character && character.id || '') !== charIdAtRefresh) return;
     var finalUserSrc = isRenderableAvatarSrc(uav) ? uav : immediateUserSrc;
     if(headerUser && (finalUserSrc || !getAvatarSourceFromNode(headerUser))) setAvatarNodeFromSource(headerUser, finalUserSrc, fallback, false);
     document.querySelectorAll('.msg.user .msg-avatar').forEach(function(el){
@@ -29616,6 +29647,8 @@ function refreshUserAvatars(){
 }
 
 function refreshCharAvatars(){
+  var refreshSeq = ++chatAvatarRefreshSeq;
+  var charIdAtRefresh = String(character && character.id || '');
   var fallback = character && (character.avatar || character.name) ? String(character.avatar || character.name) : 'AI';
   var immediateSrc = currentVisibleCharAvatarSrc() || (character && character.imageData) || '';
   var headerChar = document.getElementById('hdrAvatar');
@@ -29624,6 +29657,7 @@ function refreshCharAvatars(){
     setAvatarNodeFromSource(el, immediateSrc, fallback, false);
   });
   resolveBestCharAvatarSource().then(function(src){
+    if(refreshSeq !== chatAvatarRefreshSeq || String(character && character.id || '') !== charIdAtRefresh) return;
     if(headerChar) setAvatarNodeFromSource(headerChar, src || immediateSrc, fallback, false);
     document.querySelectorAll('.msg.ai .msg-avatar, #typing-ind .msg-avatar').forEach(function(el){
       setAvatarNodeFromSource(el, src || immediateSrc, fallback, false);
@@ -33441,6 +33475,8 @@ function setAvatarNodeFromSource(targetEl, src, fallbackText, includeHint){
     var clonedImg = getLoadedAvatarTemplate(text, roleSelectors);
     if(clonedImg){
       clonedImg.alt = 'char';
+      clonedImg.loading = 'lazy';
+      clonedImg.decoding = 'async';
       clonedImg.setAttribute('data-fallback', safeText);
       clonedImg.onerror = function(){ handleAvatarImgError(clonedImg); };
       targetEl.appendChild(clonedImg);
@@ -33455,6 +33491,8 @@ function setAvatarNodeFromSource(targetEl, src, fallbackText, includeHint){
     }
     var img = document.createElement('img');
     img.alt = 'char';
+    img.loading = 'lazy';
+    img.decoding = 'async';
     img.setAttribute('data-fallback', safeText);
     img.onerror = function(){ handleAvatarImgError(img); };
     img.src = text;
@@ -37046,9 +37084,6 @@ async function deliverAiReply(text, limitOverride, options){
     if(t === 'text'){
       p.text = sanitizeAssistantTextForChat(p.text);
       if(!p.text) continue;
-      if(/头像|头图/.test(String(p.text || ''))){
-        pendingAvatarActions.push({ kind:'plain', payload:p.text });
-      }
     }
     if(t === 'voice'){
       p.text = sanitizeAssistantVoiceText(p.text);

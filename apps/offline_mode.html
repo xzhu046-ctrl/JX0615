@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../chatStorage.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../metadataStore.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../promptManager.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../accountManager.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../scheduleShared.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../presenceShared.js?v=2026-05-11T06:18:06Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-11T06:18:06Z"></script>
+<script src="../assetStore.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../chatStorage.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../metadataStore.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../promptManager.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../accountManager.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../scheduleShared.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../presenceShared.js?v=2026-05-11T07:33:27Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-11T07:33:27Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -650,6 +650,7 @@ body.offline-theme-birthday .composer-btn.reply{width:48px;height:48px;min-width
 body.offline-theme-birthday .composer-btn.primary:disabled,
 body.offline-theme-birthday .composer-btn.reply:disabled{opacity:.45;filter:grayscale(.3);background:url('assets/%E5%8F%91%E9%80%81%E9%94%AE.png') center/contain no-repeat;color:transparent}
 .birthday-card{width:min(100%,372px);align-self:flex-start;position:relative;isolation:isolate;color:#111}
+.story-card,.birthday-card{contain:layout style}
 .birthday-card.user{align-self:flex-end}
 .birthday-sheet{position:relative;background:rgba(255,255,255,.8);border:1px solid rgba(20,20,20,.08);box-shadow:0 26px 60px rgba(0,0,0,.1),inset 0 0 0 1px rgba(255,255,255,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);overflow:visible}
 .birthday-hero{position:relative;height:230px;overflow:visible;background:#e8e8e8}
@@ -10607,6 +10608,7 @@ function buildOfflinePresencePromptBlock(){
       '角色当前地点：' + (String(charPresence.placeLabel || '').trim() || '未设置'),
       '角色当前状态：' + (String(charPresence.activityLabel || '').trim() || '未设置'),
       '双方距离/交通：' + (String(snapshot.distanceLabel || '').trim() || '未知') + (snapshot.travel && snapshot.travel.text ? '，' + snapshot.travel.text : ''),
+      '这些时间是后台生活事实，用来判断作息、距离、日程和天气。除非用户直接问时间/日期/安排，普通回复不要机械报具体几点几分。',
       '用户问“现在几点/几点钟/上午下午/今天几号”时，默认答角色当地时间；问“我这里/用户这里”才答用户当地时间。只许使用上面时间，禁止猜测或默认中国时间。',
       '正文里所有昼夜、早晚、上课/下班/睡觉、通勤、天气体感和地点名称，都必须按上面这组聊天设置地点与当地时间来写；冲突旧设定只能当旧背景，不得覆盖。'
     ];
@@ -10846,6 +10848,7 @@ function buildOfflineSchedulePromptBlock(){
     lines.push('用户当地时间：' + formatOfflineClockLabel(clock.user || { dateKey: live.userDateKey || userTodayKey, nowTime: live.userNowTime || live.nowTime }));
     lines.push('char 当地日期：' + String(live.charDateKey || charTodayKey));
     lines.push('char 当地时间：' + formatOfflineClockLabel(clock.char || { dateKey: live.charDateKey || charTodayKey, nowTime: live.charNowTime }));
+    lines.push('这些时间是后台事实，用来判断行程命中和作息。除非用户直接问时间/日期/安排，普通回复不要机械报具体几点几分。');
     lines.push('用户直接问“现在几点/几点钟/上午下午/今天几号”时，必须按这里的当地时间回答；默认问“现在几点”答 char 当地时间，问“我这里”答用户当地时间。禁止猜测或默认中国时间。');
     if(live.currentCharItem){
       lines.push('char 此刻更可能正在做：' + itemLine(live.currentCharItem, 'char'));
@@ -10876,6 +10879,7 @@ function buildOfflineDirectTimePromptLine(){
   return [
     '直接问时间硬规则：用户问“现在几点/几点钟/上午下午/今天几号”时，默认回答角色当地时间=' + (charClock || '未知'),
     userClock ? ('用户当地时间=' + userClock) : '',
+    '这行只用于直接问时间/日期/安排；普通对话不要机械报点。',
     '只能使用这里的时间；没拿到就说没拿到，禁止编造、禁止默认设备时间或中国时间。'
   ].filter(Boolean).join('\n');
 }

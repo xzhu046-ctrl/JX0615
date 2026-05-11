@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-11T06:18:06Z';
+const APP_BUILD_ID = '2026-05-11T07:33:27Z';
 const APP_UPDATE_NOTES = [
-  '七年有多久词组重新排版',
-  '唱片音符和五线谱修正',
-  '线下按钮换成素材样式'
+  '减少打开和滑动时的卡顿',
+  '后台活动严格跟随开关',
+  '头像切换只响应明确动作'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -78,7 +78,8 @@ const HOSTED_UPDATE_LAST_SEEN_REMOTE_KEY = 'hosted_update_last_seen_remote_v1';
 const HOSTED_UPDATE_REMOTE_NOTES_KEY = 'hosted_update_remote_notes_v1';
 const INSTALLED_UPDATE_SEEN_BUILD_KEY = 'installed_update_seen_build_v1';
 const INSTALLED_UPDATE_SEEN_BUILD_KV_ID = 'installed_update_seen_build_v1';
-const UPDATE_CHECK_THROTTLE_MS = 45 * 1000;
+const UPDATE_CHECK_THROTTLE_MS = 2 * 60 * 1000;
+const UPDATE_CHECK_FORCE_THROTTLE_MS = 3 * 60 * 1000;
 const GITHUB_UPDATE_OWNER = 'xzhu046-ctrl';
 const GITHUB_UPDATE_REPO = 'JX0615';
 const GITHUB_UPDATE_BRANCH = 'main';
@@ -1596,16 +1597,29 @@ async function buildHostedPagesFingerprint(){
   if(!/^https?:$/.test(window.location.protocol)) return '';
   var stamp = Date.now();
   var versionInfo = { buildId:'', updateNotes:[] };
-  var versionPromise = fetchJsonWithTimeout(new URL('version.json?pagesReady=' + stamp, window.location.href).toString(), 15000)
-    .then(function(data){
-      versionInfo = readVersionInfoFromVersionPayload(data);
-      return versionInfo.buildId;
-    });
-  var mainPromise = fetchTextWithTimeout(new URL('main.js?pagesReady=' + stamp, window.location.href).toString(), 15000)
+  var versionBuild = '';
+  try{
+    var versionPayload = await fetchJsonWithTimeout(new URL('version.json?pagesReady=' + stamp, window.location.href).toString(), 8000);
+    versionInfo = readVersionInfoFromVersionPayload(versionPayload);
+    versionBuild = String(versionInfo.buildId || '').trim();
+  }catch(versionErr){
+    lastHostedUpdateCheckStatus = 'Pages 未读到版本';
+    console.warn('[update-check] version skipped', versionErr);
+    return '';
+  }
+  if(!versionBuild){
+    lastHostedUpdateCheckStatus = 'Pages 未读到版本';
+    return '';
+  }
+  rememberHostedUpdateRemoteNotes(versionBuild, versionInfo.updateNotes);
+  if(compareHostedBuildIds(versionBuild, APP_BUILD_ID) <= 0){
+    return versionBuild;
+  }
+  var mainPromise = fetchTextWithTimeout(new URL('main.js?pagesReady=' + stamp, window.location.href).toString(), 10000)
     .then(function(text){ return readBuildIdFromMainJsText(text); });
-  var indexPromise = fetchTextWithTimeout(new URL('index.html?pagesReady=' + stamp, window.location.href).toString(), 15000)
+  var indexPromise = fetchTextWithTimeout(new URL('index.html?pagesReady=' + stamp, window.location.href).toString(), 10000)
     .then(function(text){ return readBuildIdFromIndexHtmlText(text); });
-  var results = await Promise.allSettled([versionPromise, mainPromise, indexPromise]);
+  var results = await Promise.allSettled([Promise.resolve(versionBuild), mainPromise, indexPromise]);
   var builds = results.map(function(result){
     return result && result.status === 'fulfilled' ? String(result.value || '').trim() : '';
   }).filter(Boolean);
@@ -1908,7 +1922,8 @@ async function checkForHostedUpdate(){
 
 function scheduleHostedUpdateCheck(force){
   var now = Date.now();
-  if(!force && now - lastHostedUpdateCheckAt < UPDATE_CHECK_THROTTLE_MS) return;
+  var throttleMs = force ? UPDATE_CHECK_FORCE_THROTTLE_MS : UPDATE_CHECK_THROTTLE_MS;
+  if(now - lastHostedUpdateCheckAt < throttleMs) return;
   lastHostedUpdateCheckAt = now;
   checkForHostedUpdate();
 }
@@ -1939,7 +1954,7 @@ function bootHostedUpdateCheck(){
   setTimeout(function(){
     maybeShowInstalledUpdateNotice();
   }, 4500);
-  [1200, 3200, 6500, 11000, 18000].forEach(function(delay){
+  [18000].forEach(function(delay){
     setTimeout(function(){
       scheduleHostedUpdateCheck(true);
     }, delay);
@@ -3966,6 +3981,7 @@ function getSchedulePresenceContext(character){
       charClock ? ('角色当前当地时间：' + charClock) : '',
       charActivity ? ('角色当前状态：' + charActivity) : '',
       distanceLabel ? ('双方距离：' + distanceLabel) : '',
+      '时间和地点是后台事实，只用来判断作息、距离、日程和天气。除非用户直接问时间/日期/安排，不要在普通回复里机械报具体几点几分。',
       '如果被问“现在几点/几点钟/上午下午/今天几号”，默认按角色当前当地时间回答；问用户那里才按用户当地时间。禁止猜测或默认设备时间。'
     ].filter(Boolean);
     if(charCityName){
@@ -4007,6 +4023,7 @@ function buildScheduleWeatherPresenceContext(payload){
     lines.push('角色当前当地时间：' + formatScheduleLocalClockLabel(getScheduleLocalClockParts(Date.now(), char.timezone, 0)));
   }
   if(user || char){
+    lines.push('时间和地点是后台事实，只用来判断作息、距离、日程和天气。除非用户直接问时间/日期/安排，不要在普通回复里机械报具体几点几分。');
     lines.push('如果被问“现在几点/几点钟/上午下午/今天几号”，默认按角色当前当地时间回答；问用户那里才按用户当地时间。禁止猜测或默认设备时间。');
   }
   if(user && char){
@@ -6805,7 +6822,6 @@ function renderHomePages(immediate){
     }
     setHomePagesOffset(pages, -offsetPx);
     renderHomePageIndicator();
-    pages.offsetHeight;
     pages.style.transition = prev || '';
     return;
   }
@@ -13539,11 +13555,6 @@ function setupAiBgScheduler(){
     maybeRunAiBgTick(false);
     maybeRunScheduleTodoReminders();
   }, intervalMs);
-  setTimeout(function(){
-    if(!isAiBgActivityGloballyEnabled()) return;
-    maybeRunAiBgTick(false);
-    maybeRunScheduleTodoReminders();
-  }, Math.min(intervalMs, 60000));
 }
 
 function restoreState(){
@@ -13568,7 +13579,7 @@ function restoreState(){
   bindTopSlotPressBehavior();
   bindBondAvatarPressBehavior();
   bindTopFrameEditor();
-  bindHomeMusicSystem();
+  runShellDeferredTask(bindHomeMusicSystem, 1600);
   initShellVoiceCallFloating();
   bindWidgetCharacterBackgroundInput();
   bindWidgetMiniOrbInput();
