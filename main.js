@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-11T22:39:31Z';
+const APP_BUILD_ID = '2026-05-11T23:09:47Z';
 const APP_UPDATE_NOTES = [
-  '恢复线上聊天气泡操作',
-  '只在线下气泡底部加多选删除收藏',
-  '继续降低线下打开闪退风险'
+  '降低线下删除后的闪退风险',
+  '移动端线下存档改为更轻的异步写入',
+  '歌词滑动按中线高亮'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
