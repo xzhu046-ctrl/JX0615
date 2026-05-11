@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-11T21:05:12Z"></script>
-<script src="../chatStorage.js?v=2026-05-11T21:05:12Z"></script>
-<script src="../metadataStore.js?v=2026-05-11T21:05:12Z"></script>
-<script src="../promptManager.js?v=2026-05-11T21:05:12Z"></script>
-<script src="../accountManager.js?v=2026-05-11T21:05:12Z"></script>
-<script src="../scheduleShared.js?v=2026-05-11T21:05:12Z"></script>
-<script src="../presenceShared.js?v=2026-05-11T21:05:12Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-11T21:05:12Z"></script>
+<script src="../assetStore.js?v=2026-05-11T21:25:44Z"></script>
+<script src="../chatStorage.js?v=2026-05-11T21:25:44Z"></script>
+<script src="../metadataStore.js?v=2026-05-11T21:25:44Z"></script>
+<script src="../promptManager.js?v=2026-05-11T21:25:44Z"></script>
+<script src="../accountManager.js?v=2026-05-11T21:25:44Z"></script>
+<script src="../scheduleShared.js?v=2026-05-11T21:25:44Z"></script>
+<script src="../presenceShared.js?v=2026-05-11T21:25:44Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-11T21:25:44Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -36,6 +36,24 @@ body::before{content:'';position:fixed;left:0;right:0;top:0;bottom:-180px;backgr
 .paper-bg{background:transparent}
 .paper-bg::before{display:none}
 .paper-bg::after{display:none}
+body.offline-mobile-safe .birthday-sheet,
+body.offline-mobile-safe .birthday-calendar,
+body.offline-mobile-safe .love-paper,
+body.offline-mobile-safe .offline-goodbye-camera-overlay,
+body.offline-mobile-safe .offline-stage-panel,
+body.offline-mobile-safe .offline-memory-drawer,
+body.offline-mobile-safe .offline-edit-modal{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+body.offline-mobile-safe .birthday-motto::before,
+body.offline-mobile-safe .birthday-ribbon,
+body.offline-mobile-safe .love-word,
+body.offline-mobile-safe .love-staff{filter:none!important;mix-blend-mode:normal!important}
+body.offline-mobile-safe .love-floating-note{display:none!important;animation:none!important}
+body.offline-mobile-safe .birthday-lyric-line,
+body.offline-mobile-safe .love-song-title span{transition:none!important;animation:none!important}
+body.offline-mobile-safe .birthday-lyrics-track{will-change:auto!important}
+body.offline-mobile-safe .story-card,
+body.offline-mobile-safe .birthday-card,
+body.offline-mobile-safe .love-card{contain:content}
 .shell{position:relative;z-index:1;height:100%;display:flex;flex-direction:column}
 .topbar{display:none}
 .top-pill{display:none}
@@ -525,7 +543,7 @@ box-shadow:0 0 0 2px rgba(255,255,255,.97),6px 6px 0 rgba(17,17,17,.94);padding:
 .offline-story-body .offline-inline-fragment > p::first-letter{font-size:1.72em;font-weight:900;line-height:.82;margin-right:1px}
 .offline-typing-wrap{display:flex;justify-content:flex-start;align-items:center;min-height:0;margin:6px 0 2px}
 .offline-typing-bubble{display:inline-flex;align-items:center;min-height:0;padding:0;border:0;background:transparent;box-shadow:none;border-radius:0;font-family:"PING FANG SHAO HUA",'Huiwen-mincho',"汇文明朝体",'Zhi Mang Xing','Ma Shan Zheng','PingFang SC',cursive;font-size:18px;font-weight:800;line-height:1.55;color:#7a1118}
-.offline-typing-text{display:inline-block;max-width:0;overflow:hidden;white-space:nowrap;animation:offlineTypingText 4.2s steps(10,end) infinite both}
+.offline-typing-text{display:inline-block;max-width:none;overflow:visible;white-space:nowrap;animation:none}
 @keyframes offlineTypingText{
   0%{max-width:0;opacity:.72}
   45%,60%{max-width:10em;opacity:.92}
@@ -1242,6 +1260,7 @@ var archivingOfflineMeet = false;
 var offlineCloseIntent = '';
 var OFFLINE_MUSIC_RUNTIME_DISABLED = true;
 var OFFLINE_TYPEWRITER_REVEAL_DISABLED = true;
+var OFFLINE_DECORATIVE_TIMERS_DISABLED = true;
 var offlineRenderLastAt = 0;
 var offlineRenderThrottleTimer = 0;
 var offlineLastSessionSaveAt = 0;
@@ -5607,6 +5626,7 @@ function applyOfflineBuiltinTheme(){
   document.body.classList.toggle('offline-theme-birthday', theme === 'bloodline');
   document.body.classList.toggle('offline-theme-love', theme === 'love');
   document.body.classList.toggle('offline-theme-classic', theme === 'classic');
+  document.body.classList.toggle('offline-mobile-safe', isMobileOfflineRuntime());
 }
 function focusOfflineComposerInput(){
   var input = document.getElementById('offlineInput');
@@ -7341,7 +7361,7 @@ function renderBirthdayLyrics(entry, isChar){
   if(!lines.length) return '';
   return '<div class="birthday-lyrics" aria-label="原创歌词">' +
     '<div class="birthday-lyrics-window"><div class="birthday-lyrics-track">' +
-      lines.map(function(line){ return '<div class="birthday-lyric-line">' + esc(line) + '</div>'; }).join('') +
+      lines.map(function(line, lineIdx){ return '<div class="birthday-lyric-line' + (lineIdx === 0 ? ' is-active' : '') + '">' + esc(line) + '</div>'; }).join('') +
     '</div></div>' +
   '</div>';
 }
@@ -7357,31 +7377,58 @@ function startBirthdayLyricPlayers(){
   if(!root) return;
   root.querySelectorAll('.birthday-lyrics').forEach(function(box){
     var win = box.querySelector('.birthday-lyrics-window');
-    var track = box.querySelector('.birthday-lyrics-track');
     var lines = Array.prototype.slice.call(box.querySelectorAll('.birthday-lyric-line'));
-    if(!(win && track && lines.length)) return;
+    if(!(win && lines.length)) return;
     var idx = 0;
     var dir = 1;
     var userScrollPauseUntil = 0;
+    var scrollRaf = 0;
+    function paintByViewport(){
+      if(!win || !lines.length) return;
+      var winRect = win.getBoundingClientRect();
+      var center = winRect.top + winRect.height / 2;
+      var closestIdx = 0;
+      var closestDist = Infinity;
+      lines.forEach(function(line, lineIdx){
+        var rect = line.getBoundingClientRect();
+        var dist = Math.abs((rect.top + rect.height / 2) - center);
+        if(dist < closestDist){
+          closestDist = dist;
+          closestIdx = lineIdx;
+        }
+      });
+      idx = closestIdx;
+      lines.forEach(function(line, lineIdx){
+        line.classList.toggle('is-active', lineIdx === idx);
+      });
+    }
+    function scheduleManualPaint(){
+      if(scrollRaf) return;
+      scrollRaf = requestAnimationFrame(function(){
+        scrollRaf = 0;
+        paintByViewport();
+      });
+    }
     function pauseAutoScroll(){
       userScrollPauseUntil = Date.now() + 4200;
+      scheduleManualPaint();
     }
     win.addEventListener('pointerdown', pauseAutoScroll, { passive:true });
     win.addEventListener('touchstart', pauseAutoScroll, { passive:true });
     win.addEventListener('wheel', pauseAutoScroll, { passive:true });
+    win.addEventListener('scroll', scheduleManualPaint, { passive:true });
     function paint(){
       lines.forEach(function(line, lineIdx){
         line.classList.toggle('is-active', lineIdx === idx);
       });
       var active = lines[idx];
       var offset = active ? (active.offsetTop - Math.max(0, (win.clientHeight - active.offsetHeight) / 2)) : 0;
-      track.style.transform = '';
       if(Date.now() >= userScrollPauseUntil){
         win.scrollTop = Math.max(0, offset);
       }
     }
-    paint();
-    if(lines.length > 1){
+    paintByViewport();
+    if(!OFFLINE_DECORATIVE_TIMERS_DISABLED && lines.length > 1){
       birthdayLyricTimers.push(setInterval(function(){
         if(idx >= lines.length - 1) dir = -1;
         if(idx <= 0) dir = 1;
