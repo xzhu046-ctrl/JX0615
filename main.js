@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-12T00:19:08Z';
+const APP_BUILD_ID = '2026-05-12T22:50:25Z';
 const APP_UPDATE_NOTES = [
-  '恢复血缘文案背后的雾面装饰',
-  '歌词高亮不再被生成状态跳过',
-  '歌词渲染后重新按中线计算'
+  '恢复线上长按完整操作菜单',
+  '线下气泡改为 kiss 入口操作',
+  '线下操作图标和线上保持一致'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';

@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-12T00:19:08Z"></script>
-<script src="../chatStorage.js?v=2026-05-12T00:19:08Z"></script>
-<script src="../metadataStore.js?v=2026-05-12T00:19:08Z"></script>
-<script src="../promptManager.js?v=2026-05-12T00:19:08Z"></script>
-<script src="../accountManager.js?v=2026-05-12T00:19:08Z"></script>
-<script src="../scheduleShared.js?v=2026-05-12T00:19:08Z"></script>
-<script src="../presenceShared.js?v=2026-05-12T00:19:08Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-12T00:19:08Z"></script>
+<script src="../assetStore.js?v=2026-05-12T22:50:25Z"></script>
+<script src="../chatStorage.js?v=2026-05-12T22:50:25Z"></script>
+<script src="../metadataStore.js?v=2026-05-12T22:50:25Z"></script>
+<script src="../promptManager.js?v=2026-05-12T22:50:25Z"></script>
+<script src="../accountManager.js?v=2026-05-12T22:50:25Z"></script>
+<script src="../scheduleShared.js?v=2026-05-12T22:50:25Z"></script>
+<script src="../presenceShared.js?v=2026-05-12T22:50:25Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-12T22:50:25Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -577,13 +577,18 @@ box-shadow:0 0 0 2px rgba(255,255,255,.97),6px 6px 0 rgba(17,17,17,.94);padding:
 .offline-story-actions{margin-top:18px;display:flex;align-items:center;justify-content:flex-end;gap:14px}
 .story-card.user .offline-story-actions{justify-content:space-between}
 .offline-story-actions-left{display:flex;align-items:center;gap:10px}
-.offline-bubble-action-row{width:100%;display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:10px;border-top:1.5px dashed rgba(17,17,17,.24)}
+.offline-bubble-action-row{width:100%;display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:10px;border-top:1.5px dashed rgba(17,17,17,.24);position:relative}
 .story-card.user .offline-bubble-action-row,
 .birthday-card.user .offline-bubble-action-row,
 .love-card.user .offline-bubble-action-row{justify-content:flex-end}
-.offline-bubble-action-btn{min-width:46px;height:30px;padding:0 10px;border:1.5px solid #111;border-radius:999px;background:#fff;color:#111;font-family:var(--fontd);font-size:11px;font-weight:900;letter-spacing:.04em;box-shadow:2px 2px 0 rgba(17,17,17,.78);cursor:pointer}
+.offline-kiss-action-trigger{width:38px;height:38px;padding:0;border:0;background:transparent;box-shadow:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.offline-kiss-action-trigger img{width:38px;height:38px;object-fit:contain;display:block;filter:drop-shadow(2px 2px 0 rgba(17,17,17,.42))}
+.offline-kiss-action-menu{display:flex;align-items:center;gap:8px;padding:7px;border:2px solid #111;border-radius:16px;background:#fff;box-shadow:4px 4px 0 #111}
+.offline-bubble-action-btn{width:38px;height:38px;padding:0;border:1.5px solid #111;border-radius:12px;background:#fff;color:#111;display:inline-flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 rgba(17,17,17,.78);cursor:pointer}
+.offline-bubble-action-btn img{width:20px;height:20px;object-fit:contain;display:block;filter:grayscale(1) contrast(1.1)}
 .offline-bubble-action-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(17,17,17,.78)}
 .offline-bubble-action-btn.is-active{background:#111;color:#fff}
+.offline-bubble-action-btn.is-active img{filter:invert(1) grayscale(1) contrast(1.1)}
 .story-card.is-selected .offline-story-panel,
 .birthday-card.is-selected .birthday-sheet,
 .love-card.is-selected .love-paper{outline:3px solid #111;outline-offset:3px}
@@ -1320,6 +1325,7 @@ var offlineMemoryConfirmResolver = null;
 var offlineStageSummaryPreviewOpen = false;
 var offlineMultiSelectMode = false;
 var offlineSelectedEntryIndexes = [];
+var offlineActionMenuIndex = -1;
 var offlineInitInProgress = true;
 var offlineInitCompleted = false;
 var offlineLastErrorPayload = null;
@@ -8182,10 +8188,14 @@ function isOfflineEntrySelected(index){
 function renderOfflineBubbleActionBar(entry, idx){
   if(!entry || !String(entry.text || '').trim()) return '';
   var selected = isOfflineEntrySelected(idx);
+  var open = Number(offlineActionMenuIndex) === Number(idx);
   return '<div class="offline-bubble-action-row">' +
-    '<button class="offline-bubble-action-btn' + (selected ? ' is-active' : '') + '" type="button" onclick="event.stopPropagation();toggleOfflineEntrySelection(' + idx + ', true)">' + (selected ? '已选' : '多选') + '</button>' +
-    '<button class="offline-bubble-action-btn" type="button" onclick="event.stopPropagation();deleteOfflineEntryAt(' + idx + ')">删除</button>' +
-    '<button class="offline-bubble-action-btn" type="button" onclick="event.stopPropagation();favoriteOfflineEntryAt(' + idx + ')">收藏</button>' +
+    '<button class="offline-kiss-action-trigger" type="button" aria-label="线下消息操作" onclick="event.stopPropagation();toggleOfflineActionMenu(' + idx + ')"><img src="assets/kiss.png" alt=""></button>' +
+    (open ? ('<div class="offline-kiss-action-menu">' +
+      '<button class="offline-bubble-action-btn' + (selected ? ' is-active' : '') + '" type="button" title="多选" aria-label="多选" onclick="event.stopPropagation();toggleOfflineEntrySelection(' + idx + ', true)"><img src="assets/多选.png" alt=""></button>' +
+      '<button class="offline-bubble-action-btn" type="button" title="删除" aria-label="删除" onclick="event.stopPropagation();deleteOfflineEntryAt(' + idx + ')"><img src="assets/Recycle-Bin-2--Streamline-Sharp.png" alt=""></button>' +
+      '<button class="offline-bubble-action-btn" type="button" title="收藏" aria-label="收藏" onclick="event.stopPropagation();favoriteOfflineEntryAt(' + idx + ')"><img src="assets/收藏.png" alt=""></button>' +
+    '</div>') : '') +
   '</div>';
 }
 function renderOfflineMultiSelectBar(){
@@ -8219,6 +8229,13 @@ function normalizeOfflineSelectionIndexes(){
     return Number.isInteger(idx) && idx >= 0 && idx < max;
   }))).sort(function(a, b){ return a - b; });
   if(!offlineSelectedEntryIndexes.length) offlineMultiSelectMode = false;
+  if(!Number.isInteger(Number(offlineActionMenuIndex)) || offlineActionMenuIndex < 0 || offlineActionMenuIndex >= max) offlineActionMenuIndex = -1;
+}
+function toggleOfflineActionMenu(index){
+  var idx = Number(index);
+  if(!Number.isInteger(idx)) return;
+  offlineActionMenuIndex = Number(offlineActionMenuIndex) === idx ? -1 : idx;
+  renderStory();
 }
 function toggleOfflineEntrySelection(index, forceSelect){
   var idx = Number(index);
@@ -8227,6 +8244,7 @@ function toggleOfflineEntrySelection(index, forceSelect){
   var pos = offlineSelectedEntryIndexes.indexOf(idx);
   if(pos >= 0 && forceSelect !== true) offlineSelectedEntryIndexes.splice(pos, 1);
   else if(pos < 0) offlineSelectedEntryIndexes.push(idx);
+  offlineActionMenuIndex = idx;
   normalizeOfflineSelectionIndexes();
   renderStory();
 }
@@ -8241,6 +8259,7 @@ function deleteOfflineEntryAt(index){
   var ok = window.confirm ? window.confirm('删除这一条线下消息吗？') : true;
   if(!ok) return;
   session.entries.splice(idx, 1);
+  offlineActionMenuIndex = -1;
   normalizeOfflineSelectionIndexes();
   renderStory();
   setTimeout(function(){ saveSession({ force:true }); }, isMobileOfflineRuntime() ? 260 : 0);
@@ -8257,6 +8276,7 @@ function deleteSelectedOfflineEntries(){
   });
   offlineMultiSelectMode = false;
   offlineSelectedEntryIndexes = [];
+  offlineActionMenuIndex = -1;
   renderStory();
   setTimeout(function(){ saveSession({ force:true }); }, isMobileOfflineRuntime() ? 260 : 0);
   toast('已删除');
@@ -8304,6 +8324,8 @@ function favoriteOfflineEntryAt(index){
   };
   var ok = false;
   try{ ok = !!window.AccountManager.addFavorite(favoriteRecord); }catch(e){}
+  offlineActionMenuIndex = -1;
+  renderStory();
   toast(ok ? '已收藏' : '收藏失败');
 }
 function countOfflineStoryFloors(){
