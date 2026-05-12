@@ -60,9 +60,9 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-12T23:47:22Z';
+const APP_BUILD_ID = '2026-05-12T23:54:44Z';
 const APP_UPDATE_NOTES = [
-  '修复图床头像加载成空白',
+  '修复进聊天后头像丢失',
   '恢复线上长按完整操作菜单',
   '线下气泡改为 kiss 入口操作'
 ];

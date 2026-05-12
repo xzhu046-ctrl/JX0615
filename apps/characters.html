@@ -480,6 +480,8 @@ function slimChar(c){
   if(!c) return null;
   var imageData = String(c.imageData || '').trim();
   if(/^data:/i.test(imageData)) imageData = '';
+  var avatarUrl = String(c.avatarUrl || '').trim();
+  if(!imageData) imageData = avatarUrl;
   return {
     id: c.id,
     name: c.name,
@@ -487,6 +489,7 @@ function slimChar(c){
     description: c.description,
     avatar: c.avatar,
     imageData: imageData,
+    avatarUrl: avatarUrl,
     personality: c.personality,
     scenario: c.scenario,
     system_prompt: c.system_prompt,
