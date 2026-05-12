@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-12T22:50:25Z"></script>
-<script src="../chatStorage.js?v=2026-05-12T22:50:25Z"></script>
-<script src="../assetStore.js?v=2026-05-12T22:50:25Z"></script>
-<script src="../accountManager.js?v=2026-05-12T22:50:25Z"></script>
-<script src="../metadataStore.js?v=2026-05-12T22:50:25Z"></script>
-<script src="../scheduleShared.js?v=2026-05-12T22:50:25Z"></script>
-<script src="../presenceShared.js?v=2026-05-12T22:50:25Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-12T22:50:25Z"></script>
-<script src="../sunnySupport.js?v=2026-05-12T22:50:25Z"></script>
-<script src="offlineInvite.js?v=2026-05-12T22:50:25Z"></script>
+<script src="../promptManager.js?v=2026-05-12T23:47:22Z"></script>
+<script src="../chatStorage.js?v=2026-05-12T23:47:22Z"></script>
+<script src="../assetStore.js?v=2026-05-12T23:47:22Z"></script>
+<script src="../accountManager.js?v=2026-05-12T23:47:22Z"></script>
+<script src="../metadataStore.js?v=2026-05-12T23:47:22Z"></script>
+<script src="../scheduleShared.js?v=2026-05-12T23:47:22Z"></script>
+<script src="../presenceShared.js?v=2026-05-12T23:47:22Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-12T23:47:22Z"></script>
+<script src="../sunnySupport.js?v=2026-05-12T23:47:22Z"></script>
+<script src="offlineInvite.js?v=2026-05-12T23:47:22Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -11540,7 +11540,7 @@ function getChatBubblePreviewAvatarHtml(role){
     src = normalizeAvatarSrc(getAvatarSrcFromSelectors(['#csCharAvatar img','#hdrAvatar img']) || currentVisibleCharAvatarSrc() || '');
   }
   if(src){
-    return '<img src="' + escAttr(src) + '" alt="' + (safeRole === 'user' ? 'USER' : 'CHAR') + '">';
+    return '<img src="' + escAttr(src) + '" alt="' + (safeRole === 'user' ? 'USER' : 'CHAR') + '" referrerpolicy="no-referrer">';
   }
   return '<div class="avatar-fallback">' + (safeRole === 'user' ? 'U' : 'C') + '</div>';
 }
@@ -19646,7 +19646,7 @@ function updateHeader() {
     });
   }, Promise.resolve('')).then(function(ovr){
     if(String((character && character.id) || '').trim() !== headerCharId) return;
-    if (isRenderableAvatarSrc(ovr)) { av.innerHTML = '<img src="' + ovr + '">'; }
+    if (isRenderableAvatarSrc(ovr)) { setAvatarNodeFromSource(av, ovr, displayName, false); }
   });
   var userHost = document.getElementById('hdrUserAvatar');
   var userFallback = userDisplayName;
@@ -33474,7 +33474,8 @@ function setAvatarNodeFromSource(targetEl, src, fallbackText, includeHint){
   }catch(err){}
   if(isRenderableAvatarSrc(text)){
     var existingSrc = normalizeAvatarSrc(getAvatarSourceFromNode(targetEl));
-    if(existingSrc && existingSrc === text && targetEl.querySelector && targetEl.querySelector('img')){
+    var existingImg = targetEl.querySelector && targetEl.querySelector('img');
+    if(existingSrc && existingSrc === text && existingImg && (!existingImg.complete || Number(existingImg.naturalWidth || 0) > 0)){
       targetEl.setAttribute('data-avatar-src', text);
       return;
     }
@@ -33486,6 +33487,8 @@ function setAvatarNodeFromSource(targetEl, src, fallbackText, includeHint){
       clonedImg.alt = 'char';
       clonedImg.loading = 'lazy';
       clonedImg.decoding = 'async';
+      clonedImg.referrerPolicy = 'no-referrer';
+      clonedImg.setAttribute('referrerpolicy', 'no-referrer');
       clonedImg.setAttribute('data-fallback', safeText);
       clonedImg.onerror = function(){ handleAvatarImgError(clonedImg); };
       targetEl.appendChild(clonedImg);
@@ -33502,6 +33505,8 @@ function setAvatarNodeFromSource(targetEl, src, fallbackText, includeHint){
     img.alt = 'char';
     img.loading = 'lazy';
     img.decoding = 'async';
+    img.referrerPolicy = 'no-referrer';
+    img.setAttribute('referrerpolicy', 'no-referrer');
     img.setAttribute('data-fallback', safeText);
     img.onerror = function(){ handleAvatarImgError(img); };
     img.src = text;
@@ -33548,6 +33553,7 @@ function handleAvatarImgError(img){
     if(!img || !img.parentNode) return;
     var parent = img.parentNode;
     var fallback = String((img.getAttribute('data-fallback') || 'AI')).slice(0, 2);
+    parent.removeAttribute('data-avatar-src');
     var hint = parent.querySelector('.avatar-pick-hint');
     parent.innerHTML = esc(fallback) + (hint ? hint.outerHTML : '');
   }catch(err){
@@ -34107,7 +34113,7 @@ async function renderChatShareCardCanvasFallback(cardEl){
 
 function getCharAvatarHTML() {
   if (!character) return '🌸';
-  if (character.imageData || character.avatarUrl) return '<img src="' + esc(character.imageData || character.avatarUrl) + '">';
+  if (character.imageData || character.avatarUrl) return '<img src="' + esc(character.imageData || character.avatarUrl) + '" referrerpolicy="no-referrer">';
   return esc(character.avatar || '🌸');
 }
 
@@ -35109,7 +35115,7 @@ function renderAvatarLibraryPreviewNode(item){
   var role = item && item.role === 'user' ? 'user' : 'char';
   var previewSrc = getAvatarLibraryItemPreviewSrc(item);
   var thumb = '<div class="avatar-polaroid-thumb" data-avatar-lib-thumb="' + escAttr(item.id) + '" data-avatar-lib-role="' + escAttr(role) + '">' +
-    (previewSrc ? ('<img src="' + escAttr(previewSrc) + '" alt="' + escAttr(item && item.label || '头像') + '">') : ('<div class="avatar-polaroid-thumb-fallback">' + getAvatarShelfFallbackHtml(role) + '</div>')) +
+    (previewSrc ? ('<img src="' + escAttr(previewSrc) + '" alt="' + escAttr(item && item.label || '头像') + '" referrerpolicy="no-referrer">') : ('<div class="avatar-polaroid-thumb-fallback">' + getAvatarShelfFallbackHtml(role) + '</div>')) +
     '</div>';
   return '<button class="avatar-polaroid-card" type="button" data-avatar-lib-id="' + escAttr(item.id) + '">' +
     thumb +
@@ -35163,7 +35169,7 @@ function renderChatSettingsAvatarShelf(role){
         : !!(previewSrc && normalizeAvatarSrc(previewSrc) === currentSrc);
       html.push(
         '<button class="cs-avatar-shelf-card' + (isSelected ? ' selected' : '') + '" type="button" data-avatar-shelf-id="' + escAttr(item.id) + '" data-avatar-shelf-role="' + safeRole + '">' +
-          '<div class="cs-avatar-shelf-thumb" data-avatar-shelf-thumb="' + escAttr(item.id) + '">' + (previewSrc ? ('<img src="' + escAttr(previewSrc) + '" alt="' + escAttr(item.label || '头像') + '">') : '<div class="cs-avatar-shelf-fallback">' + getAvatarShelfFallbackHtml(safeRole) + '</div>') + '</div>' +
+          '<div class="cs-avatar-shelf-thumb" data-avatar-shelf-thumb="' + escAttr(item.id) + '">' + (previewSrc ? ('<img src="' + escAttr(previewSrc) + '" alt="' + escAttr(item.label || '头像') + '" referrerpolicy="no-referrer">') : '<div class="cs-avatar-shelf-fallback">' + getAvatarShelfFallbackHtml(safeRole) + '</div>') + '</div>' +
           '<span class="cs-avatar-shelf-badge">' + esc(item.couple ? 'CP' : (item.pairTag || '头像')) + '</span>' +
           '<div class="cs-avatar-shelf-meta"><span>' + esc(safeRole === 'char' ? 'CHAR' : 'USER') + '</span><span class="name">' + esc(item.label || '未命名') + '</span></div>' +
         '</button>'
@@ -35195,7 +35201,7 @@ function renderChatSettingsAvatarShelf(role){
     loadStoredAsset(String(item.assetKey || '')).then(function(src){
       var safeSrc = normalizeAvatarSrc(src);
       if(!isRenderableAvatarSrc(safeSrc)) return;
-      thumbNode.innerHTML = '<img src="' + escAttr(safeSrc) + '" alt="' + escAttr(item.label || '头像') + '">';
+      thumbNode.innerHTML = '<img src="' + escAttr(safeSrc) + '" alt="' + escAttr(item.label || '头像') + '" referrerpolicy="no-referrer">';
       var nextImg = thumbNode.querySelector('img');
       if(nextImg){
         nextImg.onerror = function(){
@@ -35241,7 +35247,7 @@ function renderAvatarLibraryOverlay(){
       if(!node) return;
       var safeSrc = normalizeAvatarSrc(src);
       if(!isRenderableAvatarSrc(safeSrc)) return;
-      node.innerHTML = '<img src="' + escAttr(safeSrc) + '" alt="' + escAttr(item.label || '头像') + '">';
+      node.innerHTML = '<img src="' + escAttr(safeSrc) + '" alt="' + escAttr(item.label || '头像') + '" referrerpolicy="no-referrer">';
       var img = node.querySelector('img');
       if(img){
         img.onerror = function(){
@@ -35293,7 +35299,7 @@ function openAvatarMetaOverlay(draft){
   var applyBtn = document.getElementById('avatarMetaApplyBtn');
   var deleteBtn = document.getElementById('avatarMetaDeleteBtn');
   if(preview){
-    preview.innerHTML = pendingAvatarMetaDraft.src ? ('<img src="' + escAttr(pendingAvatarMetaDraft.src) + '" alt="">') : '';
+    preview.innerHTML = pendingAvatarMetaDraft.src ? ('<img src="' + escAttr(pendingAvatarMetaDraft.src) + '" alt="" referrerpolicy="no-referrer">') : '';
   }
   if(title) title.textContent = pendingAvatarMetaDraft.mode === 'edit'
     ? (pendingAvatarMetaDraft.role === 'user' ? '编辑 USER 头像' : '编辑 CHAR 头像')
