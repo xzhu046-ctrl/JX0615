@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../promptManager.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../accountManager.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T02:25:10Z"></script>
+<script src="../assetStore.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../promptManager.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../accountManager.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T02:32:07Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -1442,14 +1442,26 @@ function archiveStorageApi(){
 function loadArchiveJsonFromStorage(key){
   var safeKey = String(key || '').trim();
   var api = archiveStorageApi();
-  if(!safeKey || !api || typeof api.getJson !== 'function') return Promise.resolve(null);
-  return api.getJson(safeKey).catch(function(){ return null; });
+  function localFallback(){
+    try{
+      var raw = localStorage.getItem(safeKey) || '';
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){
+      return null;
+    }
+  }
+  if(!safeKey || !api || typeof api.getJson !== 'function') return Promise.resolve(localFallback());
+  return api.getJson(safeKey).then(function(stored){
+    return stored || localFallback();
+  }).catch(function(){ return localFallback(); });
 }
 function saveArchiveJsonToStorage(key, data){
   var safeKey = String(key || '').trim();
   var api = archiveStorageApi();
-  if(!safeKey || !api || typeof api.putJson !== 'function') return Promise.resolve(false);
-  return api.putJson(safeKey, data).then(function(){ return true; }).catch(function(){ return false; });
+  if(!safeKey) return Promise.resolve(false);
+  try{ localStorage.setItem(safeKey, JSON.stringify(data)); }catch(e){}
+  if(!api || typeof api.putJson !== 'function') return Promise.resolve(true);
+  return api.putJson(safeKey, data).then(function(){ return true; }).catch(function(){ return true; });
 }
 function removeArchiveJsonFromStorage(key){
   var safeKey = String(key || '').trim();
@@ -4432,13 +4444,15 @@ async function consumePendingOfflineResume(charId){
   return null;
 }
 function resolveCharAvatar(){
+  var charId = character && character.id ? String(character.id) : '';
   if(isRenderableOfflineAvatarSrc(runtimeCharAvatar)) return runtimeCharAvatar;
+  var settingsAvatar = getImmediateOfflineSettingsBundleAvatarSync(charId, 'char');
+  if(isRenderableOfflineAvatarSrc(settingsAvatar)) return settingsAvatar;
   var importedAvatar = getOfflineCharacterAvatarCandidateSync(character);
   if(isRenderableOfflineAvatarSrc(importedAvatar)) return importedAvatar;
   if(character && isRenderableOfflineAvatarSrc(character.imageData)) return normalizeOfflineAssetSrc(character.imageData);
   if(character && isRenderableOfflineAvatarSrc(character.avatarUrl)) return normalizeOfflineAssetSrc(character.avatarUrl);
   if(character && isRenderableOfflineAvatarSrc(character.avatar)) return normalizeOfflineAssetSrc(character.avatar);
-  var charId = character && character.id ? String(character.id) : '';
   var keys = getOfflineCharAvatarAssetKeys(charId);
   for(var i = 0; i < keys.length; i += 1){
     try{
@@ -5504,6 +5518,26 @@ function normalizeOfflineChatSettingsBundle(raw){
     selectedUserAvatarItemId: String(src.selectedUserAvatarItemId || '').trim(),
     userPersonaProfile: String(src.userPersonaProfile || '').trim()
   };
+}
+function getImmediateOfflineSettingsBundleAvatarSync(charId, role){
+  var safeId = String(charId || '').trim();
+  if(!safeId) return '';
+  var safeRole = role === 'user' ? 'user' : 'char';
+  var keys = offlineChatSettingsBundleKeys(safeId);
+  var best = null;
+  for(var i = 0; i < keys.length; i += 1){
+    try{
+      var raw = localStorage.getItem(keys[i]) || '';
+      if(!raw) continue;
+      var parsed = JSON.parse(raw);
+      if(parsed && typeof parsed === 'object'){
+        if(!best || Number(parsed.updatedAt || 0) >= Number(best.updatedAt || 0)) best = parsed;
+      }
+    }catch(e){}
+  }
+  if(!best) return '';
+  var src = normalizeOfflineAssetSrc(safeRole === 'user' ? best.userAvatar : best.charAvatar);
+  return isStableOfflineAvatarSrc(src) ? src : '';
 }
 function loadBestOfflineJson(keys){
   var safeKeys = (keys || []).map(function(key){ return String(key || '').trim(); }).filter(Boolean);

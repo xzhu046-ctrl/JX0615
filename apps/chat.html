@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../assetStore.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../accountManager.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T02:25:10Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T02:25:10Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T02:25:10Z"></script>
+<script src="../promptManager.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../assetStore.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../accountManager.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T02:32:07Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T02:32:07Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T02:32:07Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -8505,9 +8505,19 @@ function loadJsonFromLargeStore(id){
       storage = window.parent.PhoneStorage;
     }
   }catch(parentErr){}
-  if(!(storage && typeof storage.getJson === 'function')) return Promise.resolve(null);
-  return storage.getJson(id).catch(function(){
-    return null;
+  function localFallback(){
+    try{
+      var raw = localStorage.getItem(id) || '';
+      return raw ? JSON.parse(raw) : null;
+    }catch(localErr){
+      return null;
+    }
+  }
+  if(!(storage && typeof storage.getJson === 'function')) return Promise.resolve(localFallback());
+  return storage.getJson(id).then(function(stored){
+    return stored || localFallback();
+  }).catch(function(){
+    return localFallback();
   });
 }
 
@@ -8518,10 +8528,11 @@ function saveJsonToLargeStore(id, data){
       storage = window.parent.PhoneStorage;
     }
   }catch(parentErr){}
-  if(!(storage && typeof storage.putJson === 'function')) return Promise.resolve(null);
+  try{ localStorage.setItem(id, JSON.stringify(data)); }catch(localErr){}
+  if(!(storage && typeof storage.putJson === 'function')) return Promise.resolve(data || null);
   return storage.putJson(id, data).catch(function(err){
     console.error('save large state failed:', id, err);
-    return null;
+    return data || null;
   });
 }
 
@@ -18842,10 +18853,32 @@ function getFirstRenderableChatAvatarFromResources(resources){
   return '';
 }
 
+function getImmediateChatSettingsBundleAvatarSync(charId, role){
+  var safeId = String(charId || '').trim();
+  if(!safeId) return '';
+  var safeRole = role === 'user' ? 'user' : 'char';
+  var keys = chatSettingsBundleStorageIdCandidates(safeId);
+  var best = null;
+  for(var i = 0; i < keys.length; i += 1){
+    try{
+      var raw = localStorage.getItem(keys[i]) || '';
+      if(!raw) continue;
+      var parsed = JSON.parse(raw);
+      if(parsed && typeof parsed === 'object'){
+        if(!best || Number(parsed.updatedAt || 0) >= Number(best.updatedAt || 0)) best = parsed;
+      }
+    }catch(e){}
+  }
+  if(!best) return '';
+  var src = normalizeAvatarSrc(safeRole === 'user' ? best.userAvatar : best.charAvatar);
+  return isRenderableAvatarSrc(src) ? src : '';
+}
+
 function getChatCharacterAvatarCandidateSync(source){
   if(!source || typeof source !== 'object') return '';
   var id = String(source.id || '').trim();
   var candidates = [
+    getImmediateChatSettingsBundleAvatarSync(id, 'char'),
     source.avatarUrl,
     source.imageData,
     getFirstRenderableChatAvatarFromResources(source.importedAvatarResources),
