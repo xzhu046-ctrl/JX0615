@@ -66,9 +66,9 @@
     .topbar{
       position:absolute;
       z-index:40;
-      left:12px;
-      right:12px;
-      top:calc(env(safe-area-inset-top,0px) + 9px);
+      left:18px;
+      right:18px;
+      top:calc(env(safe-area-inset-top,0px) + 12px);
       height:44px;
       padding:0;
       display:flex;
@@ -83,26 +83,24 @@
     }
     .topbar::after{ display:none; }
     .icon-btn{
-      width:42px;
-      height:42px;
+      width:38px;
+      height:38px;
       border:2px solid #111;
-      background:rgba(255,255,255,.78);
+      background:rgba(255,255,255,.90);
       color:var(--black);
       display:grid;
       place-items:center;
-      border-radius:14px;
-      box-shadow:3px 3px 0 rgba(17,17,17,.18);
-      backdrop-filter:blur(12px) saturate(128%);
-      -webkit-backdrop-filter:blur(12px) saturate(128%);
+      border-radius:12px;
+      box-shadow:2px 2px 0 rgba(17,17,17,.18);
       pointer-events:auto;
     }
-    .icon-btn svg{ width:22px; height:22px; display:block; }
-    .settings-symbol{ font-family:var(--fontd); font-size:25px; font-weight:900; line-height:1; transform:translateY(-1px); }
+    .icon-btn svg{ width:21px; height:21px; display:block; }
+    .icon-btn img{ width:19px; height:19px; object-fit:contain; display:block; }
     .icon-btn:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 rgba(17,17,17,.24); background:#fff; }
     .title{
       position:absolute;
-      left:52px;
-      right:52px;
+      left:48px;
+      right:48px;
       top:0;
       bottom:0;
       min-width:0;
@@ -115,19 +113,19 @@
       margin:0;
       width:100%;
       min-height:42px;
-      padding:0 12px;
+      padding:0;
       border:0;
-      border-radius:16px;
-      background:rgba(255,255,255,.54);
-      box-shadow:0 10px 28px rgba(0,0,0,.10), inset 0 0 0 1px rgba(255,255,255,.72);
-      backdrop-filter:blur(12px) saturate(126%);
-      -webkit-backdrop-filter:blur(12px) saturate(126%);
+      border-radius:0;
+      background:transparent;
+      box-shadow:none;
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
       display:flex;
       align-items:center;
       justify-content:center;
       gap:0;
       font-family:var(--fontcute);
-      font-size:32px;
+      font-size:33px;
       line-height:1;
       letter-spacing:0;
       color:var(--black);
@@ -320,7 +318,7 @@
         <p id="subtitle">读取角色记忆中</p>
       </div>
       <button class="icon-btn" type="button" id="settingsBtn" aria-label="设置">
-        <span class="settings-symbol" aria-hidden="true">✱</span>
+        <img src="assets/聊天设置.png" alt="" aria-hidden="true">
       </button>
     </header>
     <main class="content">
@@ -352,14 +350,14 @@
     </section>
   </div>
   <div class="toast" id="toast"></div>
-  <script src="../assetStore.js?v=2026-05-13T19:59:00Z"></script>
-  <script src="../accountManager.js?v=2026-05-13T19:59:00Z"></script>
-  <script src="../chatStorage.js?v=2026-05-13T19:59:00Z"></script>
-  <script src="../metadataStore.js?v=2026-05-13T19:59:00Z"></script>
+  <script src="../assetStore.js?v=2026-05-13T20:08:47Z"></script>
+  <script src="../accountManager.js?v=2026-05-13T20:08:47Z"></script>
+  <script src="../chatStorage.js?v=2026-05-13T20:08:47Z"></script>
+  <script src="../metadataStore.js?v=2026-05-13T20:08:47Z"></script>
   <script>
   (function(){
     'use strict';
-    var BUILD_ID = '2026-05-13T19:59:00Z';
+    var BUILD_ID = '2026-05-13T20:08:47Z';
     var LITTLE_BRAIN_CONFIG_KEY = 'little_brain_config_v1';
     var state = { view:'picker', chars:[], char:null, store:null, config:null };
     var avatarHydrateToken = 0;

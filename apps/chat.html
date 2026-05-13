@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T19:59:00Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T19:59:00Z"></script>
-<script src="../assetStore.js?v=2026-05-13T19:59:00Z"></script>
-<script src="../accountManager.js?v=2026-05-13T19:59:00Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T19:59:00Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T19:59:00Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T19:59:00Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T19:59:00Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T19:59:00Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../promptManager.js?v=2026-05-13T20:08:47Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T20:08:47Z"></script>
+<script src="../assetStore.js?v=2026-05-13T20:08:47Z"></script>
+<script src="../accountManager.js?v=2026-05-13T20:08:47Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T20:08:47Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T20:08:47Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T20:08:47Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T20:08:47Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T20:08:47Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T20:08:47Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -13773,9 +13773,6 @@ function renderAutoSummaryToggle(){
   if(sub) sub.textContent = enabled ? '开启后会按间隔自动总结' : '关闭后仅支持手动总结';
 }
 function renderMemoryModeSettingsUi(){
-  var modeSelect = document.getElementById('csMemoryMode');
-  var mode = normalizeMemoryMode((modeSelect && modeSelect.value) || loadMemoryMode());
-  if(modeSelect) modeSelect.value = mode;
 }
 
 function refreshSummaryStatsUi(){
@@ -27747,12 +27744,6 @@ function openVoiceCallSettingsPanel(){
   syncVoiceCallSettingsUi();
 }
 
-function openVoiceCallMemoryPanel(){
-  closeVoiceCallSettingsPanel();
-  closeVoiceCallRecordViewer();
-  openMemoryPanel();
-}
-
 function closeVoiceCallSettingsPanel(){
   var panel = document.getElementById('voiceCallSettingsPanel');
   if(panel) panel.classList.remove('open');
@@ -29950,14 +29941,6 @@ if(_moneyCoverInput){
   var _ivdco = document.getElementById('innerVoiceDeleteConfirmOverlay');
   if(_ivdco){
     _ivdco.addEventListener('click', function(e){ if(e.target === _ivdco) closeInnerVoiceDeleteConfirm(); });
-  }
-  var _memo = document.getElementById('memoryOverlay');
-  if(_memo){
-    _memo.addEventListener('click', function(e){ if(e.target === _memo) closeMemoryPanel(); });
-  }
-  var _memEdit = document.getElementById('memEditorOverlay');
-  if(_memEdit){
-    _memEdit.addEventListener('click', function(e){ if(e.target === _memEdit) closeMemoryEditor(); });
   }
   var _ivEdit = document.getElementById('ivEditorOverlay');
   if(_ivEdit){
@@ -34958,8 +34941,6 @@ async function openChatSettings() {
     if(summaryEveryInput) summaryEveryInput.value = loadSummaryEverySize();
     if(manualSummaryInput) manualSummaryInput.value = loadManualSummarySize();
     if(memoryMergeInput) memoryMergeInput.value = loadMemoryMergeThreshold();
-    var memModeEl = document.getElementById('csMemoryMode');
-    if(memModeEl) memModeEl.value = loadMemoryMode();
     var vectorTopEl = document.getElementById('csVectorTopN');
     if(vectorTopEl) vectorTopEl.value = String(loadVectorTopN());
     var vectorStrategyEl = document.getElementById('csVectorStrategy');
@@ -35948,7 +35929,7 @@ async function saveChatSettings() {
   var severy = parseInt((summaryEveryInput && summaryEveryInput.value) || String(loadSummaryEverySize ? loadSummaryEverySize() : DEFAULT_SUMMARY_EVERY), 10);
   var manualSize = parseInt((manualSummaryInput && manualSummaryInput.value) || String(loadManualSummarySize ? loadManualSummarySize() : DEFAULT_MANUAL_SUMMARY_SIZE), 10);
   var mergeThreshold = parseInt((memoryMergeInput && memoryMergeInput.value) || String(loadMemoryMergeThreshold ? loadMemoryMergeThreshold() : DEFAULT_MEMORY_MERGE_THRESHOLD), 10);
-  var memoryModeNext = normalizeMemoryMode((document.getElementById('csMemoryMode') || {}).value || loadMemoryMode());
+  var memoryModeNext = MEMORY_MODE_STRUCTURED;
   var vectorTopNNext = Math.max(1, Math.min(20, parseInt((document.getElementById('csVectorTopN') || {}).value || String(DEFAULT_VECTOR_TOP_N), 10) || DEFAULT_VECTOR_TOP_N));
   var vectorStrategyNext = String((document.getElementById('csVectorStrategy') || {}).value || DEFAULT_VECTOR_RETRIEVAL_STRATEGY);
   if(vectorStrategyNext !== 'mixed' && vectorStrategyNext !== 'user-weighted' && vectorStrategyNext !== 'user-only') vectorStrategyNext = DEFAULT_VECTOR_RETRIEVAL_STRATEGY;
