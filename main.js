@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T06:15:16Z';
+const APP_BUILD_ID = '2026-05-13T06:36:08Z';
 const APP_UPDATE_NOTES = [
-  '减少默认使用“老子”',
-  '线上线下通话更贴人设',
-  '只有明确口癖才放行'
+  '通话记忆随时总结',
+  '星星按钮打开记忆面板',
+  '通话消息不再变淡'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';

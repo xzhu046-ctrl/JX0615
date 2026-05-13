@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T06:15:16Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T06:15:16Z"></script>
-<script src="../assetStore.js?v=2026-05-13T06:15:16Z"></script>
-<script src="../accountManager.js?v=2026-05-13T06:15:16Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T06:15:16Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T06:15:16Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T06:15:16Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T06:15:16Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T06:15:16Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T06:15:16Z"></script>
+<script src="../promptManager.js?v=2026-05-13T06:36:08Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T06:36:08Z"></script>
+<script src="../assetStore.js?v=2026-05-13T06:36:08Z"></script>
+<script src="../accountManager.js?v=2026-05-13T06:36:08Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T06:36:08Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T06:36:08Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T06:36:08Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T06:36:08Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T06:36:08Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T06:36:08Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -1656,7 +1656,7 @@ linear-gradient(180deg,#fffefa,#f6f6ef);box-shadow:2px 3px 0 rgba(17,17,17,.92);
 .mem-kv{display:grid;grid-template-columns:1fr auto;gap:8px;font-size:11px;font-weight:800;line-height:1.45}
 .mem-kv small{font-size:10px;color:#666;font-weight:900}
 .mem-inline-label{font-size:10px;color:#666;font-weight:900;letter-spacing:.06em}
-.memory-overlay{position:fixed;inset:0;z-index:180;display:none;align-items:stretch;justify-content:center;padding:calc(var(--safe-top) + 18px) 18px calc(var(--safe-bottom) + 18px);background:rgba(255,255,255,.48);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);overflow:hidden}
+.memory-overlay{position:fixed;inset:0;z-index:390;display:none;align-items:stretch;justify-content:center;padding:calc(var(--safe-top) + 18px) 18px calc(var(--safe-bottom) + 18px);background:rgba(255,255,255,.48);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);overflow:hidden}
 .memory-overlay.open{display:flex}
 .listen-along-overlay{position:fixed;inset:0;z-index:182;display:none;align-items:center;justify-content:center;padding:22px 18px;background:rgba(255,255,255,.34);backdrop-filter:blur(12px) saturate(118%);-webkit-backdrop-filter:blur(12px) saturate(118%)}
 .listen-along-overlay.open{display:flex}
@@ -1764,7 +1764,7 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .memory-close{border:var(--bd);border-radius:10px;background:var(--w);box-shadow:1px 1px 0 var(--b);width:30px;height:30px;font-size:14px;font-weight:900;cursor:pointer}
 .memory-close:active{transform:translate(1px,1px);box-shadow:0 0 0}
 .memory-body{flex:1 1 auto;min-height:0;max-height:100%;padding:12px 14px 24px;overflow-y:scroll;overflow-x:hidden;display:block;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
-.mem-editor-overlay{position:fixed;inset:0;z-index:220;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(255,255,255,.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.mem-editor-overlay{position:fixed;inset:0;z-index:430;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(255,255,255,.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .mem-editor-overlay.open{display:flex}
 .mem-editor-card{width:min(360px,100%);background:var(--w);border:var(--bd);border-radius:16px;box-shadow:var(--sh);padding:12px;display:flex;flex-direction:column;gap:10px}
 .mem-editor-title{font-family:var(--fontd);font-size:13px;font-weight:900}
@@ -1958,6 +1958,7 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .voice-call-mini-btn,.voice-call-menu-btn{width:48px;height:48px;border-radius:999px;padding:0;box-shadow:0 14px 26px rgba(0,0,0,.24)}
 .voice-call-mini-btn svg,.voice-call-actionbtn svg{width:20px;height:20px;display:block}
 .voice-call-menu-btn svg{width:22px;height:22px;display:block}
+.voice-call-menu-btn img{width:24px;height:24px;display:block;object-fit:contain}
 .voice-call-mini-btn:active,.voice-call-menu-btn:active,.voice-call-hangup-top:active,.voice-call-actionbtn:active,.voice-call-end-strip:active{transform:scale(.96)}
 .voice-call-hangup-top{height:48px;border-radius:999px;background:#fff;color:#111;font-size:13px;font-weight:900;letter-spacing:.02em;white-space:nowrap;box-shadow:0 18px 34px rgba(0,0,0,.28)}
 .voice-call-headcopy{min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;align-self:center}
@@ -2124,16 +2125,11 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
 .voice-call-feed::after{content:'';display:block;flex:0 0 var(--voice-call-elastic-tail,0px);min-height:var(--voice-call-elastic-tail,0px);pointer-events:none}
 .voice-call-line{display:flex;align-items:flex-end;gap:9px;min-height:0;flex:0 0 auto;transition:opacity .18s ease,filter .18s ease}
 .voice-call-line.call-fade-0{opacity:1;filter:none}
-.voice-call-line.call-fade-1{opacity:.96}
-.voice-call-line.call-fade-2{opacity:.86}
-.voice-call-line.call-fade-3{opacity:.74}
-.voice-call-line.call-fade-4{opacity:.60}
-.voice-call-line.call-fade-5{opacity:.46}
-.voice-call-line.call-fade-6{opacity:.36}
+.voice-call-line.call-fade-1,.voice-call-line.call-fade-2,.voice-call-line.call-fade-3,.voice-call-line.call-fade-4,.voice-call-line.call-fade-5,.voice-call-line.call-fade-6{opacity:1;filter:none}
 .voice-call-line.user{justify-content:flex-end}
 .voice-call-line.ai{justify-content:flex-start}
 .voice-call-line.narrator,.voice-call-line.system{justify-content:center;padding:7px 0}
-.voice-call-line.system.call-fade-5,.voice-call-line.system.call-fade-6{opacity:.30}
+.voice-call-line.system.call-fade-5,.voice-call-line.system.call-fade-6{opacity:1}
 .voice-call-line.narrator{margin:-8px 0 -3px;padding:0}
 .voice-call-line.narrator.ai-narrator{justify-content:flex-start;padding-left:43px;padding-right:0}
 .voice-call-line.narrator.user-narrator{justify-content:flex-end;padding-left:0;padding-right:43px}
@@ -2515,8 +2511,8 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
         <button class="voice-call-menu-btn" type="button" onclick="openVoiceCallSettingsPanel()" aria-label="通话设置">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Z"></path><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8.92 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.47.51.83.98 1H21a2 2 0 0 1 0 4h-.62c-.47.17-.84.53-.98 1Z"></path></svg>
         </button>
-        <button class="voice-call-menu-btn" type="button" onclick="openVoiceCallRecordViewer()" aria-label="通话记录">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6h10M7 11.5h10M7 17h6"></path><path d="M5 3.5h14a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V5A1.5 1.5 0 0 1 5 3.5Z"></path></svg>
+        <button class="voice-call-menu-btn" type="button" onclick="openVoiceCallMemoryPanel()" aria-label="通话记忆">
+          <img src="assets/记忆按钮.png" alt="">
         </button>
       </div>
     </div>
@@ -4167,6 +4163,8 @@ var selectedVoiceCallLineIds = [];
 var editingVoiceCallLineId = null;
 var editingVoiceCallDraft = '';
 var voiceCallLongPressTimer = null;
+var voiceCallMemoryBusy = false;
+var voiceCallMemoryNeedsRun = false;
 var voiceCallReplyLongPressTimer = null;
 var voiceCallReplyLongPressFired = false;
 var storageHydrationPromise = Promise.resolve();
@@ -5369,10 +5367,13 @@ function isMemoryRangeItem(it){
 function isPinnedMemoryItem(it){
   return !!(it && (it.manual || it.pinned));
 }
+function isSupplementalMemoryItem(it){
+  return /^(offline_|voice_call)/.test(String(it && it.sourceType || '').trim());
+}
 function computeMemoryCoveredFromItems(items){
   var list = Array.isArray(items) ? items.filter(function(item){
     if(!isMemoryRangeItem(item)) return false;
-    return !/^offline_/.test(String(item && item.sourceType || '').trim());
+    return !isSupplementalMemoryItem(item);
   }).slice() : [];
   list.sort(function(a, b){
     return (Number(a.from || 0) || 0) - (Number(b.from || 0) || 0);
@@ -5486,7 +5487,7 @@ async function maybeCompactMemorySummaries(store){
   var next = store || loadMemorySummaryStore();
   var threshold = loadMemoryMergeThreshold();
   var compactable = (next.items || []).filter(function(it){
-    return isMemoryRangeItem(it) && !isPinnedMemoryItem(it);
+    return isMemoryRangeItem(it) && !isPinnedMemoryItem(it) && !isSupplementalMemoryItem(it);
   });
   var effectiveThreshold = Math.max(2, Number(threshold) || DEFAULT_MEMORY_MERGE_THRESHOLD);
   while(compactable.length >= effectiveThreshold){
@@ -6166,6 +6167,20 @@ function buildOfflineSupplementalMemoryPromptText(store){
     }).filter(Boolean).join('\n')
   ].join('\n').trim();
 }
+function buildVoiceCallSupplementalMemoryPromptText(store){
+  var safe = ensureAdvancedMemoryOnStore(store || loadMemorySummaryStore());
+  var items = Array.isArray(safe.items) ? safe.items : [];
+  var extra = items.filter(function(it){
+    return /^voice_call/.test(String(it && it.sourceType || '').trim());
+  });
+  if(!extra.length) return '';
+  return [
+    '## 通话补充记忆',
+    extra.map(function(it){
+      return '- ' + String(it && it.text || '').trim();
+    }).filter(Boolean).join('\n')
+  ].join('\n').trim();
+}
 function appendSupplementalMemoryPromptText(base, extra){
   var left = String(base || '').trim();
   var right = String(extra || '').trim();
@@ -6188,7 +6203,10 @@ async function prepareVectorPromptMemory(messages){
 function buildMemoryPromptText(store){
   var safe = ensureAdvancedMemoryOnStore(store || loadMemorySummaryStore());
   var mode = getMemoryModeFromStore(safe);
-  var extra = buildOfflineSupplementalMemoryPromptText(safe);
+  var extra = [
+    buildOfflineSupplementalMemoryPromptText(safe),
+    buildVoiceCallSupplementalMemoryPromptText(safe)
+  ].filter(Boolean).join('\n\n');
   if(mode === MEMORY_MODE_STRUCTURED){
     return appendSupplementalMemoryPromptText(serializeStructuredMemoryForPrompt(safe), extra);
   }
@@ -8406,6 +8424,7 @@ function defaultVoiceCallState(){
     requestSource: 'user',
     summary: '',
     recordId: '',
+    memoryCovered: 0,
     awaitingReply: false,
     awaitingAnswer: false
   };
@@ -8454,6 +8473,7 @@ function normalizeVoiceCallSessionSnapshot(raw){
     requestSource: String(source.requestSource || '').trim() === 'char' ? 'char' : 'user',
     summary: String(source.summary || '').trim(),
     recordId: String(source.recordId || '').trim(),
+    memoryCovered: Math.max(0, Number(source.memoryCovered || 0) || 0),
     awaitingReply: false,
     awaitingAnswer: !!source.awaitingAnswer || String(source.phase || '').trim().toLowerCase() === 'connecting'
 	  });
@@ -10426,6 +10446,7 @@ function snapshotCurrentVoiceCallState(){
     requestSource: String(state.requestSource || '').trim() === 'char' ? 'char' : 'user',
     summary: String(state.summary || '').trim(),
     recordId: String(state.recordId || '').trim(),
+    memoryCovered: Math.max(0, Number(state.memoryCovered || 0) || 0),
     savedAt: Date.now()
   };
 }
@@ -27643,6 +27664,12 @@ function openVoiceCallSettingsPanel(){
   syncVoiceCallSettingsUi();
 }
 
+function openVoiceCallMemoryPanel(){
+  closeVoiceCallSettingsPanel();
+  closeVoiceCallRecordViewer();
+  openMemoryPanel();
+}
+
 function closeVoiceCallSettingsPanel(){
   var panel = document.getElementById('voiceCallSettingsPanel');
   if(panel) panel.classList.remove('open');
@@ -28009,13 +28036,6 @@ function syncVoiceCallFeedElasticSpace(){
 }
 
 function getVoiceCallLineFadeClass(index, total){
-  var distance = Math.max(0, Number(total || 0) - 1 - Number(index || 0));
-  if(distance >= 12) return 'call-fade-6';
-  if(distance >= 9) return 'call-fade-5';
-  if(distance >= 6) return 'call-fade-4';
-  if(distance >= 4) return 'call-fade-3';
-  if(distance >= 2) return 'call-fade-2';
-  if(distance >= 1) return 'call-fade-1';
   return 'call-fade-0';
 }
 
@@ -28442,6 +28462,115 @@ function tickVoiceCallTimer(){
   syncVoiceCallFloating();
 }
 
+function getVoiceCallMemoryLinesFromTranscript(transcript){
+  return (Array.isArray(transcript) ? transcript : []).filter(function(line){
+    return line && line.role !== 'system' && String(line.text || '').trim();
+  });
+}
+
+function voiceCallLineToMemoryChatEntry(line){
+  var speaker = normalizeVoiceCallNarratorSpeaker(line && line.speaker);
+  var isUser = line && (line.role === 'user' || (line.role === 'narrator' && speaker === 'user'));
+  var role = isUser ? 'user' : 'assistant';
+  var text = String(line && line.text || '').trim();
+  if(line && line.role === 'narrator'){
+    text = (isUser ? currentVoiceCallUserName() : currentVoiceCallCharName()) + '通话旁白：' + text;
+  }
+  var at = Number(line && line.at || Date.now()) || Date.now();
+  return {
+    id: String(line && line.id || ('callmem_' + at)),
+    role: role,
+    content: text,
+    type: line && line.role === 'narrator' ? 'narrator' : 'text',
+    sentAt: at,
+    readAt: at,
+    timestamp: at
+  };
+}
+
+async function appendVoiceCallMemoryChunk(slice, summaryText, from, to){
+  if(!character || !String(summaryText || '').trim()) return;
+  var store = ensureAdvancedMemoryOnStore(loadMemorySummaryStore());
+  var mode = getMemoryModeFromStore(store);
+  var chunkIndex = (Array.isArray(store.items) ? store.items : []).filter(function(item){
+    return /^voice_call/.test(String(item && item.sourceType || '').trim());
+  }).length + 1;
+  var text = '通话记忆：' + String(summaryText || '').trim();
+  store.items = Array.isArray(store.items) ? store.items : [];
+  store.items.push({
+    id: 'ms_call_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
+    from: Math.max(0, Number(from || 0) || 0),
+    to: Math.max(0, Number(to || 0) || 0),
+    text: text,
+    tokens: approxTokenCount(text),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    manual: false,
+    pinned: false,
+    label: '通话片段 #' + chunkIndex,
+    sourceType: 'voice_call',
+    memoryCategory: 'events'
+  });
+  if(mode === MEMORY_MODE_STRUCTURED){
+    try{
+      var prompt = buildStructuredSummaryPrompt(slice, store);
+      var raw = await callAIWithCustomPrompts(prompt, '请沉淀这段通话里的小脑瓜记忆。');
+      var entries = parseStructuredMemoryEntries(String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''), store);
+      if(entries.length){
+        store = appendStructuredMemoryEntriesToShortTerm(store, entries).store;
+      }
+    }catch(err){}
+  }
+  saveMemorySummaryStore(store);
+  refreshMemoryUi();
+}
+
+async function maybeCreateVoiceCallMemorySummaries(){
+  if(!character || !loadAutoSummaryEnabled()) return;
+  if(voiceCallMemoryBusy){
+    voiceCallMemoryNeedsRun = true;
+    return;
+  }
+  voiceCallMemoryBusy = true;
+  try{
+    do{
+      voiceCallMemoryNeedsRun = false;
+      var state = ensureVoiceCallState();
+      if(!state.active || !state.sessionId) return;
+      var summaryEvery = loadSummaryEverySize();
+      var lines = getVoiceCallMemoryLinesFromTranscript(state.transcript);
+      var covered = Math.max(0, Math.min(Number(state.memoryCovered || 0) || 0, lines.length));
+      while(lines.length - covered >= summaryEvery){
+        var from = covered;
+        var to = covered + summaryEvery;
+        var slice = lines.slice(from, to).map(voiceCallLineToMemoryChatEntry).filter(function(item){
+          return item && String(item.content || '').trim();
+        });
+        if(!slice.length) break;
+        var summary = await generateMemorySummary(slice);
+        await appendVoiceCallMemoryChunk(slice, summary, from, to);
+        covered = to;
+        if(voiceCallState && String(voiceCallState.sessionId || '') === String(state.sessionId || '')){
+          voiceCallState.memoryCovered = covered;
+          persistVoiceCallSession();
+        }
+      }
+    }while(voiceCallMemoryNeedsRun);
+  }finally{
+    voiceCallMemoryBusy = false;
+  }
+}
+
+function queueVoiceCallMemorySummary(){
+  var state = ensureVoiceCallState();
+  if(!state.active || !state.sessionId) return;
+  setTimeout(function(){
+    maybeCreateVoiceCallMemorySummaries().catch(function(err){
+      console.warn('voice call memory summary failed', err);
+    });
+  }, 0);
+}
+
 function appendVoiceCallLine(role, text, speaker){
   var state = ensureVoiceCallState();
   var normalizedRole = role === 'user' ? 'user' : (role === 'system' ? 'system' : (role === 'narrator' ? 'narrator' : 'assistant'));
@@ -28460,6 +28589,7 @@ function appendVoiceCallLine(role, text, speaker){
   renderVoiceCallFeed();
   renderVoiceCallTranscriptDock();
   persistVoiceCallSession();
+  queueVoiceCallMemorySummary();
   return line;
 }
 
@@ -29197,24 +29327,6 @@ async function summarizeVoiceCallRecord(record){
   }
 }
 
-async function appendVoiceCallSummaryToMemory(summary){
-  if(!character || !String(summary || '').trim()) return;
-  var store = loadMemorySummaryStore();
-  var endIndex = Math.max(1, Array.isArray(chatLog) ? chatLog.length : 1);
-  store.items.push({
-    id: 'ms_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
-    from: Math.max(0, endIndex - 1),
-    to: endIndex,
-    text: '通话记忆：' + String(summary || '').trim(),
-    tokens: approxTokenCount(summary),
-    createdAt: Date.now(),
-    manual: false,
-    pinned: false
-  });
-  saveMemorySummaryStore(store);
-  await maybeCompactMemorySummaries(store);
-}
-
 function buildVoiceCallRecordPayload(record){
   var item = normalizeCallRecordItem(record);
 	  return JSON.stringify({
@@ -29268,7 +29380,6 @@ async function finishVoiceCallRecordInBackground(recordId, entryId){
     if(target){
       target.content = buildVoiceCallRecordPayload(record);
     }
-    await appendVoiceCallSummaryToMemory(record.summary);
     await saveChat(true);
     if(String(voiceCallRecordOpenId || '') === String(record.id || '')){
       openVoiceCallRecordViewer(record.id);
@@ -30026,8 +30137,9 @@ function buildDiaryMemoryCardsHtml(items){
   if(!list.length) return '<div class="mem-empty">短期记忆里还没有内容。</div>';
   return list.slice().reverse().map(function(it, idx){
     var safeId = esc(it.id || '');
+    var label = getDiaryMemoryItemLabel(it, idx, list.length);
     return '<div class="mem-item">' +
-      '<div class="mem-item-title"><span class="mem-item-title-left"><button class="mem-mini-btn pin" type="button" data-memory-action="promote-short" data-memory-id="' + escAttr(safeId) + '" aria-label="转为长期"><img src="./assets/Pin.png" alt=""></button><span>日记片段 #' + (list.length - idx) + '</span></span>' +
+      '<div class="mem-item-title"><span class="mem-item-title-left"><button class="mem-mini-btn pin" type="button" data-memory-action="promote-short" data-memory-id="' + escAttr(safeId) + '" aria-label="转为长期"><img src="./assets/Pin.png" alt=""></button><span>' + esc(label) + '</span></span>' +
       '<div class="mem-item-actions"><button class="mem-mini-btn" type="button" onclick="openMemoryEditor(\'' + safeId + '\')">编辑</button><button class="mem-mini-btn icon" type="button" data-memory-action="delete-short" data-memory-id="' + escAttr(safeId) + '">×</button><span>' + formatTok(it.tokens || 0) + '</span></div></div>' +
       '<div class="mem-item-body">' + esc(it.text) + '</div></div>';
   }).join('');
