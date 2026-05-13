@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-13T06:56:16Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T06:56:16Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T06:56:16Z"></script>
-<script src="../promptManager.js?v=2026-05-13T06:56:16Z"></script>
-<script src="../accountManager.js?v=2026-05-13T06:56:16Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T06:56:16Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T06:56:16Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T06:56:16Z"></script>
+<script src="../assetStore.js?v=2026-05-13T07:00:20Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T07:00:20Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T07:00:20Z"></script>
+<script src="../promptManager.js?v=2026-05-13T07:00:20Z"></script>
+<script src="../accountManager.js?v=2026-05-13T07:00:20Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T07:00:20Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T07:00:20Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T07:00:20Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -972,10 +972,10 @@ body.offline-theme-love .offline-stage-action.memory img{display:none}
                 <button class="offline-setting-choice-btn" type="button" data-user-perspective="third">第三</button>
               </div>
             </div>
-            <div class="offline-setting-inline-panel" aria-label="转述强化">
+            <div class="offline-setting-inline-panel" aria-label="转述抢话">
               <div class="offline-setting-inline-head">
-                <div class="offline-setting-title">转述强化</div>
-                <div class="offline-setting-note">控制 user 输入进入正文的方式</div>
+                <div class="offline-setting-title">转述抢话</div>
+                <div class="offline-setting-note">控制 user 输入和抢话进入正文的方式</div>
               </div>
               <div class="offline-setting-row">
                 <div class="offline-setting-copy">
@@ -986,10 +986,10 @@ body.offline-theme-love .offline-stage-action.memory img{display:none}
               </div>
               <div class="offline-setting-row">
                 <div class="offline-setting-copy">
-                  <div class="offline-setting-label">强化</div>
-                  <div class="offline-setting-sub">默认关闭：只在不抢话的前提下，让 user 有少量动作或明确需要的台词。</div>
+                  <div class="offline-setting-label">抢话</div>
+                  <div class="offline-setting-sub">默认关闭：开启后可根据 user 人设和指令，让 user 有少量主动动作或台词。</div>
                 </div>
-                <button class="offline-setting-toggle" id="offlineDrawerUserEnhanceEnabled" type="button" aria-label="强化" aria-pressed="false"></button>
+                <button class="offline-setting-toggle" id="offlineDrawerUserEnhanceEnabled" type="button" aria-label="抢话" aria-pressed="false"></button>
               </div>
             </div>
             <label class="offline-setting-label" for="offlineDrawerStyle">文风补充</label>
@@ -8825,13 +8825,13 @@ function offlineRetellEnhanceSettingLine(prefs){
   var retellOn = storyPrefs.retellEnabled !== false;
   var enhanceOn = !!storyPrefs.userEnhanceEnabled;
   return [
-    '转述强化设置：转述' + (retellOn ? '开启' : '关闭') + '，强化' + (enhanceOn ? '开启' : '关闭') + '。',
+    '转述抢话设置：转述' + (retellOn ? '开启' : '关闭') + '，抢话' + (enhanceOn ? '开启' : '关闭') + '。',
     retellOn
       ? '若本轮存在 user 最新线下输入，正文需要自然吸收它，用约 20%-25% 的正文篇幅转述、扩写并润色 user 刚刚表达的内容，再承接 char 的反应与剧情推进。'
       : '转述关闭时，只把 user 最新线下输入当作触发信息，不刻意占用正文篇幅复述它。',
     enhanceOn
-      ? '强化开启时，可以根据 user persona 和本轮明确指令补少量可观察互动；强化不等于抢话，不能让 user 的新台词压过 char 的回应，不能替 user 写内心或重大决定。'
-      : '强化关闭时，不主动给 user 添加新台词或额外动作，更不能让 user 抢话；只呈现 user 输入里已经明确发生的内容。'
+      ? '抢话开启时，可以根据 user persona 和本轮明确指令补少量可观察互动、主动动作或短台词；不能让 user 的新台词压过 char 的回应，不能替 user 写内心或重大决定。'
+      : '抢话关闭时，不主动给 user 添加新台词或额外动作；只呈现 user 输入里已经明确发生的内容。'
   ].join(' ');
 }
 function offlineRetellEnhanceUserPromptBlock(userText, prefs){
@@ -8845,10 +8845,10 @@ function offlineRetellEnhanceUserPromptBlock(userText, prefs){
     lines.push('【转述】已关闭：不要刻意用大段正文复述 user input，只把它作为 char 当下回应的触发信息。');
   }
   if(storyPrefs.userEnhanceEnabled){
-    lines.push('【强化】已开启：可以根据 user persona 和本轮明确指令，给 user 少量可观察互动，例如动作、停顿、表情、靠近/退开或已经明确要说出口的短句。');
-    lines.push('强化不是抢话：没有明确台词意图时不要主动替 user 加新台词；即使需要写 user 台词，也必须短、贴本轮输入，不能盖过 char 的回应，不能替 user 做重大决定，不能写 user 内心。');
+    lines.push('【抢话】已开启：可以根据 user persona 和本轮明确指令，给 user 少量主动互动，例如动作、停顿、表情、靠近/退开或已经明确要说出口的短句。');
+    lines.push('抢话必须短、贴本轮输入，不能盖过 char 的回应，不能替 user 做重大决定，不能写 user 内心。');
   }else{
-    lines.push('【强化】已关闭：不要主动替 user 新增台词、动作或抢话；只处理 user input 中已经明说的内容，user 仍然只能通过 char 观察到的反应呈现。');
+    lines.push('【抢话】已关闭：不要主动替 user 新增台词、动作或抢话；只处理 user input 中已经明说的内容，user 仍然只能通过 char 观察到的反应呈现。');
   }
   return lines.join('\n');
 }
