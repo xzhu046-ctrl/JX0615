@@ -68,7 +68,7 @@
       z-index:40;
       left:18px;
       right:18px;
-      top:calc(env(safe-area-inset-top,0px) + 12px);
+      top:max(calc(env(safe-area-inset-top,0px) + 12px),18px);
       height:44px;
       padding:0;
       display:flex;
@@ -97,44 +97,10 @@
     .icon-btn svg{ width:21px; height:21px; display:block; }
     .icon-btn img{ width:19px; height:19px; object-fit:contain; display:block; }
     .icon-btn:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 rgba(17,17,17,.24); background:#fff; }
-    .title{
-      position:absolute;
-      left:48px;
-      right:48px;
-      top:0;
-      bottom:0;
-      min-width:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      pointer-events:none;
-    }
-    .title h1{
-      margin:0;
-      width:100%;
-      min-height:42px;
-      padding:0;
-      border:0;
-      border-radius:0;
-      background:transparent;
-      box-shadow:none;
-      backdrop-filter:none;
-      -webkit-backdrop-filter:none;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:0;
-      font-family:var(--fontcute);
-      font-size:33px;
-      line-height:1;
-      letter-spacing:0;
-      color:var(--black);
-      font-weight:900;
-      white-space:nowrap;
-    }
-    .title-latin{ font-family:var(--fontd); font-weight:900; letter-spacing:.02em; text-transform:uppercase; }
-    .title p{ display:none; }
-    .content{ flex:1 1 auto; min-height:0; overflow:auto; padding:8px 12px calc(env(safe-area-inset-bottom,0px) + 20px); -webkit-overflow-scrolling:touch; }
+    .topbar-spacer{ flex:1 1 auto; min-width:0; }
+    #subtitle{ display:none; }
+    .content{ flex:1 1 auto; min-height:0; overflow:auto; padding:calc(env(safe-area-inset-top,0px) + 66px) 12px calc(env(safe-area-inset-bottom,0px) + 20px); -webkit-overflow-scrolling:touch; }
+    body.picker-view .content{ padding-top:8px; }
     .char-strip{ display:flex; gap:14px; overflow-x:auto; padding:4px 2px 18px; scrollbar-width:none; }
     .char-strip::-webkit-scrollbar{ display:none; }
     .char-chip{ flex:0 0 auto; width:70px; border:0; background:transparent; color:var(--ink); display:flex; flex-direction:column; align-items:center; gap:7px; padding:4px 2px; }
@@ -171,6 +137,11 @@
     .section-title h2{ margin:0; font-family:var(--fontcute); font-size:18px; color:var(--black); font-weight:900; }
     .section-title span{ font-size:10px; font-family:var(--fontd); font-weight:900; color:var(--muted); letter-spacing:.10em; text-transform:uppercase; }
     .memory-grid{ display:grid; grid-template-columns:1fr; gap:8px; }
+    .memory-filter-strip{ display:flex; gap:8px; overflow-x:auto; padding:0 1px 12px; margin:-2px 0 2px; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+    .memory-filter-strip::-webkit-scrollbar{ display:none; }
+    .memory-filter-btn{ flex:0 0 auto; min-height:32px; border:2px solid #111; border-radius:999px; padding:0 13px; background:rgba(255,255,255,.88); color:#111; font-family:var(--fontcute); font-size:13px; font-weight:900; box-shadow:2px 2px 0 rgba(17,17,17,.14); white-space:nowrap; }
+    .memory-filter-btn.active{ background:#111; color:#fff; box-shadow:2px 2px 0 rgba(17,17,17,.26); }
+    .memory-filter-btn:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 rgba(17,17,17,.22); }
     .mem-row{ border:0; border-radius:0 18px 18px 0; background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(239,239,239,.38)),linear-gradient(180deg,rgba(17,17,17,.14) 0%,rgba(17,17,17,.88) 24%,rgba(17,17,17,.88) 76%,rgba(17,17,17,.14) 100%); background-repeat:no-repeat; background-size:100% 100%,3px 100%; padding:11px 12px 11px 17px; box-shadow:0 10px 24px rgba(0,0,0,.06); }
     .mem-row strong{ display:flex; justify-content:space-between; gap:8px; font-size:11px; font-family:var(--fontd); color:var(--black); font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
     .mem-row p{ margin:7px 0 0; font-size:13px; line-height:1.62; color:#2c2c2c; white-space:pre-wrap; font-weight:650; }
@@ -192,11 +163,14 @@
     .picker-panel{ display:block; padding:0; overflow:hidden; border:2px solid #111; border-radius:0 24px 24px 0; background:rgba(255,255,255,.64); box-shadow:8px 8px 0 rgba(17,17,17,.13),0 22px 48px rgba(0,0,0,.10); }
     .picker-hero{
       position:relative;
-      min-height:196px;
-      padding:78px 18px 58px;
-      text-align:left;
+      min-height:214px;
+      padding:calc(env(safe-area-inset-top,0px) + 62px) 54px 52px;
+      text-align:center;
       border-bottom:0;
       margin:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       background-image:
         linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.78) 72%,rgba(255,255,255,.94)),
         url('assets/%E6%A8%B1%E8%8A%B1%E5%9C%A8%E6%B0%B4%E9%87%8C.jpg');
@@ -213,8 +187,24 @@
       border-bottom:2px dashed rgba(17,17,17,.38);
     }
     .picker-kicker{ display:none; }
-    .picker-title{ display:none; }
-    .picker-title .latin{ font-family:var(--fontd); font-weight:900; letter-spacing:.02em; }
+    .picker-title{
+      position:relative;
+      z-index:2;
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:0;
+      color:#050505;
+      font-family:var(--fontcute);
+      font-size:clamp(30px,9vw,48px);
+      font-weight:900;
+      line-height:1;
+      letter-spacing:0;
+      white-space:nowrap;
+      text-shadow:0 2px 0 rgba(255,255,255,.62);
+    }
+    .picker-title .latin{ font-family:var(--fontcute); font-weight:900; letter-spacing:0; }
     .picker-copy{ display:none; }
     .config-alert{ position:relative; z-index:2; width:calc(100% - 28px); display:flex; align-items:center; justify-content:space-between; gap:10px; padding:15px 15px 15px 18px; border:0; border-radius:0 18px 18px 0; background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(240,240,240,.46)),linear-gradient(180deg,rgba(17,17,17,.14) 0%,rgba(17,17,17,.86) 24%,rgba(17,17,17,.86) 76%,rgba(17,17,17,.14) 100%); background-repeat:no-repeat; background-size:100% 100%,3px 100%; margin:-48px 14px 16px; box-shadow:0 14px 30px rgba(0,0,0,.11); }
     .config-alert strong{ display:block; font-family:var(--fontcute); font-size:16px; color:var(--black); }
@@ -299,6 +289,7 @@
     .settings-close:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 rgba(17,17,17,.22); }
     @media (min-width:720px){
       .content{ max-width:720px; width:100%; margin:0 auto; }
+      .topbar{ left:calc(50% - 360px); right:auto; width:720px; }
       .memory-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
       .char-card-list{ grid-template-columns:repeat(2,minmax(0,1fr)); }
     }
@@ -313,10 +304,8 @@
       <button class="icon-btn" type="button" id="backBtn" aria-label="返回">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
       </button>
-      <div class="title">
-        <h1 aria-label="CHAR的小脑瓜"><span class="title-latin" aria-hidden="true">CHAR</span><span aria-hidden="true">的小脑瓜</span></h1>
-        <p id="subtitle">读取角色记忆中</p>
-      </div>
+      <div class="topbar-spacer" aria-hidden="true"></div>
+      <p id="subtitle">读取角色记忆中</p>
       <button class="icon-btn" type="button" id="settingsBtn" aria-label="设置">
         <img src="assets/聊天设置.png" alt="" aria-hidden="true">
       </button>
@@ -326,6 +315,7 @@
       <section class="panel hero" id="heroPanel"></section>
       <section class="panel" id="structuredSection">
         <div class="section-title"><h2>分类记忆</h2><span id="structuredCount">0 条</span></div>
+        <div class="memory-filter-strip" id="memoryFilterStrip"></div>
         <div class="memory-grid" id="structuredList"></div>
       </section>
       <section class="panel" id="vectorSection">
@@ -350,21 +340,34 @@
     </section>
   </div>
   <div class="toast" id="toast"></div>
-  <script src="../assetStore.js?v=2026-05-13T20:19:48Z"></script>
-  <script src="../accountManager.js?v=2026-05-13T20:19:48Z"></script>
-  <script src="../chatStorage.js?v=2026-05-13T20:19:48Z"></script>
-  <script src="../metadataStore.js?v=2026-05-13T20:19:48Z"></script>
+  <script src="../assetStore.js?v=2026-05-13T20:26:21Z"></script>
+  <script src="../accountManager.js?v=2026-05-13T20:26:21Z"></script>
+  <script src="../chatStorage.js?v=2026-05-13T20:26:21Z"></script>
+  <script src="../metadataStore.js?v=2026-05-13T20:26:21Z"></script>
   <script>
   (function(){
     'use strict';
-    var BUILD_ID = '2026-05-13T20:19:48Z';
+    var BUILD_ID = '2026-05-13T20:26:21Z';
     var LITTLE_BRAIN_CONFIG_KEY = 'little_brain_config_v1';
-    var state = { view:'picker', chars:[], char:null, store:null, config:null };
+    var state = { view:'picker', chars:[], char:null, store:null, config:null, memoryFilter:'all' };
     var avatarHydrateToken = 0;
     var categoryLabels = {
       F:'人物底稿', E:'已经发生', D:'未来挂念', P:'正在推进',
       R:'关系温度', M:'关系温度', A:'代办与约定', H:'爱好习惯', X:'下次改正'
     };
+    var memoryFilterOptions = [
+      { id:'all', label:'全部' },
+      { id:'long', label:'长期' },
+      { id:'short', label:'短期' },
+      { id:'F', label:'人物底稿' },
+      { id:'E', label:'已经发生' },
+      { id:'R', label:'关系温度' },
+      { id:'P', label:'正在推进' },
+      { id:'D', label:'未来挂念' },
+      { id:'H', label:'爱好习惯' },
+      { id:'A', label:'代办约定' },
+      { id:'X', label:'下次改正' }
+    ];
     function $(id){ return document.getElementById(id); }
     function esc(value){
       return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch){
@@ -470,6 +473,31 @@
         await store.putJson(key, value).catch(function(){});
       }
       try{ localStorage.setItem(key, JSON.stringify(value)); }catch(err){}
+    }
+    async function readMemoryStoreKey(key){
+      var safeKey = String(key || '').trim();
+      if(!safeKey) return null;
+      var store = storage();
+      if(store && typeof store.get === 'function'){
+        var record = await store.get('memorySummaries', safeKey).catch(function(){ return null; });
+        if(record && record.data) return record.data;
+      }
+      return await readJsonKey(safeKey).catch(function(){ return null; });
+    }
+    async function writeMemoryStoreKey(key, value, charId){
+      var safeKey = String(key || '').trim();
+      if(!safeKey) return;
+      var payload = normalizeStore(value);
+      var store = storage();
+      if(store && typeof store.put === 'function'){
+        await store.put('memorySummaries', {
+          id:safeKey,
+          charId:String(charId || ''),
+          updatedAt:Date.now(),
+          data:payload
+        }).catch(function(){});
+      }
+      await writeJsonKey(safeKey, payload).catch(function(){});
     }
     function clone(value, fallback){
       try{ return JSON.parse(JSON.stringify(value)); }catch(err){ return fallback; }
@@ -692,7 +720,7 @@
       var keys = memoryKeys(charId);
       var best = null;
       for(var i = 0; i < keys.length; i += 1){
-        var data = normalizeStore(await readJsonKey(keys[i]));
+        var data = normalizeStore(await readMemoryStoreKey(keys[i]));
         if(!best || Number(data.updatedAt || 0) > Number(best.updatedAt || 0)) best = data;
       }
       return normalizeStore(best);
@@ -702,8 +730,217 @@
       state.store.updatedAt = Date.now();
       var keys = memoryKeys(state.char.id);
       for(var i = 0; i < keys.length; i += 1){
-        await writeJsonKey(keys[i], state.store);
+        await writeMemoryStoreKey(keys[i], state.store, state.char.id);
       }
+    }
+    function chatHistoryKeys(charId){
+      var id = String(charId || '').trim();
+      if(!id) return [];
+      var base = 'chat_' + id;
+      var keys = [];
+      function add(key){ if(key && keys.indexOf(key) < 0) keys.push(key); }
+      add(scopedKey(base));
+      add(base);
+      return keys;
+    }
+    async function readChatHistoryForCharacter(charId){
+      var keys = chatHistoryKeys(charId);
+      var best = null;
+      var store = storage();
+      for(var i = 0; i < keys.length; i += 1){
+        var record = null;
+        if(store && typeof store.get === 'function'){
+          record = await store.get('chats', keys[i]).catch(function(){ return null; });
+        }
+        if(!record){
+          var local = await readJsonKey(keys[i]).catch(function(){ return null; });
+          if(local) record = local;
+        }
+        var list = record && (Array.isArray(record.history) ? record.history : (Array.isArray(record.messages) ? record.messages : []));
+        if(!Array.isArray(list)) list = [];
+        var stamp = Number(record && record.updatedAt || 0) || list.reduce(function(max, item){
+          return Math.max(max, Number(item && (item.sentAt || item.readAt || item.timestamp || item.at) || 0) || 0);
+        }, 0);
+        if(list.length && (!best || stamp > best.stamp || (stamp === best.stamp && list.length > best.list.length))){
+          best = { list:list, stamp:stamp };
+        }
+      }
+      return best ? best.list.slice() : [];
+    }
+    function offlineSessionKeys(charId){
+      var id = String(charId || '').trim();
+      if(!id) return [];
+      var base = 'offline_meet_session_' + id;
+      var keys = [];
+      function add(key){ if(key && keys.indexOf(key) < 0) keys.push(key); }
+      add(scopedKey(base));
+      add(base);
+      return keys;
+    }
+    async function readOfflineSessionForCharacter(charId){
+      var keys = offlineSessionKeys(charId);
+      var best = null;
+      for(var i = 0; i < keys.length; i += 1){
+        var data = await readJsonKey(keys[i]).catch(function(){ return null; });
+        if(!data || typeof data !== 'object') continue;
+        var stamp = Number(data.updatedAt || data.savedAt || data.lastSavedAt || 0) || 0;
+        if(!best || stamp > best.stamp) best = { data:data, stamp:stamp };
+      }
+      return best ? best.data : null;
+    }
+    function clipText(text, max){
+      var src = String(text || '').replace(/\s+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+      var limit = Math.max(0, Number(max || 0) || 0);
+      if(limit && src.length > limit) return src.slice(src.length - limit);
+      return src;
+    }
+    function chatEntryToText(entry){
+      var item = entry || {};
+      var role = String(item.role || item.from || '').toLowerCase();
+      var name = role === 'user' ? 'user' : 'char';
+      var text = String(item.content || item.text || item.message || '').trim();
+      if(!text) return '';
+      return name + '：' + text;
+    }
+    function offlineEntryToText(entry){
+      var item = entry || {};
+      var speaker = String(item.speaker || item.role || item.from || '').trim();
+      var label = speaker === 'user' ? 'user' : (speaker ? speaker : '线下');
+      var text = String(item.text || item.content || item.narration || item.reply || '').trim();
+      if(!text) return '';
+      return label + '：' + text;
+    }
+    function collectOfflineSessionLines(session){
+      var src = session && typeof session === 'object' ? session : {};
+      var pools = [src.entries, src.messages, src.storyEntries, src.chatLog, src.timeline].filter(Array.isArray);
+      var lines = [];
+      pools.forEach(function(list){
+        list.forEach(function(item){
+          var line = offlineEntryToText(item);
+          if(line) lines.push(line);
+        });
+      });
+      if(!lines.length && typeof src.chatHistory === 'string') lines.push(src.chatHistory);
+      return lines;
+    }
+    function buildLittleBrainResummaryMaterial(chatHistory, offlineSession, store){
+      var oldItems = (Array.isArray(store && store.items) ? store.items : []).map(function(item){
+        return String(item && item.text || '').trim();
+      }).filter(Boolean).slice(-50);
+      var chatLines = (Array.isArray(chatHistory) ? chatHistory : []).map(chatEntryToText).filter(Boolean).slice(-120);
+      var offlineLines = collectOfflineSessionLines(offlineSession).slice(-120);
+      return [
+        oldItems.length ? ('【已有摘要】\n' + oldItems.join('\n')) : '',
+        chatLines.length ? ('【线上聊天】\n' + chatLines.join('\n')) : '',
+        offlineLines.length ? ('【线下邀约】\n' + offlineLines.join('\n')) : ''
+      ].filter(Boolean).join('\n\n');
+    }
+    function stripCodeFence(text){
+      return String(text || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,'').trim();
+    }
+    function parseJsonObjectFromText(text){
+      var raw = stripCodeFence(text);
+      try{ return JSON.parse(raw); }catch(err){}
+      var start = raw.indexOf('{');
+      var end = raw.lastIndexOf('}');
+      if(start >= 0 && end > start){
+        try{ return JSON.parse(raw.slice(start, end + 1)); }catch(err2){}
+      }
+      return null;
+    }
+    async function callLightApiForStructuredMemory(material){
+      var cfg = normalizeConfig(state.config || {});
+      var baseUrl = normalizeApiBaseUrl(cfg.lightLLM.baseUrl);
+      if(!baseUrl || !cfg.lightLLM.apiKey || !cfg.lightLLM.model) return null;
+      var charName = state.char ? String(state.char.nickname || state.char.name || '角色') : '角色';
+      var prompt = [
+        '你是 0615 的小脑瓜记忆整理器。请把材料重新整理成角色长期/短期记忆。',
+        '不要照抄原文，不要输出解释，只输出 JSON。',
+        'JSON 字段：facts, events, relationship, decisions, plans, emotions, shortTerm, custom。',
+        'facts 是对象；events 是对象，key 用月份或“最近”；relationship 是字符串；decisions/plans/emotions 是字符串数组。',
+        'shortTerm 是数组，每项包含 label,text,memoryCategory；custom 可含 A 代办与约定、H 爱好习惯、X 下次改正。',
+        '角色：' + charName,
+        '材料：\n' + clipText(material, 14000)
+      ].join('\n');
+      var resp = await fetch(baseUrl + '/chat/completions', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + cfg.lightLLM.apiKey },
+        body:JSON.stringify({
+          model:cfg.lightLLM.model,
+          temperature:.2,
+          stream:false,
+          messages:[
+            { role:'system', content:'只做记忆结构化整理，只返回 JSON。' },
+            { role:'user', content:prompt }
+          ]
+        })
+      });
+      if(!resp.ok) throw new Error('副 API HTTP ' + resp.status);
+      var data = await resp.json().catch(function(){ return null; });
+      var content = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+      return parseJsonObjectFromText(content);
+    }
+    function pushUnique(list, text){
+      var src = String(text || '').trim();
+      if(!src) return false;
+      if(list.some(function(item){ return String(item || '').trim() === src; })) return false;
+      list.push(src);
+      return true;
+    }
+    function mergeGeneratedStructuredMemory(snapshot){
+      if(!state.store || !snapshot || typeof snapshot !== 'object') return 0;
+      var mem = state.store.advancedMemory.structured;
+      var added = 0;
+      var facts = snapshot.facts && typeof snapshot.facts === 'object' ? snapshot.facts : {};
+      Object.keys(facts).forEach(function(key){
+        var safeKey = String(key || '').trim();
+        var value = String(facts[key] || '').trim();
+        if(!safeKey || !value) return;
+        if(String(mem.facts[safeKey] || '').trim() !== value) added += 1;
+        mem.facts[safeKey] = value;
+      });
+      var events = snapshot.events && typeof snapshot.events === 'object' ? snapshot.events : {};
+      Object.keys(events).forEach(function(key){
+        var safeKey = String(key || '最近').trim() || '最近';
+        var values = Array.isArray(events[key]) ? events[key] : String(events[key] || '').split(/[|；;]\s*/);
+        var old = String(mem.events[safeKey] || '').split('|').filter(Boolean);
+        values.forEach(function(text){ if(pushUnique(old, text)) added += 1; });
+        mem.events[safeKey] = old.join('|');
+      });
+      if(String(snapshot.relationship || '').trim() && String(mem.relationship || '').trim() !== String(snapshot.relationship || '').trim()){
+        mem.relationship = String(snapshot.relationship || '').trim();
+        added += 1;
+      }
+      ['decisions','plans','emotions'].forEach(function(key){
+        var list = Array.isArray(mem[key]) ? mem[key] : [];
+        (Array.isArray(snapshot[key]) ? snapshot[key] : []).forEach(function(text){ if(pushUnique(list, text)) added += 1; });
+        mem[key] = list;
+      });
+      var custom = snapshot.custom && typeof snapshot.custom === 'object' ? snapshot.custom : {};
+      mem.custom = mem.custom && typeof mem.custom === 'object' ? mem.custom : {};
+      ['A','H','X'].forEach(function(code){
+        var list = Array.isArray(mem.custom[code]) ? mem.custom[code] : [];
+        (Array.isArray(custom[code]) ? custom[code] : []).forEach(function(text){ if(pushUnique(list, text)) added += 1; });
+        mem.custom[code] = list;
+      });
+      var shortTerm = Array.isArray(mem.shortTerm) ? mem.shortTerm : [];
+      (Array.isArray(snapshot.shortTerm) ? snapshot.shortTerm : []).forEach(function(item){
+        var text = String((item && item.text) || item || '').trim();
+        if(!text || shortTerm.some(function(row){ return String(row && row.text || '').trim() === text; })) return;
+        shortTerm.push({
+          id:'st_rebuild_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7),
+          text:text,
+          label:String(item && item.label || '重新整理'),
+          memoryCategory:String(item && item.memoryCategory || 'E'),
+          sourceType:'little_brain_resummary',
+          createdAt:Date.now(),
+          updatedAt:Date.now()
+        });
+        added += 1;
+      });
+      mem.shortTerm = shortTerm;
+      mem.lastUpdated = Date.now();
+      return added;
     }
     function defaultConfig(){
       return {
@@ -870,23 +1107,26 @@
     function structuredItems(store){
       var mem = store.advancedMemory.structured;
       var rows = [];
-      Object.keys(mem.facts || {}).forEach(function(key){ rows.push({ label:'人物底稿', text:key + '：' + mem.facts[key] }); });
-      Object.keys(mem.events || {}).sort().forEach(function(key){ rows.push({ label:'已经发生 ' + key, text:String(mem.events[key] || '').split('|').filter(Boolean).join('\n') }); });
-      if(mem.relationship) rows.push({ label:'关系温度', text:mem.relationship });
-      (mem.plans || []).forEach(function(text){ rows.push({ label:'正在推进', text:text }); });
-      (mem.decisions || []).forEach(function(text){ rows.push({ label:'未来挂念', text:text }); });
-      (mem.emotions || []).forEach(function(text){ rows.push({ label:'关系温度', text:text }); });
+      Object.keys(mem.facts || {}).forEach(function(key){ rows.push({ key:'F', term:'long', label:'人物底稿', text:key + '：' + mem.facts[key] }); });
+      Object.keys(mem.events || {}).sort().forEach(function(key){ rows.push({ key:'E', term:'long', label:'已经发生 ' + key, text:String(mem.events[key] || '').split('|').filter(Boolean).join('\n') }); });
+      if(mem.relationship) rows.push({ key:'R', term:'long', label:'关系温度', text:mem.relationship });
+      (mem.plans || []).forEach(function(text){ rows.push({ key:'P', term:'long', label:'正在推进', text:text }); });
+      (mem.decisions || []).forEach(function(text){ rows.push({ key:'D', term:'long', label:'未来挂念', text:text }); });
+      (mem.emotions || []).forEach(function(text){ rows.push({ key:'R', term:'long', label:'关系温度', text:text }); });
       Object.keys(mem.custom || {}).forEach(function(code){
         var label = categoryLabels[code] || (mem.customCategories && mem.customCategories[code] && mem.customCategories[code].name) || code;
-        (Array.isArray(mem.custom[code]) ? mem.custom[code] : []).forEach(function(text){ rows.push({ label:label, text:text }); });
+        (Array.isArray(mem.custom[code]) ? mem.custom[code] : []).forEach(function(text){ rows.push({ key:code, term:'long', label:label, text:text }); });
       });
       (mem.shortTerm || []).forEach(function(item){
-        rows.push({ label:String(item.label || '短期记忆'), text:String(item.text || '') });
+        var rawCategory = String(item.memoryCategory || '').replace(/^custom:/,'');
+        var key = rawCategory === 'relationship' ? 'R' : (rawCategory === 'plans' ? 'P' : (rawCategory === 'decisions' ? 'D' : (/^[FEDPRAHXM]$/.test(rawCategory) ? rawCategory : 'short')));
+        rows.push({ key:key, term:'short', label:String(item.label || '短期记忆'), text:String(item.text || '') });
       });
       return rows.filter(function(row){ return String(row.text || '').trim(); });
     }
     function setSectionVisibility(mode){
       var picker = mode === 'picker';
+      document.body.classList.toggle('picker-view', picker);
       $('charStrip').hidden = picker;
       $('structuredSection').hidden = picker;
       $('vectorSection').hidden = picker;
@@ -915,7 +1155,7 @@
           + '<div class="compact-switch"><div><b>全自动记忆</b></div><button class="switch ' + (autoOn ? 'on' : '') + '" type="button" data-auto="' + esc(c.id) + '" aria-label="全自动记忆"></button></div>'
           + '</div></article>';
       }).join('') : '<div class="empty">还没有角色，先去角色卡里创建一个。</div>';
-      $('heroPanel').innerHTML = '<div class="picker-hero"></div>'
+      $('heroPanel').innerHTML = '<div class="picker-hero"><h1 class="picker-title" aria-label="CHAR的小脑瓜"><span class="latin" aria-hidden="true">CHAR</span><span aria-hidden="true">的小脑瓜</span></h1></div>'
         + (!cfgReady ? '<button class="config-alert" id="jumpConfigBtn" type="button"><div><strong>配置 API</strong><span>先填副 API 和向量 API。</span></div>' + iconArrow() + '</button>' : '')
         + '<div class="char-card-list">' + cards + '</div>';
       Array.prototype.slice.call($('heroPanel').querySelectorAll('[data-enter]')).forEach(function(btn){
@@ -966,11 +1206,41 @@
       $('rebuildBtn').onclick = rebuildVectorFromKnownMemory;
       $('promoteBtn').onclick = promoteShortTerm;
     }
+    function rowMatchesMemoryFilter(row, filterId){
+      var safe = String(filterId || 'all');
+      if(safe === 'all') return true;
+      if(safe === 'long' || safe === 'short') return String(row && row.term || '') === safe;
+      return String(row && row.key || '') === safe;
+    }
+    function renderMemoryFilter(rows){
+      var host = $('memoryFilterStrip');
+      if(!host) return;
+      var active = String(state.memoryFilter || 'all');
+      var available = Object.create(null);
+      available.all = true;
+      available.long = rows.some(function(row){ return row.term === 'long'; });
+      available.short = rows.some(function(row){ return row.term === 'short'; });
+      rows.forEach(function(row){
+        if(row && row.key) available[String(row.key)] = true;
+      });
+      if(!available[active]) active = state.memoryFilter = 'all';
+      host.innerHTML = memoryFilterOptions.filter(function(opt){ return available[opt.id]; }).map(function(opt){
+        return '<button class="memory-filter-btn' + (opt.id === active ? ' active' : '') + '" type="button" data-memory-filter="' + esc(opt.id) + '">' + esc(opt.label) + '</button>';
+      }).join('');
+      Array.prototype.slice.call(host.querySelectorAll('[data-memory-filter]')).forEach(function(btn){
+        btn.addEventListener('click', function(){
+          state.memoryFilter = btn.getAttribute('data-memory-filter') || 'all';
+          renderMemoryLists();
+        });
+      });
+    }
     function renderMemoryLists(){
       var store = state.store || normalizeStore(null);
       var rows = structuredItems(store);
-      $('structuredCount').textContent = rows.length + ' 条';
-      $('structuredList').innerHTML = rows.length ? rows.slice(-40).reverse().map(function(row){
+      renderMemoryFilter(rows);
+      var visibleRows = rows.filter(function(row){ return rowMatchesMemoryFilter(row, state.memoryFilter); });
+      $('structuredCount').textContent = visibleRows.length + '/' + rows.length + ' 条';
+      $('structuredList').innerHTML = visibleRows.length ? visibleRows.slice(-40).reverse().map(function(row){
         return '<article class="mem-row"><strong><span>' + esc(row.label) + '</span></strong><p>' + esc(row.text) + '</p></article>';
       }).join('') : '<div class="empty">这里会沉淀人物底稿、已经发生、关系温度、爱好习惯、约定和下次改正。</div>';
       var frags = (store.advancedMemory.vector.fragments || []).slice().sort(function(a,b){
@@ -1195,10 +1465,50 @@
       render();
       toast(on ? '全自动记忆已开启' : '全自动记忆已关闭');
     }
+    function foldDiaryItemsIntoShortTerm(){
+      if(!state.store) return 0;
+      var mem = state.store.advancedMemory.structured;
+      var list = Array.isArray(mem.shortTerm) ? mem.shortTerm : [];
+      var added = 0;
+      (Array.isArray(state.store.items) ? state.store.items : []).forEach(function(item){
+        var text = String(item && item.text || '').trim();
+        if(!text || list.some(function(row){ return String(row && row.text || '').trim() === text; })) return;
+        list.push({
+          id:'st_existing_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7),
+          text:text,
+          label:String(item && item.label || '旧摘要整理'),
+          memoryCategory:String(item && item.memoryCategory || 'E'),
+          sourceType:String(item && item.sourceType || 'existing_summary'),
+          createdAt:Number(item && item.createdAt || Date.now()) || Date.now(),
+          updatedAt:Date.now()
+        });
+        added += 1;
+      });
+      mem.shortTerm = list;
+      mem.lastUpdated = Date.now();
+      return added;
+    }
     async function enableLittleBrain(){
       if(!state.store) return;
+      toast('正在重整记忆...');
       state.store.advancedMemory.mode = 'structured';
       state.store.advancedMemory.vector.settings.enabled = true;
+      var material = '';
+      var generated = 0;
+      var folded = 0;
+      try{
+        var chatHistory = await readChatHistoryForCharacter(state.char && state.char.id);
+        var offlineSession = await readOfflineSessionForCharacter(state.char && state.char.id);
+        material = buildLittleBrainResummaryMaterial(chatHistory, offlineSession, state.store);
+        if(material && hasLightApi()){
+          var snapshot = await callLightApiForStructuredMemory(material);
+          generated = mergeGeneratedStructuredMemory(snapshot);
+        }
+      }catch(err){
+        toast('副 API 重整失败，先整理现有摘要');
+      }
+      folded = foldDiaryItemsIntoShortTerm();
+      var vectorAdded = addVectorRowsFromKnownMemory();
       await saveMemory();
       if(state.char && state.char.id){
         await patchCharacter(state.char.id, {
@@ -1208,14 +1518,14 @@
         });
       }
       render();
-      toast('小脑瓜已启用');
+      toast('已重整 ' + (generated + folded) + ' 条记忆，补入 ' + vectorAdded + ' 条检索');
     }
     function vectorDup(list, text){
       var src = String(text || '').trim();
       if(!src) return true;
       return list.some(function(item){ return String(item.content || '').trim() === src; });
     }
-    async function rebuildVectorFromKnownMemory(){
+    function addVectorRowsFromKnownMemory(){
       if(!state.store) return;
       var vector = state.store.advancedMemory.vector;
       vector.fragments = Array.isArray(vector.fragments) ? vector.fragments : [];
@@ -1245,6 +1555,11 @@
         added += 1;
       });
       vector.lastExtractionAt = Date.now();
+      return added;
+    }
+    async function rebuildVectorFromKnownMemory(){
+      if(!state.store) return;
+      var added = addVectorRowsFromKnownMemory();
       await saveMemory();
       render();
       toast('已补入 ' + added + ' 条检索片段');
