@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../assetStore.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../accountManager.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T03:54:50Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T03:54:50Z"></script>
+<script src="../promptManager.js?v=2026-05-13T06:05:47Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T06:05:47Z"></script>
+<script src="../assetStore.js?v=2026-05-13T06:05:47Z"></script>
+<script src="../accountManager.js?v=2026-05-13T06:05:47Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T06:05:47Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T06:05:47Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T06:05:47Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T06:05:47Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T06:05:47Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T06:05:47Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -16431,7 +16431,7 @@ function formatMessageForModel(msg){
       var reqPayload = typeof content === 'string' ? JSON.parse(content) : (content || {});
       content = '[voice_call_request text="' + String(reqPayload.text || '想和对方打一通电话').replace(/"/g, '\'') + '"]';
     }catch(err){
-      content = '[voice_call_request text="想和对方打一通电话"]';
+      content = '[voice_call_request text="' + String(content || '想和对方打一通电话').replace(/"/g, '\'') + '"]';
     }
   } else if(kind === 'schedulequote'){
     var schedulePayload = parseScheduleQuotePayload(content) || {};
@@ -27512,7 +27512,7 @@ function buildVoiceCallIdentityPromptBlock(){
   if(userNickNote) lines.push('角色给用户存的备注/昵称：' + userNickNote);
   if(character.personality || character.description) lines.push('核心人设：' + String(character.personality || character.description || '').slice(0, 1800));
   if(character.scenario) lines.push('关系/场景：' + String(character.scenario || '').slice(0, 900));
-  if(greeting) lines.push('当前开场白/关系基调：' + greeting.slice(0, 700));
+  if(greeting) lines.push('开场白会作为角色发过的一条普通消息进入通话上下文；只读其中的关系、称呼、事实和语气，不继承它的排版格式。');
   if(userPersona) lines.push('用户设定：' + userPersona.slice(0, 1000));
   var identityHint = getSubAccountIdentityHint();
   if(identityHint) lines.push(identityHint);
@@ -28543,24 +28543,72 @@ function extractVoiceCallReplyParts(raw){
   return items.slice(0, 5);
 }
 
+function isVoiceCallOpeningContextMatch(item, openingEntry){
+  if(!(item && openingEntry)) return false;
+  var itemId = String(item.id || '').trim();
+  var openingId = String(openingEntry.id || '').trim();
+  if(itemId && openingId && itemId === openingId) return true;
+  var openingText = String(openingEntry.content || '').trim();
+  var itemText = String(item.content || '').trim();
+  if(!openingText || !itemText) return false;
+  var openingNorm = normalizeGreetingMatchText(openingText);
+  var itemNorm = normalizeGreetingMatchText(itemText);
+  if(openingNorm && itemNorm && openingNorm === itemNorm) return true;
+  try{
+    return doesGreetingUserTemplateMatchCurrent(openingText, itemText);
+  }catch(e){
+    return false;
+  }
+}
+
+function getVoiceCallOpeningContextEntry(){
+  if(!character) return null;
+  var record = getGreetingRenderRecord(shouldRenderGreetingWithRegex());
+  var greeting = String(record && record.text || '').trim();
+  if(!greeting) return null;
+  var renderedType = String(record && record.type || getGreetingMessageType(greeting) || 'text');
+  var synthetic = {
+    id: '__voice_call_opening_' + String(character.id || ''),
+    role: 'assistant',
+    type: renderedType,
+    content: greeting,
+    sentAt: 0,
+    __voiceCallOpening: true
+  };
+  for(var i = 0; i < chatLog.length; i += 1){
+    var item = chatLog[i];
+    if(!(item && item.role === 'assistant' && !item.hidden)) continue;
+    if(isVoiceCallOpeningContextMatch(item, synthetic)) return Object.assign({}, item, { __voiceCallOpening: true });
+  }
+  return synthetic;
+}
+
+function voiceCallContextLineFromEntry(item){
+  if(!item) return '';
+  var kind = normalizeMessageType(item.type || 'text');
+  var source = '聊天记录';
+  if(kind === 'callrecord') source = '通话记录';
+  else if(kind === 'voicecallrequest') source = '来电请求';
+  else if(kind === 'offlineinvite') source = '线下邀约';
+  else if(kind === 'schedulequote') source = '日程引用';
+  else if(kind === 'momentcard') source = '朋友圈';
+  else if(kind === 'narrator') source = '旁白';
+  var speaker = item.role === 'user' ? currentVoiceCallUserName() : (item.role === 'system' ? '系统' : currentVoiceCallCharName());
+  var body = String(formatMessageForModel(item) || '').replace(/\s+/g, ' ').trim();
+  if(item.__voiceCallOpening && body.length > 1800) body = body.slice(0, 1800) + '...';
+  if(!body) return '';
+  return '[' + source + '] ' + speaker + '：' + body;
+}
+
 function buildVoiceCallContextLines(limit){
-  return getVisibleChatForModel().filter(function(item){
+  var selected = getVisibleChatForModel().filter(function(item){
     return item && !item.hidden;
-  }).slice(-(Number(limit || 8) || 8)).map(function(item){
-    if(!item) return '';
-    var kind = normalizeMessageType(item.type || 'text');
-    var source = '聊天记录';
-    if(kind === 'callrecord') source = '通话记录';
-    else if(kind === 'voicecallrequest') source = '来电请求';
-    else if(kind === 'offlineinvite') source = '线下邀约';
-    else if(kind === 'schedulequote') source = '日程引用';
-    else if(kind === 'momentcard') source = '朋友圈';
-    else if(kind === 'narrator') source = '旁白';
-    var speaker = item.role === 'user' ? currentVoiceCallUserName() : (item.role === 'system' ? '系统' : currentVoiceCallCharName());
-    var body = String(formatMessageForModel(item) || '').replace(/\s+/g, ' ').trim();
-    if(!body) return '';
-    return '[' + source + '] ' + speaker + '：' + body;
-  }).filter(Boolean).join('\n');
+  }).slice(-(Number(limit || 8) || 8));
+  var openingEntry = getVoiceCallOpeningContextEntry();
+  if(openingEntry && !selected.some(function(item){ return isVoiceCallOpeningContextMatch(item, openingEntry); })){
+    selected.unshift(openingEntry);
+  }
+  return selected.map(voiceCallContextLineFromEntry).filter(Boolean).join('\n');
 }
 
 function buildVoiceCallTranscriptLines(){
@@ -28660,7 +28708,7 @@ function buildVoiceCallPrompt(userText){
     'narrator 只能写电话里能听见或感觉到的东西：声音、呼吸、沉默、信号、电流、环境声、语速变化；禁止视觉动作描写。',
     '禁止输出 voice、meme、image、money、transfer、rich_html、schedule、emoji、表情包、转账、语音消息。',
     '禁止视觉描写、时间戳、指令标签和解释说明。',
-    '开场白、角色卡、世界书、记忆、最近聊天和用户设定都要读，但主要拿来学关系、称呼、事实、语气和节奏，不拿来照抄长度。',
+    '开场白必须作为角色曾经发出的普通消息读进去；它会出现在通话前聊天上下文里。读取其中的关系、称呼、事实、语气和节奏，但不要照抄它的排版、格式、长度或叙事体。',
     '根据当前情绪、关系张力、刚刚说了什么、角色是否忙和电话氛围，自己决定发几条；禁止每次都发送相同条数。',
     'text 必须短，最好不超过 20 个字；宁可拆成几句短话，也不要长段独白。',
     '一个 JSON 的 content/text 字段就是电话里一句真实说出口的话。别把两三句可以独立说的话塞进同一个字段；想补一句就另起一项。',
@@ -28829,12 +28877,18 @@ function parseVoiceCallAnswerDecision(raw){
     decision = String(obj.decision || obj.answer || obj.result || '').trim().toLowerCase();
     message = sanitizeVoiceCallAssistantOutput(obj.text || obj.message || obj.content || obj.reply || '');
   }else{
-    decision = /reject|decline|refuse|hang|挂|拒|不接|没空|忙/i.test(text) ? 'reject' : (/accept|answer|join|接|可以|喂/i.test(text) ? 'accept' : '');
+    decision = isVoiceCallRejectLikeText(text) ? 'reject' : (/accept|answer|join|接|可以|喂/i.test(text) ? 'accept' : '');
     message = sanitizeVoiceCallAssistantOutput(text.replace(/^\s*(accept|reject|decline|answer)\s*[:：-]?\s*/i, ''));
   }
   if(decision !== 'accept' && decision !== 'reject' && decision !== 'decline') decision = '';
   if(decision === 'decline') decision = 'reject';
+  if(decision === 'accept' && isVoiceCallRejectLikeText(message)) decision = 'reject';
+  if(decision === 'accept') message = '';
   return { decision: decision, message: message };
+}
+
+function isVoiceCallRejectLikeText(text){
+  return /reject|decline|refuse|hang|挂|拒|不接|不想接|不愿接|不方便接|接不了|接不起|别打|别烦|不想理|没空|在忙|正忙|忙着|开会|上课|睡了|睡觉|晚点|稍后|等会/i.test(String(text || ''));
 }
 
 function shouldSuppressVoiceCallOpeningText(text){
@@ -28867,6 +28921,7 @@ async function askVoiceCallAnswerDecision(){
     buildPresenceHardRulePrompt(),
     '【任务】',
     '用户正在给你打一通语音电话。请完全按角色当下的人设、关系、世界书、日程、所在地时间、情绪、现实状态和最近聊天，判断你会不会接。',
+    '接电话不是默认正确答案。如果角色此刻在忙、睡觉、不方便、情绪上不想理用户，或按关系/人设更可能挂断，就必须 reject；不要为了让剧情继续而强行 accept。',
     '安全边界不是温柔滤镜：除非角色卡明确要求，否则不准高高在上地侮辱女性或用现实歧视当作魅力；但角色该冷淡、烦躁、嘴毒、疏离或不耐烦时仍然要保持人设。',
     '这里只判断接听或拒接，不要生成接通后的第一句；接通后的第一轮会走普通通话回复，并且会包含旁白。',
     'accept 时 message 必须是空字符串。',
