@@ -60,9 +60,9 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-12T23:54:44Z';
+const APP_BUILD_ID = '2026-05-13T00:08:19Z';
 const APP_UPDATE_NOTES = [
-  '修复进聊天后头像丢失',
+  '修复主屏和约会头像空白',
   '恢复线上长按完整操作菜单',
   '线下气泡改为 kiss 入口操作'
 ];
@@ -3028,14 +3028,6 @@ function coerceBgAction(parsed, convoState){
 
 function getCharacterAvatarForBg(character){
   var id = character && character.id ? character.id : '';
-  if(id){
-    var bundleAvatar = getBundleAvatarForShell(getCachedShellChatSettingsBundleForChar(id), 'char');
-    if(isRenderableShellAvatarSrc(bundleAvatar)) return bundleAvatar;
-  }
-  if(id){
-    var saved = getImmediateStoredCharacterAvatarForShell(id);
-    if(isRenderableShellAvatarSrc(saved)) return saved;
-  }
   if(character && character.avatarUrl){
     var remoteAvatar = normalizeShellAssetSrc(character.avatarUrl);
     if(isRenderableShellAvatarSrc(remoteAvatar)) return remoteAvatar;
@@ -3043,6 +3035,14 @@ function getCharacterAvatarForBg(character){
   if(character && character.imageData){
     var current = normalizeShellAssetSrc(character.imageData);
     if(isRenderableShellAvatarSrc(current)) return current;
+  }
+  if(id){
+    var bundleAvatar = getBundleAvatarForShell(getCachedShellChatSettingsBundleForChar(id), 'char');
+    if(isRenderableShellAvatarSrc(bundleAvatar)) return bundleAvatar;
+  }
+  if(id){
+    var saved = getImmediateStoredCharacterAvatarForShell(id);
+    if(isRenderableShellAvatarSrc(saved)) return saved;
   }
   if(character && character.avatar){
     var av = normalizeShellAssetSrc(character.avatar);
@@ -7510,13 +7510,13 @@ function renderBondWidget(character){
   var bondCharId = String((c && c.id) || '').trim();
   if(charAvatar){
     charAvatar.dataset.charId = bondCharId;
-    const applyCharAvatar = (override, preferMirror)=>{
-      var mirrored = preferMirror ? getWidgetAvatarMirrorSrc('char', bondCharId) : '';
-      var fallbackSrc = getCharacterAvatarForBg(c || null);
-      var finalSrc = override || mirrored || fallbackSrc || '';
-      var fallbackText = String(c ? ((c.nickname || c.name || c.avatar || 'CHAR').trim().slice(0, 1) || 'C') : 'C');
-      applyBondAvatarContent('char', finalSrc, fallbackText, bondCharId);
-    };
+	    const applyCharAvatar = (override, preferMirror)=>{
+	      var mirrored = preferMirror ? getWidgetAvatarMirrorSrc('char', bondCharId) : '';
+	      var fallbackSrc = getCharacterAvatarForBg(c || null);
+	      var finalSrc = fallbackSrc || override || mirrored || '';
+	      var fallbackText = String(c ? ((c.nickname || c.name || c.avatar || 'CHAR').trim().slice(0, 1) || 'C') : 'C');
+	      applyBondAvatarContent('char', finalSrc, fallbackText, bondCharId);
+	    };
     applyCharAvatar('', true);
     if(c && c.id) loadCharacterAvatarForShell(c.id).then(applyCharAvatar);
   }
@@ -12850,21 +12850,31 @@ function setWidgetCharacter(c){
   if(c && c.id && !isRenderableShellAvatarSrc(liveAvatarSrc)){
     liveAvatarSrc = getWidgetAvatarMirrorSrc('char', c.id);
   }
-  if (avEl && isRenderableShellAvatarSrc(liveAvatarSrc)) {
-    avEl.innerHTML = '<img src="' + escapeHtmlAttr(liveAvatarSrc) + '" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center">';
-  } else if(avEl) {
-    avEl.textContent = String(c ? ((c.nickname || c.name || c.avatar || 'C').trim().slice(0, 1) || 'C') : 'C');
-  }
+  var widgetFallback = String(c ? ((c.nickname || c.name || c.avatar || 'C').trim().slice(0, 1) || 'C') : 'C');
+  renderWidgetCharacterAvatarNode(avEl, liveAvatarSrc, widgetFallback);
   if(c?.id){
     loadCharacterAvatarForShell(c.id).then((override)=>{
       if(!avEl) return;
       if(String(avEl.dataset.charId || '') !== String(c.id || '')) return;
       var safeOverride = normalizeShellAssetSrc(override || '');
+      if(isRenderableShellAvatarSrc(liveAvatarSrc)) return;
       if(isRenderableShellAvatarSrc(safeOverride)){
-        avEl.innerHTML = '<img src="' + escapeHtmlAttr(safeOverride) + '" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center">';
+        renderWidgetCharacterAvatarNode(avEl, safeOverride, widgetFallback);
         applyBondAvatarContent('char', safeOverride, String((c.nickname || c.name || c.avatar || 'CHAR')).trim().slice(0, 1) || 'C', c.id);
       }
     });
+  }
+}
+
+function renderWidgetCharacterAvatarNode(target, src, fallback){
+  if(!target) return;
+  var safeSrc = normalizeShellAssetSrc(src || '');
+  var safeFallback = String(fallback || 'C').trim().slice(0, 2) || 'C';
+  target.dataset.avatarSrc = isRenderableShellAvatarSrc(safeSrc) ? safeSrc : '';
+  if(isRenderableShellAvatarSrc(safeSrc)){
+    target.innerHTML = '<img src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center" onerror="this.parentNode.textContent=\'' + escapeHtmlAttr(safeFallback) + '\';this.parentNode.removeAttribute(\'data-avatar-src\')">';
+  }else{
+    target.textContent = safeFallback;
   }
 }
 

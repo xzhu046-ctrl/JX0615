@@ -869,12 +869,15 @@ function buildOfflineLaunchCharSnapshot(source){
   if(!source || typeof source !== 'object') return null;
   var imageData = String(source.imageData || '').trim();
   if(/^data:/i.test(imageData)) imageData = '';
+  var avatarUrl = String(source.avatarUrl || '').trim();
+  if(!imageData) imageData = avatarUrl;
   return {
     id: String(source.id || '').trim(),
     name: String(source.name || '').trim(),
     nickname: String(source.nickname || '').trim(),
     avatar: String(source.avatar || '').trim(),
     imageData: imageData,
+    avatarUrl: avatarUrl,
     description: String(source.description || '').trim(),
     personality: String(source.personality || '').trim(),
     scenario: String(source.scenario || '').trim(),
@@ -2294,9 +2297,9 @@ function renderOfflineInviteBubble(bubble, raw, viewRole, msgId){
     if(assistantAvatar){
       Promise.resolve(loadStoredAsset && character && character.id ? loadStoredAsset('char_avatar_' + character.id) : '')
         .then(function(src){
-          var safe = String(src || (character && character.imageData) || '').trim();
-          if(!safe) return;
-          assistantAvatar.innerHTML = '<img src="' + escAttr(safe) + '" alt=""><div class="offline-invite-plain-avatar-label">' + esc(getOfflineInviteDisplayName('assistant')) + '</div>';
+	          var safe = String((character && (character.imageData || character.avatarUrl)) || src || '').trim();
+	          if(!safe) return;
+	          assistantAvatar.innerHTML = '<img src="' + escAttr(safe) + '" alt="" referrerpolicy="no-referrer"><div class="offline-invite-plain-avatar-label">' + esc(getOfflineInviteDisplayName('assistant')) + '</div>';
         }).catch(function(){});
     }
     bubble.addEventListener('click', function(evt){

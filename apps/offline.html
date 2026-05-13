@@ -636,10 +636,10 @@ body{display:flex;justify-content:center}
       </div>
     </div>
   </div>
-<script src="../assetStore.js?v=2026-05-02T05:28:00Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-02T05:28:00Z"></script>
+<script src="../assetStore.js?v=2026-05-13T00:08:19Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T00:08:19Z"></script>
 <script>
-var OFFLINE_APP_BUILD_ID = '2026-05-02T05:28:00Z';
+var OFFLINE_APP_BUILD_ID = '2026-05-13T00:08:19Z';
 var currentFilter = 'all';
 var currentSelectedId = '';
 var currentSelectedDateKey = '';
@@ -755,10 +755,10 @@ function requestStoredCharAvatar(charId, recordId){
 function getCharAvatarSource(charId, charName){
   var safeId = String(charId || '').trim();
   var match = getParentCharByIdOrName(charId, charName);
-  var override = readStoredCharAvatar(safeId);
-  if(override) return { type:'image', value: override };
   if(match && isRenderableAssetSource(match.imageData)) return { type:'image', value: String(match.imageData || '').trim() };
   if(match && isRenderableAssetSource(match.avatarUrl)) return { type:'image', value: String(match.avatarUrl || '').trim() };
+  var override = readStoredCharAvatar(safeId);
+  if(override) return { type:'image', value: override };
   if(match && isRenderableAssetSource(match.avatar)) return { type:'image', value: String(match.avatar || '').trim() };
   return { type:'text', value: String((charName || (match && (match.nickname || match.name)) || '角')).trim().slice(0, 1) || '角' };
 }
