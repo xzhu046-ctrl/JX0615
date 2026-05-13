@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T02:39:12Z';
+const APP_BUILD_ID = '2026-05-13T02:53:20Z';
 const APP_UPDATE_NOTES = [
-  '新增主屏头像诊断复制窗口',
-  '新增 App 内头像诊断复制窗口',
-  '诊断会列出聊天设置头像来源'
+  '修复微信内复制诊断被拦',
+  '诊断失败时自动展开文本',
+  '可二次点击复制或长按复制'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -3353,6 +3353,7 @@ var ShellAvatarResolver = {
   }
 };
 window.ShellAvatarResolver = ShellAvatarResolver;
+var avatarDebugSnapshotText = { home:'', app:'' };
 
 function summarizeAvatarDebugSource(value){
   var text = normalizeShellAssetSrc(value || '');
@@ -3597,20 +3598,131 @@ async function buildAvatarDebugSnapshot(scope){
 }
 
 function writeAvatarDebugClipboard(text){
-  if(navigator.clipboard && typeof navigator.clipboard.writeText === 'function'){
-    return navigator.clipboard.writeText(text);
+  function copyWithExecCommand(){
+    return new Promise(function(resolve, reject){
+      try{
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', 'readonly');
+        ta.style.position = 'fixed';
+        ta.style.left = '0';
+        ta.style.top = '0';
+        ta.style.width = '1px';
+        ta.style.height = '1px';
+        ta.style.opacity = '0';
+        ta.style.zIndex = '-1';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try{ ta.setSelectionRange(0, ta.value.length); }catch(selErr){}
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok ? resolve() : reject(new Error('execCommand copy failed'));
+      }catch(err){
+        reject(err);
+      }
+    });
   }
+  if(navigator.clipboard && typeof navigator.clipboard.writeText === 'function'){
+    return navigator.clipboard.writeText(text).catch(function(){
+      return copyWithExecCommand();
+    });
+  }
+  return copyWithExecCommand();
+}
+
+function selectAvatarDebugText(scope){
+  var safeScope = scope === 'app' ? 'app' : 'home';
+  var ta = document.getElementById(safeScope === 'app' ? 'avatar-debug-app-text' : 'avatar-debug-home-text');
+  if(!ta) return false;
+  try{
+    ta.hidden = false;
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    return true;
+  }catch(err){
+    return false;
+  }
+}
+
+function revealAvatarDebugText(scope, text){
+  var safeScope = scope === 'app' ? 'app' : 'home';
+  avatarDebugSnapshotText[safeScope] = String(text || '');
+  var win = document.getElementById(safeScope === 'app' ? 'avatar-debug-app-window' : 'avatar-debug-home-window');
+  var box = document.getElementById(safeScope === 'app' ? 'avatar-debug-app-output' : 'avatar-debug-home-output');
+  var ta = document.getElementById(safeScope === 'app' ? 'avatar-debug-app-text' : 'avatar-debug-home-text');
+  if(win) win.classList.add('avatar-debug-expanded');
+  if(box) box.hidden = false;
+  if(ta){
+    ta.value = avatarDebugSnapshotText[safeScope];
+    selectAvatarDebugText(safeScope);
+  }
+}
+
+function copyVisibleAvatarDebugText(scope){
+  var safeScope = scope === 'app' ? 'app' : 'home';
+  var text = avatarDebugSnapshotText[safeScope] || '';
+  var ta = document.getElementById(safeScope === 'app' ? 'avatar-debug-app-text' : 'avatar-debug-home-text');
+  if(!text && ta) text = ta.value || '';
+  if(!text){
+    copyAvatarDebugSnapshot(safeScope);
+    return;
+  }
+  revealAvatarDebugText(safeScope, text);
+  try{
+    var ok = document.execCommand('copy');
+    if(ok){
+      setAvatarDebugStatus(safeScope, '已复制 ' + Math.round(text.length / 1024) + ' KB');
+      showHomeToast(safeScope === 'app' ? 'App 头像诊断已复制' : '主屏头像诊断已复制');
+      return;
+    }
+  }catch(err){}
+  if(navigator.clipboard && typeof navigator.clipboard.writeText === 'function'){
+    navigator.clipboard.writeText(text).then(function(){
+      setAvatarDebugStatus(safeScope, '已复制 ' + Math.round(text.length / 1024) + ' KB');
+      showHomeToast(safeScope === 'app' ? 'App 头像诊断已复制' : '主屏头像诊断已复制');
+    }).catch(function(){
+      selectAvatarDebugText(safeScope);
+      setAvatarDebugStatus(safeScope, '已选中，长按复制');
+      showHomeToast('已选中诊断文本，长按复制');
+    });
+    return;
+  }
+  selectAvatarDebugText(safeScope);
+  setAvatarDebugStatus(safeScope, '已选中，长按复制');
+  showHomeToast('已选中诊断文本，长按复制');
+}
+window.copyVisibleAvatarDebugText = copyVisibleAvatarDebugText;
+
+function hideAvatarDebugText(scope){
+  var safeScope = scope === 'app' ? 'app' : 'home';
+  var win = document.getElementById(safeScope === 'app' ? 'avatar-debug-app-window' : 'avatar-debug-home-window');
+  var box = document.getElementById(safeScope === 'app' ? 'avatar-debug-app-output' : 'avatar-debug-home-output');
+  if(win) win.classList.remove('avatar-debug-expanded');
+  if(box) box.hidden = true;
+}
+
+function clearAvatarDebugText(scope){
+  var safeScope = scope === 'app' ? 'app' : 'home';
+  avatarDebugSnapshotText[safeScope] = '';
+  var ta = document.getElementById(safeScope === 'app' ? 'avatar-debug-app-text' : 'avatar-debug-home-text');
+  if(ta) ta.value = '';
+  hideAvatarDebugText(safeScope);
+}
+
+function writeVisibleAvatarDebugClipboard(scope){
+  var safeScope = scope === 'app' ? 'app' : 'home';
+  var text = avatarDebugSnapshotText[safeScope] || '';
   return new Promise(function(resolve, reject){
     try{
-      var ta = document.createElement('textarea');
-      ta.value = text;
-      ta.setAttribute('readonly', 'readonly');
-      ta.style.position = 'fixed';
-      ta.style.left = '-9999px';
-      document.body.appendChild(ta);
+      revealAvatarDebugText(safeScope, text);
+      var ta = document.getElementById(safeScope === 'app' ? 'avatar-debug-app-text' : 'avatar-debug-home-text');
+      if(!ta) return reject(new Error('textarea missing'));
+      ta.focus();
       ta.select();
+      try{ ta.setSelectionRange(0, ta.value.length); }catch(selErr){}
       var ok = document.execCommand('copy');
-      document.body.removeChild(ta);
       ok ? resolve() : reject(new Error('execCommand copy failed'));
     }catch(err){
       reject(err);
@@ -3626,12 +3738,27 @@ function setAvatarDebugStatus(scope, text){
 async function copyAvatarDebugSnapshot(scope){
   var safeScope = scope === 'app' ? 'app' : 'home';
   setAvatarDebugStatus(safeScope, '正在整理...');
+  clearAvatarDebugText(safeScope);
   try{
     var snapshot = await buildAvatarDebugSnapshot(safeScope);
     var text = JSON.stringify(snapshot, null, 2);
-    await writeAvatarDebugClipboard(text);
-    setAvatarDebugStatus(safeScope, '已复制 ' + Math.round(text.length / 1024) + ' KB');
-    showHomeToast(safeScope === 'app' ? 'App 头像诊断已复制' : '主屏头像诊断已复制');
+    avatarDebugSnapshotText[safeScope] = text;
+    try{
+      await writeAvatarDebugClipboard(text);
+      setAvatarDebugStatus(safeScope, '已复制 ' + Math.round(text.length / 1024) + ' KB');
+      showHomeToast(safeScope === 'app' ? 'App 头像诊断已复制' : '主屏头像诊断已复制');
+    }catch(copyErr){
+      revealAvatarDebugText(safeScope, text);
+      try{
+        await writeVisibleAvatarDebugClipboard(safeScope);
+        setAvatarDebugStatus(safeScope, '已复制 ' + Math.round(text.length / 1024) + ' KB');
+        showHomeToast(safeScope === 'app' ? 'App 头像诊断已复制' : '主屏头像诊断已复制');
+      }catch(visibleErr){
+        selectAvatarDebugText(safeScope);
+        setAvatarDebugStatus(safeScope, '已生成，点复制文本');
+        showHomeToast('已生成诊断文本，再点复制文本');
+      }
+    }
   }catch(err){
     setAvatarDebugStatus(safeScope, '复制失败');
     showHomeToast('头像诊断复制失败：' + String(err && err.message || err || '未知错误'), 'error');
@@ -3655,21 +3782,30 @@ function ensureAvatarDebugWindows(){
     '.avatar-debug-copy{font-size:10px;font-weight:800;line-height:1.35;opacity:.78;margin-bottom:7px;}',
     '.avatar-debug-actions{display:flex;align-items:center;gap:8px;}',
     '.avatar-debug-btn{border:0;background:#7a1028;color:#fff;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900;line-height:1;box-shadow:none;}',
-    '.avatar-debug-status{font-size:10px;font-weight:900;color:#7a1028;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}'
+    '.avatar-debug-status{font-size:10px;font-weight:900;color:#7a1028;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+    '.avatar-debug-expanded{width:min(336px,calc(100vw - 20px));}',
+    '.avatar-debug-output{margin-top:8px;}',
+    '.avatar-debug-text{display:block;width:100%;height:118px;box-sizing:border-box;border:1px solid rgba(122,16,40,.28);border-radius:8px;background:#fff;color:#330713;font:9px/1.25 ui-monospace,SFMono-Regular,Menlo,monospace;padding:7px;resize:none;}',
+    '.avatar-debug-helper{margin-top:5px;font-size:9px;font-weight:800;line-height:1.35;color:#7a1028;opacity:.82;}',
+    '.avatar-debug-mini-btn{margin-top:6px;border:0;background:#7a1028;color:#fff;border-radius:999px;padding:7px 9px;font-size:10px;font-weight:900;line-height:1;box-shadow:none;}'
   ].join('');
   document.head.appendChild(style);
   var home = document.createElement('div');
   home.id = 'avatar-debug-home-window';
   home.className = 'avatar-debug-window avatar-debug-home';
-  home.innerHTML = '<div class="avatar-debug-title">主屏头像诊断</div><div class="avatar-debug-copy">刷新后先点这里复制。</div><div class="avatar-debug-actions"><button class="avatar-debug-btn" type="button" data-avatar-debug-copy="home">复制主屏</button><span class="avatar-debug-status" id="avatar-debug-home-status"></span></div>';
+  home.innerHTML = '<div class="avatar-debug-title">主屏头像诊断</div><div class="avatar-debug-copy">刷新后先点这里复制。</div><div class="avatar-debug-actions"><button class="avatar-debug-btn" type="button" data-avatar-debug-copy="home">复制主屏</button><span class="avatar-debug-status" id="avatar-debug-home-status"></span></div><div class="avatar-debug-output" id="avatar-debug-home-output" hidden><textarea class="avatar-debug-text" id="avatar-debug-home-text" readonly></textarea><button class="avatar-debug-mini-btn" type="button" data-avatar-debug-copy-existing="home">复制文本</button><div class="avatar-debug-helper">如果微信还拦，文本已选中，直接长按复制。</div></div>';
   var app = document.createElement('div');
   app.id = 'avatar-debug-app-window';
   app.className = 'avatar-debug-window avatar-debug-app';
-  app.innerHTML = '<div class="avatar-debug-title">App 内头像诊断</div><div class="avatar-debug-copy" id="avatar-debug-app-copy">进 App 后点这里复制。</div><div class="avatar-debug-actions"><button class="avatar-debug-btn" type="button" data-avatar-debug-copy="app">复制 App</button><span class="avatar-debug-status" id="avatar-debug-app-status"></span></div>';
+  app.innerHTML = '<div class="avatar-debug-title">App 内头像诊断</div><div class="avatar-debug-copy" id="avatar-debug-app-copy">进 App 后点这里复制。</div><div class="avatar-debug-actions"><button class="avatar-debug-btn" type="button" data-avatar-debug-copy="app">复制 App</button><span class="avatar-debug-status" id="avatar-debug-app-status"></span></div><div class="avatar-debug-output" id="avatar-debug-app-output" hidden><textarea class="avatar-debug-text" id="avatar-debug-app-text" readonly></textarea><button class="avatar-debug-mini-btn" type="button" data-avatar-debug-copy-existing="app">复制文本</button><div class="avatar-debug-helper">如果微信还拦，文本已选中，直接长按复制。</div></div>';
   var homeBtn = home.querySelector('[data-avatar-debug-copy="home"]');
   var appBtn = app.querySelector('[data-avatar-debug-copy="app"]');
+  var homeExistingBtn = home.querySelector('[data-avatar-debug-copy-existing="home"]');
+  var appExistingBtn = app.querySelector('[data-avatar-debug-copy-existing="app"]');
   if(homeBtn) homeBtn.addEventListener('click', function(){ copyAvatarDebugSnapshot('home'); });
   if(appBtn) appBtn.addEventListener('click', function(){ copyAvatarDebugSnapshot('app'); });
+  if(homeExistingBtn) homeExistingBtn.addEventListener('click', function(){ copyVisibleAvatarDebugText('home'); });
+  if(appExistingBtn) appExistingBtn.addEventListener('click', function(){ copyVisibleAvatarDebugText('app'); });
   document.body.appendChild(home);
   document.body.appendChild(app);
   syncAvatarDebugWindows();
