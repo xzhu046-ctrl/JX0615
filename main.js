@@ -62,11 +62,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T20:26:21Z';
+const APP_BUILD_ID = '2026-05-13T20:35:46Z';
 const APP_UPDATE_NOTES = [
-  '修复线下启动旧记忆按钮报错',
-  '小脑瓜标题回到首页中间',
-  '分类记忆可横滑筛选并重整记忆'
+  '线下启动最前面补旧记忆兜底',
+  '打开线下时强制绕过旧缓存',
+  '修复反复弹旧启动错误'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -12050,6 +12050,9 @@ function buildAppFrameUrl(src){
       if(pendingOpenChatNonce){
         url.searchParams.set('__chatNav', String(pendingOpenChatNonce || ''));
       }
+    }
+    if(/\/apps\/offline_mode\.html$/i.test(url.pathname || '')){
+      url.searchParams.set('__ts', String(Date.now()));
     }
     if(/\/apps\/offline_mode\.html$/i.test(url.pathname || '') && pendingOpenOfflineCharId){
       url.searchParams.set('char', String(pendingOpenOfflineCharId || '').trim());
