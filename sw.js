@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-05-13T17:39:47Z';
+const CACHE_VERSION = '2026-05-13T17:56:16Z';
 const CACHE_NAME = 'phone-shell-' + CACHE_VERSION;
 const CORE_URLS = [
   './',
@@ -33,7 +33,8 @@ function isApiRequestUrl(requestUrl){
     const url = new URL(requestUrl, self.location.href);
     const href = url.href.toLowerCase();
     const path = url.pathname.toLowerCase();
-    return href.indexOf('api.openai.com') !== -1
+    return path === '/avatar-proxy'
+      || href.indexOf('api.openai.com') !== -1
       || href.indexOf('api.anthropic.com') !== -1
       || href.indexOf('generativelanguage.googleapis.com') !== -1
       || href.indexOf('openrouter.ai') !== -1
