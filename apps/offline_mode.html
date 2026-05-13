@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-13T00:24:20Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T00:24:20Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T00:24:20Z"></script>
-<script src="../promptManager.js?v=2026-05-13T00:24:20Z"></script>
-<script src="../accountManager.js?v=2026-05-13T00:24:20Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T00:24:20Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T00:24:20Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T00:24:20Z"></script>
+<script src="../assetStore.js?v=2026-05-13T00:48:09Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T00:48:09Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T00:48:09Z"></script>
+<script src="../promptManager.js?v=2026-05-13T00:48:09Z"></script>
+<script src="../accountManager.js?v=2026-05-13T00:48:09Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T00:48:09Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T00:48:09Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T00:48:09Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -583,12 +583,12 @@ box-shadow:0 0 0 2px rgba(255,255,255,.97),6px 6px 0 rgba(17,17,17,.94);padding:
 .love-card.user .offline-bubble-action-row{justify-content:flex-end}
 .offline-kiss-action-trigger{width:38px;height:38px;padding:0;border:0;background:transparent;box-shadow:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
 .offline-kiss-action-trigger img{width:38px;height:38px;object-fit:contain;display:block;filter:drop-shadow(2px 2px 0 rgba(17,17,17,.42))}
-.offline-kiss-action-menu{display:flex;align-items:center;gap:8px;padding:7px;border:2px solid #111;border-radius:16px;background:#fff;box-shadow:4px 4px 0 #111}
-.offline-bubble-action-btn{width:38px;height:38px;padding:0;border:1.5px solid #111;border-radius:12px;background:#fff;color:#111;display:inline-flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 rgba(17,17,17,.78);cursor:pointer}
-.offline-bubble-action-btn img{width:20px;height:20px;object-fit:contain;display:block;filter:grayscale(1) contrast(1.1)}
-.offline-bubble-action-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(17,17,17,.78)}
-.offline-bubble-action-btn.is-active{background:#111;color:#fff}
-.offline-bubble-action-btn.is-active img{filter:invert(1) grayscale(1) contrast(1.1)}
+.offline-kiss-action-menu{display:flex;align-items:center;gap:10px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.offline-bubble-action-btn{width:34px;height:34px;padding:0;border:0;border-radius:0;background:transparent;color:#8f1224;display:inline-flex;align-items:center;justify-content:center;box-shadow:none;cursor:pointer}
+.offline-bubble-action-btn img{width:22px;height:22px;object-fit:contain;display:block;filter:sepia(1) saturate(7) hue-rotate(315deg) brightness(.58) contrast(1.35)}
+.offline-bubble-action-btn:active{transform:scale(.94);box-shadow:none}
+.offline-bubble-action-btn.is-active{background:transparent;color:#7b0f1f}
+.offline-bubble-action-btn.is-active img{filter:sepia(1) saturate(8) hue-rotate(315deg) brightness(.5) contrast(1.45)}
 .story-card.is-selected .offline-story-panel,
 .birthday-card.is-selected .birthday-sheet,
 .love-card.is-selected .love-paper{outline:3px solid #111;outline-offset:3px}
@@ -1326,6 +1326,7 @@ var offlineStageSummaryPreviewOpen = false;
 var offlineMultiSelectMode = false;
 var offlineSelectedEntryIndexes = [];
 var offlineActionMenuIndex = -1;
+var offlinePreserveStoryScrollOnce = false;
 var offlineInitInProgress = true;
 var offlineInitCompleted = false;
 var offlineLastErrorPayload = null;
@@ -7709,7 +7710,9 @@ function renderStory(){
   if(!wrap) return;
   var renderNow = Date.now();
   var renderBusy = hasOfflineGenerationInProgress();
+  var preserveScroll = !!offlinePreserveStoryScrollOnce;
   if(renderBusy && offlineRenderLastAt && renderNow - offlineRenderLastAt < 520){
+    if(preserveScroll) offlinePreserveStoryScrollOnce = true;
     if(!offlineRenderThrottleTimer){
       offlineRenderThrottleTimer = setTimeout(function(){
         offlineRenderThrottleTimer = 0;
@@ -7719,6 +7722,8 @@ function renderStory(){
     postOfflineBusyState('render_throttled');
     return;
   }
+  offlinePreserveStoryScrollOnce = false;
+  var preservedScrollTop = wrap.scrollTop;
   offlineRenderLastAt = renderNow;
   postOfflineBusyState('render');
   applyOfflineBuiltinTheme();
@@ -7790,11 +7795,19 @@ function renderStory(){
     startLoveSongPlayers();
   }
   startBirthdayLyricPlayers();
-  wrap.scrollTop = wrap.scrollHeight;
+  if(preserveScroll){
+    wrap.scrollTop = Math.min(preservedScrollTop, Math.max(0, wrap.scrollHeight - wrap.clientHeight));
+  }else{
+    wrap.scrollTop = wrap.scrollHeight;
+  }
   requestAnimationFrame(function(){
     startBirthdayLyricPlayers();
   });
   renderOfflineInviteDebugCard();
+}
+function renderStoryKeepingScroll(){
+  offlinePreserveStoryScrollOnce = true;
+  renderStory();
 }
 function waitForOfflineStoryPaint(){
   return new Promise(function(resolve){
@@ -8235,7 +8248,7 @@ function toggleOfflineActionMenu(index){
   var idx = Number(index);
   if(!Number.isInteger(idx)) return;
   offlineActionMenuIndex = Number(offlineActionMenuIndex) === idx ? -1 : idx;
-  renderStory();
+  renderStoryKeepingScroll();
 }
 function toggleOfflineEntrySelection(index, forceSelect){
   var idx = Number(index);
@@ -8246,12 +8259,12 @@ function toggleOfflineEntrySelection(index, forceSelect){
   else if(pos < 0) offlineSelectedEntryIndexes.push(idx);
   offlineActionMenuIndex = idx;
   normalizeOfflineSelectionIndexes();
-  renderStory();
+  renderStoryKeepingScroll();
 }
 function cancelOfflineMultiSelect(){
   offlineMultiSelectMode = false;
   offlineSelectedEntryIndexes = [];
-  renderStory();
+  renderStoryKeepingScroll();
 }
 function deleteOfflineEntryAt(index){
   var idx = Number(index);
@@ -8261,7 +8274,7 @@ function deleteOfflineEntryAt(index){
   session.entries.splice(idx, 1);
   offlineActionMenuIndex = -1;
   normalizeOfflineSelectionIndexes();
-  renderStory();
+  renderStoryKeepingScroll();
   setTimeout(function(){ saveSession({ force:true }); }, isMobileOfflineRuntime() ? 260 : 0);
   toast('已删除');
 }
@@ -8277,7 +8290,7 @@ function deleteSelectedOfflineEntries(){
   offlineMultiSelectMode = false;
   offlineSelectedEntryIndexes = [];
   offlineActionMenuIndex = -1;
-  renderStory();
+  renderStoryKeepingScroll();
   setTimeout(function(){ saveSession({ force:true }); }, isMobileOfflineRuntime() ? 260 : 0);
   toast('已删除');
 }
@@ -8325,7 +8338,7 @@ function favoriteOfflineEntryAt(index){
   var ok = false;
   try{ ok = !!window.AccountManager.addFavorite(favoriteRecord); }catch(e){}
   offlineActionMenuIndex = -1;
-  renderStory();
+  renderStoryKeepingScroll();
   toast(ok ? '已收藏' : '收藏失败');
 }
 function countOfflineStoryFloors(){

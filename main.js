@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T00:24:20Z';
+const APP_BUILD_ID = '2026-05-13T00:48:09Z';
 const APP_UPDATE_NOTES = [
-  '阻止进 App 后头像被覆盖',
-  '恢复线上长按完整操作菜单',
-  '线下气泡改为 kiss 入口操作'
+  '线下 kiss 操作只显示酒红图标',
+  '线下多选和 kiss 不再跳到底部',
+  '删除收藏操作保留当前位置'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
