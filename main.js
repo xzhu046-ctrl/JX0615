@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T01:57:10Z';
+const APP_BUILD_ID = '2026-05-13T02:02:51Z';
 const APP_UPDATE_NOTES = [
-  '修复进 App 后头像被空数据覆盖',
-  '图床头像会从角色资源里补回',
-  '主屏和约会头像显示更稳'
+  '修复聊天内再次覆盖头像',
+  '线下约会保留角色头像源',
+  '头像加载失败会自动重试'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -7651,7 +7651,7 @@ function applyBondAvatarContent(role, src, fallback, charId){
     }
   }
   var baseHtml = isRenderableShellAvatarSrc(safeSrc)
-    ? '<span class="bond-avatar-base"><img src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" onerror="this.closest(\'.bond-avatar-base\').textContent=\'' + escapeHtmlAttr(safeFallback.slice(0, 2)) + '\'"></span>'
+    ? '<span class="bond-avatar-base"><img src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" onerror="handleShellBondAvatarError(this,\'' + escapeHtmlAttr(safeRole) + '\')"></span>'
     : '<span class="bond-avatar-base">' + escapeHtml(safeFallback.slice(0, 2)) + '</span>';
   var frameUrl = getActiveBondAvatarFrameUrl(safeRole);
   if(frameUrl){
@@ -7661,6 +7661,26 @@ function applyBondAvatarContent(role, src, fallback, charId){
   }else{
     target.innerHTML = baseHtml;
   }
+}
+function handleShellBondAvatarError(img, role){
+  try{
+    if(!img) return;
+    var base = img.closest && img.closest('.bond-avatar-base');
+    var target = base && base.parentNode ? base.parentNode : null;
+    var failedSrc = normalizeShellAssetSrc(img.getAttribute('src') || img.src || '');
+    var safeRole = String(role || '') === 'user' ? 'user' : 'char';
+    var fallback = safeRole === 'user' ? '你' : 'C';
+    if(base) base.textContent = fallback;
+    if(!target || safeRole !== 'char') return;
+    var charId = String(target.dataset && target.dataset.charId || '').trim();
+    if(!charId || target.dataset.avatarRetrying === failedSrc) return;
+    target.dataset.avatarRetrying = failedSrc;
+    loadCharacterAvatarForShell(charId).then(function(nextSrc){
+      nextSrc = normalizeShellAssetSrc(nextSrc || '');
+      if(!isRenderableShellAvatarSrc(nextSrc) || nextSrc === failedSrc) return;
+      applyBondAvatarContent('char', nextSrc, fallback, charId);
+    }).catch(function(){});
+  }catch(err){}
 }
 
 function applyBondWidgetPreview(payload){
@@ -12959,11 +12979,30 @@ function renderWidgetCharacterAvatarNode(target, src, fallback){
   var safeSrc = normalizeShellAssetSrc(src || '');
   var safeFallback = String(fallback || 'C').trim().slice(0, 2) || 'C';
   target.dataset.avatarSrc = isRenderableShellAvatarSrc(safeSrc) ? safeSrc : '';
+  target.dataset.avatarFallback = safeFallback;
   if(isRenderableShellAvatarSrc(safeSrc)){
-    target.innerHTML = '<img src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center" onerror="this.parentNode.textContent=\'' + escapeHtmlAttr(safeFallback) + '\';this.parentNode.removeAttribute(\'data-avatar-src\')">';
+    target.innerHTML = '<img src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center" onerror="handleShellWidgetAvatarError(this)">';
   }else{
     target.textContent = safeFallback;
   }
+}
+function handleShellWidgetAvatarError(img){
+  try{
+    if(!img || !img.parentNode) return;
+    var target = img.parentNode;
+    var failedSrc = normalizeShellAssetSrc(img.getAttribute('src') || img.src || '');
+    var charId = String(target.dataset && target.dataset.charId || '').trim();
+    var fallback = String(target.dataset && target.dataset.avatarFallback || 'C').trim().slice(0, 2) || 'C';
+    target.textContent = fallback;
+    target.removeAttribute('data-avatar-src');
+    if(!charId || target.dataset.avatarRetrying === failedSrc) return;
+    target.dataset.avatarRetrying = failedSrc;
+    loadCharacterAvatarForShell(charId).then(function(nextSrc){
+      nextSrc = normalizeShellAssetSrc(nextSrc || '');
+      if(!isRenderableShellAvatarSrc(nextSrc) || nextSrc === failedSrc) return;
+      renderWidgetCharacterAvatarNode(target, nextSrc, fallback);
+    }).catch(function(){});
+  }catch(err){}
 }
 
 function getWidgetBubbleTextElement(role){

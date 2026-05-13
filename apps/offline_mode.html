@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../promptManager.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../accountManager.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T01:57:10Z"></script>
+<script src="../assetStore.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../promptManager.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../accountManager.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T02:02:51Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -3491,10 +3491,56 @@ function resolveOfflineCharacter(forcedId){
   if(rosterCharacter){
     merged = Object.assign({}, merged || {}, rosterCharacter);
   }
+  merged = preserveOfflineCharacterAvatar(merged, rosterCharacter, character);
   if(merged && String(merged.id || '').trim() === safeId){
     return merged;
   }
   return null;
+}
+function getFirstRenderableOfflineAvatarFromResources(resources){
+  if(!Array.isArray(resources)) return '';
+  for(var i = 0; i < resources.length; i += 1){
+    var item = resources[i];
+    if(!item || typeof item !== 'object') continue;
+    var src = normalizeOfflineAssetSrc(item.previewData || item.src || item.url || item.href || item.file || '');
+    if(isRenderableOfflineAvatarSrc(src)) return src;
+  }
+  return '';
+}
+function getOfflineCharacterAvatarCandidateSync(source){
+  if(!source || typeof source !== 'object') return '';
+  var id = String(source.id || '').trim();
+  var candidates = [
+    source.avatarUrl,
+    source.imageData,
+    getFirstRenderableOfflineAvatarFromResources(source.importedAvatarResources),
+    source.avatar
+  ];
+  if(id){
+    var keys = getOfflineCharAvatarAssetKeys(id);
+    for(var i = 0; i < keys.length; i += 1){
+      try{ candidates.push(localStorage.getItem(keys[i]) || ''); }catch(e){}
+    }
+  }
+  for(var j = 0; j < candidates.length; j += 1){
+    var src = normalizeOfflineAssetSrc(candidates[j] || '');
+    if(isRenderableOfflineAvatarSrc(src)) return src;
+  }
+  return '';
+}
+function preserveOfflineCharacterAvatar(target){
+  if(!target || typeof target !== 'object') return target;
+  var sources = Array.prototype.slice.call(arguments, 1);
+  sources.push(target);
+  for(var i = 0; i < sources.length; i += 1){
+    var src = getOfflineCharacterAvatarCandidateSync(sources[i]);
+    if(isRenderableOfflineAvatarSrc(src)){
+      target.avatarUrl = src;
+      target.imageData = src;
+      break;
+    }
+  }
+  return target;
 }
 function buildOfflineCharacterFromSnapshot(snapshot){
   if(!snapshot || typeof snapshot !== 'object') return null;
@@ -3502,13 +3548,14 @@ function buildOfflineCharacterFromSnapshot(snapshot){
   if(!safeId) return null;
   var resolvedName = String(snapshot.name || snapshot.charName || '').trim();
   var resolvedNickname = String(snapshot.nickname || snapshot.charName || '').trim();
-  return {
+  return preserveOfflineCharacterAvatar({
     id: safeId,
     name: resolvedName || resolvedNickname || 'CHAR',
     nickname: resolvedNickname,
     avatar: String(snapshot.avatar || '').trim() || '🌸',
     imageData: String(snapshot.imageData || '').trim(),
     avatarUrl: String(snapshot.avatarUrl || '').trim(),
+    importedAvatarResources: Array.isArray(snapshot.importedAvatarResources) ? snapshot.importedAvatarResources.slice() : [],
     description: String(snapshot.description || '').trim(),
     personality: String(snapshot.personality || '').trim(),
     userNameProfile: String(snapshot.userNameProfile || '').trim(),
@@ -3530,7 +3577,7 @@ function buildOfflineCharacterFromSnapshot(snapshot){
     translationEnabled: !!snapshot.translationEnabled,
     replyLanguage: normalizeReplyLanguage(snapshot.replyLanguage || snapshot.language || 'zh'),
     translationMode: normalizeTranslationMode(snapshot.translationMode || 'ondemand')
-  };
+  }, snapshot);
 }
 var OFFLINE_REPLY_LANGUAGE_OPTIONS = {
   zh:{ value:'zh', label:'中文', nativeLabel:'简体中文', instruction:'正文与灰色旁白心声默认使用简体中文。' },

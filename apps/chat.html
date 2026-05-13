@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../assetStore.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../accountManager.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T01:57:10Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T01:57:10Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T01:57:10Z"></script>
+<script src="../promptManager.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../assetStore.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../accountManager.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T02:02:51Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T02:02:51Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -18810,7 +18810,7 @@ function activeCharacterLocalMirror(c){
   if(!c) return null;
   var id = String(c.id || '').trim();
   if(!id) return null;
-  var imageData = normalizeAvatarSrc(c.imageData || c.avatarUrl || c.avatar || '');
+  var imageData = getChatCharacterAvatarCandidateSync(c);
   if(/^data:/i.test(imageData)) imageData = '';
   return {
     id: id,
@@ -18824,6 +18824,56 @@ function activeCharacterLocalMirror(c){
     msgMin: Number(c.msgMin) || 1,
     msgMax: Number(c.msgMax) || Math.max(Number(c.msgMin) || 1, 3)
   };
+}
+
+function getFirstRenderableChatAvatarFromResources(resources){
+  if(!Array.isArray(resources)) return '';
+  for(var i = 0; i < resources.length; i += 1){
+    var item = resources[i];
+    if(!item || typeof item !== 'object') continue;
+    var src = normalizeAvatarSrc(item.previewData || item.src || item.url || item.href || item.file || '');
+    if(isRenderableAvatarSrc(src)) return src;
+  }
+  return '';
+}
+
+function getChatCharacterAvatarCandidateSync(source){
+  if(!source || typeof source !== 'object') return '';
+  var id = String(source.id || '').trim();
+  var candidates = [
+    source.avatarUrl,
+    source.imageData,
+    getFirstRenderableChatAvatarFromResources(source.importedAvatarResources),
+    source.avatar
+  ];
+  if(id){
+    try{ candidates.push(localStorage.getItem(accountScopedKey('char_avatar_' + id)) || ''); }catch(e){}
+    try{ candidates.push(localStorage.getItem('char_avatar_' + id) || ''); }catch(e2){}
+  }
+  for(var i = 0; i < candidates.length; i += 1){
+    var src = normalizeAvatarSrc(candidates[i] || '');
+    if(isRenderableAvatarSrc(src)) return src;
+  }
+  return '';
+}
+
+function mergeChatCharacterPreservingAvatar(){
+  var merged = {};
+  for(var i = 0; i < arguments.length; i += 1){
+    var source = arguments[i];
+    if(source && typeof source === 'object') merged = Object.assign(merged, source);
+  }
+  var avatarSources = Array.prototype.slice.call(arguments).map(getChatCharacterAvatarCandidateSync);
+  avatarSources.push(getChatCharacterAvatarCandidateSync(merged));
+  for(var j = 0; j < avatarSources.length; j += 1){
+    var src = normalizeAvatarSrc(avatarSources[j] || '');
+    if(isRenderableAvatarSrc(src)){
+      merged.avatarUrl = src;
+      merged.imageData = src;
+      break;
+    }
+  }
+  return merged;
 }
 
 function compactActiveCharacterMirrorKey(key){
@@ -18877,7 +18927,7 @@ async function resolveCharacterFromRosterFresh(charId, fallback){
     try{ await window.MetadataStore.loadCharacters(true); }catch(err){}
   }
   var localResolved = resolveCharacterFromRoster(charId, null);
-  if(localResolved && localResolved.id) return localResolved;
+  if(localResolved && localResolved.id) return mergeChatCharacterPreservingAvatar(fallback, localResolved);
   try{
     var shell = window.parent && window.parent !== window ? window.parent : null;
     if(shell && shell.MetadataStore && typeof shell.MetadataStore.loadCharacters === 'function'){
@@ -18896,12 +18946,12 @@ async function resolveCharacterFromRosterFresh(charId, fallback){
           var owner = String(item.ownerAccountId || '').trim();
           return !owner || owner === activeAcctId;
         }) || shellList.find(function(item){ return item && String(item.id || '').trim() === String(charId || '').trim(); });
-        if(found) return Object.assign({}, found);
+        if(found) return mergeChatCharacterPreservingAvatar(fallback, found);
       }
     }
     if(shell && typeof shell.getActiveCharacterData === 'function'){
       var active = shell.getActiveCharacterData();
-      if(active && String(active.id || '').trim() === String(charId || '').trim()) return Object.assign({}, active);
+      if(active && String(active.id || '').trim() === String(charId || '').trim()) return mergeChatCharacterPreservingAvatar(fallback, active);
     }
   }catch(shellErr){}
   return fallback || null;
