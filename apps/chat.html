@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T02:02:51Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T02:02:51Z"></script>
-<script src="../assetStore.js?v=2026-05-13T02:02:51Z"></script>
-<script src="../accountManager.js?v=2026-05-13T02:02:51Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T02:02:51Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T02:02:51Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T02:02:51Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T02:02:51Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T02:02:51Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T02:02:51Z"></script>
+<script src="../promptManager.js?v=2026-05-13T02:07:20Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T02:07:20Z"></script>
+<script src="../assetStore.js?v=2026-05-13T02:07:20Z"></script>
+<script src="../accountManager.js?v=2026-05-13T02:07:20Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T02:07:20Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T02:07:20Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T02:07:20Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T02:07:20Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T02:07:20Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T02:07:20Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -33471,6 +33471,8 @@ function resolveBestCharAvatarSource(){
     if(isRenderableAvatarSrc(selectedSrc)) return selectedSrc;
     var liveSrc = currentVisibleCharAvatarSrc();
     if(liveSrc) return liveSrc;
+    var resourceSrc = getChatCharacterAvatarCandidateSync(character);
+    if(isRenderableAvatarSrc(resourceSrc)) return resourceSrc;
     return resolveCharAvatarDataUrl();
   }).then(function(src){
     if(src) return src;
@@ -33497,6 +33499,7 @@ function getChatAvatarCandidates(){
     if(out.indexOf(text) === -1) out.push(text);
   }
   push(currentVisibleCharAvatarSrc());
+  push(getChatCharacterAvatarCandidateSync(character));
   push(character && character.avatarUrl);
   push(character && character.imageData);
   try{ push(localStorage.getItem('char_avatar_' + (character && character.id || '')) || ''); }catch(e){}

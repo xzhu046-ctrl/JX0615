@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T02:02:51Z';
+const APP_BUILD_ID = '2026-05-13T02:07:20Z';
 const APP_UPDATE_NOTES = [
-  '修复聊天内再次覆盖头像',
-  '线下约会保留角色头像源',
-  '头像加载失败会自动重试'
+  '主动修复本机坏头像缓存',
+  '图床头像会写回头像资产',
+  '后台会记录头像修复日志'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -669,6 +669,7 @@ function refreshShellCharacterSurfaces(){
     if(active){
       setWidgetCharacter(active);
       renderBondWidget(active);
+      repairShellCharacterAvatar(active, 'surface_refresh').catch(function(){});
     }else{
       renderBondWidget(null);
     }
@@ -3179,9 +3180,76 @@ function loadCharacterAvatarForShell(charId){
         }).catch(function(){ return ''; });
       });
     });
-    return chain.then(function(found){ return found || immediate || ''; });
+    return chain.then(function(found){
+      if(isRenderableShellAvatarSrc(found)) return found;
+      var roster = resolveShellCharacterById(charId, getCachedShellCharacterForAvatarMerge(charId));
+      var rosterAvatar = getShellCharacterAvatarCandidateSync(roster);
+      if(isRenderableShellAvatarSrc(rosterAvatar)){
+        saveShellCharacterAvatarAsset(charId, rosterAvatar);
+        return rosterAvatar;
+      }
+      return immediate || '';
+    });
   }).catch(function(){
     return '';
+  });
+}
+
+function saveShellCharacterAvatarAsset(charId, src){
+  var safeId = String(charId || '').trim();
+  var safeSrc = normalizeShellAssetSrc(src || '');
+  if(!safeId || !isRenderableShellAvatarSrc(safeSrc)) return Promise.resolve(false);
+  var keys = getCharacterAvatarAssetKeysForShell(safeId);
+  return Promise.all(keys.map(function(key){
+    return saveStoredAsset(key, safeSrc).catch(function(){ return false; });
+  })).then(function(){ return true; }).catch(function(){ return false; });
+}
+
+function repairShellCharacterAvatar(character, reason){
+  var hydrated = hydrateShellCharacterPayload(character) || character || null;
+  var charId = String(hydrated && hydrated.id || '').trim();
+  if(!charId) return Promise.resolve(false);
+  return resolveCharacterAvatarForShell(hydrated).then(function(src){
+    src = normalizeShellAssetSrc(src || getShellCharacterAvatarCandidateSync(hydrated) || '');
+    if(!isRenderableShellAvatarSrc(src)) return false;
+    hydrated.avatarUrl = src;
+    hydrated.imageData = src;
+    saveShellCharacterAvatarAsset(charId, src).catch(function(){});
+    try{
+      var cacheKey = getShellAccountCacheKey(getActiveAccountId());
+      if(shellActiveCharacterCache[cacheKey] && String(shellActiveCharacterCache[cacheKey].id || '') === charId){
+        shellActiveCharacterCache[cacheKey] = Object.assign({}, shellActiveCharacterCache[cacheKey], { avatarUrl:src, imageData:src });
+      }
+      if(persistedShellActiveCharacter && String(persistedShellActiveCharacter.id || '') === charId){
+        persistedShellActiveCharacter = Object.assign({}, persistedShellActiveCharacter, { avatarUrl:src, imageData:src });
+      }
+    }catch(e){}
+    setTimeout(function(){
+      try{
+        var current = getActiveCharacterData();
+        if(current && String(current.id || '') === charId){
+          setWidgetCharacter(Object.assign({}, current, { avatarUrl:src, imageData:src }));
+          renderBondWidget(Object.assign({}, current, { avatarUrl:src, imageData:src }));
+        }
+      }catch(renderErr){}
+    }, 0);
+    pushBackendLogEntry({
+      level: 'info',
+      app: 'shell',
+      source: 'avatar.repair',
+      message: '已修复角色头像缓存',
+      detail: { charId: charId, reason: String(reason || ''), srcPrefix: src.slice(0, 80) }
+    });
+    return true;
+  }).catch(function(err){
+    pushBackendLogEntry({
+      level: 'warn',
+      app: 'shell',
+      source: 'avatar.repair.failed',
+      message: '角色头像缓存修复失败',
+      detail: { charId: charId, reason: String(reason || ''), error: summarizeBackendLogDetail(err) }
+    });
+    return false;
   });
 }
 
@@ -12042,6 +12110,7 @@ window.addEventListener('message',(e)=>{
 	    const slim = persistShellActiveCharacter(hydratedPayload) || slimChar(hydratedPayload);
 	    setWidgetCharacter(hydratedPayload);
 	    cacheAvatar(hydratedPayload);
+	    repairShellCharacterAvatar(hydratedPayload, 'set_active_character').catch(function(){});
 	    renderBondWidget(hydratedPayload);
     renderHomeDockBadges();
     if(currentApp === 'chat'){
@@ -12116,6 +12185,7 @@ window.addEventListener('message',(e)=>{
 	    const hydratedPayload = hydrateShellCharacterPayload(payload) || payload;
 	    const slim = persistShellActiveCharacter(hydratedPayload) || slimChar(hydratedPayload);
 	    cacheAvatar(hydratedPayload);
+	    repairShellCharacterAvatar(hydratedPayload, 'character_imported').catch(function(){});
 	    setWidgetCharacter(hydratedPayload);
 	    renderBondWidget(hydratedPayload);
     renderHomeDockBadges();
@@ -12134,6 +12204,7 @@ window.addEventListener('message',(e)=>{
 	    const hydratedPayload = hydrateShellCharacterPayload(payload) || payload;
 	    const slim = persistShellActiveCharacter(hydratedPayload) || slimChar(hydratedPayload);
 	    if(slim && slim.id) markShellChatAsRead(slim.id).catch(function(){});
+	    repairShellCharacterAvatar(hydratedPayload, 'open_chat_with').catch(function(){});
 	    setWidgetCharacter(hydratedPayload);
 	    renderBondWidget(hydratedPayload);
     try{ localStorage.setItem('pendingChatChar',JSON.stringify(slim)); }catch(e){}
