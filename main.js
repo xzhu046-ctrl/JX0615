@@ -62,11 +62,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T19:07:23Z';
+const APP_BUILD_ID = '2026-05-13T19:12:57Z';
 const APP_UPDATE_NOTES = [
-  'App 内头像改用父壳稳定补图',
-  '坏图修复不再继承隐藏样式',
-  '小脑瓜入口和后台记忆骨架'
+  '小脑瓜改成黑白高级风',
+  '记忆页头像改成 ins 故事圈',
+  '卡片和按钮改成极简细线'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
