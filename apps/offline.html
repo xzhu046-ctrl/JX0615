@@ -556,6 +556,87 @@ body{display:flex;justify-content:center}
 .thread-stage.is-continued .thread-stage-dot{background:#fff}
 .thread-stage.is-upcoming .thread-stage-dot{background:#fff}
 .thread-stage.is-ended .thread-stage-dot{background:#fff}
+.visit-confirm{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:rgba(0,0,0,.38);
+  z-index:52;
+}
+.visit-confirm.open{display:flex}
+.visit-confirm-sheet{
+  width:min(342px, 100%);
+  border:1.5px solid #111;
+  background:#fff;
+  border-radius:8px;
+  box-shadow:6px 6px 0 rgba(0,0,0,.18);
+  padding:18px 16px 16px;
+}
+.visit-confirm-title{
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:.02em;
+}
+.visit-confirm-copy{
+  margin-top:6px;
+  font-size:12px;
+  line-height:1.55;
+  font-weight:800;
+  color:var(--muted);
+}
+.visit-target-list{margin-top:14px;overflow:hidden}
+.visit-target-strip{
+  display:flex;
+  gap:10px;
+  overflow:auto;
+  padding:2px 2px 10px;
+  -webkit-overflow-scrolling:touch;
+}
+.visit-target-strip::-webkit-scrollbar{display:none}
+.visit-target-chip{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px}
+.visit-target-btn{
+  width:62px;
+  height:62px;
+  border:2px solid #111;
+  border-radius:18px;
+  background:linear-gradient(180deg,#fff 0%,#f2f2f2 100%);
+  box-shadow:5px 5px 0 rgba(0,0,0,.12);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  padding:0;
+  color:#111;
+}
+.visit-target-btn.is-active{
+  background:#111;
+  color:#fff;
+  box-shadow:3px 3px 0 rgba(0,0,0,.2);
+  transform:translate(2px,2px);
+}
+.visit-target-btn img{width:100%;height:100%;object-fit:cover;display:block}
+.visit-target-btn.is-active img{filter:saturate(1.08) contrast(1.05)}
+.visit-target-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#fff;font-size:20px;font-weight:900}
+.visit-target-btn.is-active .visit-target-fallback{background:#111;color:#fff}
+.visit-target-name{max-width:68px;font-size:10px;font-weight:900;line-height:1.2;text-align:center;word-break:break-word}
+.visit-target-empty{padding:12px 4px;font-size:12px;font-weight:800;color:var(--muted);line-height:1.5}
+.visit-confirm-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
+.visit-confirm-btn{
+  border:1.5px solid #111;
+  border-radius:999px;
+  background:#fff;
+  color:#111;
+  box-shadow:var(--hard-shadow);
+  min-width:72px;
+  padding:9px 14px;
+  font-size:13px;
+  font-weight:900;
+}
+.visit-confirm-btn.is-solid{background:#111;color:#fff}
+.visit-confirm-btn:disabled{opacity:.45}
 .delete-confirm{
   position:fixed;
   inset:0;
@@ -636,10 +717,21 @@ body{display:flex;justify-content:center}
       </div>
     </div>
   </div>
-<script src="../assetStore.js?v=2026-05-13T00:24:20Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T00:24:20Z"></script>
+  <div class="visit-confirm" id="visitConfirm" aria-hidden="true">
+    <div class="visit-confirm-sheet">
+      <div class="visit-confirm-title">想去看看谁？</div>
+      <div class="visit-confirm-copy" id="visitConfirmCopy"></div>
+      <div class="visit-target-list" id="visitTargetList"></div>
+      <div class="visit-confirm-actions">
+        <button class="visit-confirm-btn" type="button" data-visit-cancel>取消</button>
+        <button class="visit-confirm-btn is-solid" type="button" data-visit-confirm disabled>确定</button>
+      </div>
+    </div>
+  </div>
+<script src="../assetStore.js?v=2026-05-13T05:47:24Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T05:47:24Z"></script>
 <script>
-var OFFLINE_APP_BUILD_ID = '2026-05-13T00:24:20Z';
+var OFFLINE_APP_BUILD_ID = '2026-05-13T05:47:24Z';
 var currentFilter = 'all';
 var currentSelectedId = '';
 var currentSelectedDateKey = '';
@@ -648,6 +740,8 @@ var offlineRenderVersion = 0;
 var latestOfflineRecords = [];
 var offlineSwipeState = null;
 var pendingDeleteRecordId = '';
+var pendingVisitDateKey = '';
+var selectedVisitCharId = '';
 var lastConsumedForceCompletePayloads = [];
 var lastConsumedEndRequestPayloads = [];
 var pendingInlineForceCompletePayloads = [];
@@ -761,6 +855,111 @@ function getCharAvatarSource(charId, charName){
   if(override) return { type:'image', value: override };
   if(match && isRenderableAssetSource(match.avatar)) return { type:'image', value: String(match.avatar || '').trim() };
   return { type:'text', value: String((charName || (match && (match.nickname || match.name)) || '角')).trim().slice(0, 1) || '角' };
+}
+
+function getOfflineVisitCharacters(){
+  var seen = Object.create(null);
+  var list = [];
+  function pushChar(char){
+    if(!(char && typeof char === 'object')) return;
+    var id = String(char.id || '').trim();
+    if(!id || seen[id]) return;
+    seen[id] = true;
+    list.push(char);
+  }
+  try{ getParentCharacters().forEach(pushChar); }catch(err){}
+  try{
+    var raw = JSON.parse(localStorage.getItem('characters') || '[]');
+    if(Array.isArray(raw)) raw.forEach(pushChar);
+  }catch(localErr){}
+  try{
+    if(window.parent && window.parent !== window && window.parent.MetadataStore && typeof window.parent.MetadataStore.getCharactersSync === 'function'){
+      window.parent.MetadataStore.getCharactersSync().forEach(pushChar);
+    }
+  }catch(metaErr){}
+  try{
+    if(window.parent && window.parent !== window && typeof window.parent.getActiveCharacterData === 'function'){
+      pushChar(window.parent.getActiveCharacterData());
+    }
+  }catch(err2){}
+  return list;
+}
+
+function getOfflineVisitCharName(char){
+  return String((char && (char.nickname || char.name)) || '角色').trim() || '角色';
+}
+
+function updateVisitConfirmButton(){
+  var btn = document.querySelector('[data-visit-confirm]');
+  if(btn) btn.disabled = !selectedVisitCharId;
+}
+
+function setVisitTargetSelection(charId){
+  selectedVisitCharId = String(charId || '').trim();
+  var root = document.getElementById('visitTargetList');
+  if(root){
+    Array.prototype.slice.call(root.querySelectorAll('[data-visit-char-id]')).forEach(function(btn){
+      btn.classList.toggle('is-active', String(btn.getAttribute('data-visit-char-id') || '') === selectedVisitCharId);
+    });
+  }
+  updateVisitConfirmButton();
+}
+
+function applyVisitTargetAvatar(charId, source){
+  var root = document.getElementById('visitTargetList');
+  var btn = findByDataAttr(root, 'data-visit-char-id', charId);
+  if(!btn || !(source && source.type === 'image' && source.value)) return;
+  var safe = String(source.value || '').trim();
+  if(!isRenderableAssetSource(safe)) return;
+  btn.innerHTML = '<img src="' + esc(safe) + '" alt="">';
+}
+
+function requestVisitTargetAvatar(char){
+  var safeId = String(char && char.id || '').trim();
+  if(!safeId || avatarAssetCache[safeId] || !(window.assetStore && typeof window.assetStore.load === 'function')) return;
+  var keys = getOfflineAvatarAssetKeys(safeId);
+  var chain = Promise.resolve('');
+  keys.forEach(function(key){
+    chain = chain.then(function(found){
+      if(isRenderableAssetSource(found)) return found;
+      return window.assetStore.load(key).then(function(src){
+        var clean = String(src || '').trim();
+        return isRenderableAssetSource(clean) ? clean : '';
+      }).catch(function(){ return ''; });
+    });
+  });
+  chain.then(function(clean){
+    if(!isRenderableAssetSource(clean)) return;
+    avatarAssetCache[safeId] = clean;
+    applyVisitTargetAvatar(safeId, { type:'image', value:clean });
+  }).catch(function(){});
+}
+
+function renderVisitTargetList(){
+  var root = document.getElementById('visitTargetList');
+  if(!root) return;
+  var chars = getOfflineVisitCharacters();
+  if(!chars.length){
+    root.innerHTML = '<div class="visit-target-empty">还没有可以进入线下的角色。</div>';
+    selectedVisitCharId = '';
+    updateVisitConfirmButton();
+    return;
+  }
+  root.innerHTML = '<div class="visit-target-strip">' + chars.map(function(char){
+    var id = String(char.id || '').trim();
+    var name = getOfflineVisitCharName(char);
+    var source = getCharAvatarSource(id, name);
+    var active = id === selectedVisitCharId ? ' is-active' : '';
+    var media = source && source.type === 'image' && source.value
+      ? '<img src="' + esc(source.value) + '" alt="">'
+      : '<span class="visit-target-fallback">' + esc(name.slice(0, 1) || '角') + '</span>';
+    return '<div class="visit-target-chip">'
+      + '<button class="visit-target-btn' + active + '" type="button" data-visit-char-id="' + esc(id) + '">' + media + '</button>'
+      + '<div class="visit-target-name">' + esc(name) + '</div>'
+      + '</div>';
+  }).join('') + '</div>';
+  chars.forEach(requestVisitTargetAvatar);
+  updateVisitConfirmButton();
 }
 
 function applyThreadAvatarSource(recordId, source){
@@ -2699,7 +2898,126 @@ function openRecordInOfflineMode(item){
   return false;
 }
 
+function openVisitConfirm(dateKey){
+  pendingVisitDateKey = /^\d{4}-\d{2}-\d{2}$/.test(String(dateKey || '')) ? String(dateKey) : toDateKey(new Date());
+  selectedVisitCharId = '';
+  var modal = document.getElementById('visitConfirm');
+  var copy = document.getElementById('visitConfirmCopy');
+  if(copy){
+    copy.textContent = formatDateTitle(getRecordDateObj({ scheduledDate: pendingVisitDateKey }));
+  }
+  renderVisitTargetList();
+  if(modal){
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+}
+
+function closeVisitConfirm(){
+  var modal = document.getElementById('visitConfirm');
+  if(modal){
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+  pendingVisitDateKey = '';
+  selectedVisitCharId = '';
+  updateVisitConfirmButton();
+}
+
+function createDateAppInviteId(){
+  try{
+    if(window.OfflineInviteStore && typeof window.OfflineInviteStore.createId === 'function'){
+      return window.OfflineInviteStore.createId('invite');
+    }
+  }catch(err){}
+  return 'invite_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+function buildDateAppVisitRecord(char, dateKey){
+  var safeDate = /^\d{4}-\d{2}-\d{2}$/.test(String(dateKey || '')) ? String(dateKey) : toDateKey(new Date());
+  var safeId = createDateAppInviteId();
+  var name = getOfflineVisitCharName(char);
+  var now = Date.now();
+  return {
+    id: safeId,
+    threadId: safeId,
+    charId: String(char && char.id || '').trim(),
+    charName: name,
+    sourceRole: 'user',
+    previewText: '',
+    location: '',
+    scheduledDate: safeDate,
+    scheduledTime: '',
+    dateLabel: formatDateTitle(getRecordDateObj({ scheduledDate:safeDate })),
+    timeLabel: '',
+    status: 'accepted',
+    meetState: 'scheduled',
+    readOnly: false,
+    completedAt: 0,
+    reminderState: 'pending',
+    snoozeUntil: 0,
+    remindedAt: 0,
+    openedAt: 0,
+    arrivalState: 'pending',
+    arrivedAt: 0,
+    inviteMessageId: '',
+    replyMessageId: '',
+    scheduleEntryId: '',
+    createdAt: now,
+    updatedAt: now
+  };
+}
+
+async function confirmVisitTarget(){
+  var safeCharId = String(selectedVisitCharId || '').trim();
+  if(!safeCharId) return;
+  var char = getOfflineVisitCharacters().find(function(item){
+    return String(item && item.id || '').trim() === safeCharId;
+  }) || getParentCharByIdOrName(safeCharId, '');
+  if(!(char && char.id)) return;
+  var record = buildDateAppVisitRecord(char, pendingVisitDateKey || currentSelectedDateKey || toDateKey(new Date()));
+  try{
+    if(window.OfflineInviteStore && typeof window.OfflineInviteStore.upsertRecord === 'function'){
+      window.OfflineInviteStore.upsertRecord(record);
+    }
+  }catch(err){}
+  currentSelectedDateKey = getRecordDateKey(record);
+  currentSelectedId = String(record.id || '').trim();
+  closeVisitConfirm();
+  if(!openRecordInOfflineMode(record)){
+    await renderOfflineApp();
+  }
+}
+
 document.addEventListener('click', async function(event){
+  var visitTargetBtn = event.target && event.target.closest ? event.target.closest('[data-visit-char-id]') : null;
+  if(visitTargetBtn){
+    event.preventDefault();
+    event.stopPropagation();
+    setVisitTargetSelection(visitTargetBtn.getAttribute('data-visit-char-id'));
+    return;
+  }
+  var visitCancelBtn = event.target && event.target.closest ? event.target.closest('[data-visit-cancel]') : null;
+  if(visitCancelBtn){
+    event.preventDefault();
+    event.stopPropagation();
+    closeVisitConfirm();
+    await renderOfflineApp();
+    return;
+  }
+  var visitConfirmBtn = event.target && event.target.closest ? event.target.closest('[data-visit-confirm]') : null;
+  if(visitConfirmBtn){
+    event.preventDefault();
+    event.stopPropagation();
+    await confirmVisitTarget();
+    return;
+  }
+  var visitOverlay = event.target && event.target.closest ? event.target.closest('#visitConfirm') : null;
+  if(visitOverlay && event.target === visitOverlay){
+    closeVisitConfirm();
+    await renderOfflineApp();
+    return;
+  }
   var deleteBtn = event.target && event.target.closest ? event.target.closest('[data-delete-record-id]') : null;
   if(deleteBtn){
     var deleteId = String(deleteBtn.getAttribute('data-delete-record-id') || '').trim();
@@ -2759,7 +3077,8 @@ document.addEventListener('click', async function(event){
   if(dayBtn){
     currentSelectedDateKey = String(dayBtn.getAttribute('data-date-key') || '').trim() || toDateKey(new Date());
     currentSelectedId = '';
-    renderOfflineApp();
+    await renderOfflineApp();
+    openVisitConfirm(currentSelectedDateKey);
     return;
   }
   var recordBtn = event.target && event.target.closest ? event.target.closest('[data-record-id]') : null;

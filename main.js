@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T04:39:34Z';
+const APP_BUILD_ID = '2026-05-13T05:47:24Z';
 const APP_UPDATE_NOTES = [
-  '移除头像诊断浮窗',
-  '清理旧诊断按钮残留',
-  '保留 App 内头像修复'
+  '约会日历可直接选角色',
+  '确认后进入普通线下邀约',
+  '取消后停留所选日期'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
