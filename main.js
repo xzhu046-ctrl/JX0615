@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T01:36:59Z';
+const APP_BUILD_ID = '2026-05-13T01:57:10Z';
 const APP_UPDATE_NOTES = [
-  '线下编辑移入 kiss 操作组',
-  '移除气泡旁旧编辑按钮',
-  '线下操作图标保持酒红显示'
+  '修复进 App 后头像被空数据覆盖',
+  '图床头像会从角色资源里补回',
+  '主屏和约会头像显示更稳'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -2264,7 +2264,7 @@ function activeCharacterLocalMirror(c){
   if(!c) return null;
   var id = String(c.id || '').trim();
   if(!id) return null;
-  var imageData = normalizeShellAssetSrc(c.imageData || c.avatarUrl || c.avatar || '');
+  var imageData = getShellCharacterAvatarCandidateSync(c);
   if(/^data:/i.test(imageData)) imageData = '';
   return {
     id: id,
@@ -2280,30 +2280,93 @@ function activeCharacterLocalMirror(c){
   };
 }
 
+function getFirstRenderableShellAvatarFromResources(resources){
+  if(!Array.isArray(resources)) return '';
+  for(var i = 0; i < resources.length; i += 1){
+    var item = resources[i];
+    if(!item || typeof item !== 'object') continue;
+    var src = normalizeShellAssetSrc(item.previewData || item.src || item.url || item.href || item.file || '');
+    if(isRenderableShellAvatarSrc(src)) return src;
+  }
+  return '';
+}
+
+function getCachedShellCharacterForAvatarMerge(charId){
+  var id = String(charId || '').trim();
+  if(!id) return null;
+  var accountId = getActiveAccountId();
+  var cacheKey = getShellAccountCacheKey(accountId);
+  var candidates = [
+    shellActiveCharacterCache[cacheKey],
+    persistedShellActiveCharacter,
+    getWidgetLastChatCharacter()
+  ];
+  try{
+    var scopedRaw = localStorage.getItem(scopedKeyForAccount('activeCharacter', accountId)) || '';
+    if(scopedRaw) candidates.push(JSON.parse(scopedRaw));
+  }catch(e){}
+  try{
+    var raw = localStorage.getItem('activeCharacter') || '';
+    if(raw) candidates.push(JSON.parse(raw));
+  }catch(e2){}
+  for(var i = 0; i < candidates.length; i += 1){
+    var item = candidates[i];
+    if(item && String(item.id || '').trim() === id) return item;
+  }
+  return null;
+}
+
+function getShellCharacterAvatarCandidateSync(character){
+  if(!character || typeof character !== 'object') return '';
+  var id = String(character.id || '').trim();
+  var ordered = [
+    character.avatarUrl,
+    character.imageData,
+    getFirstRenderableShellAvatarFromResources(character.importedAvatarResources),
+    character.avatar
+  ];
+  if(id){
+    ordered.push(getBundleAvatarForShell(getCachedShellChatSettingsBundleForChar(id), 'char'));
+    ordered.push(getImmediateStoredCharacterAvatarForShell(id));
+  }
+  for(var i = 0; i < ordered.length; i += 1){
+    var src = normalizeShellAssetSrc(ordered[i] || '');
+    if(isRenderableShellAvatarSrc(src)) return src;
+  }
+  return '';
+}
+
 function hydrateShellCharacterPayload(payload){
   var incoming = payload && typeof payload === 'object' ? payload : null;
   if(!incoming) return null;
   var id = String(incoming.id || '').trim();
   var roster = id ? resolveShellCharacterById(id, null) : null;
-  var merged = Object.assign({}, roster || {}, incoming || {});
-  var rosterAvatarUrl = normalizeShellAssetSrc(roster && roster.avatarUrl || '');
-  var rosterImageData = normalizeShellAssetSrc(roster && roster.imageData || '');
-  var incomingAvatarUrl = normalizeShellAssetSrc(incoming.avatarUrl || '');
-  var incomingImageData = normalizeShellAssetSrc(incoming.imageData || '');
-  if(isRenderableShellAvatarSrc(rosterAvatarUrl)) merged.avatarUrl = rosterAvatarUrl;
-  else if(isRenderableShellAvatarSrc(incomingAvatarUrl)) merged.avatarUrl = incomingAvatarUrl;
-  if(isRenderableShellAvatarSrc(rosterImageData)) merged.imageData = rosterImageData;
-  else if(isRenderableShellAvatarSrc(incomingImageData)) merged.imageData = incomingImageData;
-  else if(isRenderableShellAvatarSrc(merged.avatarUrl)) merged.imageData = merged.avatarUrl;
+  var cached = id ? getCachedShellCharacterForAvatarMerge(id) : null;
+  var merged = Object.assign({}, cached || {}, roster || {}, incoming || {});
+  var avatarCandidates = [
+    getShellCharacterAvatarCandidateSync(roster),
+    getShellCharacterAvatarCandidateSync(cached),
+    getShellCharacterAvatarCandidateSync(incoming),
+    getShellCharacterAvatarCandidateSync(merged)
+  ];
+  for(var i = 0; i < avatarCandidates.length; i += 1){
+    var avatarSrc = normalizeShellAssetSrc(avatarCandidates[i] || '');
+    if(isRenderableShellAvatarSrc(avatarSrc)){
+      merged.avatarUrl = avatarSrc;
+      merged.imageData = avatarSrc;
+      break;
+    }
+  }
   return merged;
 }
 
 function cacheAvatar(c){
   try{
-    if(c?.id && c.imageData && /^(data:|https?:|blob:|\/|\.\.?\/|assets\/)/i.test(String(c.imageData || '').trim())){
-      saveStoredAsset('char_avatar_' + c.id, c.imageData);
+    var avatarSrc = getShellCharacterAvatarCandidateSync(c || {});
+    if(c?.id && avatarSrc && /^(data:|https?:|blob:|\/|\.\.?\/|apps\/|assets\/)/i.test(String(avatarSrc || '').trim())){
+      saveStoredAsset('char_avatar_' + c.id, avatarSrc);
       var acct = getActiveAccountId();
-      if(acct) saveStoredAsset(scopedKeyForAccount('char_avatar_' + c.id, acct), c.imageData);
+      if(acct) saveStoredAsset(scopedKeyForAccount('char_avatar_' + c.id, acct), avatarSrc);
     }
   }catch(e){}
 }
@@ -3046,6 +3109,8 @@ function coerceBgAction(parsed, convoState){
 
 function getCharacterAvatarForBg(character){
   var id = character && character.id ? character.id : '';
+  var candidate = getShellCharacterAvatarCandidateSync(character);
+  if(isRenderableShellAvatarSrc(candidate)) return candidate;
   if(character && character.avatarUrl){
     var remoteAvatar = normalizeShellAssetSrc(character.avatarUrl);
     if(isRenderableShellAvatarSrc(remoteAvatar)) return remoteAvatar;
