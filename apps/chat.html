@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../assetStore.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../accountManager.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T21:39:44Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T21:39:44Z"></script>
+<script src="../promptManager.js?v=2026-05-13T21:52:40Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T21:52:40Z"></script>
+<script src="../assetStore.js?v=2026-05-13T21:52:40Z"></script>
+<script src="../accountManager.js?v=2026-05-13T21:52:40Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T21:52:40Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T21:52:40Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T21:52:40Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T21:52:40Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T21:52:40Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T21:52:40Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -31823,17 +31823,215 @@ async function clearCallRecordsForChar(charId){
   await removeStorageCopies('callRecords', getScopedDataKeyCandidates('call_records_' + safeCharId));
 }
 
-function clearOfflineInviteRecordsForChar(charId){
+function addOfflineClearId(map, value){
+  var safe = String(value || '').trim();
+  if(safe) map[safe] = true;
+}
+function collectOfflineClearIdsFromValue(value, map){
+  if(!value || typeof value !== 'object') return;
+  [
+    'id',
+    'recordId',
+    'inviteRecordId',
+    'threadId',
+    'inviteMessageId',
+    'replyMessageId',
+    'sourceInviteId',
+    'sourceRecordId',
+    'launchToken'
+  ].forEach(function(key){
+    addOfflineClearId(map, value && value[key]);
+  });
+  ['ids', 'inviteIds', 'completedInviteIds', 'recordIds', 'aliases'].forEach(function(key){
+    var list = value && value[key];
+    if(Array.isArray(list)){
+      list.forEach(function(item){ addOfflineClearId(map, item); });
+    }
+  });
+}
+function collectOfflineClearIdsFromRecord(item, map){
+  collectOfflineClearIdsFromValue(item, map);
+  collectOfflineClearIdsFromValue(item && item.invite, map);
+  collectOfflineClearIdsFromValue(item && item.payload, map);
+  collectOfflineClearIdsFromValue(item && item.detail, map);
+}
+function offlineClearValueCharId(value){
+  if(!value || typeof value !== 'object') return '';
+  return String(
+    value.charId ||
+    value.characterId ||
+    value.activeCharId ||
+    value.targetCharId ||
+    (value.character && value.character.id) ||
+    (value.char && value.char.id) ||
+    (value.invite && (value.invite.charId || value.invite.characterId)) ||
+    (value.record && (value.record.charId || value.record.characterId)) ||
+    (value.detail && (value.detail.charId || value.detail.characterId)) ||
+    ''
+  ).trim();
+}
+function offlineClearValueMatchesCharOrIds(value, safeCharId, idMap){
+  if(!value || typeof value !== 'object') return false;
+  if(offlineClearValueCharId(value) === safeCharId) return true;
+  var ids = Object.create(null);
+  collectOfflineClearIdsFromValue(value, ids);
+  collectOfflineClearIdsFromValue(value.invite, ids);
+  collectOfflineClearIdsFromValue(value.record, ids);
+  collectOfflineClearIdsFromValue(value.detail, ids);
+  return Object.keys(ids).some(function(id){ return !!idMap[id]; });
+}
+async function loadOfflineClearJsonFromKey(key){
+  var safeKey = String(key || '').trim();
+  if(!safeKey) return null;
+  return loadJsonFromLargeStore(safeKey).catch(function(){ return null; });
+}
+async function loadOfflineClearJsonFromCandidates(keys){
+  var list = Array.from(new Set((Array.isArray(keys) ? keys : []).map(function(key){
+    return String(key || '').trim();
+  }).filter(Boolean)));
+  for(var i = 0; i < list.length; i += 1){
+    var parsed = await loadOfflineClearJsonFromKey(list[i]);
+    if(parsed !== null && typeof parsed !== 'undefined') return parsed;
+  }
+  return null;
+}
+async function removeOfflineClearStorageCandidates(keys){
+  await removeStorageCopies('kv', keys);
+}
+async function clearOfflineInviteArrayStore(baseKey, idMap){
+  var keys = getScopedDataKeyCandidates(baseKey);
+  for(var i = 0; i < keys.length; i += 1){
+    var key = keys[i];
+    var parsed = await loadOfflineClearJsonFromKey(key);
+    if(!Array.isArray(parsed)) parsed = [];
+    var next = parsed.filter(function(id){
+      return !idMap[String(id || '').trim()];
+    });
+    await saveJsonToLargeStore(key, next).catch(function(){ return null; });
+  }
+}
+async function clearOfflineInviteDetailsStore(baseKey, safeCharId, idMap){
+  var keys = getScopedDataKeyCandidates(baseKey);
+  for(var i = 0; i < keys.length; i += 1){
+    var key = keys[i];
+    var parsed = await loadOfflineClearJsonFromKey(key);
+    if(!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) parsed = {};
+    var next = {};
+    Object.keys(parsed).forEach(function(detailKey){
+      var detail = parsed[detailKey];
+      if(idMap[String(detailKey || '').trim()]) return;
+      if(offlineClearValueMatchesCharOrIds(detail, safeCharId, idMap)) return;
+      next[detailKey] = detail;
+    });
+    await saveJsonToLargeStore(key, next).catch(function(){ return null; });
+  }
+}
+async function collectOfflineInviteIdsFromDetailsStore(baseKey, safeCharId, idMap){
+  var keys = getScopedDataKeyCandidates(baseKey);
+  for(var i = 0; i < keys.length; i += 1){
+    var parsed = await loadOfflineClearJsonFromKey(keys[i]);
+    if(!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) continue;
+    Object.keys(parsed).forEach(function(detailKey){
+      var detail = parsed[detailKey];
+      if(!offlineClearValueMatchesCharOrIds(detail, safeCharId, idMap)) return;
+      addOfflineClearId(idMap, detailKey);
+      collectOfflineClearIdsFromValue(detail, idMap);
+    });
+  }
+}
+async function clearOfflineInvitePayloadStore(baseKey, safeCharId, idMap){
+  var keys = getScopedDataKeyCandidates(baseKey);
+  for(var i = 0; i < keys.length; i += 1){
+    var key = keys[i];
+    var parsed = await loadOfflineClearJsonFromKey(key);
+    if(offlineClearValueMatchesCharOrIds(parsed, safeCharId, idMap)){
+      await removeOfflineClearStorageCandidates([key]);
+    }
+  }
+}
+async function collectOfflineInviteIdsFromPayloadStore(baseKey, safeCharId, idMap){
+  var keys = getScopedDataKeyCandidates(baseKey);
+  for(var i = 0; i < keys.length; i += 1){
+    var parsed = await loadOfflineClearJsonFromKey(keys[i]);
+    if(!offlineClearValueMatchesCharOrIds(parsed, safeCharId, idMap)) continue;
+    collectOfflineClearIdsFromValue(parsed, idMap);
+    collectOfflineClearIdsFromValue(parsed && parsed.invite, idMap);
+    collectOfflineClearIdsFromValue(parsed && parsed.record, idMap);
+    collectOfflineClearIdsFromValue(parsed && parsed.detail, idMap);
+  }
+}
+async function clearOfflineInviteAdoptedRecords(safeCharId, idMap){
+  var keys = getScopedDataKeyCandidates('offline_invite_adopted_records_v1');
+  for(var i = 0; i < keys.length; i += 1){
+    var key = keys[i];
+    var state = await loadOfflineClearJsonFromKey(key);
+    if(!state || typeof state !== 'object') state = { version:1, records:[] };
+    var records = Array.isArray(state.records) ? state.records : [];
+    var nextRecords = records.filter(function(item){
+      return !offlineClearValueMatchesCharOrIds(item, safeCharId, idMap);
+    });
+    state.records = nextRecords;
+    state.updatedAt = Date.now();
+    await saveJsonToLargeStore(key, state).catch(function(){ return null; });
+  }
+}
+async function collectOfflineInviteIdsFromAdoptedRecords(safeCharId, idMap){
+  var keys = getScopedDataKeyCandidates('offline_invite_adopted_records_v1');
+  for(var i = 0; i < keys.length; i += 1){
+    var state = await loadOfflineClearJsonFromKey(keys[i]);
+    var records = state && typeof state === 'object' && Array.isArray(state.records) ? state.records : [];
+    records.forEach(function(item){
+      if(!offlineClearValueMatchesCharOrIds(item, safeCharId, idMap)) return;
+      collectOfflineClearIdsFromRecord(item, idMap);
+    });
+  }
+}
+async function clearOfflineInviteRecordsForChar(charId){
   var safeCharId = String(charId || '').trim();
   var store = getChatOfflineInviteStore();
-  if(!safeCharId || !store || typeof store.listRecords !== 'function' || typeof store.removeRecord !== 'function') return;
+  if(!safeCharId) return;
+  var idMap = Object.create(null);
+  var recordsForChar = [];
   try{
-    store.listRecords().forEach(function(item){
-      if(!item) return;
-      if(String(item.charId || '').trim() !== safeCharId) return;
-      try{ store.removeRecord(String(item.id || '').trim()); }catch(removeErr){}
-    });
+    if(store && typeof store.listRecords === 'function'){
+      store.listRecords().forEach(function(item){
+        if(!item) return;
+        if(String(item.charId || '').trim() !== safeCharId) return;
+        recordsForChar.push(item);
+        collectOfflineClearIdsFromRecord(item, idMap);
+      });
+    }
   }catch(err){}
+  if(store && typeof store.removeRecord === 'function'){
+    for(var r = 0; r < recordsForChar.length; r += 1){
+      var recordId = String(recordsForChar[r] && recordsForChar[r].id || '').trim();
+      if(!recordId) continue;
+      try{ await Promise.resolve(store.removeRecord(recordId)); }catch(removeErr){}
+    }
+  }
+  await collectOfflineInviteIdsFromDetailsStore('offline_invite_completed_details_v1', safeCharId, idMap);
+  await collectOfflineInviteIdsFromPayloadStore('offline_invite_force_complete_payload_v1', safeCharId, idMap);
+  await collectOfflineInviteIdsFromPayloadStore('offline_invite_exit_complete_intent_v1', safeCharId, idMap);
+  await collectOfflineInviteIdsFromPayloadStore('offline_invite_end_request_v1', safeCharId, idMap);
+  await collectOfflineInviteIdsFromPayloadStore('offline_invite_active_launch_v1', safeCharId, idMap);
+  await collectOfflineInviteIdsFromAdoptedRecords(safeCharId, idMap);
+  await clearOfflineInviteArrayStore('offline_invite_hidden_ids_v1', idMap);
+  await clearOfflineInviteArrayStore('offline_invite_completed_ids_v1', idMap);
+  await clearOfflineInviteArrayStore('offline_invite_completed_markers_v1', idMap);
+  await clearOfflineInviteDetailsStore('offline_invite_completed_details_v1', safeCharId, idMap);
+  await clearOfflineInvitePayloadStore('offline_invite_force_complete_payload_v1', safeCharId, idMap);
+  await clearOfflineInvitePayloadStore('offline_invite_exit_complete_intent_v1', safeCharId, idMap);
+  await clearOfflineInvitePayloadStore('offline_invite_end_request_v1', safeCharId, idMap);
+  await clearOfflineInvitePayloadStore('offline_invite_active_launch_v1', safeCharId, idMap);
+  await clearOfflineInviteAdoptedRecords(safeCharId, idMap);
+  var focusKeys = getScopedDataKeyCandidates('offline_invite_focus_id_v1');
+  for(var f = 0; f < focusKeys.length; f += 1){
+    var focus = '';
+    try{ focus = String(localStorage.getItem(focusKeys[f]) || '').trim(); }catch(focusErr){}
+    if(focus && idMap[focus]){
+      await removeOfflineClearStorageCandidates([focusKeys[f]]);
+    }
+  }
 }
 function markOfflineInviteRecordsHiddenForChar(charId){
   var safeCharId = String(charId || '').trim();
@@ -31935,42 +32133,93 @@ async function persistChatClearTombstoneRecords(charId, clearAt){
     });
   }
 }
-function clearOfflineArchiveRecordsForChar(charId){
-  var safeCharId = String(charId || '').trim();
-  if(!safeCharId) return;
-  function archiveListKeys(){
-    return [accountScopedKey('offline_meet_archives'), 'offline_meet_archives'].filter(Boolean);
-  }
-  function archiveRecordKeys(id){
-    var safeId = String(id || '').trim();
-    if(!safeId) return [];
-    return [accountScopedKey('offline_meet_archive_record_' + safeId), 'offline_meet_archive_record_' + safeId].filter(Boolean);
-  }
-  var removedIds = [];
-  archiveListKeys().forEach(function(key){
-    var parsed = [];
-    try{
-      parsed = JSON.parse(localStorage.getItem(key) || '[]');
-      if(!Array.isArray(parsed)) parsed = [];
-    }catch(err){
-      parsed = [];
-    }
-    parsed.forEach(function(item){
-      if(item && String(item.charId || '').trim() === safeCharId){
-        removedIds.push(String(item.id || '').trim());
+function offlineClearArchiveRecordMatchesChar(record, safeCharId){
+  if(!record || typeof record !== 'object') return false;
+  if(offlineClearValueCharId(record) === safeCharId) return true;
+  var candidates = [
+    record.session,
+    record.snapshot,
+    record.invite,
+    record.record,
+    record.payload,
+    record.meta
+  ];
+  return candidates.some(function(item){
+    return offlineClearValueCharId(item) === safeCharId;
+  });
+}
+async function clearOfflineArchiveRecordStorageByChar(safeCharId, removedArchiveIds){
+  var removedMap = Object.create(null);
+  (removedArchiveIds || []).forEach(function(id){ addOfflineClearId(removedMap, id); });
+  try{
+    Object.keys(localStorage || {}).forEach(function(key){
+      var textKey = String(key || '');
+      var isArchiveRecord = textKey.indexOf('offline_meet_archive_record_') !== -1;
+      var isSessionRecord = textKey.indexOf('offline_meet_session_record_') !== -1;
+      if(!isArchiveRecord && !isSessionRecord) return;
+      var raw = '';
+      try{ raw = localStorage.getItem(textKey) || ''; }catch(readErr){ raw = ''; }
+      var parsed = null;
+      try{ parsed = raw ? JSON.parse(raw) : null; }catch(parseErr){ parsed = null; }
+      var suffix = textKey.replace(/^.*offline_meet_(?:archive|session)_record_/, '').replace(/__acct_.+$/, '');
+      if(removedMap[suffix] || offlineClearArchiveRecordMatchesChar(parsed, safeCharId)){
+        try{ localStorage.removeItem(textKey); }catch(removeRecordErr){}
       }
     });
-    var nextList = parsed.filter(function(item){
-      return !(item && String(item.charId || '').trim() === safeCharId);
-    });
-    try{ localStorage.setItem(key, JSON.stringify(nextList)); }catch(err){}
-  });
-  removedIds.filter(Boolean).forEach(function(id){
-    archiveRecordKeys(id).forEach(function(key){
-      try{ localStorage.removeItem(key); }catch(err){}
-    });
-  });
-  [
+  }catch(scanErr){}
+  var storage = window.PhoneStorage;
+  try{
+    if(!(storage && typeof storage.list === 'function') && window.parent && window.parent !== window){
+      storage = window.parent.PhoneStorage;
+    }
+  }catch(parentErr){}
+  if(!(storage && typeof storage.list === 'function' && typeof storage.remove === 'function')) return;
+  try{
+    var records = await storage.list('kv');
+    for(var i = 0; i < (Array.isArray(records) ? records.length : 0); i += 1){
+      var item = records[i] || {};
+      var recordId = String(item.id || '').trim();
+      if(recordId.indexOf('offline_meet_archive_record_') === -1 && recordId.indexOf('offline_meet_session_record_') === -1) continue;
+      var data = Object.prototype.hasOwnProperty.call(item, 'data') ? item.data : item;
+      var suffix = recordId.replace(/^.*offline_meet_(?:archive|session)_record_/, '').replace(/__acct_.+$/, '');
+      if(removedMap[suffix] || offlineClearArchiveRecordMatchesChar(data, safeCharId)){
+        try{ await storage.remove('kv', recordId); }catch(removeErr){}
+      }
+    }
+  }catch(listErr){}
+}
+async function clearOfflineArchiveRecordsForChar(charId){
+  var safeCharId = String(charId || '').trim();
+  if(!safeCharId) return;
+  var removedIds = [];
+  var archiveListKeys = getScopedDataKeyCandidates('offline_meet_archives');
+  for(var l = 0; l < archiveListKeys.length; l += 1){
+    var key = archiveListKeys[l];
+    var parsed = await loadOfflineClearJsonFromKey(key);
+    if(!Array.isArray(parsed)) parsed = [];
+    var nextList = [];
+    for(var p = 0; p < parsed.length; p += 1){
+      var item = parsed[p];
+      var itemId = String(item && item.id || '').trim();
+      var removeItem = !!(item && String(item.charId || '').trim() === safeCharId);
+      if(!removeItem && itemId){
+        var archiveRecord = await loadOfflineClearJsonFromCandidates(getScopedDataKeyCandidates('offline_meet_archive_record_' + itemId));
+        removeItem = offlineClearArchiveRecordMatchesChar(archiveRecord, safeCharId);
+      }
+      if(removeItem){
+        if(itemId) removedIds.push(itemId);
+        continue;
+      }
+      nextList.push(item);
+    }
+    await saveJsonToLargeStore(key, nextList).catch(function(){ return null; });
+  }
+  var uniqueRemovedIds = Array.from(new Set(removedIds.filter(Boolean)));
+  for(var a = 0; a < uniqueRemovedIds.length; a += 1){
+    await removeOfflineClearStorageCandidates(getScopedDataKeyCandidates('offline_meet_archive_record_' + uniqueRemovedIds[a]));
+  }
+  await clearOfflineArchiveRecordStorageByChar(safeCharId, uniqueRemovedIds);
+  var baseKeyGroups = [
     getScopedDataKeyCandidates('offline_meet_session_' + safeCharId),
     getScopedDataKeyCandidates('offline_resume_' + safeCharId),
     getScopedDataKeyCandidates('offline_bootstrap_' + safeCharId),
@@ -31978,41 +32227,23 @@ function clearOfflineArchiveRecordsForChar(charId){
     getScopedDataKeyCandidates('offline_memory_pending_' + safeCharId),
     getScopedDataKeyCandidates('offline_notice_pending_' + safeCharId),
     getScopedDataKeyCandidates('offline_char_extra_photo_' + safeCharId)
-  ].filter(Boolean).forEach(function(key){
-    (Array.isArray(key) ? key : [key]).forEach(function(itemKey){
-      try{ localStorage.removeItem(itemKey); }catch(err){}
-    });
-  });
-  try{
-    Object.keys(localStorage || {}).forEach(function(key){
-      if(String(key || '').indexOf('offline_meet_session_record_') === -1) return;
-      var raw = '';
-      try{ raw = localStorage.getItem(key) || ''; }catch(readErr){ raw = ''; }
-      var parsed = null;
-      try{ parsed = raw ? JSON.parse(raw) : null; }catch(parseErr){ parsed = null; }
-      var recordCharId = String((parsed && (parsed.charId || parsed.characterId)) || (parsed && parsed.invite && parsed.invite.charId) || '').trim();
-      if(recordCharId === safeCharId){
-        try{ localStorage.removeItem(key); }catch(removeRecordErr){}
-      }
-    });
-  }catch(scanErr){}
+  ];
+  for(var g = 0; g < baseKeyGroups.length; g += 1){
+    await removeOfflineClearStorageCandidates(baseKeyGroups[g]);
+  }
   try{
     var activeOffline = String(localStorage.getItem(accountScopedKey('activeOfflineCharacterId')) || localStorage.getItem('activeOfflineCharacterId') || '').trim();
     if(activeOffline === safeCharId){
-      try{ localStorage.removeItem(accountScopedKey('activeOfflineCharacterId')); }catch(err){}
-      try{ localStorage.removeItem('activeOfflineCharacterId'); }catch(err){}
+      await removeOfflineClearStorageCandidates(getScopedDataKeyCandidates('activeOfflineCharacterId'));
     }
   }catch(err){}
   try{
-    var latestRaw = localStorage.getItem(accountScopedKey('offline_launch_latest')) || localStorage.getItem('offline_launch_latest') || '';
-    var latest = latestRaw ? JSON.parse(latestRaw) : null;
+    var latest = await loadOfflineClearJsonFromCandidates(getScopedDataKeyCandidates('offline_launch_latest'));
     if(latest && String(latest.charId || '').trim() === safeCharId){
-      try{ localStorage.removeItem(accountScopedKey('offline_launch_latest')); }catch(err){}
-      try{ localStorage.removeItem('offline_launch_latest'); }catch(err){}
       var launchToken = String(latest.launchToken || '').trim();
+      await removeOfflineClearStorageCandidates(getScopedDataKeyCandidates('offline_launch_latest'));
       if(launchToken){
-        try{ localStorage.removeItem(accountScopedKey('offline_launch_token_' + launchToken)); }catch(err){}
-        try{ localStorage.removeItem('offline_launch_token_' + launchToken); }catch(err){}
+        await removeOfflineClearStorageCandidates(getScopedDataKeyCandidates('offline_launch_token_' + launchToken));
       }
     }
   }catch(err){}
@@ -32040,8 +32271,8 @@ async function clearChatData(opts){
       await persistChatClearMarker(character.id, clearAt);
     }
     markOfflineInviteRecordsHiddenForChar(character.id);
-    clearOfflineInviteRecordsForChar(character.id);
-    clearOfflineArchiveRecordsForChar(character.id);
+    await clearOfflineInviteRecordsForChar(character.id);
+    await clearOfflineArchiveRecordsForChar(character.id);
     await clearScheduleStateForChar(character.id);
     await clearCallRecordsForChar(character.id);
     await clearAllChatStorageCopies(character.id);

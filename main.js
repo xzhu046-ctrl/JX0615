@@ -62,11 +62,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T21:39:44Z';
+const APP_BUILD_ID = '2026-05-13T21:52:40Z';
 const APP_UPDATE_NOTES = [
-  '旧记忆入口已经断开',
-  '线上线下通话只写入小脑瓜',
-  '历史残留会迁入小脑瓜后清空旧槽'
+  '清空聊天会同步清掉旧邀约和记忆残留',
+  '进 app 前复用已加载头像',
+  '小脑瓜记忆链路更稳定'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -1110,6 +1110,60 @@ function isShellAvatarPoolImageReady(img){
   return !!(img && img.complete && Number(img.naturalWidth || 0) > 0);
 }
 
+function seedShellAvatarPoolFromImage(img, source){
+  if(!isShellAvatarPoolImageReady(img)) return false;
+  try{
+    if(img.closest && img.closest('#shell-avatar-prewarm-root')) return false;
+  }catch(closestErr){}
+  var key = getShellAvatarPoolKey(source || getShellFrameAvatarImgSource(img));
+  if(!key) return false;
+  var list = shellAvatarImagePool[key] || (shellAvatarImagePool[key] = []);
+  list = list.filter(isShellAvatarPoolImageReady);
+  shellAvatarImagePool[key] = list;
+  if(list.length >= 16) return false;
+  var clone = null;
+  try{ clone = img.cloneNode(false); }catch(cloneErr){ clone = null; }
+  if(!clone || !document || !document.createElement) return false;
+  try{ clone.removeAttribute('id'); }catch(idErr){}
+  try{ clone.removeAttribute('srcset'); }catch(srcsetErr){}
+  try{ clone.setAttribute('data-avatar-src', key); }catch(dataErr){}
+  try{ clone.setAttribute('referrerpolicy', 'no-referrer'); }catch(refErr){}
+  try{ clone.referrerPolicy = 'no-referrer'; }catch(policyErr){}
+  try{ clone.decoding = 'async'; }catch(decErr){}
+  try{ clone.loading = 'eager'; }catch(loadErr){}
+  try{ clone.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;'; }catch(styleErr){}
+  clone.onload = function(){
+    var fresh = shellAvatarImagePool[key] || (shellAvatarImagePool[key] = []);
+    fresh = fresh.filter(isShellAvatarPoolImageReady);
+    shellAvatarImagePool[key] = fresh;
+    if(fresh.indexOf(clone) === -1 && fresh.length < 16 && isShellAvatarPoolImageReady(clone)){
+      fresh.push(clone);
+      try{ repairShellAvatarImages(); }catch(repairErr){}
+      try{ repairAppFrameAvatarImages(document.getElementById('app-iframe')); }catch(frameErr){}
+    }
+  };
+  clone.onerror = function(){
+    try{ if(clone.parentNode) clone.parentNode.removeChild(clone); }catch(removeErr){}
+  };
+  try{
+    var root = getShellAvatarPrewarmRoot();
+    if(root) root.appendChild(clone);
+  }catch(appendErr){}
+  try{ clone.src = img.currentSrc || img.src || getShellAvatarRenderSrc(key); }catch(assignErr){ return false; }
+  if(isShellAvatarPoolImageReady(clone)) clone.onload();
+  return true;
+}
+
+function seedShellAvatarPoolFromDocument(doc){
+  if(!doc || !doc.querySelectorAll) return;
+  var imgs = [];
+  try{ imgs = Array.prototype.slice.call(doc.querySelectorAll('img')); }catch(queryErr){ imgs = []; }
+  imgs.forEach(function(img){
+    if(!isShellFrameAvatarLikeImage(img)) return;
+    seedShellAvatarPoolFromImage(img);
+  });
+}
+
 function prewarmShellAvatarImagePool(src, wantedCount){
   var key = getShellAvatarPoolKey(src);
   if(!key || !document || !document.createElement) return;
@@ -1185,6 +1239,7 @@ function prewarmShellAvatarSourcesForApps(){
     var key = getShellAvatarPoolKey(src);
     if(key && sources.indexOf(key) === -1) sources.push(key);
   }
+  try{ seedShellAvatarPoolFromDocument(document); }catch(seedErr){}
   try{
     var active = getActiveCharacterData();
     if(active) push(getCharacterAvatarForBg(active));
@@ -8159,6 +8214,7 @@ function retryShellAvatarImageLoad(img, src){
 function repairShellAvatarImages(){
   var repaired = false;
   var imgs = [];
+  try{ seedShellAvatarPoolFromDocument(document); }catch(seedErr){}
   try{ imgs = Array.prototype.slice.call(document.querySelectorAll('img')); }catch(queryErr){}
   imgs.forEach(function(img){
     if(!isShellFrameAvatarLikeImage(img)) return;
@@ -8183,6 +8239,8 @@ function repairAppFrameAvatarImages(frame){
   if(!doc || !doc.querySelectorAll) return false;
   var repaired = false;
   var imgs = [];
+  try{ seedShellAvatarPoolFromDocument(document); }catch(shellSeedErr){}
+  try{ seedShellAvatarPoolFromDocument(doc); }catch(frameSeedErr){}
   try{ imgs = Array.prototype.slice.call(doc.querySelectorAll('img')); }catch(queryErr){}
   imgs.forEach(function(img){
     if(!isShellFrameAvatarLikeImage(img)) return;
