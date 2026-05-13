@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T06:05:47Z';
+const APP_BUILD_ID = '2026-05-13T06:15:16Z';
 const APP_UPDATE_NOTES = [
-  '通话会读取开场白消息',
-  '拨号更尊重人设拒接',
-  '角色更愿意主动来电'
+  '减少默认使用“老子”',
+  '线上线下通话更贴人设',
+  '只有明确口癖才放行'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -5532,6 +5532,7 @@ async function runAiBackgroundActivity(){
     '如果 action=call，不要写系统提示，不要写“拨号中”，而要写像真人会说的来电理由。',
     '如果用户其实正在等你回，或你们已经隔了一阵子没说话，优先选 message，不要用发朋友圈糊弄过去。',
     '主动来电是正常选项：如果这个角色比起打字更想听到对方声音、确认对方状态、撒娇、挑衅、哄人、质问，或情绪上头想直接打过去，可以选 call，不要过度保守。',
+    '口癖限制：除非角色人设明确写明“老子”是这个角色稳定自称、口癖或核心说话方式，否则主动聊天和主动来电理由都不要轻易使用“老子”；不要为了显得凶、痞、嘴硬或占有欲强就套用这个词。',
     '只有在真的更像这个角色会去发动态/说说的时候，才选 say 或 dynamic；call 不需要惊天动地，只要像这个角色会突然想打过去就可以。'
   ].join('\n');
   var userPrompt = [

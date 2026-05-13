@@ -11092,6 +11092,7 @@ function buildOfflineCoreSettingSummary(compactLevel){
     weatherRule ? ('当前天气/温度/昼夜线索：' + weatherRule) : '当前天气/温度/昼夜线索：无',
     '写正文时必须让衣着、体感、动作和时间感符合这些天气线索；冬天/夜里/低温时不要写得像盛夏白天一样。',
     buildOfflineReplyLanguagePromptLine(),
+    offlineLaoziSelfReferenceRuleLine(),
     '如果角色居住地同时存在真实名字和展示名字，正文里提到地点名称时一律使用展示名字，不要说出真实城市名。',
     presenceRule ? presenceRule : '聊天设置地点 / Presence：未启用',
     scenario ? ('场景设定：' + scenario) : '场景设定：无',
@@ -11101,6 +11102,9 @@ function buildOfflineCoreSettingSummary(compactLevel){
     memoryText ? ('记忆总结：\n' + memoryText) : '记忆总结：无',
     scheduleRule ? ('日程感知：\n' + scheduleRule) : '日程感知：无'
   ].join('\n');
+}
+function offlineLaoziSelfReferenceRuleLine(){
+  return '口癖限制：除非角色卡、世界书、scenario 或角色补充规则明确写明“老子”是 char 的稳定自称、口癖或核心说话方式，否则线下正文、引号台词、灰色心声和通话相关文字都不要轻易使用“老子”；不要为了显得凶、痞、嘴硬或占有欲强就套用这个词。';
 }
 function buildOfflineOpeningCoreSettingSummary(compactLevel){
   var level = Math.max(0, Number(compactLevel) || 0);
@@ -11129,6 +11133,7 @@ function buildOfflineOpeningCoreSettingSummary(compactLevel){
     weatherRule ? ('当前天气/温度/昼夜线索：' + weatherRule) : '当前天气/温度/昼夜线索：无',
     scheduleRule ? ('当前时间/日程感知：\n' + scheduleRule) : '当前时间/日程感知：无',
     buildOfflineReplyLanguagePromptLine(),
+    offlineLaoziSelfReferenceRuleLine(),
     presenceRule ? presenceRule : '聊天设置地点 / Presence：未启用',
     scenario ? ('场景设定：' + scenario) : '场景设定：无',
     systemPrompt ? ('角色补充规则：' + systemPrompt) : '角色补充规则：无',
@@ -11646,6 +11651,7 @@ function buildOfflineSystemPrompt(options){
     '灰色旁白心声、引号台词、status_card future_title、future_note 和小物件里的可见文字，必须严格使用当前语言设置的原文，不要偷回中文，不要乱跳成英文。',
     offlinePerspectiveRuleLine(storyPrefs.perspective),
     offlineForbiddenWordRuleLine(),
+    offlineLaoziSelfReferenceRuleLine(),
     '正文的镜头和感知中心必须是 char 本人：重点写 char 看到的、听到的、想到的、做出的动作和反应。',
     '不要替 user 写内心活动，不要写 user 的主观感受，不要突然切到 user 视角；user 只能通过 char 当下能观察到的表情、动作、说话、距离变化来呈现。',
     '语气要像活人，不要模板腔，不要悬浮文艺腔，不要为了氛围硬堆华丽比喻；像真的见面时会自然注意到的小动作、小停顿、小反应。',
@@ -11726,6 +11732,7 @@ function buildOfflineOpeningChunkSystemPrompt(){
     isOfflineBirthdayTheme() ? ('这一轮先专注首幕正文、asides、' + (isOfflineLoveTheme() ? 'song 推荐' : 'lyrics') + ' 和 thought_chain，不要生成番外侧页。') : '这一轮先专注首幕正文、title、quote、asides 和 thought_chain，不要生成番外侧页。',
     offlinePerspectiveRuleLine(storyPrefs.perspective),
     offlineForbiddenWordRuleLine(),
+    offlineLaoziSelfReferenceRuleLine(),
     '正文的镜头和感知中心必须是 char 本人：重点写 char 看到的、听到的、想到的、做出的动作和反应。',
     '不要替 user 写内心活动，不要写 user 的主观感受，不要突然切到 user 视角；user 只能通过 char 当下能观察到的表情、动作、说话、距离变化来呈现。',
     '语气要像活人，不要模板腔，不要悬浮文艺腔，不要为了氛围硬堆华丽比喻；像真的见面时会自然注意到的小动作、小停顿、小反应。',
