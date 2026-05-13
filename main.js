@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T02:32:07Z';
+const APP_BUILD_ID = '2026-05-13T02:39:12Z';
 const APP_UPDATE_NOTES = [
-  '所有 App 优先读取聊天设置头像',
-  '头像设置增加本地镜像兜底',
-  '打开 App 前先同步真实头像'
+  '新增主屏头像诊断复制窗口',
+  '新增 App 内头像诊断复制窗口',
+  '诊断会列出聊天设置头像来源'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -3353,6 +3353,337 @@ var ShellAvatarResolver = {
   }
 };
 window.ShellAvatarResolver = ShellAvatarResolver;
+
+function summarizeAvatarDebugSource(value){
+  var text = normalizeShellAssetSrc(value || '');
+  var kind = 'empty';
+  if(/^data:/i.test(text)) kind = 'data';
+  else if(/^blob:/i.test(text)) kind = 'blob';
+  else if(/^https?:/i.test(text)) kind = 'http';
+  else if(/^\/|\.\.?\/|apps\//i.test(text)) kind = 'local';
+  else if(text) kind = 'text';
+  return {
+    kind: kind,
+    length: text.length,
+    value: /^data:/i.test(text) ? (text.slice(0, 120) + (text.length > 120 ? '...[data-truncated]' : '')) : text,
+    prefix: text.slice(0, 180)
+  };
+}
+
+function readAvatarDebugLocalJson(key){
+  try{
+    var raw = localStorage.getItem(key) || '';
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(err){
+    return { __parseError: String(err && err.message || err || 'parse failed') };
+  }
+}
+
+function summarizeAvatarDebugBundle(bundle){
+  if(!bundle || typeof bundle !== 'object') return null;
+  return {
+    updatedAt: Number(bundle.updatedAt || 0) || 0,
+    selectedCharAvatarItemId: String(bundle.selectedCharAvatarItemId || ''),
+    selectedUserAvatarItemId: String(bundle.selectedUserAvatarItemId || ''),
+    charAvatar: summarizeAvatarDebugSource(bundle.charAvatar || ''),
+    userAvatar: summarizeAvatarDebugSource(bundle.userAvatar || ''),
+    storageKey: String(bundle.__storageKey || '')
+  };
+}
+
+function summarizeAvatarDebugCharacter(c){
+  if(!c || typeof c !== 'object') return null;
+  return {
+    id: String(c.id || ''),
+    name: String(c.name || ''),
+    nickname: String(c.nickname || ''),
+    avatar: summarizeAvatarDebugSource(c.avatar || ''),
+    avatarUrl: summarizeAvatarDebugSource(c.avatarUrl || ''),
+    imageData: summarizeAvatarDebugSource(c.imageData || ''),
+    userAvatarProfile: summarizeAvatarDebugSource(c.userAvatarProfile || c.userAvatar || ''),
+    importedAvatarResources: Array.isArray(c.importedAvatarResources) ? c.importedAvatarResources.slice(0, 8).map(function(item){
+      return {
+        id: String(item && item.id || ''),
+        label: String(item && (item.label || item.name) || ''),
+        previewData: summarizeAvatarDebugSource(item && (item.previewData || item.src || item.url) || ''),
+        fileName: String(item && (item.fileName || item.filename) || '')
+      };
+    }) : []
+  };
+}
+
+function collectAvatarDebugDom(doc, selectors){
+  var out = [];
+  var seen = [];
+  function addNode(node, selector){
+    if(!node || seen.indexOf(node) >= 0) return;
+    seen.push(node);
+    var src = '';
+    try{ src = String((node.getAttribute && (node.getAttribute('src') || node.getAttribute('data-avatar-src'))) || node.src || '').trim(); }catch(err){}
+    out.push({
+      selector: selector,
+      tag: String(node.tagName || '').toLowerCase(),
+      id: String(node.id || ''),
+      className: String(node.className || ''),
+      parentId: String((node.parentNode && node.parentNode.id) || ''),
+      parentClass: String((node.parentNode && node.parentNode.className) || ''),
+      src: summarizeAvatarDebugSource(src),
+      complete: !!node.complete,
+      naturalWidth: Number(node.naturalWidth || 0) || 0,
+      naturalHeight: Number(node.naturalHeight || 0) || 0
+    });
+  }
+  try{
+    (selectors || []).forEach(function(selector){
+      try{
+        Array.prototype.slice.call(doc.querySelectorAll(selector)).forEach(function(node){ addNode(node, selector); });
+      }catch(selErr){}
+    });
+    Array.prototype.slice.call(doc.querySelectorAll('img')).forEach(function(img){
+      var text = [
+        img.id,
+        img.className,
+        img.getAttribute && img.getAttribute('alt'),
+        img.parentNode && img.parentNode.id,
+        img.parentNode && img.parentNode.className
+      ].join(' ');
+      if(/avatar|头像|hdr|char|user|bond|wgt|offline-story|polaroid/i.test(text)) addNode(img, 'img[avatar-like]');
+    });
+  }catch(err){
+    out.push({ error: String(err && err.message || err || 'dom collect failed') });
+  }
+  return out.slice(0, 40);
+}
+
+async function collectAvatarDebugBundles(charId){
+  var id = String(charId || '').trim();
+  if(!id) return [];
+  var keys = chatSettingsBundleKeysForShell(id, getActiveAccountId());
+  var rows = [];
+  for(var i = 0; i < keys.length; i += 1){
+    var key = keys[i];
+    var local = readAvatarDebugLocalJson(key);
+    var phone = null;
+    if(window.PhoneStorage && typeof window.PhoneStorage.getJson === 'function'){
+      try{ phone = await window.PhoneStorage.getJson(key); }catch(err){ phone = { __readError: String(err && err.message || err || 'read failed') }; }
+    }
+    rows.push({
+      key: key,
+      local: summarizeAvatarDebugBundle(local),
+      phone: summarizeAvatarDebugBundle(phone)
+    });
+  }
+  return rows;
+}
+
+async function collectAvatarDebugAssetKeys(charId){
+  var id = String(charId || '').trim();
+  if(!id) return [];
+  var keys = getCharacterAvatarAssetKeysForShell(id);
+  var rows = [];
+  for(var i = 0; i < keys.length; i += 1){
+    var key = keys[i];
+    var local = '';
+    try{ local = localStorage.getItem(key) || ''; }catch(err){}
+    var loaded = await loadStoredAsset(key).catch(function(){ return ''; });
+    rows.push({
+      key: key,
+      localStorage: summarizeAvatarDebugSource(local),
+      loadStoredAsset: summarizeAvatarDebugSource(loaded || '')
+    });
+  }
+  return rows;
+}
+
+async function collectAvatarDebugAppContext(){
+  var data = {
+    currentApp: currentApp || '',
+    frameSrc: '',
+    frameReadyState: '',
+    character: null,
+    resolvers: {},
+    dom: [],
+    accessError: ''
+  };
+  try{
+    var frame = document.getElementById('app-iframe');
+    data.frameSrc = String((frame && frame.src) || '');
+    var win = frame && frame.contentWindow ? frame.contentWindow : null;
+    var doc = frame && (frame.contentDocument || (win && win.document));
+    data.frameReadyState = String((doc && doc.readyState) || '');
+    if(win){
+      data.character = summarizeAvatarDebugCharacter(win.character || null);
+      try{
+        if(typeof win.getChatCharacterAvatarCandidateSync === 'function'){
+          data.resolvers.chatCandidate = summarizeAvatarDebugSource(win.getChatCharacterAvatarCandidateSync(win.character || null));
+        }
+      }catch(e){}
+      try{
+        if(typeof win.resolveBestCharAvatarSource === 'function'){
+          var best = await Promise.race([
+            Promise.resolve(win.resolveBestCharAvatarSource()),
+            new Promise(function(resolve){ setTimeout(function(){ resolve('__timeout__'); }, 1800); })
+          ]);
+          data.resolvers.resolveBestCharAvatarSource = summarizeAvatarDebugSource(best === '__timeout__' ? '' : best);
+          data.resolvers.resolveBestCharAvatarSourceTimedOut = best === '__timeout__';
+        }
+      }catch(e2){ data.resolvers.resolveBestCharAvatarSourceError = String(e2 && e2.message || e2 || 'error'); }
+      try{
+        if(typeof win.resolveCharAvatar === 'function'){
+          data.resolvers.offlineResolveCharAvatar = summarizeAvatarDebugSource(win.resolveCharAvatar());
+        }
+      }catch(e3){}
+      try{ data.resolvers.runtimeCharAvatar = summarizeAvatarDebugSource(win.runtimeCharAvatar || ''); }catch(e4){}
+    }
+    if(doc){
+      data.dom = collectAvatarDebugDom(doc, [
+        '#hdrAvatar img',
+        '#csCharAvatar img',
+        '#idcAvatar img',
+        '#chatExportIdcAvatar img',
+        '.msg.ai .msg-avatar img',
+        '.offline-story-avatar img',
+        '.offline-status-avatar img',
+        '.polaroid .avatar img',
+        '.offline-goodbye-chat-avatar img'
+      ]);
+    }
+  }catch(err){
+    data.accessError = String(err && err.message || err || 'app frame access failed');
+  }
+  return data;
+}
+
+async function buildAvatarDebugSnapshot(scope){
+  var active = getActiveCharacterData();
+  var appData = scope === 'app' ? await collectAvatarDebugAppContext() : null;
+  var appCharId = appData && appData.character && appData.character.id ? appData.character.id : '';
+  var charId = String(appCharId || (active && active.id) || '').trim();
+  var asyncShellAvatar = charId ? await loadCharacterAvatarForShell(charId).catch(function(){ return ''; }) : '';
+  var resolvedShellAvatar = active ? await resolveCharacterAvatarForShell(active).catch(function(){ return ''; }) : '';
+  var localBundle = charId ? getCachedShellChatSettingsBundleForChar(charId, getActiveAccountId()) : null;
+  var snapshot = {
+    kind: scope === 'app' ? 'app-avatar-debug' : 'home-avatar-debug',
+    copiedAt: new Date().toISOString(),
+    buildId: APP_BUILD_ID,
+    currentApp: currentApp || '',
+    userAgent: navigator.userAgent,
+    activeAccountId: getActiveAccountId(),
+    defaultAccountId: getDefaultAccountId(),
+    charId: charId,
+    pendingOpenChatCharId: pendingOpenChatCharId,
+    pendingOpenOfflineCharId: pendingOpenOfflineCharId,
+    activeCharacter: summarizeAvatarDebugCharacter(active),
+    shellResolvers: {
+      cachedBundleAvatar: summarizeAvatarDebugSource(getBundleAvatarForShell(localBundle, 'char')),
+      getShellCharacterAvatarCandidateSync: summarizeAvatarDebugSource(getShellCharacterAvatarCandidateSync(active || {})),
+      getCharacterAvatarForBg: summarizeAvatarDebugSource(getCharacterAvatarForBg(active || {})),
+      loadCharacterAvatarForShell: summarizeAvatarDebugSource(asyncShellAvatar),
+      resolveCharacterAvatarForShell: summarizeAvatarDebugSource(resolvedShellAvatar)
+    },
+    homeDom: collectAvatarDebugDom(document, [
+      '#wgt-avatar img',
+      '#wgt-avatar',
+      '#bond-char-avatar img',
+      '#bond-char-avatar',
+      '#widget-character img'
+    ]),
+    chatSettingsBundles: await collectAvatarDebugBundles(charId),
+    charAvatarAssets: await collectAvatarDebugAssetKeys(charId),
+    app: appData
+  };
+  return snapshot;
+}
+
+function writeAvatarDebugClipboard(text){
+  if(navigator.clipboard && typeof navigator.clipboard.writeText === 'function'){
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise(function(resolve, reject){
+    try{
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', 'readonly');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      ok ? resolve() : reject(new Error('execCommand copy failed'));
+    }catch(err){
+      reject(err);
+    }
+  });
+}
+
+function setAvatarDebugStatus(scope, text){
+  var el = document.getElementById(scope === 'app' ? 'avatar-debug-app-status' : 'avatar-debug-home-status');
+  if(el) el.textContent = text || '';
+}
+
+async function copyAvatarDebugSnapshot(scope){
+  var safeScope = scope === 'app' ? 'app' : 'home';
+  setAvatarDebugStatus(safeScope, '正在整理...');
+  try{
+    var snapshot = await buildAvatarDebugSnapshot(safeScope);
+    var text = JSON.stringify(snapshot, null, 2);
+    await writeAvatarDebugClipboard(text);
+    setAvatarDebugStatus(safeScope, '已复制 ' + Math.round(text.length / 1024) + ' KB');
+    showHomeToast(safeScope === 'app' ? 'App 头像诊断已复制' : '主屏头像诊断已复制');
+  }catch(err){
+    setAvatarDebugStatus(safeScope, '复制失败');
+    showHomeToast('头像诊断复制失败：' + String(err && err.message || err || '未知错误'), 'error');
+  }
+}
+window.copyAvatarDebugSnapshot = copyAvatarDebugSnapshot;
+
+function ensureAvatarDebugWindows(){
+  if(document.getElementById('avatar-debug-style')) return syncAvatarDebugWindows();
+  if(!document.body){
+    setTimeout(ensureAvatarDebugWindows, 0);
+    return;
+  }
+  var style = document.createElement('style');
+  style.id = 'avatar-debug-style';
+  style.textContent = [
+    '.avatar-debug-window{position:fixed;left:max(10px,env(safe-area-inset-left));bottom:calc(74px + env(safe-area-inset-bottom));z-index:420;width:min(226px,calc(100vw - 20px));box-sizing:border-box;padding:9px 10px;border:1px solid rgba(116,0,28,.32);background:#fffafb;box-shadow:0 8px 18px rgba(75,0,20,.14);border-radius:10px;color:#3d0716;font-family:Nunito,Quicksand,system-ui,sans-serif;}',
+    '.avatar-debug-window[hidden]{display:none!important}',
+    '.avatar-debug-app{bottom:calc(86px + env(safe-area-inset-bottom));z-index:520;}',
+    '.avatar-debug-title{font-size:12px;font-weight:900;line-height:1.2;margin-bottom:3px;}',
+    '.avatar-debug-copy{font-size:10px;font-weight:800;line-height:1.35;opacity:.78;margin-bottom:7px;}',
+    '.avatar-debug-actions{display:flex;align-items:center;gap:8px;}',
+    '.avatar-debug-btn{border:0;background:#7a1028;color:#fff;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900;line-height:1;box-shadow:none;}',
+    '.avatar-debug-status{font-size:10px;font-weight:900;color:#7a1028;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}'
+  ].join('');
+  document.head.appendChild(style);
+  var home = document.createElement('div');
+  home.id = 'avatar-debug-home-window';
+  home.className = 'avatar-debug-window avatar-debug-home';
+  home.innerHTML = '<div class="avatar-debug-title">主屏头像诊断</div><div class="avatar-debug-copy">刷新后先点这里复制。</div><div class="avatar-debug-actions"><button class="avatar-debug-btn" type="button" data-avatar-debug-copy="home">复制主屏</button><span class="avatar-debug-status" id="avatar-debug-home-status"></span></div>';
+  var app = document.createElement('div');
+  app.id = 'avatar-debug-app-window';
+  app.className = 'avatar-debug-window avatar-debug-app';
+  app.innerHTML = '<div class="avatar-debug-title">App 内头像诊断</div><div class="avatar-debug-copy" id="avatar-debug-app-copy">进 App 后点这里复制。</div><div class="avatar-debug-actions"><button class="avatar-debug-btn" type="button" data-avatar-debug-copy="app">复制 App</button><span class="avatar-debug-status" id="avatar-debug-app-status"></span></div>';
+  var homeBtn = home.querySelector('[data-avatar-debug-copy="home"]');
+  var appBtn = app.querySelector('[data-avatar-debug-copy="app"]');
+  if(homeBtn) homeBtn.addEventListener('click', function(){ copyAvatarDebugSnapshot('home'); });
+  if(appBtn) appBtn.addEventListener('click', function(){ copyAvatarDebugSnapshot('app'); });
+  document.body.appendChild(home);
+  document.body.appendChild(app);
+  syncAvatarDebugWindows();
+}
+
+function syncAvatarDebugWindows(){
+  var home = document.getElementById('avatar-debug-home-window');
+  var app = document.getElementById('avatar-debug-app-window');
+  if(!home || !app) return;
+  home.hidden = !!currentApp;
+  app.hidden = !currentApp;
+  var appCopy = document.getElementById('avatar-debug-app-copy');
+  if(appCopy) appCopy.textContent = currentApp ? ('当前：' + currentApp + '。进来后复制。') : '进 App 后点这里复制。';
+}
 
 function shouldSuppressChatNotification(charId){
   if(currentApp !== 'chat') return false;
@@ -11570,6 +11901,7 @@ async function performCloseApp(){
   }catch(e){
     renderBondWidget(null);
   }
+  ensureAvatarDebugWindows();
   if(appFrameClearTimer){
     clearTimeout(appFrameClearTimer);
     appFrameClearTimer = 0;
@@ -11698,6 +12030,7 @@ function handleAppFrameLoaded(frame){
     message: '页面已加载'
   });
   setTimeout(applyIframeSafeAreaOverrides, 120);
+  syncAvatarDebugWindows();
   hideShellLoadingOverlay(currentApp === 'chat' ? 360 : (currentApp ? 260 : 2000));
 }
 
@@ -11829,6 +12162,7 @@ function renderApp(id){
   }
   document.getElementById('app-container').classList.add('open');
   document.getElementById('home-screen').classList.add('hidden');
+  ensureAvatarDebugWindows();
 }
 
 function setChatShellBackground(src){
@@ -14140,6 +14474,7 @@ function restoreState(){
   });
   renderHomeDockBadges();
   renderHomePages(true);
+  ensureAvatarDebugWindows();
   setupAiBgScheduler();
   try{
     if(sessionStorage.getItem(REFRESH_RECALC_FLAG_KEY) === '1'){
@@ -14181,6 +14516,7 @@ window.addEventListener('load', ()=>{
   clearHostedRefreshParams();
   syncAppHeight();
   renderHomePages(true);
+  ensureAvatarDebugWindows();
   bootHostedUpdateCheck();
   try{
     var launchUrl = new URL(window.location.href);
