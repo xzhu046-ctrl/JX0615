@@ -62,9 +62,9 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T22:26:15Z';
+const APP_BUILD_ID = '2026-05-13T22:30:56Z';
 const APP_UPDATE_NOTES = [
-  '头像跨 App 加载会走本机缓存',
+  '头像进出 App 会主动修复',
   '小脑瓜读取补上 buffer 尾巴',
   '通话也按最近 200 条热区读取'
 ];
@@ -999,6 +999,7 @@ var shellAvatarPoolLoading = Object.create(null);
 var shellAvatarBlobUrlCache = Object.create(null);
 var shellAvatarBlobUrlLoading = Object.create(null);
 var shellAvatarFrameRepairTimers = [];
+var shellAvatarHomeRepairTimers = [];
 var shellAvatarPrewarmRoot = null;
 
 function getShellAvatarPrewarmRoot(){
@@ -8223,24 +8224,40 @@ function retryShellAvatarImageLoad(img, src){
   return true;
 }
 
-function repairShellAvatarImages(){
+function repairShellAvatarImageElement(img){
+  if(!isShellFrameAvatarLikeImage(img)) return false;
+  var src = getShellFrameAvatarImgSource(img);
+  if(!getShellAvatarPoolKey(src)) return false;
+  prewarmShellAvatarImagePool(src, 8);
+  var broken = !img.complete || Number(img.naturalWidth || 0) <= 0;
+  if(!broken){
+    rememberLoadedShellAvatarImage(img, src);
+    return false;
+  }
+  if(shellAvatarBlobUrlCache[getShellAvatarBlobKey(src)] && applyShellAvatarBlobFallbackToImage(img, src)) return true;
+  if(replaceShellAvatarWithPooledImage(img, src)) return true;
+  if(applyShellAvatarBlobFallbackToImage(img, src)) return true;
+  if(retryShellAvatarImageLoad(img, src)) return true;
+  return false;
+}
+
+function repairAvatarImagesInDocument(doc){
+  if(!doc || !doc.querySelectorAll) return false;
   var repaired = false;
   var imgs = [];
-  try{ seedShellAvatarPoolFromDocument(document); }catch(seedErr){}
-  try{ imgs = Array.prototype.slice.call(document.querySelectorAll('img')); }catch(queryErr){}
+  try{ seedShellAvatarPoolFromDocument(document); }catch(shellSeedErr){}
+  if(doc !== document){
+    try{ seedShellAvatarPoolFromDocument(doc); }catch(frameSeedErr){}
+  }
+  try{ imgs = Array.prototype.slice.call(doc.querySelectorAll('img')); }catch(queryErr){}
   imgs.forEach(function(img){
-    if(!isShellFrameAvatarLikeImage(img)) return;
-    var src = getShellFrameAvatarImgSource(img);
-    if(!getShellAvatarPoolKey(src)) return;
-    prewarmShellAvatarImagePool(src, 8);
-    var broken = !img.complete || Number(img.naturalWidth || 0) <= 0;
-    if(!broken) return;
-    if(shellAvatarBlobUrlCache[getShellAvatarBlobKey(src)] && applyShellAvatarBlobFallbackToImage(img, src)) repaired = true;
-    else if(replaceShellAvatarWithPooledImage(img, src)) repaired = true;
-    else if(applyShellAvatarBlobFallbackToImage(img, src)) repaired = true;
-    else if(retryShellAvatarImageLoad(img, src)) repaired = true;
+    if(repairShellAvatarImageElement(img)) repaired = true;
   });
   return repaired;
+}
+
+function repairShellAvatarImages(){
+  return repairAvatarImagesInDocument(document);
 }
 
 function repairAppFrameAvatarImages(frame){
@@ -8248,25 +8265,39 @@ function repairAppFrameAvatarImages(frame){
   if(!frame) return false;
   var doc = null;
   try{ doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document); }catch(err){}
-  if(!doc || !doc.querySelectorAll) return false;
-  var repaired = false;
-  var imgs = [];
-  try{ seedShellAvatarPoolFromDocument(document); }catch(shellSeedErr){}
-  try{ seedShellAvatarPoolFromDocument(doc); }catch(frameSeedErr){}
-  try{ imgs = Array.prototype.slice.call(doc.querySelectorAll('img')); }catch(queryErr){}
-  imgs.forEach(function(img){
-    if(!isShellFrameAvatarLikeImage(img)) return;
-    var src = getShellFrameAvatarImgSource(img);
-    if(!getShellAvatarPoolKey(src)) return;
-    prewarmShellAvatarImagePool(src, 8);
-    var broken = !img.complete || Number(img.naturalWidth || 0) <= 0;
-    if(!broken) return;
-    if(shellAvatarBlobUrlCache[getShellAvatarBlobKey(src)] && applyShellAvatarBlobFallbackToImage(img, src)) repaired = true;
-    else if(replaceFrameAvatarWithPooledImage(img, src)) repaired = true;
-    else if(applyShellAvatarBlobFallbackToImage(img, src)) repaired = true;
-    else if(retryShellAvatarImageLoad(img, src)) repaired = true;
+  return repairAvatarImagesInDocument(doc);
+}
+
+function scheduleShellAvatarRepairs(){
+  shellAvatarHomeRepairTimers.forEach(function(timer){ clearTimeout(timer); });
+  shellAvatarHomeRepairTimers = [];
+  [0, 80, 220, 520, 1000, 1800, 3200, 6000].forEach(function(delay){
+    shellAvatarHomeRepairTimers.push(setTimeout(function(){
+      repairShellAvatarImages();
+    }, delay));
   });
-  return repaired;
+}
+
+function handleShellAvatarImageLoadEvent(evt){
+  var img = evt && evt.target;
+  if(!isShellFrameAvatarLikeImage(img)) return;
+  rememberLoadedShellAvatarImage(img);
+}
+
+function handleShellAvatarImageErrorEvent(evt){
+  var img = evt && evt.target;
+  if(!isShellFrameAvatarLikeImage(img)) return;
+  repairShellAvatarImageElement(img);
+}
+
+function bindShellAvatarRepairEvents(root){
+  var target = root || document;
+  if(!target || target.__shellAvatarRepairEventsBound) return;
+  try{
+    target.__shellAvatarRepairEventsBound = true;
+    target.addEventListener('load', handleShellAvatarImageLoadEvent, true);
+    target.addEventListener('error', handleShellAvatarImageErrorEvent, true);
+  }catch(err){}
 }
 
 function scheduleAppFrameAvatarRepairs(frame){
@@ -8282,6 +8313,8 @@ function scheduleAppFrameAvatarRepairs(frame){
   });
   try{
     var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+    bindShellAvatarRepairEvents(doc);
+    if(frame.contentWindow) bindShellAvatarRepairEvents(frame.contentWindow);
     if(doc && doc.body && !doc.__shellAvatarRepairObserver){
       doc.__shellAvatarRepairObserver = new MutationObserver(function(){
         if(doc.__shellAvatarRepairQueued) return;
@@ -12127,6 +12160,8 @@ async function performCloseApp(){
     const c = foregroundChar && foregroundChar.id ? foregroundChar : getActiveCharacterData();
     if(c) setWidgetCharacter(c);
     renderBondWidget(c);
+    prewarmShellAvatarSourcesForApps();
+    scheduleShellAvatarRepairs();
   }catch(e){
     renderBondWidget(null);
   }
@@ -12329,7 +12364,9 @@ function armAppFrameLoadWatchdog(frame, appId, attempt){
 
 function renderApp(id){
   const a=APP_MAP[id]; if(!a) return;
+  bindShellAvatarRepairEvents(document);
   prewarmShellAvatarSourcesForApps();
+  scheduleShellAvatarRepairs();
   if(appFrameClearTimer){
     clearTimeout(appFrameClearTimer);
     appFrameClearTimer = 0;
@@ -14727,10 +14764,12 @@ function restoreState(){
   } else if(wp) setWallpaper(wp);
   hydrateShellActiveCharacterState().finally(function(){
     try{
+      bindShellAvatarRepairEvents(document);
       const c = getActiveCharacterData();
       if(c){ setWidgetCharacter(c); }
       renderBondWidget(c);
       prewarmShellAvatarSourcesForApps();
+      scheduleShellAvatarRepairs();
     }catch(e){}
   });
   renderHomeDockBadges();
@@ -14917,12 +14956,16 @@ restoreState();
 window.addEventListener('focus', ()=>{
   hydrateShellActiveCharacterState().finally(function(){
     renderBondWidget();
+    prewarmShellAvatarSourcesForApps();
+    scheduleShellAvatarRepairs();
   });
 });
 document.addEventListener('visibilitychange', ()=>{
   if(!document.hidden){
     renderBondWidget();
     renderHomeDockBadges();
+    prewarmShellAvatarSourcesForApps();
+    scheduleShellAvatarRepairs();
   }
 });
 window.addEventListener('resize', ()=>{
