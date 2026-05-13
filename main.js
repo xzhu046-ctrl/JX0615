@@ -62,11 +62,12 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T22:30:56Z';
+const APP_BUILD_ID = '2026-05-13T22:43:53Z';
 const APP_UPDATE_NOTES = [
+  '聊天启动不会无限卡加载',
+  '暂时离开会立刻退回',
   '头像进出 App 会主动修复',
-  '小脑瓜读取补上 buffer 尾巴',
-  '通话也按最近 200 条热区读取'
+  '小脑瓜读取补上 buffer 尾巴'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -539,7 +540,14 @@ function ensureOfflineMiniLauncher(){
 
 function renderOfflineMiniLauncher(){
   var btn = document.getElementById('offline-mini-launcher-shell');
-  if(btn) btn.remove();
+  var charId = getMinimizedOfflineCharId();
+  if(!charId){
+    if(btn) btn.remove();
+    return;
+  }
+  btn = ensureOfflineMiniLauncher();
+  btn.style.display = currentApp === 'offline_mode' ? 'none' : 'flex';
+  btn.style.bottom = currentApp === 'chat' ? '104px' : '22px';
 }
 
 function setMinimizedOfflineCharId(charId){
@@ -12094,27 +12102,50 @@ function runAppTransition(task){
   return appTransitionPromise;
 }
 
+function withShellTransitionTimeout(promise, label, ms){
+  var done = false;
+  return Promise.race([
+    Promise.resolve(promise).then(function(value){
+      done = true;
+      return value;
+    }, function(err){
+      done = true;
+      throw err;
+    }),
+    new Promise(function(resolve){
+      setTimeout(function(){
+        if(done) return;
+        console.warn('shell transition timeout:', label);
+        resolve(null);
+      }, Math.max(400, Number(ms || 0) || 1800));
+    })
+  ]).catch(function(err){
+    console.warn('shell transition step failed:', label, err);
+    return null;
+  });
+}
+
 async function flushCurrentAppState(){
   try{
     const f = document.getElementById('app-iframe');
     if(!f || !f.contentWindow) return;
     try{
       if(typeof f.contentWindow.waitForPendingChatSave === 'function'){
-        await f.contentWindow.waitForPendingChatSave();
+        await withShellTransitionTimeout(f.contentWindow.waitForPendingChatSave(), 'waitForPendingChatSave', 1800);
       }
     }catch(err){}
     try{
       if(typeof f.contentWindow.persistAppBeforeLeave === 'function'){
         var appPersistResult = f.contentWindow.persistAppBeforeLeave();
-        if(appPersistResult && typeof appPersistResult.then === 'function') await appPersistResult;
+        if(appPersistResult && typeof appPersistResult.then === 'function') await withShellTransitionTimeout(appPersistResult, 'persistAppBeforeLeave', 1800);
       }
     }catch(err){}
     try{
       if(typeof f.contentWindow.saveChat === 'function'){
-        await f.contentWindow.saveChat(true);
+        await withShellTransitionTimeout(f.contentWindow.saveChat(true), 'saveChatBeforeLeave', 1800);
       }else if(typeof f.contentWindow.persistChatBeforeLeave === 'function'){
         var result = f.contentWindow.persistChatBeforeLeave();
-        if(result && typeof result.then === 'function') await result;
+        if(result && typeof result.then === 'function') await withShellTransitionTimeout(result, 'persistChatBeforeLeave', 1800);
       }
     }catch(err){}
     try{
@@ -12166,6 +12197,7 @@ async function performCloseApp(){
     renderBondWidget(null);
   }
   ensureAvatarDebugWindows();
+  renderOfflineMiniLauncher();
   if(appFrameClearTimer){
     clearTimeout(appFrameClearTimer);
     appFrameClearTimer = 0;
@@ -12435,6 +12467,7 @@ function renderApp(id){
   document.getElementById('app-container').classList.add('open');
   document.getElementById('home-screen').classList.add('hidden');
   ensureAvatarDebugWindows();
+  renderOfflineMiniLauncher();
 }
 
 function setChatShellBackground(src){

@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T22:30:56Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T22:30:56Z"></script>
-<script src="../assetStore.js?v=2026-05-13T22:30:56Z"></script>
-<script src="../accountManager.js?v=2026-05-13T22:30:56Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T22:30:56Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T22:30:56Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T22:30:56Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T22:30:56Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T22:30:56Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T22:30:56Z"></script>
+<script src="../promptManager.js?v=2026-05-13T22:43:53Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T22:43:53Z"></script>
+<script src="../assetStore.js?v=2026-05-13T22:43:53Z"></script>
+<script src="../accountManager.js?v=2026-05-13T22:43:53Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T22:43:53Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T22:43:53Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T22:43:53Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T22:43:53Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T22:43:53Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T22:43:53Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -4085,6 +4085,9 @@ var voiceCallMemoryNeedsRun = false;
 var voiceCallReplyLongPressTimer = null;
 var voiceCallReplyLongPressFired = false;
 var storageHydrationPromise = Promise.resolve();
+var CHAT_STORAGE_GET_TIMEOUT_MS = 1800;
+var CHAT_STORAGE_LIST_TIMEOUT_MS = 2200;
+var CHAT_STARTUP_TIMEOUT_MS = 6500;
 var storagePersistRequested = false;
 var momentsPostsCache = [];
 var momentsSocialStateCacheMap = {};
@@ -4095,6 +4098,41 @@ var activeMemeCategory = 'all';
 var pendingMemeMetaState = null;
 var memeCardLongPressTimer = null;
 var suppressNextMemeClickId = null;
+
+function withChatTimeout(promise, label, ms, fallback){
+  var done = false;
+  var timerMs = Math.max(300, Number(ms || 0) || 0);
+  return Promise.race([
+    Promise.resolve(promise).then(function(value){
+      done = true;
+      return value;
+    }, function(err){
+      done = true;
+      throw err;
+    }),
+    new Promise(function(resolve){
+      setTimeout(function(){
+        if(done) return;
+        console.warn('chat timeout:', label);
+        resolve(fallback);
+      }, timerMs);
+    })
+  ]);
+}
+
+function phoneStorageGetWithTimeout(storeName, id, timeoutMs){
+  if(!(window.PhoneStorage && typeof window.PhoneStorage.get === 'function')) return Promise.resolve(null);
+  return withChatTimeout(window.PhoneStorage.get(storeName, id), storeName + ':' + id, timeoutMs || CHAT_STORAGE_GET_TIMEOUT_MS, null).catch(function(){
+    return null;
+  });
+}
+
+function phoneStorageListWithTimeout(storeName, timeoutMs){
+  if(!(window.PhoneStorage && typeof window.PhoneStorage.list === 'function')) return Promise.resolve([]);
+  return withChatTimeout(window.PhoneStorage.list(storeName), storeName + ':list', timeoutMs || CHAT_STORAGE_LIST_TIMEOUT_MS, []).catch(function(){
+    return [];
+  });
+}
 var memeManageMode = false;
 var selectedMemeIds = new Set();
 var memeVisionPromiseMap = {};
@@ -5138,11 +5176,11 @@ async function hydrateCharacterStorageState(){
   var callId = callRecordStorageId(charId);
   var supportsIdb = !!(window.PhoneStorage && typeof window.PhoneStorage.get === 'function');
   var results = supportsIdb ? await Promise.all([
-    window.PhoneStorage.get('chats', chatId),
-    window.PhoneStorage.get('memorySummaries', memoryId),
-    window.PhoneStorage.get('innerVoices', innerId),
-    window.PhoneStorage.get('moneyStates', moneyId),
-    window.PhoneStorage.get('callRecords', callId)
+    phoneStorageGetWithTimeout('chats', chatId),
+    phoneStorageGetWithTimeout('memorySummaries', memoryId),
+    phoneStorageGetWithTimeout('innerVoices', innerId),
+    phoneStorageGetWithTimeout('moneyStates', moneyId),
+    phoneStorageGetWithTimeout('callRecords', callId)
   ]) : [null, null, null, null, null];
   var chatRec = results[0];
   var memoryRec = results[1];
@@ -20737,7 +20775,14 @@ async function restoreOrStartChat() {
   renderLoadingState();
   var restored = [];
   try{
-    storageHydrationPromise = hydrateCharacterStorageState();
+    var rawHydrationPromise = hydrateCharacterStorageState();
+    storageHydrationPromise = withChatTimeout(rawHydrationPromise, 'hydrateCharacterStorageState', CHAT_STARTUP_TIMEOUT_MS, []);
+    rawHydrationPromise.then(function(lateRestored){
+      if(!character || !Array.isArray(lateRestored) || !lateRestored.length) return;
+      if(chatLog.length) return;
+      chatLog = lateRestored;
+      renderChatLog(false);
+    }).catch(function(){});
     restored = await storageHydrationPromise;
   }catch(err){
     console.error('hydrateCharacterStorageState failed', err);
@@ -20752,7 +20797,7 @@ async function restoreOrStartChat() {
   }
   if (!restored.length){
     try{
-      restored = await loadPreferredStoredChatForCurrentCharacter();
+      restored = await withChatTimeout(loadPreferredStoredChatForCurrentCharacter(), 'loadPreferredStoredChatForCurrentCharacter', CHAT_STARTUP_TIMEOUT_MS, []);
     }catch(err){
       console.error('loadPreferredStoredChatForCurrentCharacter failed', err);
       restored = [];
@@ -20822,7 +20867,7 @@ async function syncChatLogFromStorageForCurrentCharacter(){
   if(!character || !character.id) return false;
   try{
     primeUserAvatarSourceNode().catch(function(){});
-    var normalized = await loadPreferredStoredChatForCurrentCharacter();
+    var normalized = await withChatTimeout(loadPreferredStoredChatForCurrentCharacter(), 'syncChatLogFromStorageForCurrentCharacter', CHAT_STARTUP_TIMEOUT_MS, []);
     if(!normalized.length){
       var clearAt = await readChatClearMarkerAt(character.id);
       if(clearAt && chatLog.length && !chatHistoryHasUserEntryAfter(chatLog, clearAt)){
@@ -22314,7 +22359,7 @@ function autoResize(el) {
 async function waitForPendingChatSave(){
   if(!pendingChatSavePromise) return;
   try{
-    await pendingChatSavePromise;
+    await withChatTimeout(pendingChatSavePromise, 'pendingChatSave', CHAT_STORAGE_LIST_TIMEOUT_MS, null);
   }catch(e){}
 }
 
@@ -33186,7 +33231,7 @@ async function loadBestChatHistoryRecord(charId){
     var key = candidates[i];
     try{
       if(window.PhoneStorage && typeof window.PhoneStorage.get === 'function'){
-        var stored = await window.PhoneStorage.get('chats', key);
+        var stored = await phoneStorageGetWithTimeout('chats', key);
         if(hasCanonicalEmptyChatRecord(stored)) chatStorageHadCanonicalEmpty = true;
         best = chooseBetterChatHistory(best, filterDeletedMessagesFromRecord(normalizeStoredChatRecord(stored, key), deletedMessageMap));
       }
@@ -33215,7 +33260,7 @@ async function loadBestChatHistoryRecord(charId){
   }
   if(window.PhoneStorage && typeof window.PhoneStorage.list === 'function'){
     try{
-      var allRecords = await window.PhoneStorage.list('chats');
+      var allRecords = await phoneStorageListWithTimeout('chats');
       var charIds = getChatCharacterIdCandidates(charId);
       if(Array.isArray(allRecords)){
         allRecords.forEach(function(record){
