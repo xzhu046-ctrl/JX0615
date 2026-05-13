@@ -62,7 +62,7 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T21:35:30Z';
+const APP_BUILD_ID = '2026-05-13T21:39:44Z';
 const APP_UPDATE_NOTES = [
   '旧记忆入口已经断开',
   '线上线下通话只写入小脑瓜',
