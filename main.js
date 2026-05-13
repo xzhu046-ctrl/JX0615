@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T02:13:19Z';
+const APP_BUILD_ID = '2026-05-13T02:25:10Z';
 const APP_UPDATE_NOTES = [
-  '阻止临时 blob 头像污染主屏',
-  '返回主屏改用稳定图床头像',
-  '清掉本机白头像缓存来源'
+  '进 App 时保留角色头像',
+  '角色卡内嵌头像不再被裁掉',
+  '返回主屏不再写回空头像'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -2203,9 +2203,13 @@ function bindHomeAppPressState(){
 
 function slimChar(c){
   if(!c) return null;
-  var imageData = String(c.imageData || '').trim();
-  if(/^(data:|blob:)/i.test(imageData)) imageData = '';
+  var imageData = getShellCharacterAvatarCandidateSync(c);
+  if(/^blob:/i.test(imageData)) imageData = '';
   if(!imageData) imageData = normalizeShellAssetSrc(c.avatarUrl || '');
+  if(/^blob:/i.test(imageData)) imageData = '';
+  var avatarUrl = normalizeShellAssetSrc(c.avatarUrl || '');
+  if(/^blob:/i.test(avatarUrl)) avatarUrl = '';
+  if(!avatarUrl && imageData && !/^data:/i.test(imageData)) avatarUrl = imageData;
   var userPersonaProfile = String(c.userPersonaProfile || '');
   if(userPersonaProfile.length > 20000) userPersonaProfile = userPersonaProfile.slice(0, 20000);
   var userAvatarProfile = normalizeShellAssetSrc(c.userAvatarProfile || c.userAvatar || '');
@@ -2221,7 +2225,7 @@ function slimChar(c){
   return {
     id:c.id, name:c.name, nickname:c.nickname, avatar:c.avatar,
     imageData:imageData,
-    avatarUrl:normalizeShellAssetSrc(c.avatarUrl || ''),
+    avatarUrl:avatarUrl,
     description:String(c.description || ''),
     personality:String(c.personality || ''),
     scenario:String(c.scenario || ''),
@@ -2266,14 +2270,17 @@ function activeCharacterLocalMirror(c){
   var id = String(c.id || '').trim();
   if(!id) return null;
   var imageData = getShellCharacterAvatarCandidateSync(c);
-  if(/^(data:|blob:)/i.test(imageData)) imageData = '';
+  if(/^blob:/i.test(imageData)) imageData = '';
+  var avatarUrl = normalizeShellAssetSrc(c.avatarUrl || '');
+  if(/^blob:/i.test(avatarUrl)) avatarUrl = '';
+  if(!avatarUrl && imageData && !/^data:/i.test(imageData)) avatarUrl = imageData;
   return {
     id: id,
     name: String(c.name || ''),
     nickname: String(c.nickname || ''),
     avatar: String(c.avatar || ''),
     imageData: imageData,
-    avatarUrl: normalizeShellAssetSrc(c.avatarUrl || ''),
+    avatarUrl: avatarUrl,
     userNameProfile: String(c.userNameProfile || ''),
     userNicknameNote: String(c.userNicknameNote || ''),
     msgMin: Number(c.msgMin) || 1,
