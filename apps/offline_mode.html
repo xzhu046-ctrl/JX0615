@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-13T17:22:10Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T17:22:10Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T17:22:10Z"></script>
-<script src="../promptManager.js?v=2026-05-13T17:22:10Z"></script>
-<script src="../accountManager.js?v=2026-05-13T17:22:10Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T17:22:10Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T17:22:10Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T17:22:10Z"></script>
+<script src="../assetStore.js?v=2026-05-13T17:39:47Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T17:39:47Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T17:39:47Z"></script>
+<script src="../promptManager.js?v=2026-05-13T17:39:47Z"></script>
+<script src="../accountManager.js?v=2026-05-13T17:39:47Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T17:39:47Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T17:39:47Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T17:39:47Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -8830,7 +8830,7 @@ function offlineRetellEnhanceSettingLine(prefs){
       ? '若本轮存在 user 最新线下输入，需要把它内化为续写材料：自然吸收 user 的角色扮演、动作、语气和当下意图，让它像剧情本来就在发生；不要照抄原句，不要写成复述清单，再承接 char 的反应与剧情推进。'
       : '转述关闭时，只把 user 最新线下输入当作触发信息，不刻意占用正文篇幅复述它。',
     enhanceOn
-      ? '抢话开启时，可以根据 user persona 和本轮明确指令补少量可观察互动、主动动作或短台词；不能让 user 的新台词压过 char 的回应，不能替 user 写内心或重大决定。'
+      ? '抢话开启时，可以结合 user 最新输入、当前剧情和 user 人设，对 user 的角色扮演做轻微自然延展，合理描写 user 可能出现的外在动作、语气变化或短句；必须给用户保留充裕的继续扮演空间，不能替 user 写内心、重大决定或连续推进。'
       : '抢话关闭时，不主动给 user 添加新台词或额外动作；只呈现 user 输入里已经明确发生的内容。'
   ].join(' ');
 }
@@ -8845,8 +8845,8 @@ function offlineRetellEnhanceUserPromptBlock(userText, prefs){
     lines.push('转述已关闭：不要刻意用大段正文复述 user input，只把它作为 char 当下回应的触发信息。');
   }
   if(storyPrefs.userEnhanceEnabled){
-    lines.push('抢话已开启：可以根据 user persona 和本轮明确指令，给 user 少量主动互动，例如动作、停顿、表情、靠近/退开或已经明确要说出口的短句。');
-    lines.push('抢话必须短、贴本轮输入，不能盖过 char 的回应，不能替 user 做重大决定，不能写 user 内心。');
+    lines.push('抢话已开启：可以结合 user 最新输入、当前剧情和 user 人设，对 user 的角色扮演做轻微自然延展，让 user 有少量可能的外在行为、语气反应或短句。');
+    lines.push('抢话必须给用户保留充裕的继续扮演空间：不要连续替 user 推剧情，不要替 user 写内心，不要替 user 做重大决定，不要让 user 的部分盖过 char 的回应。');
   }else{
     lines.push('抢话已关闭：不要主动替 user 新增台词、动作或抢话；只处理 user input 中已经明说的内容，user 仍然只能通过 char 观察到的反应呈现。');
   }
