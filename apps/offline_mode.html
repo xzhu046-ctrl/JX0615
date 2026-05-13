@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-13T01:02:53Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T01:02:53Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T01:02:53Z"></script>
-<script src="../promptManager.js?v=2026-05-13T01:02:53Z"></script>
-<script src="../accountManager.js?v=2026-05-13T01:02:53Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T01:02:53Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T01:02:53Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T01:02:53Z"></script>
+<script src="../assetStore.js?v=2026-05-13T01:36:59Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T01:36:59Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T01:36:59Z"></script>
+<script src="../promptManager.js?v=2026-05-13T01:36:59Z"></script>
+<script src="../accountManager.js?v=2026-05-13T01:36:59Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T01:36:59Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T01:36:59Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T01:36:59Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -587,6 +587,7 @@ box-shadow:0 0 0 2px rgba(255,255,255,.97),6px 6px 0 rgba(17,17,17,.94);padding:
 .offline-bubble-action-btn{width:34px;height:34px;padding:0;border:0;border-radius:0;background:transparent;color:#8f1224;display:inline-flex;align-items:center;justify-content:center;box-shadow:none;cursor:pointer}
 .offline-bubble-action-btn::before{content:"";width:22px;height:22px;display:block;background:#8f1224;-webkit-mask:var(--offline-action-icon) center/contain no-repeat;mask:var(--offline-action-icon) center/contain no-repeat}
 .offline-bubble-action-btn img{display:none}
+.offline-bubble-action-btn.action-edit{--offline-action-icon:url("assets/编辑.png")}
 .offline-bubble-action-btn.action-select{--offline-action-icon:url("assets/多选.png")}
 .offline-bubble-action-btn.action-delete{--offline-action-icon:url("assets/Recycle-Bin-2--Streamline-Sharp.png")}
 .offline-bubble-action-btn.action-favorite{--offline-action-icon:url("assets/收藏.png")}
@@ -7534,7 +7535,6 @@ function renderLoveStoryCard(entry, idx, isChar){
   var floorLabel = '#' + String(idx + 1);
   var tokenLabel = String(meta.tokenCount) + 't';
   var secondsLabel = formatOfflineGenTime(meta.generationMs);
-  var editButton = '<button class="birthday-edit" type="button" onclick="event.stopPropagation();editOfflineEntryText(' + idx + ')" aria-label="编辑"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button>';
   var thoughtToggle = isChar ? ('<div class="love-tools">' + renderOfflineThoughtChain(entry) + '</div>') : '';
   var statusChip = isChar ? renderOfflineStatusChip(entry, idx) : '';
   var summaryToggle = isChar ? renderOfflineSummary(entry) : '';
@@ -7549,7 +7549,6 @@ function renderLoveStoryCard(entry, idx, isChar){
       renderLoveWordsHtml() +
     '</div>' +
     '<div class="love-paper">' +
-      editButton +
       thoughtToggle +
       '<div class="love-body">' + renderCharSheetBody(entry.text || '', entry.asides || (entry.aside ? [entry.aside] : []), idx, entry) + '</div>' +
       postcards +
@@ -7567,7 +7566,6 @@ function renderBirthdayStoryCard(entry, idx, isChar){
   var secondsLabel = formatOfflineGenTime(meta.generationMs);
   var month = isChar ? 6 : getOfflineBirthdayUserMonth();
   var day = isChar ? 15 : getOfflineBirthdayUserDay();
-  var editButton = '<button class="birthday-edit" type="button" onclick="event.stopPropagation();editOfflineEntryText(' + idx + ')" aria-label="编辑"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button>';
   var thoughtToggle = isChar ? ('<div class="birthday-tools"><div class="birthday-tools-main">' + renderOfflineThoughtChain(entry) + '</div></div>') : '';
   var statusChip = isChar ? renderOfflineStatusChip(entry, idx) : '';
   var summaryToggle = isChar ? renderOfflineSummary(entry) : '';
@@ -7577,7 +7575,6 @@ function renderBirthdayStoryCard(entry, idx, isChar){
   return '<div class="birthday-card ' + (isChar ? 'char' : 'user') + (isOfflineEntrySelected(idx) ? ' is-selected' : '') + '">' +
     '<div class="birthday-sheet">' +
       '<div class="birthday-hero"' + avatarClick + '>' +
-        editButton +
         '<div class="birthday-cover">' + renderBirthdayCoverHtml(avatar, displayName.slice(0, 2) || (isChar ? 'C' : 'U')) + '</div>' +
         '<div class="birthday-stats"><span>' + esc(floorLabel) + '</span><span>' + esc(tokenLabel) + '</span><span>' + esc(secondsLabel) + '</span></div>' +
         renderBirthdayMottoHtml(isChar) +
@@ -7606,8 +7603,7 @@ function renderPaperStoryCard(entry, idx, isChar){
   var thoughtToggle = isChar ? ('<div class="offline-story-thought-row">' + renderOfflineThoughtChain(entry) + '</div>') : '';
   var summaryToggle = isChar ? renderOfflineSummary(entry) : '';
   var statusChip = isChar ? renderOfflineStatusChip(entry, idx) : '';
-  var toolsRow = isChar ? ('<div class="offline-story-tools"><div class="offline-story-tools-left">' + thoughtToggle + '</div><button class="offline-story-editbtn" type="button" onclick="editOfflineEntryText(' + idx + ')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button></div>') : '';
-  var userEdit = isChar ? '' : ('<div class="offline-story-actions-left"><button class="offline-story-editbtn" type="button" onclick="editOfflineEntryText(' + idx + ')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button></div>');
+  var toolsRow = isChar ? ('<div class="offline-story-tools"><div class="offline-story-tools-left">' + thoughtToggle + '</div></div>') : '';
   var avatarHtml = '<div class="offline-story-avatar' + (isChar ? ' is-char' : '') + '"' + (isChar ? ' onclick="openOfflineStatusModal(' + idx + ', false)"' : '') + '>' + renderOfflineAvatarImageHtml(avatar, displayName.slice(0, 2) || (isChar ? 'C' : 'U')) + '<div class="offline-story-avatar-label">' + esc(displayName || (isChar ? 'char' : 'user')) + '</div></div>';
   var stripShellHtml = '<div class="offline-story-strip-shell">' +
         '<div class="offline-story-stats">' +
@@ -7617,7 +7613,6 @@ function renderPaperStoryCard(entry, idx, isChar){
         '</div>' +
       '</div>';
   var bottomActions = '<div class="offline-story-actions">' +
-      userEdit +
       '<div class="offline-story-iconset">' +
         '<div class="offline-story-iconbtn"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2"></circle><circle cx="6" cy="12" r="2"></circle><circle cx="18" cy="19" r="2"></circle><path d="M8 12l8-6"></path><path d="M8 12l8 6"></path></svg></div>' +
         '<div class="offline-story-iconbtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1Z"></path></svg></div>' +
@@ -8209,6 +8204,7 @@ function renderOfflineBubbleActionBar(entry, idx){
   return '<div class="offline-bubble-action-row">' +
     '<button class="offline-kiss-action-trigger" type="button" aria-label="线下消息操作" onclick="event.stopPropagation();toggleOfflineActionMenu(' + idx + ')"><img src="assets/kiss.png" alt=""></button>' +
     (open ? ('<div class="offline-kiss-action-menu">' +
+      '<button class="offline-bubble-action-btn action-edit" type="button" title="编辑" aria-label="编辑" onclick="event.stopPropagation();editOfflineEntryText(' + idx + ')"><img src="assets/编辑.png" alt=""></button>' +
       '<button class="offline-bubble-action-btn action-select' + (selected ? ' is-active' : '') + '" type="button" title="多选" aria-label="多选" onclick="event.stopPropagation();toggleOfflineEntrySelection(' + idx + ', true)"><img src="assets/多选.png" alt=""></button>' +
       '<button class="offline-bubble-action-btn action-delete" type="button" title="删除" aria-label="删除" onclick="event.stopPropagation();deleteOfflineEntryAt(' + idx + ')"><img src="assets/Recycle-Bin-2--Streamline-Sharp.png" alt=""></button>' +
       '<button class="offline-bubble-action-btn action-favorite" type="button" title="收藏" aria-label="收藏" onclick="event.stopPropagation();favoriteOfflineEntryAt(' + idx + ')"><img src="assets/收藏.png" alt=""></button>' +
