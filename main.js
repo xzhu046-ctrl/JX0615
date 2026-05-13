@@ -62,11 +62,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T20:35:46Z';
+const APP_BUILD_ID = '2026-05-13T20:46:51Z';
 const APP_UPDATE_NOTES = [
-  '线下启动最前面补旧记忆兜底',
-  '打开线下时强制绕过旧缓存',
-  '修复反复弹旧启动错误'
+  '头像空白时会按原链接强制重载',
+  '清空聊天会同步清掉记忆和线下记录',
+  '清空聊天会同步清掉当前角色日程'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -975,7 +975,23 @@ function shouldUseShellAvatarProxy(src){
 }
 
 function getShellAvatarRenderSrc(src){
-  return normalizeShellAssetSrc(src || '');
+  var text = normalizeShellAssetSrc(src || '');
+  if(shouldUseShellAvatarProxy(text)){
+    return '/avatar-proxy?u=' + encodeURIComponent(text);
+  }
+  return text;
+}
+
+function getShellAvatarRetryRenderSrc(src){
+  var text = normalizeShellAssetSrc(src || '');
+  if(!/^https?:/i.test(text)) return getShellAvatarRenderSrc(text);
+  try{
+    var url = new URL(text, window.location.href);
+    url.searchParams.set('__avatarRetry', APP_BUILD_ID + '_' + Date.now());
+    return url.toString();
+  }catch(err){
+    return text + (text.indexOf('?') >= 0 ? '&' : '?') + '__avatarRetry=' + encodeURIComponent(APP_BUILD_ID + '_' + Date.now());
+  }
 }
 
 var shellAvatarImagePool = Object.create(null);
@@ -8125,6 +8141,25 @@ function replaceFrameAvatarWithPooledImage(img, src){
   return replaceShellAvatarWithPooledImage(img, src);
 }
 
+function retryShellAvatarImageLoad(img, src){
+  var key = getShellAvatarPoolKey(src);
+  if(!img || !key) return false;
+  var now = Date.now();
+  var lastRetry = 0;
+  try{ lastRetry = Number(img.getAttribute('data-shell-avatar-retry-at') || 0) || 0; }catch(readErr){}
+  if(lastRetry && now - lastRetry < 2500) return false;
+  try{ img.removeAttribute('srcset'); }catch(srcsetErr){}
+  try{ img.setAttribute('data-avatar-src', key); }catch(dataErr){}
+  try{ img.setAttribute('data-shell-avatar-retry-at', String(now)); }catch(retryErr){}
+  try{ img.setAttribute('referrerpolicy', 'no-referrer'); }catch(refErr){}
+  try{ img.referrerPolicy = 'no-referrer'; }catch(policyErr){}
+  try{ img.decoding = 'async'; }catch(decErr){}
+  try{ img.loading = 'eager'; }catch(loadErr){}
+  try{ img.style.display = ''; }catch(styleErr){}
+  try{ img.src = getShellAvatarRetryRenderSrc(key); }catch(assignErr){ return false; }
+  return true;
+}
+
 function repairShellAvatarImages(){
   var repaired = false;
   var imgs = [];
@@ -8139,6 +8174,7 @@ function repairShellAvatarImages(){
     if(shellAvatarBlobUrlCache[getShellAvatarBlobKey(src)] && applyShellAvatarBlobFallbackToImage(img, src)) repaired = true;
     else if(replaceShellAvatarWithPooledImage(img, src)) repaired = true;
     else if(applyShellAvatarBlobFallbackToImage(img, src)) repaired = true;
+    else if(retryShellAvatarImageLoad(img, src)) repaired = true;
   });
   return repaired;
 }
@@ -8162,6 +8198,7 @@ function repairAppFrameAvatarImages(frame){
     if(shellAvatarBlobUrlCache[getShellAvatarBlobKey(src)] && applyShellAvatarBlobFallbackToImage(img, src)) repaired = true;
     else if(replaceFrameAvatarWithPooledImage(img, src)) repaired = true;
     else if(applyShellAvatarBlobFallbackToImage(img, src)) repaired = true;
+    else if(retryShellAvatarImageLoad(img, src)) repaired = true;
   });
   return repaired;
 }

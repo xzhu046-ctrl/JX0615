@@ -340,14 +340,14 @@
     </section>
   </div>
   <div class="toast" id="toast"></div>
-  <script src="../assetStore.js?v=2026-05-13T20:35:46Z"></script>
-  <script src="../accountManager.js?v=2026-05-13T20:35:46Z"></script>
-  <script src="../chatStorage.js?v=2026-05-13T20:35:46Z"></script>
-  <script src="../metadataStore.js?v=2026-05-13T20:35:46Z"></script>
+  <script src="../assetStore.js?v=2026-05-13T20:46:51Z"></script>
+  <script src="../accountManager.js?v=2026-05-13T20:46:51Z"></script>
+  <script src="../chatStorage.js?v=2026-05-13T20:46:51Z"></script>
+  <script src="../metadataStore.js?v=2026-05-13T20:46:51Z"></script>
   <script>
   (function(){
     'use strict';
-    var BUILD_ID = '2026-05-13T20:35:46Z';
+    var BUILD_ID = '2026-05-13T20:46:51Z';
     var LITTLE_BRAIN_CONFIG_KEY = 'little_brain_config_v1';
     var state = { view:'picker', chars:[], char:null, store:null, config:null, memoryFilter:'all' };
     var avatarHydrateToken = 0;
@@ -432,6 +432,16 @@
       if(text.indexOf('apps/assets/') === 0) return '../' + text;
       if(text.indexOf('./apps/assets/') === 0) return '../' + text.slice(2);
       if(text.indexOf('/apps/assets/') === 0) return '..' + text;
+      return text;
+    }
+    function shouldUseAvatarProxy(src){
+      return false;
+    }
+    function getAvatarRenderSrc(src){
+      var text = normalizeAvatarSrc(src || '');
+      if(shouldUseAvatarProxy(text)){
+        return '/avatar-proxy?u=' + encodeURIComponent(text);
+      }
       return text;
     }
     function isRenderableAvatarSrc(src){
@@ -642,7 +652,7 @@
       var name = String((c && (c.nickname || c.name)) || 'C').trim();
       var id = String(c && c.id || '').trim();
       var attrs = ' data-avatar-char-id="' + esc(id) + '" data-avatar-fallback="' + esc(name.slice(0,2) || 'CH') + '"';
-      if(src) return '<span class="' + cls + '"' + attrs + '><img src="' + esc(src) + '" data-avatar-src="' + esc(src) + '" avatar-like alt="" referrerpolicy="no-referrer" decoding="async"><span style="display:none">' + esc(name.slice(0,2)) + '</span></span>';
+      if(src) return '<span class="' + cls + '"' + attrs + '><img src="' + esc(getAvatarRenderSrc(src)) + '" data-avatar-src="' + esc(normalizeAvatarSrc(src)) + '" avatar-like alt="" referrerpolicy="no-referrer" decoding="async"><span style="display:none">' + esc(name.slice(0,2)) + '</span></span>';
       return '<span class="' + cls + '"' + attrs + '>' + esc(name.slice(0,2)) + '</span>';
     }
     function setAvatarNodeSource(node, src){
@@ -650,7 +660,7 @@
       var fallback = String(node.getAttribute('data-avatar-fallback') || 'CH').slice(0,2);
       var safeSrc = normalizeAvatarSrc(src);
       if(isRenderableAvatarSrc(safeSrc)){
-        node.innerHTML = '<img src="' + esc(safeSrc) + '" data-avatar-src="' + esc(safeSrc) + '" avatar-like alt="" referrerpolicy="no-referrer" decoding="async"><span style="display:none">' + esc(fallback) + '</span>';
+        node.innerHTML = '<img src="' + esc(getAvatarRenderSrc(safeSrc)) + '" data-avatar-src="' + esc(safeSrc) + '" avatar-like alt="" referrerpolicy="no-referrer" decoding="async"><span style="display:none">' + esc(fallback) + '</span>';
         var img = node.querySelector('img');
         if(img){
           img.onerror = function(){
