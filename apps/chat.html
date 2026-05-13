@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../assetStore.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../accountManager.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T20:46:51Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T20:46:51Z"></script>
+<script src="../promptManager.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../assetStore.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../accountManager.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T21:35:30Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T21:35:30Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -3981,10 +3981,6 @@ var MAX_CONTEXT_WINDOW = 120;
 var DEFAULT_CHAT_RENDER_PAGE_SIZE = 40;
 var MIN_CHAT_RENDER_PAGE_SIZE = 10;
 var MAX_CHAT_RENDER_PAGE_SIZE = 200;
-var DEFAULT_SUMMARY_EVERY = 30;
-var DEFAULT_MEMORY_MERGE_THRESHOLD = 10;
-var DEFAULT_MANUAL_SUMMARY_SIZE = 30;
-var MEMORY_MODE_DIARY = 'diary';
 var MEMORY_MODE_STRUCTURED = 'structured';
 var MEMORY_MODE_VECTOR = 'vector';
 var DEFAULT_MEMORY_MODE = MEMORY_MODE_STRUCTURED;
@@ -3995,7 +3991,6 @@ var LITTLE_BRAIN_CONFIG_KEY = 'little_brain_config_v1';
 var DEFAULT_MOMENTS_FREQ = 'medium';
 var memorySummaryBusy = false;
 var pendingCharBgEnabled = null;
-var pendingAutoSummaryEnabled = null;
 var pendingPresenceShareEnabled = null;
 var pendingPresenceAutoReplyEnabled = null;
 var pendingAvatarVisionEnabled = null;
@@ -4003,7 +3998,7 @@ var pendingCharAvatarAutoEnabled = null;
 var pendingReadTimeVisible = null;
 var chatExportState = null;
 var memoryEditingId = '';
-var memoryEditingType = 'diary';
+var memoryEditingType = 'structured-short';
 var memoryEditingMeta = null;
 var memoryPanelView = 'all';
 var vectorMemoryPromptCache = '';
@@ -4103,10 +4098,10 @@ var suppressNextMemeClickId = null;
 var memeManageMode = false;
 var selectedMemeIds = new Set();
 var memeVisionPromiseMap = {};
-var MEMORY_SEAM_BRIDGE_SIZE = 4;
-var MEMORY_AUTO_COMPACT_MIN_ITEMS = 20;
-var MEMORY_AUTO_COMPACT_MIN_TOKENS = 2600;
-var MEMORY_AUTO_COMPACT_BATCH = 3;
+var LITTLE_BRAIN_AUTO_CHAT_THRESHOLD = 4;
+var LITTLE_BRAIN_AUTO_CHAT_BATCH = 10;
+var LITTLE_BRAIN_AUTO_CALL_THRESHOLD = 2;
+var LITTLE_BRAIN_AUTO_CALL_BATCH = 8;
 
 function contextWindowKey(){
   return character && character.id ? accountScopedKey('ctx_window_' + character.id) : '';
@@ -4456,18 +4451,6 @@ function memorySummaryKey(){
 function innerVoiceKey(){
   return character && character.id ? accountScopedKey('inner_voice_' + character.id) : '';
 }
-function summaryEveryKey(){
-  return character && character.id ? accountScopedKey('summary_every_' + character.id) : '';
-}
-function memoryMergeThresholdKey(){
-  return character && character.id ? accountScopedKey('memory_merge_threshold_' + character.id) : '';
-}
-function autoSummaryEnabledKey(){
-  return character && character.id ? accountScopedKey('auto_summary_enabled_' + character.id) : '';
-}
-function manualSummarySizeKey(){
-  return character && character.id ? accountScopedKey('manual_summary_size_' + character.id) : '';
-}
 function memoryModeKey(){
   return character && character.id ? accountScopedKey('memory_mode_' + character.id) : '';
 }
@@ -4584,72 +4567,6 @@ function saveContextWindowSize(n){
   character.contextWindow = next;
   safeLocalStorageSet(contextWindowKey(), String(next));
 }
-function loadSummaryEverySize(){
-  if(!character) return DEFAULT_SUMMARY_EVERY;
-  var source = character.summaryEvery;
-  if(source == null){
-    source = localStorage.getItem(summaryEveryKey()) || String(DEFAULT_SUMMARY_EVERY);
-  }
-  var n = parseInt(source, 10);
-  if(Number.isNaN(n)) n = DEFAULT_SUMMARY_EVERY;
-  return Math.max(MIN_CONTEXT_WINDOW, Math.min(MAX_CONTEXT_WINDOW, n));
-}
-function saveSummaryEverySize(n){
-  if(!character) return;
-  var next = parseInt(n || String(DEFAULT_SUMMARY_EVERY), 10);
-  if(Number.isNaN(next)) next = DEFAULT_SUMMARY_EVERY;
-  next = Math.max(MIN_CONTEXT_WINDOW, Math.min(MAX_CONTEXT_WINDOW, next));
-  character.summaryEvery = next;
-  safeLocalStorageSet(summaryEveryKey(), String(next));
-}
-function loadMemoryMergeThreshold(){
-  if(!character) return DEFAULT_MEMORY_MERGE_THRESHOLD;
-  var source = character.memoryMergeThreshold;
-  if(source == null){
-    source = localStorage.getItem(memoryMergeThresholdKey()) || String(DEFAULT_MEMORY_MERGE_THRESHOLD);
-  }
-  var n = parseInt(source, 10);
-  if(Number.isNaN(n)) n = DEFAULT_MEMORY_MERGE_THRESHOLD;
-  return Math.max(2, Math.min(50, n));
-}
-function saveMemoryMergeThreshold(n){
-  if(!character) return;
-  var next = parseInt(n || String(DEFAULT_MEMORY_MERGE_THRESHOLD), 10);
-  if(Number.isNaN(next)) next = DEFAULT_MEMORY_MERGE_THRESHOLD;
-  next = Math.max(2, Math.min(50, next));
-  character.memoryMergeThreshold = next;
-  safeLocalStorageSet(memoryMergeThresholdKey(), String(next));
-}
-function loadAutoSummaryEnabled(){
-  if(!character) return true;
-  if(character.autoSummaryEnabled != null) return !!character.autoSummaryEnabled;
-  var raw = localStorage.getItem(autoSummaryEnabledKey());
-  if(raw === null) return true;
-  return raw !== '0';
-}
-function saveAutoSummaryEnabled(enabled){
-  if(!character) return;
-  character.autoSummaryEnabled = !!enabled;
-  safeLocalStorageSet(autoSummaryEnabledKey(), enabled ? '1' : '0');
-}
-function loadManualSummarySize(){
-  if(!character) return DEFAULT_MANUAL_SUMMARY_SIZE;
-  var source = character.manualSummarySize;
-  if(source == null){
-    source = localStorage.getItem(manualSummarySizeKey()) || String(DEFAULT_MANUAL_SUMMARY_SIZE);
-  }
-  var n = parseInt(source, 10);
-  if(Number.isNaN(n)) n = DEFAULT_MANUAL_SUMMARY_SIZE;
-  return Math.max(6, Math.min(120, n));
-}
-function saveManualSummarySize(n){
-  if(!character) return;
-  var next = parseInt(n || String(DEFAULT_MANUAL_SUMMARY_SIZE), 10);
-  if(Number.isNaN(next)) next = DEFAULT_MANUAL_SUMMARY_SIZE;
-  next = Math.max(6, Math.min(120, next));
-  character.manualSummarySize = next;
-  safeLocalStorageSet(manualSummarySizeKey(), String(next));
-}
 function approxTokenCount(text){
   var src = String(text || '');
   if(!src) return 0;
@@ -4671,9 +4588,8 @@ function formatTok(n){
 }
 function normalizeMemoryMode(mode){
   var v = String(mode || '').trim().toLowerCase();
-  if(v === MEMORY_MODE_STRUCTURED) return MEMORY_MODE_STRUCTURED;
   if(v === MEMORY_MODE_VECTOR) return MEMORY_MODE_VECTOR;
-  return MEMORY_MODE_DIARY;
+  return MEMORY_MODE_STRUCTURED;
 }
 function defaultStructuredMemoryState(){
   return {
@@ -4692,6 +4608,7 @@ function defaultStructuredMemoryState(){
     custom: {},
     covered: 0,
     offlineCovered: 0,
+    callCovered: 0,
     lastUpdated: 0
   };
 }
@@ -4721,6 +4638,8 @@ function defaultVectorMemoryState(){
     fragments: [],
     timelineSummaries: {},
     covered: 0,
+    offlineCovered: 0,
+    callCovered: 0,
     lastExtractionAt: 0,
     settings: {
       enabled: true,
@@ -4750,6 +4669,7 @@ function normalizeStructuredMemoryState(raw){
   next.custom = src.custom && typeof src.custom === 'object' ? cloneJsonSafe(src.custom, {}) : {};
   next.covered = Math.max(0, Number(src.covered || 0) || 0);
   next.offlineCovered = Math.max(0, Number(src.offlineCovered || 0) || 0);
+  next.callCovered = Math.max(0, Number(src.callCovered || 0) || 0);
   next.lastUpdated = Math.max(0, Number(src.lastUpdated || 0) || 0);
   return next;
 }
@@ -4787,6 +4707,8 @@ function normalizeVectorMemoryState(raw){
   }).filter(function(item){ return !!item.content; }) : [];
   next.timelineSummaries = src.timelineSummaries && typeof src.timelineSummaries === 'object' ? cloneJsonSafe(src.timelineSummaries, {}) : {};
   next.covered = Math.max(0, Number(src.covered || 0) || 0);
+  next.offlineCovered = Math.max(0, Number(src.offlineCovered || 0) || 0);
+  next.callCovered = Math.max(0, Number(src.callCovered || 0) || 0);
   next.lastExtractionAt = Math.max(0, Number(src.lastExtractionAt || 0) || 0);
   var weights = src.settings && src.settings.scoreWeights && typeof src.settings.scoreWeights === 'object' ? src.settings.scoreWeights : {};
   next.settings = {
@@ -4813,42 +4735,6 @@ function normalizeVectorMemoryState(raw){
   } : { query:'', resultIds:[], timestamp:0, msgCount:0 };
   return next;
 }
-function buildLegacyVectorDiaryItems(items, vectorState){
-  var sourceItems = Array.isArray(items) ? items : [];
-  var vector = normalizeVectorMemoryState(vectorState || null);
-  var existingIds = Object.create(null);
-  sourceItems.forEach(function(item){
-    existingIds[String(item && item.id || '')] = true;
-  });
-  var next = [];
-  function pushLegacy(id, text, createdAt, label){
-    var safeText = String(text || '').trim();
-    var safeId = String(id || '').trim();
-    if(!safeText || !safeId || existingIds[safeId]) return;
-    existingIds[safeId] = true;
-    var at = Math.max(0, Number(createdAt || Date.now()) || Date.now());
-    next.push({
-      id: safeId,
-      from: 0,
-      to: 0,
-      text: safeText,
-      tokens: approxTokenCount(safeText),
-      createdAt: at,
-      updatedAt: at,
-      manual: true,
-      pinned: true,
-      label: String(label || '').trim(),
-      sourceType: 'legacy_vector'
-    });
-  }
-  (Array.isArray(vector.coreMemories) ? vector.coreMemories : []).forEach(function(item, idx){
-    pushLegacy('legacy_vector_core_' + String(item && item.id || idx), String(item && item.content || '').trim(), Number(item && item.createdAt || Date.now()) || Date.now(), '旧核心记忆');
-  });
-  (Array.isArray(vector.fragments) ? vector.fragments : []).forEach(function(item, idx){
-    pushLegacy('legacy_vector_fragment_' + String(item && item.id || idx), String(item && item.content || '').trim(), Number(item && (item.lastRecalled || item.createdAt) || Date.now()) || Date.now(), '旧向量记忆');
-  });
-  return next;
-}
 function defaultAdvancedMemoryState(){
   return {
     mode: DEFAULT_MEMORY_MODE,
@@ -4863,6 +4749,40 @@ function normalizeAdvancedMemoryState(raw){
     structured: normalizeStructuredMemoryState(src.structured),
     vector: normalizeVectorMemoryState(src.vector)
   };
+}
+function migrateSummaryItemsIntoLittleBrainShortTerm(advancedMemory, items){
+  var adv = normalizeAdvancedMemoryState(advancedMemory || null);
+  var sourceItems = Array.isArray(items) ? items : [];
+  if(!sourceItems.length) return adv;
+  var shortTerm = Array.isArray(adv.structured.shortTerm) ? adv.structured.shortTerm.slice() : [];
+  var seen = Object.create(null);
+  shortTerm.forEach(function(item){
+    var key = String(item && item.text || '').replace(/\s+/g, ' ').trim();
+    if(key) seen[key] = true;
+  });
+  sourceItems.forEach(function(item){
+    var text = String(item && item.text || '').trim();
+    var key = text.replace(/\s+/g, ' ').trim();
+    if(!key || seen[key]) return;
+    seen[key] = true;
+    shortTerm.push({
+      id: 'legacy_st_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
+      from: Number(item && item.from || 0) || 0,
+      to: Number(item && item.to || 0) || 0,
+      text: text,
+      tokens: Number(item && item.tokens || 0) || approxTokenCount(text),
+      createdAt: Number(item && item.createdAt || Date.now()) || Date.now(),
+      updatedAt: Date.now(),
+      manual: !!(item && item.manual),
+      pinned: !!(item && item.pinned),
+      label: String(item && item.label || '历史整理').trim() || '历史整理',
+      sourceType: 'legacy_migrated',
+      memoryCategory: String(item && item.memoryCategory || 'events').trim() || 'events'
+    });
+  });
+  adv.structured.shortTerm = normalizeLittleBrainShortTermItems(shortTerm);
+  adv.structured.lastUpdated = Date.now();
+  return adv;
 }
 function ensureAdvancedMemoryOnStore(store){
   var safeStore = normalizeMemorySummaryStore(store || defaultMemorySummaryStore());
@@ -4892,15 +4812,15 @@ function parseLegacyMemorySummaryStore(rawText){
     }).filter(function(it){ return !!it.text; });
     var covered = computeMemoryCoveredFromItems(items);
     var progressRaw = Math.max(0, Number(raw.progress || raw.covered || 0) || 0);
-    var advancedMemory = normalizeAdvancedMemoryState(raw.advancedMemory || null);
-    var legacyVectorItems = buildLegacyVectorDiaryItems(items, advancedMemory.vector);
-    if(legacyVectorItems.length) items = items.concat(legacyVectorItems);
+    var advancedMemory = migrateSummaryItemsIntoLittleBrainShortTerm(raw.advancedMemory || null, items);
+    advancedMemory.structured.covered = Math.max(Number(advancedMemory.structured.covered || 0) || 0, covered);
+    advancedMemory.vector.covered = Math.max(Number(advancedMemory.vector.covered || 0) || 0, covered);
     return {
-      covered: computeMemoryCoveredFromItems(items),
-      progress: Math.max(computeMemoryCoveredFromItems(items), progressRaw),
+      covered: 0,
+      progress: Math.max(covered, progressRaw),
       offlineCovered: Math.max(0, Number(raw.offlineCovered || 0) || 0),
       offlineProgress: Math.max(0, Number(raw.offlineProgress || raw.offlineCovered || 0) || 0),
-      items: items,
+      items: [],
       advancedMemory: advancedMemory
     };
   }catch(e){
@@ -4927,10 +4847,12 @@ function normalizeMemorySummaryStore(store){
       memoryCategory: String((it && it.memoryCategory) || '').trim()
     };
   }).filter(function(it){ return !!it.text; }) : [];
-  next.advancedMemory = normalizeAdvancedMemoryState(next.advancedMemory || null);
-  var legacyVectorItems = buildLegacyVectorDiaryItems(next.items, next.advancedMemory.vector);
-  if(legacyVectorItems.length) next.items = next.items.concat(legacyVectorItems);
-  next.covered = computeMemoryCoveredFromItems(next.items);
+  var migratedCovered = computeMemoryCoveredFromItems(next.items);
+  next.advancedMemory = migrateSummaryItemsIntoLittleBrainShortTerm(next.advancedMemory || null, next.items);
+  next.advancedMemory.structured.covered = Math.max(Number(next.advancedMemory.structured.covered || 0) || 0, migratedCovered);
+  next.advancedMemory.vector.covered = Math.max(Number(next.advancedMemory.vector.covered || 0) || 0, migratedCovered);
+  next.items = [];
+  next.covered = 0;
   next.progress = Math.max(next.covered, Number(next.progress || 0) || 0);
   next.offlineCovered = Math.max(0, Number(next.offlineCovered || 0) || 0);
   next.offlineProgress = Math.max(next.offlineCovered, Number(next.offlineProgress || 0) || 0);
@@ -5351,155 +5273,12 @@ async function clearMemorySummaries(){
   var base = 'memory_summaries_' + String(character.id || '').trim();
   await removeStorageCopies('memorySummaries', getScopedDataKeyCandidates(base));
 }
-function buildMemorySummaryPromptLines(slice){
-  return slice.map(function(m, idx){
-    var role = m.role === 'user' ? '用户' : '角色';
-    return (idx + 1) + '. [' + role + '] ' + String(formatMessageForModel(m) || '').replace(/\s+/g, ' ').trim();
-  }).join('\n');
-}
-function fallbackSummaryText(slice){
-  var lines = buildMemorySummaryPromptLines(slice).split('\n').slice(0, 12);
-  var joined = lines.map(function(line){ return line.replace(/^\d+\.\s*/, ''); }).join('；');
-  if(!joined) joined = '本段聊天围绕日常交流展开，没有出现可提炼的新信息。';
-  return '关系状态与相处气氛继续沿着既有节奏推进；本段重点包括：' + joined;
-}
-function fallbackMetaSummaryText(items){
-  var joined = (items || []).map(function(it){
-    return String((it && it.text) || '').replace(/\s+/g, ' ').trim();
-  }).filter(Boolean).join('；');
-  if(!joined) return '关系状态没有出现需要额外提取的新变化，当前相处仍延续此前轨迹。';
-  return '更早阶段的聊天记忆可归并为：' + joined;
-}
-async function generateMemorySummary(slice){
-  var promptLines = buildMemorySummaryPromptLines(slice);
-  var systemPrompt = (promptManager && typeof promptManager.memorySummarySystemPrompt === 'function')
-    ? promptManager.memorySummarySystemPrompt()
-    : [
-      '你是“聊天记忆压缩器”。',
-      '必须使用第三人称，不使用第一人称或第二人称。',
-      '必须保持中性客观，不带任何个人情感色彩。',
-      '必须写成真正的总结，不要偷懒按时间顺序复述原对话，不要大段摘抄，不要把聊天记录换个说法又写一遍。',
-      '必须保留关键事件、关系推进、情绪变化、重要约定、冲突和特殊细节，但要节省 token，压成一段高密度 summary。',
-      '禁止使用“角色”“用户”“对方”这种偷懒指代；必须直接使用聊天双方各自的名字来写。',
-      '不要捏造未出现的信息，不要输出建议，不要输出分析过程。'
-    ].join('\n');
-  var userPrompt = (promptManager && typeof promptManager.memorySummaryUserPrompt === 'function')
-    ? promptManager.memorySummaryUserPrompt(promptLines)
-    : [
-      '请只返回一段纯文本总结，不要标题，不要编号，不要额外解释。',
-      '这段总结必须是第三人称 summary，不是聊天摘录，不是对白拼贴，也不是流水账复述。',
-      '要写出发生了什么、关系怎么变化、哪些细节值得记住，但不要浪费 token。',
-      '不要写“角色/用户”，直接写双方名字。',
-      '总结范围是以下聊天记录：',
-      promptLines
-    ].join('\n\n');
-  try{
-    var raw = await callLittleBrainBackgroundAI(userPrompt, systemPrompt);
-    var txt = String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,'').trim();
-    return txt || fallbackSummaryText(slice);
-  }catch(e){
-    return fallbackSummaryText(slice);
-  }
-}
-async function generateMemoryMetaSummary(items){
-  var lines = (items || []).map(function(it, idx){
-    return (idx + 1) + '. ' + String((it && it.text) || '').replace(/\s+/g, ' ').trim();
-  }).join('\n');
-  var systemPrompt = (promptManager && typeof promptManager.memorySummarySystemPrompt === 'function')
-    ? promptManager.memorySummarySystemPrompt()
-    : [
-      '你是“聊天记忆压缩器”。',
-      '必须使用第三人称，不使用第一人称或第二人称。',
-      '必须保持中性客观，不带任何个人情感色彩。',
-      '必须写成真正的总结，不要偷懒按时间顺序复述原对话，不要大段摘抄，不要把聊天记录换个说法又写一遍。',
-      '必须保留关键事件、关系推进、情绪变化、重要约定、冲突和特殊细节，但要节省 token，压成一段高密度 summary。',
-      '禁止使用“角色”“用户”“对方”这种偷懒指代；必须直接使用聊天双方各自的名字来写。',
-      '不要捏造未出现的信息，不要输出建议，不要输出分析过程。'
-    ].join('\n');
-  var userPrompt = (promptManager && typeof promptManager.memoryMetaSummaryUserPrompt === 'function')
-    ? promptManager.memoryMetaSummaryUserPrompt(lines)
-    : [
-      '请只返回一段纯文本总结，不要标题，不要编号，不要额外解释。',
-      '请把这些旧记忆压缩成一条更短但仍然有关键细节的第三人称总记忆。',
-      '不要把原文一条条改写复述，不要写“角色/用户”，直接写双方名字。',
-      '请将以下“记忆总结列表”再压缩为一条新的总记忆：',
-      lines
-    ].join('\n\n');
-  try{
-    var raw = await callLittleBrainBackgroundAI(userPrompt, systemPrompt);
-    var txt = String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,'').trim();
-    return txt || fallbackMetaSummaryText(items);
-  }catch(e){
-    return fallbackMetaSummaryText(items);
-  }
-}
 async function maybeCompactMemorySummaries(store){
-  if(!character) return store;
-  var next = store || loadMemorySummaryStore();
-  var threshold = loadMemoryMergeThreshold();
-  var compactable = (next.items || []).filter(function(it){
-    return isMemoryRangeItem(it) && !isPinnedMemoryItem(it) && !isSupplementalMemoryItem(it);
-  });
-  var effectiveThreshold = Math.max(2, Number(threshold) || DEFAULT_MEMORY_MERGE_THRESHOLD);
-  while(compactable.length >= effectiveThreshold){
-    var segment = compactable.slice(0, effectiveThreshold);
-    if(segment.length < 2) break;
-    var mergedText = await generateMemoryMetaSummary(segment);
-    var merged = {
-      id: 'ms_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
-      from: segment[0].from || 0,
-      to: segment[segment.length - 1].to || 0,
-      text: mergedText,
-      tokens: approxTokenCount(mergedText),
-      createdAt: Date.now(),
-      manual: false,
-      pinned: false
-    };
-    var mergeIds = new Set(segment.map(function(it){ return String(it.id || ''); }).filter(Boolean));
-    var inserted = false;
-    next.items = (next.items || []).reduce(function(acc, it){
-      var id = String((it && it.id) || '');
-      if(mergeIds.has(id)){
-        if(!inserted){
-          acc.push(merged);
-          inserted = true;
-        }
-        return acc;
-      }
-      acc.push(it);
-      return acc;
-    }, []);
-    compactable = (next.items || []).filter(function(it){
-      return isMemoryRangeItem(it) && !isPinnedMemoryItem(it);
-    });
-  }
-  saveMemorySummaryStore(next);
-  return next;
+  return activateLittleBrainStore(store || loadMemorySummaryStore());
 }
 function getMemoryModeFromStore(store){
   var safe = ensureAdvancedMemoryOnStore(store || loadMemorySummaryStore());
   return normalizeMemoryMode(safe.advancedMemory && safe.advancedMemory.mode || loadMemoryMode());
-}
-function buildDiaryMemoryPromptText(items){
-  var list = Array.isArray(items) ? items : [];
-  if(!list.length) return '';
-  var pinned = list.filter(isPinnedMemoryItem);
-  var auto = list.filter(function(it){ return !isPinnedMemoryItem(it); });
-  var lines = [];
-  if(pinned.length){
-    lines.push('【手动修正 / 高优先级记忆】');
-    lines = lines.concat(pinned.map(function(it, idx){
-      return '重点记忆' + (idx + 1) + '：' + String(it.text || '').trim();
-    }));
-  }
-  if(auto.length){
-    if(lines.length) lines.push('');
-    lines.push('【历史记忆总结】');
-    lines = lines.concat(auto.map(function(it, idx){
-      return '记忆' + (idx + 1) + '：' + String(it.text || '').trim();
-    }));
-  }
-  return lines.join('\n').trim();
 }
 function formatMemoryMiniDate(timestamp){
   var at = Number(timestamp || 0) || 0;
@@ -5723,7 +5502,8 @@ function structuredEntryTextForShortTerm(entry){
   }
   return (date ? ('[' + date + ']') : '') + content;
 }
-function appendStructuredMemoryEntriesToShortTerm(store, entries){
+function appendStructuredMemoryEntriesToShortTerm(store, entries, options){
+  var opts = options && typeof options === 'object' ? options : {};
   var safe = ensureAdvancedMemoryOnStore(store || loadMemorySummaryStore());
   var mem = safe.advancedMemory.structured = normalizeStructuredMemoryState(safe.advancedMemory.structured || null);
   var shortList = Array.isArray(mem.shortTerm) ? mem.shortTerm.slice() : [];
@@ -5749,8 +5529,9 @@ function appendStructuredMemoryEntriesToShortTerm(store, entries){
       manual: false,
       pinned: false,
       label: structuredMemoryLabelForCategory(entry && entry.category, safe),
-      sourceType: 'auto',
-      memoryCategory: shortTermCategoryForStructuredCode(entry && entry.category)
+      sourceType: String(opts.sourceType || 'auto').trim() || 'auto',
+      memoryCategory: shortTermCategoryForStructuredCode(entry && entry.category),
+      sourceId: String(opts.sourceId || '').trim()
     });
     added += 1;
   });
@@ -5946,6 +5727,75 @@ async function callLittleBrainBackgroundAI(prompt, systemPrompt){
   if(!resp.ok) throw new Error('LittleBrain API HTTP ' + resp.status);
   var data = await resp.json();
   return String(data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '').trim();
+}
+function isLittleBrainEnabledForCurrentCharacter(){
+  return !!(character && (character.littleBrainEnabled || character.memoryPalaceEnabled || normalizeMemoryMode(character.memoryMode) === MEMORY_MODE_STRUCTURED));
+}
+function isLittleBrainAutoMemoryEnabledForCurrentCharacter(){
+  return !!(character && (character.littleBrainAutoMemoryEnabled || character.autoArchiveEnabled));
+}
+function shouldRunLittleBrainAutoMemory(force){
+  if(!character || !isLittleBrainEnabledForCurrentCharacter()) return false;
+  return !!force || isLittleBrainAutoMemoryEnabledForCurrentCharacter();
+}
+function activateLittleBrainStore(store){
+  var safe = ensureAdvancedMemoryOnStore(store || loadMemorySummaryStore());
+  safe.advancedMemory.mode = MEMORY_MODE_STRUCTURED;
+  safe.advancedMemory.structured = normalizeStructuredMemoryState(safe.advancedMemory.structured || null);
+  safe.advancedMemory.vector = normalizeVectorMemoryState(safe.advancedMemory.vector || null);
+  if(safe.advancedMemory.vector && safe.advancedMemory.vector.settings){
+    safe.advancedMemory.vector.settings.enabled = safe.advancedMemory.vector.settings.enabled !== false;
+  }
+  return safe;
+}
+function getLittleBrainAutoThreshold(sourceType, force){
+  if(force) return 1;
+  return sourceType === 'voice_call' ? LITTLE_BRAIN_AUTO_CALL_THRESHOLD : LITTLE_BRAIN_AUTO_CHAT_THRESHOLD;
+}
+function getLittleBrainAutoBatchSize(sourceType, force){
+  if(force) return 9999;
+  return sourceType === 'voice_call' ? LITTLE_BRAIN_AUTO_CALL_BATCH : LITTLE_BRAIN_AUTO_CHAT_BATCH;
+}
+function isChatEntryMeaningfulForLittleBrain(msg){
+  if(!msg || msg.hidden || msg.role === 'system') return false;
+  if(msg.role !== 'user' && msg.role !== 'assistant') return false;
+  var text = '';
+  try{ text = String(formatMessageForModel(msg) || '').trim(); }catch(err){ text = String(msg.content || msg.text || '').trim(); }
+  if(!text) return false;
+  if(normalizeMessageType(msg.type || 'text') === 'image' || normalizeMessageType(msg.type || 'text') === 'voice') return false;
+  return true;
+}
+function filterLittleBrainChatSlice(slice){
+  return (Array.isArray(slice) ? slice : []).filter(isChatEntryMeaningfulForLittleBrain);
+}
+async function runLittleBrainExtractionForChatSlice(store, slice, sourceType){
+  var safe = activateLittleBrainStore(store);
+  var list = filterLittleBrainChatSlice(slice);
+  if(!list.length) return safe;
+  try{
+    var structuredRaw = await callLittleBrainBackgroundAI(buildStructuredSummaryPrompt(list, safe), '请沉淀小脑瓜记忆。');
+    var structuredEntries = parseStructuredMemoryEntries(String(structuredRaw || '').replace(/^```[a-zA-Z]*\s*/, '').replace(/```$/, ''), safe);
+    if(structuredEntries.length){
+      safe = appendStructuredMemoryEntriesToShortTerm(safe, structuredEntries, { sourceType: sourceType || 'chat' }).store;
+    }
+  }catch(structuredErr){
+    console.warn('little brain structured extraction failed', structuredErr);
+  }
+  if(isLittleBrainVectorEnabled(safe)){
+    try{
+      var vectorRaw = await callLittleBrainBackgroundAI(buildVectorExtractionPrompt(list), '请提取小脑瓜向量记忆。');
+      var vectorItems = parseVectorExtractionResult(String(vectorRaw || '').replace(/^```[a-zA-Z]*\s*/, '').replace(/```$/, ''));
+      if(vectorItems.length){
+        await mergeVectorExtractedMemories(safe, vectorItems, { sourceType: sourceType || 'chat' });
+      }else{
+        safe.advancedMemory.vector.lastExtractionAt = Date.now();
+      }
+    }catch(vectorErr){
+      console.warn('little brain vector extraction failed', vectorErr);
+    }
+  }
+  safe.advancedMemory.structured.lastUpdated = Date.now();
+  return safe;
 }
 function isLittleBrainVectorEnabled(store){
   var safe = store && typeof store === 'object' ? store : loadMemorySummaryStore();
@@ -6301,131 +6151,43 @@ async function prepareVectorPromptMemory(messages){
   return vectorMemoryPromptCache;
 }
 function buildMemoryPromptText(store){
-  var safe = ensureAdvancedMemoryOnStore(store || loadMemorySummaryStore());
-  var mode = getMemoryModeFromStore(safe);
-  var vectorExtra = mode === MEMORY_MODE_VECTOR ? '' : vectorMemoryPromptCache;
+  var safe = activateLittleBrainStore(store || loadMemorySummaryStore());
+  var vectorExtra = vectorMemoryPromptCache;
   var extra = [
     buildOfflineSupplementalMemoryPromptText(safe),
     buildVoiceCallSupplementalMemoryPromptText(safe),
     vectorExtra
   ].filter(Boolean).join('\n\n');
-  if(mode === MEMORY_MODE_STRUCTURED){
-    return appendSupplementalMemoryPromptText(serializeStructuredMemoryForPrompt(safe), extra);
-  }
-  if(mode === MEMORY_MODE_VECTOR){
-    return appendSupplementalMemoryPromptText(vectorMemoryPromptCache, extra);
-  }
-  return appendSupplementalMemoryPromptText(buildDiaryMemoryPromptText(safe.items || []), extra);
-}
-async function maybeCreateDiaryMemorySummaries(store, summaryEvery){
-  var safe = ensureAdvancedMemoryOnStore(store || loadMemorySummaryStore());
-  var covered = Math.max(0, Math.min(safe.covered || 0, chatLog.length));
-  if(chatLog.length - covered < summaryEvery) return safe;
-  while(chatLog.length - covered >= summaryEvery){
-    var from = covered;
-    var to = covered + summaryEvery;
-    var slice = chatLog.slice(from, to);
-    if(!slice.length) break;
-    var text = await generateMemorySummary(slice);
-    safe.items.push({
-      id: 'ms_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
-      from: from,
-      to: to,
-      text: text,
-      tokens: approxTokenCount(text),
-      createdAt: Date.now(),
-      manual: false,
-      pinned: false
-    });
-    covered = to;
-    safe.progress = Math.max(safe.progress || 0, covered);
-    saveMemorySummaryStore(safe);
-  }
-  safe = await maybeCompactMemorySummaries(safe);
-  safe = pruneDiaryMemoryForLittleBrain(safe);
-  return safe;
-}
-async function maybeCreateStructuredMemorySummaries(store, summaryEvery){
-  var safe = ensureAdvancedMemoryOnStore(store || loadMemorySummaryStore());
-  var covered = Math.max(0, Math.min(Number(safe.advancedMemory.structured.covered || 0) || 0, chatLog.length));
-  if(chatLog.length - covered < summaryEvery) return safe;
-  while(chatLog.length - covered >= summaryEvery){
-    var from = covered;
-    var to = covered + summaryEvery;
-    var slice = chatLog.slice(from, to);
-    if(!slice.length) break;
-    var prompt = buildStructuredSummaryPrompt(slice, safe);
-    try{
-      var raw = await callLittleBrainBackgroundAI(prompt, '请沉淀小脑瓜记忆。');
-      var entries = parseStructuredMemoryEntries(String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''), safe);
-      if(entries.length){
-        safe = appendStructuredMemoryEntriesToShortTerm(safe, entries).store;
-      }
-    }catch(err){}
-    covered = to;
-    safe.advancedMemory.structured.covered = covered;
-    safe = pruneDiaryMemoryForLittleBrain(safe);
-    safe.advancedMemory.structured.lastUpdated = Date.now();
-    saveMemorySummaryStore(safe);
-  }
-  return safe;
-}
-async function maybeCreateVectorMemorySummaries(store, summaryEvery){
-  var safe = ensureAdvancedMemoryOnStore(store || loadMemorySummaryStore());
-  var covered = Math.max(0, Math.min(Number(safe.advancedMemory.vector.covered || 0) || 0, chatLog.length));
-  if(chatLog.length - covered < summaryEvery) return safe;
-  while(chatLog.length - covered >= summaryEvery){
-    var from = covered;
-    var to = covered + summaryEvery;
-    var slice = chatLog.slice(from, to);
-    if(!slice.length) break;
-    var prompt = buildVectorExtractionPrompt(slice);
-    try{
-      var raw = await callLittleBrainBackgroundAI(prompt, '请开始提取。');
-      var extracted = parseVectorExtractionResult(String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''));
-      if(extracted.length){
-        await mergeVectorExtractedMemories(safe, extracted, { sourceType:'chat' });
-      }else{
-        safe.advancedMemory.vector.lastExtractionAt = Date.now();
-      }
-    }catch(err){}
-    covered = to;
-    safe.advancedMemory.vector.covered = covered;
-    saveMemorySummaryStore(safe);
-  }
-  return safe;
+  return appendSupplementalMemoryPromptText(serializeStructuredMemoryForPrompt(safe), extra);
 }
 async function maybeCreateMemorySummaries(){
   if(!character || memorySummaryBusy) return;
-  if(!loadAutoSummaryEnabled()) return;
-  var summaryEvery = loadSummaryEverySize();
-  var store = ensureAdvancedMemoryOnStore(loadMemorySummaryStore());
-  var mode = getMemoryModeFromStore(store);
-  var hasPending = false;
-  if(mode === MEMORY_MODE_STRUCTURED){
-    hasPending = chatLog.length - Math.max(0, Math.min(Number(store.advancedMemory.structured.covered || 0) || 0, chatLog.length)) >= summaryEvery;
-  }else{
-    hasPending = chatLog.length - Math.max(0, Math.min(store.covered || 0, chatLog.length)) >= summaryEvery;
-  }
-  if(!hasPending && isLittleBrainVectorEnabled(store)){
-    hasPending = chatLog.length - Math.max(0, Math.min(Number(store.advancedMemory.vector.covered || 0) || 0, chatLog.length)) >= summaryEvery;
-  }
-  if(!hasPending) return;
+  if(!shouldRunLittleBrainAutoMemory(false)) return;
+  var store = activateLittleBrainStore(loadMemorySummaryStore());
+  var total = Array.isArray(chatLog) ? chatLog.length : 0;
+  var structuredCovered = Math.max(0, Math.min(Number(store.advancedMemory.structured.covered || 0) || 0, total));
+  var vectorCovered = isLittleBrainVectorEnabled(store)
+    ? Math.max(0, Math.min(Number(store.advancedMemory.vector.covered || 0) || 0, total))
+    : structuredCovered;
+  var covered = Math.min(structuredCovered, vectorCovered);
+  var threshold = getLittleBrainAutoThreshold('chat', false);
+  if(total - covered < threshold) return;
+  var to = Math.min(total, covered + Math.max(threshold, getLittleBrainAutoBatchSize('chat', false)));
+  var slice = chatLog.slice(covered, to);
   memorySummaryBusy = true;
   try{
-    if(mode === MEMORY_MODE_STRUCTURED){
-      // 小脑瓜模式也保留一份短期日记，方便随时回看和手动整理。
-      store = await maybeCreateDiaryMemorySummaries(store, summaryEvery);
-      store = await maybeCreateStructuredMemorySummaries(store, summaryEvery);
-    }else{
-      store = await maybeCreateDiaryMemorySummaries(store, summaryEvery);
-    }
-    if(isLittleBrainVectorEnabled(store)){
-      store = await maybeCreateVectorMemorySummaries(store, summaryEvery);
-    }
+    store = await runLittleBrainExtractionForChatSlice(store, slice, 'chat');
+    store.advancedMemory.structured.covered = to;
+    if(isLittleBrainVectorEnabled(store)) store.advancedMemory.vector.covered = to;
+    saveMemorySummaryStore(store);
   }finally{
     memorySummaryBusy = false;
     refreshMemoryUi();
+  }
+  if(total - to >= threshold){
+    setTimeout(function(){
+      maybeCreateMemorySummaries().catch(function(err){ console.warn('little brain chat follow-up failed', err); });
+    }, 1200);
   }
 }
 async function migrateMemoryModeIfNeeded(fromMode, toMode){
@@ -6433,22 +6195,13 @@ async function migrateMemoryModeIfNeeded(fromMode, toMode){
   var to = normalizeMemoryMode(toMode);
   if(!character || from === to) return;
   var store = ensureAdvancedMemoryOnStore(loadMemorySummaryStore());
-  store.advancedMemory.mode = to;
-  var moved = 0;
-  if(to === MEMORY_MODE_STRUCTURED){
-    store.advancedMemory.structured = normalizeStructuredMemoryState(store.advancedMemory.structured || null);
-    var converted = convertDiaryMemoryItemsToLittleBrainShortTerm(store);
-    store = converted.store;
-    moved = converted.moved;
-  }
-  if(to === MEMORY_MODE_DIARY){
-    store.items = Array.isArray(store.items) ? store.items : [];
-  }
+  store.advancedMemory.mode = MEMORY_MODE_STRUCTURED;
+  store.advancedMemory.structured = normalizeStructuredMemoryState(store.advancedMemory.structured || null);
+  var converted = convertDiaryMemoryItemsToLittleBrainShortTerm(store);
+  store = converted.store;
   saveMemorySummaryStore(store);
   refreshMemoryUi();
-  toast(to === MEMORY_MODE_STRUCTURED
-    ? ('记忆模式已切换为：' + (getCurrentCharDisplayName() || '角色') + '的小脑瓜' + (moved ? ('，已转入 ' + moved + ' 条日记') : ''))
-    : '记忆模式已切换为：日记模式');
+  toast('记忆已接入：' + (getCurrentCharDisplayName() || '角色') + '的小脑瓜');
 }
 function getMemorySummaryItems(){
   return loadMemorySummaryStore().items || [];
@@ -10183,9 +9936,6 @@ function buildChatSettingsPatchFromCharacter(c){
     weatherUserSetting: cloneWeatherSetting(c.weatherUserSetting, 'user'),
     chatRenderPageSize: Math.max(MIN_CHAT_RENDER_PAGE_SIZE, Math.min(MAX_CHAT_RENDER_PAGE_SIZE, Number(c.chatRenderPageSize) || DEFAULT_CHAT_RENDER_PAGE_SIZE)),
     contextWindow: Math.max(MIN_CONTEXT_WINDOW, Math.min(MAX_CONTEXT_WINDOW, Number(c.contextWindow) || DEFAULT_CONTEXT_WINDOW)),
-    summaryEvery: Math.max(MIN_CONTEXT_WINDOW, Math.min(MAX_CONTEXT_WINDOW, Number(c.summaryEvery) || DEFAULT_SUMMARY_EVERY)),
-    manualSummarySize: Math.max(6, Math.min(120, Number(c.manualSummarySize) || DEFAULT_MANUAL_SUMMARY_SIZE)),
-    memoryMergeThreshold: Math.max(2, Math.min(50, Number(c.memoryMergeThreshold) || DEFAULT_MEMORY_MERGE_THRESHOLD)),
     chatHeaderCss: String(c.chatHeaderCss || '').slice(0, 12000),
     chatGlobalCss: String(c.chatGlobalCss || '').slice(0, 120000),
     chatThemeParts: cloneJsonSafe(c.chatThemeParts || {}, {}),
@@ -10204,7 +9954,6 @@ function buildChatSettingsPatchFromCharacter(c){
       return (v === 'mixed' || v === 'user-weighted' || v === 'user-only') ? v : DEFAULT_VECTOR_RETRIEVAL_STRATEGY;
     })(c.memoryVectorStrategy),
     memoryVectorUserMsgCount: Math.max(1, Math.min(10, Number(c.memoryVectorUserMsgCount) || DEFAULT_VECTOR_USER_MSG_COUNT)),
-    autoSummaryEnabled: c.autoSummaryEnabled != null ? !!c.autoSummaryEnabled : true,
     momentsFreq: normalizeMomentsFreq(c.momentsFreq || DEFAULT_MOMENTS_FREQ),
     livePresence: cloneJsonSafe(c.livePresence || null, null),
     importedAvatarResources: cloneJsonSafe(c.importedAvatarResources || [], []),
@@ -10247,9 +9996,6 @@ function applyChatSettingsPatch(target, patch){
     'weatherUserSetting',
     'chatRenderPageSize',
     'contextWindow',
-    'summaryEvery',
-    'manualSummarySize',
-    'memoryMergeThreshold',
     'chatHeaderCss',
     'chatGlobalCss',
     'chatThemeParts',
@@ -10265,7 +10011,6 @@ function applyChatSettingsPatch(target, patch){
     'memoryVectorTopN',
     'memoryVectorStrategy',
     'memoryVectorUserMsgCount',
-    'autoSummaryEnabled',
     'momentsFreq',
     'importedAvatarResources',
     'importedMemeResources',
@@ -10342,7 +10087,6 @@ function normalizeChatSettingsBundle(raw){
     memoryMode: normalizeMemoryMode(src.memoryMode || DEFAULT_MEMORY_MODE),
     charBgEnabled: src.charBgEnabled === null || src.charBgEnabled === undefined ? null : !!src.charBgEnabled,
     momentsFreq: normalizeMomentsFreq(src.momentsFreq || DEFAULT_MOMENTS_FREQ),
-    autoSummaryEnabled: src.autoSummaryEnabled === null || src.autoSummaryEnabled === undefined ? null : !!src.autoSummaryEnabled,
     userPersonaProfile: String(src.userPersonaProfile || ''),
     voiceCallBgAssetKey: String(src.voiceCallBgAssetKey || ''),
     voiceCallTopPatternAssetKey: String(src.voiceCallTopPatternAssetKey || ''),
@@ -10492,7 +10236,6 @@ async function applyStoredChatSettingsPatchToCharacter(target){
   var bundle = await loadChatSettingsBundle(target.id);
   if(bundle){
     if(bundle.memoryMode) target.memoryMode = bundle.memoryMode;
-    if(bundle.autoSummaryEnabled !== null) target.autoSummaryEnabled = !!bundle.autoSummaryEnabled;
     if(bundle.charBgEnabled !== null) target.charBgEnabled = !!bundle.charBgEnabled;
     if(bundle.momentsFreq) target.momentsFreq = normalizeMomentsFreq(bundle.momentsFreq);
     if(bundle.userPersonaProfile) target.userPersonaProfile = bundle.userPersonaProfile;
@@ -13791,14 +13534,6 @@ function toggleCharBgSwitch(){
   toast(next ? '已暂存：允许后台活动' : '已暂存：角色进入 Dormant');
 }
 
-function renderAutoSummaryToggle(){
-  var toggle = document.getElementById('autoSummaryToggle');
-  if(!toggle) return;
-  var enabled = pendingAutoSummaryEnabled === null ? loadAutoSummaryEnabled() : !!pendingAutoSummaryEnabled;
-  toggle.classList.toggle('on', enabled);
-  var sub = document.getElementById('autoSummarySub');
-  if(sub) sub.textContent = enabled ? '开启后会按间隔自动总结' : '关闭后仅支持手动总结';
-}
 function renderMemoryModeSettingsUi(){
 }
 
@@ -13807,17 +13542,6 @@ function refreshSummaryStatsUi(){
   if(!sub) return;
   var total = Array.isArray(chatLog) ? chatLog.length : 0;
   sub.textContent = '当前聊天共有 ' + total + ' 条信息';
-}
-
-function toggleAutoSummarySwitch(){
-  if(!character || !character.id){
-    toast('未加载角色');
-    return;
-  }
-  var now = pendingAutoSummaryEnabled === null ? loadAutoSummaryEnabled() : !!pendingAutoSummaryEnabled;
-  pendingAutoSummaryEnabled = !now;
-  renderAutoSummaryToggle();
-  toast(pendingAutoSummaryEnabled ? '已暂存：自动总结开启' : '已暂存：自动总结关闭');
 }
 
 function renderAvatarVisionToggle(){
@@ -14025,77 +13749,6 @@ function openMapAppFromChatSettings(){
   toast('蕾蕾在赶工^^');
   return;
   postToShell({ type:'OPEN_APP', payload:'map6' });
-}
-
-async function runManualSummaryNow(){
-  if(!character){
-    toast('未加载角色');
-    return;
-  }
-  if(memorySummaryBusy){
-    toast('正在生成总结，请稍候');
-    return;
-  }
-  var input = document.getElementById('csManualSummarySize');
-  var count = parseInt((input && input.value) || String(loadManualSummarySize()), 10);
-  if(Number.isNaN(count)) count = loadManualSummarySize();
-  count = Math.max(6, Math.min(120, count));
-  if(input) input.value = String(count);
-  var store = ensureAdvancedMemoryOnStore(loadMemorySummaryStore());
-  var mode = getMemoryModeFromStore(store);
-  var covered = 0;
-  if(mode === MEMORY_MODE_STRUCTURED){
-    covered = Math.max(0, Math.min(Number(store.advancedMemory.structured.covered || 0) || 0, chatLog.length));
-  }else{
-    covered = Math.max(0, Math.min(store.covered || 0, chatLog.length));
-  }
-  var remaining = chatLog.length - covered;
-  if(remaining < count){
-    toast('可总结消息不足 ' + count + ' 条（当前 ' + Math.max(0, remaining) + ' 条）');
-    return;
-  }
-  var from = covered;
-  var to = covered + count;
-  var slice = chatLog.slice(from, to);
-  if(!slice.length){
-    toast('暂无可总结的新消息');
-    return;
-  }
-  memorySummaryBusy = true;
-  try{
-    if(mode === MEMORY_MODE_STRUCTURED){
-      var structuredPrompt = buildStructuredSummaryPrompt(slice, store);
-      var structuredRaw = await callAIWithCustomPrompts(structuredPrompt, '请沉淀小脑瓜记忆。');
-      var structuredEntries = parseStructuredMemoryEntries(String(structuredRaw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''), store);
-      if(structuredEntries.length){
-        store = appendStructuredMemoryEntriesToShortTerm(store, structuredEntries).store;
-      }
-      store = pruneDiaryMemoryForLittleBrain(store);
-      store.advancedMemory.structured.covered = to;
-      store.advancedMemory.structured.lastUpdated = Date.now();
-      saveMemorySummaryStore(store);
-      toast('已手动总结到短期小脑瓜');
-    }else{
-      var diaryText = await generateMemorySummary(slice);
-      store.items.push({
-        id: 'ms_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
-        from: from,
-        to: to,
-        text: diaryText,
-        tokens: approxTokenCount(diaryText),
-        createdAt: Date.now(),
-        manual: false,
-        pinned: false
-      });
-      store.progress = Math.max(store.progress || 0, to);
-      saveMemorySummaryStore(store);
-      await maybeCompactMemorySummaries(store);
-      toast('已手动总结并隐藏 ' + count + ' 条消息');
-    }
-  }finally{
-    memorySummaryBusy = false;
-    refreshMemoryUi();
-  }
 }
 
 function blockStateKey(charId){
@@ -18804,9 +18457,6 @@ function ensureMsgRange(){
     character.weatherUserSetting = cloneWeatherSetting(src.weatherUserSetting || character.weatherUserSetting, 'user');
     character.chatRenderPageSize = Math.max(MIN_CHAT_RENDER_PAGE_SIZE, Math.min(MAX_CHAT_RENDER_PAGE_SIZE, Number(src.chatRenderPageSize) || DEFAULT_CHAT_RENDER_PAGE_SIZE));
     character.contextWindow = Math.max(MIN_CONTEXT_WINDOW, Math.min(MAX_CONTEXT_WINDOW, Number(src.contextWindow) || DEFAULT_CONTEXT_WINDOW));
-    character.summaryEvery = Math.max(MIN_CONTEXT_WINDOW, Math.min(MAX_CONTEXT_WINDOW, Number(src.summaryEvery) || DEFAULT_SUMMARY_EVERY));
-    character.manualSummarySize = Math.max(6, Math.min(120, Number(src.manualSummarySize) || DEFAULT_MANUAL_SUMMARY_SIZE));
-    character.memoryMergeThreshold = Math.max(2, Math.min(50, Number(src.memoryMergeThreshold) || DEFAULT_MEMORY_MERGE_THRESHOLD));
     character.chatHeaderCss = String(src.chatHeaderCss || character.chatHeaderCss || '');
     character.bubbleCharmUrl = String(src.bubbleCharmUrl || character.bubbleCharmUrl || '');
     character.bubbleCharmUserScale = String(src.bubbleCharmUserScale || src.bubbleCharmScale || character.bubbleCharmUserScale || character.bubbleCharmScale || '');
@@ -18822,7 +18472,6 @@ function ensureMsgRange(){
       return (v === 'mixed' || v === 'user-weighted' || v === 'user-only') ? v : DEFAULT_VECTOR_RETRIEVAL_STRATEGY;
     })(src.memoryVectorStrategy);
     character.memoryVectorUserMsgCount = Math.max(1, Math.min(10, Number(src.memoryVectorUserMsgCount) || DEFAULT_VECTOR_USER_MSG_COUNT));
-    character.autoSummaryEnabled = src.autoSummaryEnabled != null ? !!src.autoSummaryEnabled : true;
     character.translationEnabled = !!src.translationEnabled;
     character.replyLanguage = normalizeReplyLanguage(src.replyLanguage || src.language || 'zh');
     character.translationMode = normalizeTranslationMode(src.translationMode || 'ondemand');
@@ -18844,9 +18493,6 @@ function ensureMsgRange(){
     character.weatherUserSetting = cloneWeatherSetting(character.weatherUserSetting, 'user');
     character.chatRenderPageSize = Math.max(MIN_CHAT_RENDER_PAGE_SIZE, Math.min(MAX_CHAT_RENDER_PAGE_SIZE, Number(character.chatRenderPageSize) || DEFAULT_CHAT_RENDER_PAGE_SIZE));
     character.contextWindow = Math.max(MIN_CONTEXT_WINDOW, Math.min(MAX_CONTEXT_WINDOW, Number(character.contextWindow) || DEFAULT_CONTEXT_WINDOW));
-    character.summaryEvery = Math.max(MIN_CONTEXT_WINDOW, Math.min(MAX_CONTEXT_WINDOW, Number(character.summaryEvery) || DEFAULT_SUMMARY_EVERY));
-    character.manualSummarySize = Math.max(6, Math.min(120, Number(character.manualSummarySize) || DEFAULT_MANUAL_SUMMARY_SIZE));
-    character.memoryMergeThreshold = Math.max(2, Math.min(50, Number(character.memoryMergeThreshold) || DEFAULT_MEMORY_MERGE_THRESHOLD));
     character.chatHeaderCss = String(character.chatHeaderCss || '');
     character.bubbleCharmUrl = String(character.bubbleCharmUrl || '');
     character.bubbleCharmUserScale = String(character.bubbleCharmUserScale || character.bubbleCharmScale || '');
@@ -18862,7 +18508,6 @@ function ensureMsgRange(){
       return (v === 'mixed' || v === 'user-weighted' || v === 'user-only') ? v : DEFAULT_VECTOR_RETRIEVAL_STRATEGY;
     })(character.memoryVectorStrategy);
     character.memoryVectorUserMsgCount = Math.max(1, Math.min(10, Number(character.memoryVectorUserMsgCount) || DEFAULT_VECTOR_USER_MSG_COUNT));
-    character.autoSummaryEnabled = character.autoSummaryEnabled != null ? !!character.autoSummaryEnabled : true;
     character.translationEnabled = !!character.translationEnabled;
     character.replyLanguage = normalizeReplyLanguage(character.replyLanguage || character.language || 'zh');
     character.translationMode = normalizeTranslationMode(character.translationMode || 'ondemand');
@@ -18917,9 +18562,6 @@ function compactChar(c){
     msgMin:Number(c.msgMin)||1, msgMax:Number(c.msgMax)||Math.max(Number(c.msgMin)||1,3),
     chatRenderPageSize:Math.max(MIN_CHAT_RENDER_PAGE_SIZE, Math.min(MAX_CHAT_RENDER_PAGE_SIZE, Number(c.chatRenderPageSize) || DEFAULT_CHAT_RENDER_PAGE_SIZE)),
     contextWindow:Math.max(MIN_CONTEXT_WINDOW, Math.min(MAX_CONTEXT_WINDOW, Number(c.contextWindow) || DEFAULT_CONTEXT_WINDOW)),
-    summaryEvery:Math.max(MIN_CONTEXT_WINDOW, Math.min(MAX_CONTEXT_WINDOW, Number(c.summaryEvery) || DEFAULT_SUMMARY_EVERY)),
-    manualSummarySize:Math.max(6, Math.min(120, Number(c.manualSummarySize) || DEFAULT_MANUAL_SUMMARY_SIZE)),
-    memoryMergeThreshold:Math.max(2, Math.min(50, Number(c.memoryMergeThreshold) || DEFAULT_MEMORY_MERGE_THRESHOLD)),
     memoryMode:normalizeMemoryMode(c.memoryMode || DEFAULT_MEMORY_MODE),
     memoryVectorTopN:Math.max(1, Math.min(20, Number(c.memoryVectorTopN) || DEFAULT_VECTOR_TOP_N)),
     memoryVectorStrategy:(function(v){
@@ -18927,7 +18569,6 @@ function compactChar(c){
       return (v === 'mixed' || v === 'user-weighted' || v === 'user-only') ? v : DEFAULT_VECTOR_RETRIEVAL_STRATEGY;
     })(c.memoryVectorStrategy),
     memoryVectorUserMsgCount:Math.max(1, Math.min(10, Number(c.memoryVectorUserMsgCount) || DEFAULT_VECTOR_USER_MSG_COUNT)),
-    autoSummaryEnabled:c.autoSummaryEnabled != null ? !!c.autoSummaryEnabled : true,
     momentsFreq:normalizeMomentsFreq(c.momentsFreq || DEFAULT_MOMENTS_FREQ),
     translationEnabled:!!c.translationEnabled,
     replyLanguage:normalizeReplyLanguage(c.replyLanguage||c.language||'zh'),
@@ -28589,54 +28230,31 @@ function voiceCallLineToMemoryChatEntry(line){
   };
 }
 
-async function appendVoiceCallMemoryChunk(slice, summaryText, from, to){
-  if(!character || !String(summaryText || '').trim()) return;
-  var store = ensureAdvancedMemoryOnStore(loadMemorySummaryStore());
-  var mode = getMemoryModeFromStore(store);
-  var chunkIndex = (Array.isArray(store.items) ? store.items : []).filter(function(item){
-    return /^voice_call/.test(String(item && item.sourceType || '').trim());
-  }).length + 1;
-  var text = '通话记忆：' + String(summaryText || '').trim();
-  store.items = Array.isArray(store.items) ? store.items : [];
-  store.items.push({
-    id: 'ms_call_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
-    from: Math.max(0, Number(from || 0) || 0),
-    to: Math.max(0, Number(to || 0) || 0),
-    text: text,
-    tokens: approxTokenCount(text),
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    manual: false,
-    pinned: false,
-    label: '通话片段 #' + chunkIndex,
-    sourceType: 'voice_call',
-    memoryCategory: 'events'
+async function processVoiceCallLittleBrainLines(lines, options){
+  var opts = options && typeof options === 'object' ? options : {};
+  if(!shouldRunLittleBrainAutoMemory(!!opts.force)) return Math.max(0, Number(opts.covered || 0) || 0);
+  var allLines = getVoiceCallMemoryLinesFromTranscript(lines);
+  var covered = Math.max(0, Math.min(Number(opts.covered || 0) || 0, allLines.length));
+  var threshold = getLittleBrainAutoThreshold('voice_call', !!opts.force);
+  if(allLines.length - covered < threshold) return covered;
+  var to = opts.force ? allLines.length : Math.min(allLines.length, covered + Math.max(threshold, getLittleBrainAutoBatchSize('voice_call', false)));
+  var slice = allLines.slice(covered, to).map(voiceCallLineToMemoryChatEntry).filter(function(item){
+    return item && String(item.content || '').trim();
   });
-  if(mode === MEMORY_MODE_STRUCTURED){
-    try{
-      var prompt = buildStructuredSummaryPrompt(slice, store);
-      var raw = await callAIWithCustomPrompts(prompt, '请沉淀这段通话里的小脑瓜记忆。');
-      var entries = parseStructuredMemoryEntries(String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''), store);
-      if(entries.length){
-        store = appendStructuredMemoryEntriesToShortTerm(store, entries).store;
-      }
-    }catch(err){}
-  }
+  var store = activateLittleBrainStore(loadMemorySummaryStore());
+  store = await runLittleBrainExtractionForChatSlice(store, slice, 'voice_call');
+  store.advancedMemory.structured.callCovered = Math.max(Number(store.advancedMemory.structured.callCovered || 0) || 0, to);
   if(isLittleBrainVectorEnabled(store)){
-    try{
-      var vectorRaw = await callAIWithCustomPrompts(buildVectorExtractionPrompt(slice), '请从这段通话里提取小脑瓜向量记忆。');
-      var vectorItems = parseVectorExtractionResult(String(vectorRaw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''));
-      if(vectorItems.length){
-        await mergeVectorExtractedMemories(store, vectorItems, { sourceType:'voice_call' });
-      }
-    }catch(vectorErr){}
+    store.advancedMemory.vector.callCovered = Math.max(Number(store.advancedMemory.vector.callCovered || 0) || 0, to);
   }
   saveMemorySummaryStore(store);
   refreshMemoryUi();
+  return to;
 }
 
-async function maybeCreateVoiceCallMemorySummaries(){
-  if(!character || !loadAutoSummaryEnabled()) return;
+async function maybeCreateVoiceCallMemorySummaries(options){
+  if(!character) return;
+  var opts = options && typeof options === 'object' ? options : {};
   if(voiceCallMemoryBusy){
     voiceCallMemoryNeedsRun = true;
     return;
@@ -28647,23 +28265,16 @@ async function maybeCreateVoiceCallMemorySummaries(){
       voiceCallMemoryNeedsRun = false;
       var state = ensureVoiceCallState();
       if(!state.active || !state.sessionId) return;
-      var summaryEvery = loadSummaryEverySize();
-      var lines = getVoiceCallMemoryLinesFromTranscript(state.transcript);
-      var covered = Math.max(0, Math.min(Number(state.memoryCovered || 0) || 0, lines.length));
-      while(lines.length - covered >= summaryEvery){
-        var from = covered;
-        var to = covered + summaryEvery;
-        var slice = lines.slice(from, to).map(voiceCallLineToMemoryChatEntry).filter(function(item){
-          return item && String(item.content || '').trim();
-        });
-        if(!slice.length) break;
-        var summary = await generateMemorySummary(slice);
-        await appendVoiceCallMemoryChunk(slice, summary, from, to);
-        covered = to;
-        if(voiceCallState && String(voiceCallState.sessionId || '') === String(state.sessionId || '')){
-          voiceCallState.memoryCovered = covered;
-          persistVoiceCallSession();
-        }
+      var covered = await processVoiceCallLittleBrainLines(state.transcript, {
+        force: !!opts.force,
+        covered: state.memoryCovered || 0
+      });
+      if(voiceCallState && String(voiceCallState.sessionId || '') === String(state.sessionId || '')){
+        voiceCallState.memoryCovered = covered;
+        persistVoiceCallSession();
+      }
+      if(!opts.force && getVoiceCallMemoryLinesFromTranscript(state.transcript).length - covered >= getLittleBrainAutoThreshold('voice_call', false)){
+        voiceCallMemoryNeedsRun = true;
       }
     }while(voiceCallMemoryNeedsRun);
   }finally{
@@ -29526,6 +29137,7 @@ async function endVoiceCallSession(){
   var recordTranscript = (Array.isArray(state.transcript) ? state.transcript : []).filter(function(line){
     return line && line.role !== 'system' && String(line.text || '').trim();
   });
+  var recordMemoryCovered = Math.max(0, Number(state.memoryCovered || 0) || 0);
 	  state.active = false;
   state.phase = 'ended';
 	  var record = saveCallRecordItem({
@@ -29553,6 +29165,11 @@ async function endVoiceCallSession(){
   Promise.resolve(saveChat(true)).catch(function(err){
     console.warn('save call record card failed', err);
   }).then(function(){
+    if(shouldRunLittleBrainAutoMemory(false)){
+      processVoiceCallLittleBrainLines(recordTranscript, { force:true, covered:recordMemoryCovered }).catch(function(err){
+        console.warn('voice call final little brain failed', err);
+      });
+    }
     finishVoiceCallRecordInBackground(record.id, entry.id);
   });
 	}
@@ -30212,27 +29829,14 @@ function getCurrentMemoryEntryCount(store, mode){
 }
 function getMemoryModeLabel(mode){
   if(mode === MEMORY_MODE_STRUCTURED) return (getCurrentCharDisplayName() || '角色') + '的小脑瓜';
-  return '日记模式';
+  return (getCurrentCharDisplayName() || '角色') + '的小脑瓜';
 }
 function setMemoryPanelView(view){
-  memoryPanelView = String(view || 'all');
-  if(memoryPanelView !== 'all' && memoryPanelView !== 'diary' && memoryPanelView !== 'structured'){
-    memoryPanelView = 'all';
-  }
+  memoryPanelView = 'structured';
   refreshMemoryUi();
 }
 function buildMemoryPanelTabs(activeView, mode){
-  var safeView = String(activeView || 'all');
-  var tabs = [
-    { id:'all', label:'全部' },
-    { id:'diary', label:'日记' },
-    { id:'structured', label:'小脑瓜' }
-  ];
-  return '<div class="memory-mode-tabs">' + tabs.map(function(tab){
-    var active = safeView === tab.id;
-    var label = tab.label + (tab.id === mode ? ' · 当前' : '');
-    return '<button class="memory-mode-tab' + (active ? ' active' : '') + '" type="button" onclick="setMemoryPanelView(\'' + tab.id + '\')">' + esc(label) + '</button>';
-  }).join('') + '</div>';
+  return '';
 }
 function buildDiaryMemoryCardsHtml(items){
   var list = Array.isArray(items) ? items.slice() : [];
@@ -30514,7 +30118,7 @@ function convertDiaryMemoryItemsToLittleBrainShortTerm(store){
       manual: !!(item && item.manual),
       pinned: !!(item && item.pinned),
       label: label,
-      sourceType: 'diary_migration',
+      sourceType: 'legacy_migrated',
       memoryCategory: category,
       sourceId: sourceId
     });
@@ -30523,6 +30127,7 @@ function convertDiaryMemoryItemsToLittleBrainShortTerm(store){
     moved += 1;
   });
   safe.advancedMemory.structured.shortTerm = normalizeLittleBrainShortTermItems(shortList);
+  safe.items = [];
   return { store:safe, moved:moved };
 }
 function promoteDiaryMemoryItem(id){
@@ -30725,17 +30330,9 @@ function buildVectorMemoryCardsHtml(vectorMem){
   return blocks.join('');
 }
 function buildMemoryPanelContentHtml(store, mode, view){
-  var safeView = String(view || 'all');
   var sections = [];
-  var showDiary = safeView === 'diary' || safeView === 'all' || (mode !== MEMORY_MODE_STRUCTURED && safeView !== 'structured');
-  var showStructured = safeView === 'structured' || (mode === MEMORY_MODE_STRUCTURED && safeView === 'all');
-  if(showDiary){
-    sections.push((mode === MEMORY_MODE_STRUCTURED ? '<div class="memory-band-divider"><span>日记模式</span></div>' : '') + '<div class="memory-section-title"><span>日记模式</span><strong>' + ((store.items || []).length || 0) + '</strong></div>' + buildDiaryMemoryCardsHtml(store.items || []));
-  }
-  if(showStructured){
-    sections.push('<div class="memory-section-title"><span>' + esc((getCurrentCharDisplayName() || '角色') + '的小脑瓜') + '</span><strong>' + getCurrentMemoryEntryCount(store, MEMORY_MODE_STRUCTURED) + '</strong></div>' + buildStructuredMemoryCardsHtml(store.advancedMemory.structured, (store.advancedMemory.structured && store.advancedMemory.structured.shortTerm) || []));
-  }
-  return buildMemoryPanelTabs(safeView, mode) + sections.join('');
+  sections.push('<div class="memory-section-title"><span>' + esc((getCurrentCharDisplayName() || '角色') + '的小脑瓜') + '</span><strong>' + getCurrentMemoryEntryCount(store, MEMORY_MODE_STRUCTURED) + '</strong></div>' + buildStructuredMemoryCardsHtml(store.advancedMemory.structured, (store.advancedMemory.structured && store.advancedMemory.structured.shortTerm) || []));
+  return sections.join('');
 }
 function refreshMemoryUi(){
   refreshSummaryStatsUi();
@@ -30774,7 +30371,7 @@ function refreshMemoryUi(){
 function openMemoryPanel(){
   var overlay = document.getElementById('memoryOverlay');
   if(overlay) overlay.classList.add('open');
-  memoryPanelView = loadMemoryMode();
+  memoryPanelView = 'structured';
   try{
     refreshMemoryUi();
   }catch(err){
@@ -31449,7 +31046,7 @@ if(_listenPromptOverlay){
 
 function openMemoryEditor(id){
   memoryEditingId = id || '';
-  memoryEditingType = 'diary';
+  memoryEditingType = 'structured-short';
   memoryEditingMeta = null;
   var title = document.getElementById('memEditorTitle');
   var input = document.getElementById('memEditorInput');
@@ -31460,7 +31057,7 @@ function openMemoryEditor(id){
     var items = Array.isArray(store.items) ? store.items : [];
     var hit = items.find(function(it){ return String(it.id) === String(memoryEditingId); });
     if(hit){
-      memoryEditingType = 'diary';
+      memoryEditingType = 'structured-short';
       input.value = String(hit.text || '');
       title.textContent = '编辑短期记忆';
     }else{
@@ -31493,7 +31090,7 @@ function openMemoryEditor(id){
       memoryEditingType = 'structured-short';
       title.textContent = '新建短期记忆';
     }else{
-      memoryEditingType = 'diary';
+      memoryEditingType = 'structured-short';
       title.textContent = '新建短期记忆';
     }
   }
@@ -31502,7 +31099,7 @@ function openMemoryEditor(id){
 }
 function closeMemoryEditor(){
   memoryEditingId = '';
-  memoryEditingType = 'diary';
+  memoryEditingType = 'structured-short';
   memoryEditingMeta = null;
   document.getElementById('memEditorOverlay')?.classList.remove('open');
 }
@@ -32054,7 +31651,8 @@ function buildInnerVoiceHistoryForPrompt(limit){
 }
 
 function buildInnerVoiceMemorySnippet(limit){
-  var items = Array.isArray(memorySummaryStoreCache && memorySummaryStoreCache.items) ? memorySummaryStoreCache.items : [];
+  var store = ensureAdvancedMemoryOnStore(memorySummaryStoreCache || defaultMemorySummaryStore());
+  var items = Array.isArray(store.advancedMemory.structured.shortTerm) ? store.advancedMemory.structured.shortTerm : [];
   return items.slice(-Math.max(2, Number(limit) || 4)).map(function(it){
     return String((it && it.text) || '').trim();
   }).filter(Boolean).join('\n');
@@ -34134,7 +33732,7 @@ function syncChatSettingsFieldWidths(){
   ['csImportedMemeCategory'].forEach(function(id){
     setChatSettingsInputChWidth(id, 6, 22);
   });
-  ['csMsgMin','csMsgMax','csVectorTopN','csVectorUserMsgCount','csChatRenderPageSize','csContextWindow','csSummaryEvery','csMemoryMergeThreshold','csManualSummarySize','csBubbleCharmUserScale','csBubbleCharmAiScale','csBubbleCharmUserLeft','csBubbleCharmUserTop','csBubbleCharmAiRight','csBubbleCharmAiTop'].forEach(function(id){
+  ['csMsgMin','csMsgMax','csVectorTopN','csVectorUserMsgCount','csChatRenderPageSize','csContextWindow','csBubbleCharmUserScale','csBubbleCharmAiScale','csBubbleCharmUserLeft','csBubbleCharmUserTop','csBubbleCharmAiRight','csBubbleCharmAiTop'].forEach(function(id){
     setChatSettingsInputChWidth(id, 1, 6);
   });
   ['csPresenceUserCity','csPresenceCharCity','csPresenceSchedule'].forEach(function(id){
@@ -34817,7 +34415,6 @@ async function openChatSettings() {
   chatSettingsSavedAtLeastOnce = false;
   chatThemeEditorDirty = { global:false, bubble:false, innerVoice:false };
   pendingCharBgEnabled = null;
-  pendingAutoSummaryEnabled = null;
   pendingAvatarVisionEnabled = null;
   pendingCharAvatarAutoEnabled = null;
   pendingReadTimeVisible = null;
@@ -35016,14 +34613,8 @@ async function openChatSettings() {
     syncPresenceWorldHint();
     var chatRenderPageSizeInput = document.getElementById('csChatRenderPageSize');
     var contextWindowInput = document.getElementById('csContextWindow');
-    var summaryEveryInput = document.getElementById('csSummaryEvery');
-    var manualSummaryInput = document.getElementById('csManualSummarySize');
-    var memoryMergeInput = document.getElementById('csMemoryMergeThreshold');
     if(chatRenderPageSizeInput) chatRenderPageSizeInput.value = loadChatRenderPageSize();
     if(contextWindowInput) contextWindowInput.value = loadContextWindowSize();
-    if(summaryEveryInput) summaryEveryInput.value = loadSummaryEverySize();
-    if(manualSummaryInput) manualSummaryInput.value = loadManualSummarySize();
-    if(memoryMergeInput) memoryMergeInput.value = loadMemoryMergeThreshold();
     var vectorTopEl = document.getElementById('csVectorTopN');
     if(vectorTopEl) vectorTopEl.value = String(loadVectorTopN());
     var vectorStrategyEl = document.getElementById('csVectorStrategy');
@@ -35045,7 +34636,6 @@ async function openChatSettings() {
     if(canPickGreeting) populateGreetings();
     refreshUserAvatars();
     renderCharBgToggle();
-    renderAutoSummaryToggle();
     renderAvatarVisionToggle();
     renderCharAvatarAutoToggle();
     renderReadTimeToggle();
@@ -35095,7 +34685,6 @@ function closeChatSettings() {
   try{
     if(!chatSettingsSavedAtLeastOnce){
       pendingCharBgEnabled = null;
-      pendingAutoSummaryEnabled = null;
       pendingAvatarVisionEnabled = null;
       pendingCharAvatarAutoEnabled = null;
       pendingReadTimeVisible = null;
@@ -36004,14 +35593,8 @@ async function saveChatSettings() {
   });
   var chatRenderPageSizeInput = document.getElementById('csChatRenderPageSize');
   var contextWindowInput = document.getElementById('csContextWindow');
-  var summaryEveryInput = document.getElementById('csSummaryEvery');
-  var manualSummaryInput = document.getElementById('csManualSummarySize');
-  var memoryMergeInput = document.getElementById('csMemoryMergeThreshold');
   var renderPageSize = parseInt((chatRenderPageSizeInput && chatRenderPageSizeInput.value) || String(loadChatRenderPageSize ? loadChatRenderPageSize() : DEFAULT_CHAT_RENDER_PAGE_SIZE), 10);
   var cwin = parseInt((contextWindowInput && contextWindowInput.value) || String(loadContextWindowSize ? loadContextWindowSize() : DEFAULT_CONTEXT_WINDOW), 10);
-  var severy = parseInt((summaryEveryInput && summaryEveryInput.value) || String(loadSummaryEverySize ? loadSummaryEverySize() : DEFAULT_SUMMARY_EVERY), 10);
-  var manualSize = parseInt((manualSummaryInput && manualSummaryInput.value) || String(loadManualSummarySize ? loadManualSummarySize() : DEFAULT_MANUAL_SUMMARY_SIZE), 10);
-  var mergeThreshold = parseInt((memoryMergeInput && memoryMergeInput.value) || String(loadMemoryMergeThreshold ? loadMemoryMergeThreshold() : DEFAULT_MEMORY_MERGE_THRESHOLD), 10);
   var memoryModeNext = MEMORY_MODE_STRUCTURED;
   var vectorTopNNext = Math.max(1, Math.min(20, parseInt((document.getElementById('csVectorTopN') || {}).value || String(DEFAULT_VECTOR_TOP_N), 10) || DEFAULT_VECTOR_TOP_N));
   var vectorStrategyNext = String((document.getElementById('csVectorStrategy') || {}).value || DEFAULT_VECTOR_RETRIEVAL_STRATEGY);
@@ -36035,9 +35618,6 @@ async function saveChatSettings() {
   }
   saveChatRenderPageSize(renderPageSize);
   saveContextWindowSize(cwin);
-  saveSummaryEverySize(severy);
-  saveManualSummarySize(manualSize);
-  saveMemoryMergeThreshold(mergeThreshold);
   if(window.PresenceShared){
     var userCity = window.PresenceShared.getCity(presenceUserCity && presenceUserCity.value);
     if(presenceUserCity && presenceUserCity.value === '__device__'){
@@ -36146,9 +35726,6 @@ async function saveChatSettings() {
     }
     character.chatRenderPageSize = renderPageSize;
     character.contextWindow = cwin;
-    character.summaryEvery = severy;
-    character.manualSummarySize = manualSize;
-    character.memoryMergeThreshold = mergeThreshold;
     character.chatHeaderCss = headerCustomCss.trim() || getDefaultHeaderThemeCss();
     character.chatGlobalCss = String(globalCss || '');
     character.chatThemeParts = cloneJsonSafe(chatThemePartDrafts || {}, {});
@@ -36164,7 +35741,6 @@ async function saveChatSettings() {
     character.memoryVectorTopN = vectorTopNNext;
     character.memoryVectorStrategy = vectorStrategyNext;
     character.memoryVectorUserMsgCount = vectorUserMsgCountNext;
-    character.autoSummaryEnabled = pendingAutoSummaryEnabled === null ? loadAutoSummaryEnabled() : !!pendingAutoSummaryEnabled;
     character.momentsFreq = momentsFreq;
     if(window.PresenceShared){
       var currentPresenceSettings = window.PresenceShared.getCharSettings(character);
@@ -36227,9 +35803,6 @@ async function saveChatSettings() {
     if(pendingCharBgEnabled !== null){
       saveCharBgEnabled(character.id, pendingCharBgEnabled);
     }
-    if(pendingAutoSummaryEnabled !== null){
-      saveAutoSummaryEnabled(!!pendingAutoSummaryEnabled);
-    }
     saveMemoryMode(memoryModeNext);
     saveVectorTopN(vectorTopNNext);
     saveVectorRetrievalStrategy(vectorStrategyNext);
@@ -36252,7 +35825,6 @@ async function saveChatSettings() {
       memoryMode: memoryModeNext,
       charBgEnabled: pendingCharBgEnabled === null ? loadCharBgPreference(character.id) : !!pendingCharBgEnabled,
       momentsFreq: momentsFreq,
-      autoSummaryEnabled: character.autoSummaryEnabled,
       userPersonaProfile: character.userPersonaProfile
     });
     postToShell({ type:'CHAT_SETTINGS_BUNDLE_SAVED', payload:{ charId: character.id, bundle: savedSettingsBundle } });
@@ -36275,7 +35847,6 @@ async function saveChatSettings() {
     saveWeatherSettingState('char', getWeatherSettingState('char'));
     saveWeatherSettingState('user', getWeatherSettingState('user'));
     pendingCharBgEnabled = null;
-    pendingAutoSummaryEnabled = null;
     pendingAvatarVisionEnabled = null;
     pendingCharAvatarAutoEnabled = null;
     pendingReadTimeVisible = null;

@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../promptManager.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../accountManager.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T20:46:51Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T20:46:51Z"></script>
+<script src="../assetStore.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../promptManager.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../accountManager.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T21:35:30Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T21:35:30Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -1265,11 +1265,12 @@ var loveSongTimers = [];
 var offlineMemorySnippetCache = '';
 var offlineEditingIndex = -1;
 var offlineSummaryQueue = {};
-var offlineStageSummaryQueue = {};
 var offlineSharedMemorySummaryQueue = {};
 var offlineSharedMemoryCheckTimer = 0;
 var offlineSharedMemoryLastQueuedCount = 0;
 var offlineSharedMemoryPendingCount = 0;
+var OFFLINE_LITTLE_BRAIN_AUTO_THRESHOLD = 2;
+var OFFLINE_LITTLE_BRAIN_AUTO_BATCH = 6;
 var offlineDrawerBound = false;
 var offlineDrawerDraft = null;
 var offlineDrawerPageBgPendingAsset = '';
@@ -1281,7 +1282,6 @@ var offlineDrawerCardBgDirty = false;
 var offlineMemoryEditingId = '';
 var offlineMemoryEditingMeta = null;
 var offlineMemoryConfirmResolver = null;
-var offlineStageSummaryPreviewOpen = false;
 var offlineMultiSelectMode = false;
 var offlineSelectedEntryIndexes = [];
 var offlineActionMenuIndex = -1;
@@ -2563,7 +2563,7 @@ async function queueOfflineEndArtifacts(targetCharId, snapshot){
     }, { localFallback:false });
   }
   try{
-    await mergeOfflineStageSummariesIntoOnlineMemoryStore(targetCharId, snapshot);
+    await mergeOfflineArchiveIntoLittleBrainStore(targetCharId, snapshot);
     localStorage.removeItem(pendingOfflineMemoryKey(targetCharId));
   }catch(e){
     pushOfflineBackendLog('warn', 'archive.end_artifacts', '结束后的通知或记忆同步稍后重试', e);
@@ -2625,10 +2625,40 @@ function normalizeOnlineMemorySummaryStore(store){
     Number(next.advancedMemory && next.advancedMemory.structured && next.advancedMemory.structured.lastUpdated || 0) || 0
   );
   var advanced = normalizeOfflineAdvancedMemoryState(cloneOnlineMemoryAdvanced(next.advancedMemory));
-  var legacyVectorItems = buildOfflineLegacyVectorDiaryItems(next.items, advanced.vector);
-  if(legacyVectorItems.length) next.items = next.items.concat(legacyVectorItems);
+  var legacyItems = Array.isArray(next.items) ? next.items.slice() : [];
+  if(legacyItems.length){
+    var shortTerm = Array.isArray(advanced.structured.shortTerm) ? advanced.structured.shortTerm.slice() : [];
+    var seenLegacy = Object.create(null);
+    shortTerm.forEach(function(item){
+      var key = String(item && item.text || '').replace(/\s+/g, ' ').trim();
+      if(key) seenLegacy[key] = true;
+    });
+    legacyItems.forEach(function(item){
+      var text = String(item && item.text || '').trim();
+      var key = text.replace(/\s+/g, ' ').trim();
+      if(!key || seenLegacy[key]) return;
+      seenLegacy[key] = true;
+      shortTerm.push({
+        id: 'legacy_st_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
+        from: Number(item && item.from || 0) || 0,
+        to: Number(item && item.to || 0) || 0,
+        text: text,
+        tokens: Number(item && item.tokens || 0) || approxOfflineTokenCount(text),
+        createdAt: Number(item && item.createdAt || Date.now()) || Date.now(),
+        updatedAt: Date.now(),
+        manual: !!(item && item.manual),
+        pinned: !!(item && item.pinned),
+        label: String(item && item.label || '历史整理').trim() || '历史整理',
+        sourceType: 'legacy_migrated',
+        memoryCategory: String(item && item.memoryCategory || 'events').trim() || 'events'
+      });
+    });
+    advanced.structured.shortTerm = normalizeOfflineLittleBrainShortTermItems(shortTerm);
+    advanced.structured.lastUpdated = Date.now();
+  }
+  next.items = [];
   next.advancedMemory = Object.assign({}, advanced, {
-    mode: advanced.mode === 'structured' ? 'structured' : 'diary'
+    mode: 'structured'
   });
   return next;
 }
@@ -2670,8 +2700,8 @@ function getOfflineMemoryItemLabel(item, fallbackIndex, totalCount){
   var sourceType = String(item && item.sourceType || '').trim();
   var label = String(item && item.label || '').trim();
   if(label) return label;
-  if(sourceType === 'offline_stage') return '线下阶段记忆';
-  if(sourceType === 'offline_scene') return '线下幕记忆';
+  if(sourceType === 'offline_stage' || sourceType === 'offline_archive') return '线下记录整理';
+  if(sourceType === 'offline_scene') return '线下记录';
   if(item && item.manual) return '手动记忆';
   return '线上聊天记忆 ' + String(Math.max(1, totalCount - fallbackIndex));
 }
@@ -2755,33 +2785,13 @@ function buildOfflineStageSummaryMemoryText(item){
   var label = String(item && item.label || '').trim();
   var summary = String(item && item.summary || '').trim();
   if(!summary) return '';
-  return (label ? ('【线下见面 ' + label + '】') : '【线下见面阶段总结】') + summary;
+  return (label ? ('【线下见面 ' + label + '】') : '【线下见面记录】') + summary;
 }
 function buildOfflineStageMemoryPromptLines(item){
-  var label = String(item && item.label || '线下阶段总结').trim();
+  var label = String(item && item.label || '线下记录').trim();
   var summary = String(item && item.summary || '').replace(/\s+/g, ' ').trim();
   if(!summary) return '';
   return '线下见面 ' + label + '：' + summary;
-}
-async function buildOfflineStageDiaryMemoryRecord(item){
-  var record = buildOfflineStageSummaryMemoryRecord(item);
-  var lines = buildOfflineStageMemoryPromptLines(item);
-  if(!lines) return record;
-  var systemPrompt = promptManager && typeof promptManager.memorySummarySystemPrompt === 'function'
-    ? promptManager.memorySummarySystemPrompt()
-    : '你是“聊天记忆压缩器”。请只返回一段第三人称纯文本总结。';
-  var userPrompt = promptManager && typeof promptManager.memorySummaryUserPrompt === 'function'
-    ? promptManager.memorySummaryUserPrompt(lines)
-    : ('请只返回一段纯文本总结，不要标题，不要编号。\n\n总结范围是以下线下见面阶段记录：\n' + lines);
-  try{
-    var raw = await callAIWithTimeout(systemPrompt, userPrompt, Math.min(getOfflineReplyTimeoutMs(), 22000));
-    var text = String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,'').trim();
-    if(text){
-      record.text = text;
-      record.tokens = approxOfflineTokenCount(text);
-    }
-  }catch(e){}
-  return record;
 }
 function getOfflineStructuredMemoryCategories(store){
   var mem = normalizeOfflineAdvancedMemoryState(store && store.advancedMemory).structured;
@@ -2997,39 +3007,76 @@ async function syncOfflineStageSummariesToMemoryStore(stageItems, charIdOverride
   if(!targetCharId) return null;
   var store = await loadOnlineMemorySummaryStoreByCharId(targetCharId);
   store.advancedMemory = normalizeOfflineAdvancedMemoryState(store && store.advancedMemory);
-  var mode = getOfflineMemoryModeFromStore(store) === 'structured' ? 'structured' : 'diary';
-  var preservedDiary = (Array.isArray(store && store.items) ? store.items.slice() : []).filter(function(item){
-    return String(item && item.sourceType || '').trim() !== 'offline_stage';
-  });
   var preservedShortTerm = (Array.isArray(store.advancedMemory.structured.shortTerm) ? store.advancedMemory.structured.shortTerm.slice() : []).filter(function(item){
     return String(item && item.sourceType || '').trim() !== 'offline_stage';
   });
-  if(mode === 'structured'){
-    for(var s = 0; s < valid.length; s += 1){
-      var structuredRecords = await buildOfflineStageStructuredMemoryRecords(valid[s], store);
-      structuredRecords.forEach(function(record){ preservedShortTerm.push(record); });
-    }
-    store.advancedMemory.mode = 'structured';
-    store.advancedMemory.structured.shortTerm = normalizeOfflineLittleBrainShortTermItems(preservedShortTerm);
-    store.advancedMemory.structured.lastUpdated = Date.now();
-  }else{
-    for(var d = 0; d < valid.length; d += 1){
-      preservedDiary.push(await buildOfflineStageDiaryMemoryRecord(valid[d]));
-    }
-    store.advancedMemory.mode = 'diary';
-    store.advancedMemory.structured.shortTerm = normalizeOfflineLittleBrainShortTermItems(preservedShortTerm);
+  for(var s = 0; s < valid.length; s += 1){
+    var structuredRecords = await buildOfflineStageStructuredMemoryRecords(valid[s], store);
+    structuredRecords.forEach(function(record){ preservedShortTerm.push(record); });
   }
-  var nextStore = Object.assign({}, store, { items: preservedDiary, advancedMemory: store.advancedMemory });
+  store.advancedMemory.mode = 'structured';
+  store.advancedMemory.structured.shortTerm = normalizeOfflineLittleBrainShortTermItems(preservedShortTerm);
+  store.advancedMemory.structured.lastUpdated = Date.now();
+  var nextStore = Object.assign({}, store, { items: [], advancedMemory: store.advancedMemory });
   await persistOnlineMemorySummaryStoreByCharId(targetCharId, nextStore);
   if(character && String(character.id || '').trim() === targetCharId){
+    if(session && Array.isArray(session['stage' + 'Summaries'])) delete session['stage' + 'Summaries'];
+    if(session){
+      delete session['last' + 'StageSummaryAt'];
+      delete session['last' + 'StageSummaryUpto'];
+      delete session['last' + 'StageSummaryError'];
+    }
     offlineMemorySnippetCache = '';
     refreshOfflineMemoryButton();
   }
   return nextStore;
 }
-async function mergeOfflineStageSummariesIntoOnlineMemoryStore(targetCharId, snapshot){
-  var items = await buildOfflineEndStageSummary(snapshot);
-  await syncOfflineStageSummariesToMemoryStore(items, targetCharId);
+async function mergeOfflineArchiveIntoLittleBrainStore(targetCharId, snapshot){
+  var safeCharId = String(targetCharId || '').trim();
+  if(!safeCharId || !snapshot) return null;
+  var list = Array.isArray(snapshot && snapshot.entries) ? snapshot.entries.filter(function(entry){
+    return entry && String(entry.text || '').trim();
+  }) : [];
+  if(!list.length) return null;
+  var store = await loadOnlineMemorySummaryStoreByCharId(safeCharId);
+  store = activateOfflineLittleBrainStore(store || defaultOnlineMemorySummaryStore());
+  var summary = '';
+  try{
+    summary = await summarizeOfflineMemoryEntries(list);
+  }catch(e){
+    summary = '';
+  }
+  if(!summary) summary = summarizeOfflineMemoryLocally(snapshot);
+  summary = String(summary || '').trim();
+  if(!summary) return store;
+  var shortTerm = Array.isArray(store.advancedMemory.structured.shortTerm) ? store.advancedMemory.structured.shortTerm.slice() : [];
+  var key = summary.replace(/\s+/g, ' ').trim();
+  var exists = shortTerm.some(function(item){
+    return String(item && item.text || '').replace(/\s+/g, ' ').trim() === key;
+  });
+  if(!exists){
+    var now = Date.now();
+    shortTerm.push({
+      id: 'offline_archive_' + now.toString(36),
+      from: 0,
+      to: list.length,
+      text: summary,
+      tokens: approxOfflineTokenCount(summary),
+      createdAt: Number(snapshot && (snapshot.completedAt || snapshot.updatedAt || snapshot.createdAt) || now) || now,
+      updatedAt: now,
+      manual: false,
+      pinned: false,
+      label: '线下记录整理',
+      sourceType: 'offline_archive',
+      memoryCategory: 'events'
+    });
+  }
+  store.items = [];
+  store.advancedMemory.mode = 'structured';
+  store.advancedMemory.structured.shortTerm = normalizeOfflineLittleBrainShortTermItems(shortTerm);
+  store.advancedMemory.structured.lastUpdated = Date.now();
+  await persistOnlineMemorySummaryStoreByCharId(safeCharId, store);
+  return store;
 }
 function clearLiveOfflineSession(targetCharId, source){
   if(!targetCharId) return;
@@ -3486,8 +3533,6 @@ function loadCharacter(charIdOverride){
           offlineCharPerspective: String(pendingParsed.offlineCharPerspective || pendingParsed.offlineInvitePerspective || 'first'),
           offlineUserPerspective: String(pendingParsed.offlineUserPerspective || pendingParsed.offlineInvitePerspective || 'first'),
           offlineInviteStyle: String(pendingParsed.offlineInviteStyle || '').trim(),
-          offlineSummaryEvery: Number(pendingParsed.offlineSummaryEvery || 5),
-          offlineSummaryAuto: pendingParsed.offlineSummaryAuto != null ? !!pendingParsed.offlineSummaryAuto : true,
           offlineSideStoryType: String(pendingParsed.offlineSideStoryType || 'future')
         });
       }
@@ -3510,8 +3555,6 @@ function loadCharacter(charIdOverride){
           offlineCharPerspective: String(latest.offlineCharPerspective || parsed.offlineCharPerspective || latest.offlineInvitePerspective || parsed.offlineInvitePerspective || 'first'),
           offlineUserPerspective: String(latest.offlineUserPerspective || parsed.offlineUserPerspective || latest.offlineInvitePerspective || parsed.offlineInvitePerspective || 'first'),
           offlineInviteStyle: String(latest.offlineInviteStyle || parsed.offlineInviteStyle || ''),
-          offlineSummaryEvery: Number(latest.offlineSummaryEvery || parsed.offlineSummaryEvery || 5),
-          offlineSummaryAuto: latest.offlineSummaryAuto != null ? latest.offlineSummaryAuto : (parsed.offlineSummaryAuto != null ? parsed.offlineSummaryAuto : true),
           offlineSideStoryType: String(latest.offlineSideStoryType || parsed.offlineSideStoryType || 'future')
         });
       }
@@ -3523,8 +3566,6 @@ function loadCharacter(charIdOverride){
           offlineCharPerspective: String(parsed.offlineCharPerspective || parsed.offlineInvitePerspective || 'first'),
           offlineUserPerspective: String(parsed.offlineUserPerspective || parsed.offlineInvitePerspective || 'first'),
           offlineInviteStyle: String(parsed.offlineInviteStyle || '').trim(),
-          offlineSummaryEvery: Number(parsed.offlineSummaryEvery || 5),
-          offlineSummaryAuto: parsed.offlineSummaryAuto != null ? !!parsed.offlineSummaryAuto : true,
           offlineSideStoryType: String(parsed.offlineSideStoryType || 'future')
         });
       }
@@ -3643,9 +3684,6 @@ function buildOfflineCharacterFromSnapshot(snapshot){
     offlineCharPerspective: String(snapshot.offlineCharPerspective || snapshot.offlineInvitePerspective || 'first'),
     offlineUserPerspective: String(snapshot.offlineUserPerspective || snapshot.offlineInvitePerspective || 'first'),
     offlineInviteStyle: String(snapshot.offlineInviteStyle || '').trim(),
-    offlineSummaryEvery: Number(snapshot.offlineSummaryEvery || 5),
-    offlineSummaryAuto: snapshot.offlineSummaryAuto != null ? !!snapshot.offlineSummaryAuto : true,
-    memoryMode: String(snapshot.memoryMode || '').trim(),
     offlineSideStoryType: String(snapshot.offlineSideStoryType || 'future'),
     translationEnabled: !!snapshot.translationEnabled,
     replyLanguage: normalizeReplyLanguage(snapshot.replyLanguage || snapshot.language || 'zh'),
@@ -4218,9 +4256,6 @@ function protectOfflineEntriesBeforeSave(){
   var mergedEntries = mergeOfflineEntryListsPreservingHistory(existingEntries, currentEntries);
   if(mergedEntries.length <= currentEntries.length) return;
   session.entries = mergedEntries;
-  if(existing && Array.isArray(existing.stageSummaries) && !Array.isArray(session.stageSummaries)){
-    session.stageSummaries = existing.stageSummaries.slice();
-  }
   pushOfflineBackendLog('warn', 'session.protect_entries', '阻止短线下记录覆盖长记录，已合并恢复', {
     charId: String(character.id || ''),
     before: currentEntries.length,
@@ -4730,191 +4765,8 @@ function normalizeOfflineSummaryText(raw, fallbackText){
   }
   return clipOfflinePromptText(text, 170);
 }
-function buildOfflineStageSummarySystemPrompt(rangeLabel){
-  return [
-    '你现在只负责生成一条阶段总结。',
-    '只返回 JSON：{"summary":"..."}',
-    '输入会给你若干幕的已有摘要，以及 user 在这些幕里亲口说过的话。',
-    '请把这些幕摘要和 user 输入一起压成一条更长期可读的阶段总结，供后续上下文读取。',
-    '总结必须包含三层：这几幕推进了什么、关系或情绪怎么变、还有什么悬着没落地。',
-    '不要抒情空话，不要复述每句摘要，更不要编造正文之外的新事实；user 说过的重要信息、态度和推进也要一起算进总结里。',
-    '长度控制在 80-180 个中文字符之间。',
-    'summary 必须始终使用简体中文，就算当前剧情原文是别的语言也一样。',
-    rangeLabel ? ('这次要总结的范围：' + rangeLabel) : ''
-  ].filter(Boolean).join('\n');
-}
-function normalizeOfflineMemorySummaryRaw(raw){
-  var text = String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,'').trim();
-  if(!text) return '';
-  var parsed = parseOfflineSummaryObject(text);
-  if(parsed && parsed.summary) return String(parsed.summary || '').trim();
-  try{
-    var obj = parseOfflineJsonObject(text);
-    if(obj && typeof obj === 'object'){
-      var fromObj = String(obj.summary || obj.text || obj.memory || obj.content || '').trim();
-      if(fromObj) return fromObj;
-    }
-  }catch(e){}
-  return text.replace(/^(阶段总结|总结|summary)\s*[:：]\s*/i, '').trim();
-}
-function buildOfflineStageMemorySummaryPrompt(lines, label){
-  var source = String(lines || '').trim();
-  var namedLines = source
-    .replace(/第(\d+)幕用户输入：/g, '第$1幕' + getOfflineUserCanonicalName() + '：')
-    .replace(/第(\d+)幕角色摘要：/g, '第$1幕' + getOfflineCharCanonicalName() + '：');
-  var base = promptManager && typeof promptManager.memorySummaryUserPrompt === 'function'
-    ? promptManager.memorySummaryUserPrompt(namedLines)
-    : ('请只返回一段纯文本总结，不要标题，不要编号，不要额外解释。\n\n总结范围是以下线下记录：\n\n' + namedLines);
-  return [
-    base,
-    label ? ('这是一段线下约会的阶段记忆，范围：' + label + '。') : '这是一段线下约会的阶段记忆。',
-    '请保留线下场景里已经发生的事实、双方关系变化、情绪推进、约定和仍未落地的悬念。',
-    '只返回一段纯文本总结。'
-  ].join('\n\n');
-}
-function buildOfflineStageSummaryFallback(lines){
-  var clean = String(lines || '').replace(/\s+/g, ' ').trim();
-  if(!clean) return '';
-  clean = clean
-    .replace(/第(\d+)幕用户输入：/g, '第$1幕' + getOfflineUserCanonicalName() + '表示：')
-    .replace(/第(\d+)幕角色摘要：/g, '第$1幕' + getOfflineCharCanonicalName() + '推进：');
-  return clipOfflinePromptText(clean, 180);
-}
-function collectOfflineStageSummarySource(floorLimit){
-  var entries = (Array.isArray(session && session.entries) ? session.entries : []).filter(function(entry){
-    return entry && String(entry.text || '').trim();
-  });
-  var count = Math.max(0, Number(floorLimit) || 0);
-  if(!count || !entries.length) return [];
-  return entries.slice(Math.max(0, entries.length - count));
-}
-function buildOfflineStageSummaryLines(startScene, endScene){
-  var lines = [];
-  var list = getOfflineStoryEntries();
-  for(var i = 0; i < list.length; i += 1){
-    var entry = list[i];
-    var text = String(entry && entry.text || '').replace(/\s+/g, ' ').trim();
-    if(!entry || !text) continue;
-    var sceneNo = i + 1;
-    if(sceneNo < startScene || sceneNo > endScene) continue;
-    if(entry.role === 'assistant'){
-      var summaryText = String(entry.summaryText || '').trim();
-      if(summaryText) lines.push('第' + String(sceneNo) + '幕角色摘要：' + summaryText);
-      continue;
-    }
-    lines.push('第' + String(sceneNo) + '幕用户输入：' + text);
-  }
-  return lines.filter(Boolean);
-}
-async function generateOfflineStageSummary(force, overrideCount){
-  if(!session) return null;
-  var ui = getOfflineUiPrefs();
-  var cadence = normalizeOfflineStageSummaryEvery(overrideCount || ui.summaryEvery);
-  var totalFloorCount = countOfflineStoryFloors();
-  if(!totalFloorCount) return null;
-  var requestedUptoCount = Math.max(0, Number(arguments[2]) || 0);
-  var uptoCount = force ? totalFloorCount : (requestedUptoCount ? Math.min(totalFloorCount, requestedUptoCount) : (totalFloorCount - (totalFloorCount % cadence)));
-  if(!uptoCount) return null;
-  var existing = getOfflineStageSummaries().find(function(item){
-    return Number(item && (item.uptoFloorCount || item.uptoAssistantCount) || 0) === uptoCount;
-  });
-  if(existing && !force) return existing;
-  var currentSummaries = getOfflineStageSummaries();
-  var lastCovered = getOfflineStageSummaryCoveredCount();
-  var startFloor = force ? Math.max(1, uptoCount - cadence + 1) : (lastCovered + 1);
-  if((uptoCount - startFloor + 1) < Math.min(cadence, uptoCount) && !force) return null;
-  var sourceEntries = getOfflineStoryEntries().slice(Math.max(0, startFloor - 1), uptoCount).filter(function(entry){
-    return entry && String(entry.text || '').trim();
-  });
-  if(!sourceEntries.length) return null;
-  for(var i = 0; i < sourceEntries.length; i += 1){
-    if(sourceEntries[i].role === 'assistant' && !String(sourceEntries[i].summaryText || '').trim()){
-      try{ await ensureOfflineSummaryForEntry(sourceEntries[i]); }catch(e){}
-    }
-  }
-  var summaryLines = buildOfflineStageSummaryLines(startFloor, uptoCount);
-  if(!summaryLines.length) return null;
-  var label = '第' + String(startFloor) + '-' + String(uptoCount) + '幕阶段总结';
-  var raw = '';
-  try{
-    var systemPrompt = promptManager && typeof promptManager.memorySummarySystemPrompt === 'function'
-      ? promptManager.memorySummarySystemPrompt()
-      : buildOfflineStageSummarySystemPrompt(label);
-    var userPrompt = buildOfflineStageMemorySummaryPrompt(summaryLines.join('\n'), label);
-    raw = await callAIWithTimeout(systemPrompt, userPrompt, Math.min(getOfflineReplyTimeoutMs(), 50000));
-  }catch(summaryErr){
-    pushOfflineBackendLog('warn', 'offline.stage_summary.call', '阶段总结调用失败，使用已有幕摘要兜底', summaryErr);
-  }
-  var text = normalizeOfflineSummaryText(normalizeOfflineMemorySummaryRaw(raw), buildOfflineStageSummaryFallback(summaryLines.join('\n')));
-  if(!text) return null;
-  var nextItem = {
-    id: 'offline_stage_' + String(uptoCount),
-    uptoAssistantCount: uptoCount,
-    uptoFloorCount: uptoCount,
-    label: label,
-    summary: text,
-    createdAt: Date.now(),
-    updatedAt: Date.now()
-  };
-  var nextList = currentSummaries.filter(function(item){
-    return Number(item && (item.uptoFloorCount || item.uptoAssistantCount) || 0) !== uptoCount;
-  });
-  nextList.push(nextItem);
-  nextList.sort(function(a, b){
-    return Number(a && (a.uptoFloorCount || a.uptoAssistantCount) || 0) - Number(b && (b.uptoFloorCount || b.uptoAssistantCount) || 0);
-  });
-  session.stageSummaries = nextList;
-  session.lastStageSummaryAt = Date.now();
-  session.lastStageSummaryUpto = uptoCount;
-  session.lastStageSummaryError = '';
-  saveSession();
-  offlineStageSummaryPreviewOpen = true;
-  renderOfflineStageSummaryList();
-  await syncOfflineStageSummariesToMemoryStore(nextList);
-  return nextItem;
-}
 function queueOfflineStageSummaryGeneration(retryCount){
-  if(!session) return;
-  if(sending || (session && (session.pendingOpening || session.pendingAnimation))){
-    var nextRetryCount = Math.max(0, Number(retryCount) || 0) + 1;
-    setTimeout(function(){
-      queueOfflineStageSummaryGeneration(nextRetryCount);
-    }, 700);
-    return;
-  }
-  var ui = offlineDrawerDraft || getOfflineUiPrefs();
-  if(!ui.summaryAuto) return;
-  var cadence = normalizeOfflineStageSummaryEvery(ui.summaryEvery);
-  var floorCount = countOfflineStoryFloors();
   queueOfflineSharedMemorySummaryGeneration();
-  var covered = getOfflineStageSummaryCoveredCount();
-  if(floorCount - covered < cadence) return;
-  var targetFloor = Math.min(floorCount, covered + cadence);
-  if(getOfflineStageSummaries().some(function(item){
-    return Number(item && (item.uptoFloorCount || item.uptoAssistantCount) || 0) === targetFloor;
-  })) return;
-  var key = 'stage::' + String(targetFloor);
-  if(offlineStageSummaryQueue[key]) return;
-  offlineStageSummaryQueue[key] = true;
-  Promise.resolve().then(function(){
-    return generateOfflineStageSummary(false, cadence, targetFloor);
-  }).catch(function(err){
-    if(session && typeof session === 'object'){
-      session.lastStageSummaryError = summarizeOfflineError(err);
-      session.lastStageSummaryErrorAt = Date.now();
-      try{ saveSession(); }catch(e){}
-    }
-    if(document.getElementById('offlineDrawer')?.classList.contains('open')){
-      toast('自动阶段总结失败：' + summarizeOfflineError(err), { sticky:true });
-    }
-    pushOfflineBackendLog('warn', 'offline.stage_summary.auto', '自动阶段总结生成失败', err);
-    console.warn('offline stage summary generation failed', err);
-  }).finally(function(){
-    delete offlineStageSummaryQueue[key];
-    if(countOfflineStoryFloors() >= targetFloor + cadence){
-      setTimeout(queueOfflineStageSummaryGeneration, 200);
-    }
-  });
 }
 
 function buildOfflineSharedMemoryEntryLines(entries, offset){
@@ -4934,28 +4786,6 @@ function buildOfflineSharedMemoryEntryLines(entries, offset){
     }
     return (offset + idx + 1) + '. [' + role + '] ' + text;
   }).filter(Boolean).join('\n');
-}
-
-async function generateOfflineSharedDiaryMemory(slice, fromIndex){
-  var lines = buildOfflineSharedMemoryEntryLines(slice, fromIndex);
-  if(!lines) return '';
-  var systemPrompt = promptManager && typeof promptManager.memorySummarySystemPrompt === 'function'
-    ? promptManager.memorySummarySystemPrompt()
-    : '你是聊天记忆压缩器。只返回一段第三人称纯文本总结。';
-  var userPrompt = promptManager && typeof promptManager.memorySummaryUserPrompt === 'function'
-    ? promptManager.memorySummaryUserPrompt(lines)
-    : [
-      '请只返回一段纯文本总结，不要标题，不要编号，不要额外解释。',
-      '这段总结来自线下聊天。用户消息必须按全文理解，角色消息只按摘要理解。',
-      '总结范围：',
-      lines
-    ].join('\n\n');
-  userPrompt = [
-    userPrompt,
-    '这是线下聊天记忆总结：用户消息必须按全文理解，角色消息只按摘要理解；不要把角色长正文整段塞进总结。'
-  ].join('\n\n');
-  var raw = await callAIWithTimeout(systemPrompt, userPrompt, Math.min(getOfflineReplyTimeoutMs(), 30000));
-  return String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,'').trim();
 }
 
 function buildOfflineSharedStructuredPrompt(slice, fromIndex, store){
@@ -4981,101 +4811,110 @@ function buildOfflineSharedStructuredPrompt(slice, fromIndex, store){
   ].filter(Boolean).join('\n\n');
 }
 
+function isOfflineLittleBrainEnabled(){
+  return !!(character && (character.littleBrainEnabled || character.memoryPalaceEnabled || String(character.memoryMode || '').trim() === 'structured'));
+}
+function isOfflineLittleBrainAutoEnabled(){
+  return !!(character && (character.littleBrainAutoMemoryEnabled || character.autoArchiveEnabled));
+}
+function shouldRunOfflineLittleBrainAuto(force){
+  if(!character || !isOfflineLittleBrainEnabled()) return false;
+  return !!force || isOfflineLittleBrainAutoEnabled();
+}
+function activateOfflineLittleBrainStore(store){
+  var safe = normalizeOnlineMemorySummaryStore(store || defaultOnlineMemorySummaryStore());
+  safe.advancedMemory = normalizeOfflineAdvancedMemoryState(safe.advancedMemory);
+  safe.advancedMemory.mode = 'structured';
+  safe.advancedMemory.vector.settings = Object.assign({ enabled:true, topN:8 }, safe.advancedMemory.vector.settings || {});
+  if(safe.advancedMemory.vector.settings.enabled === undefined) safe.advancedMemory.vector.settings.enabled = true;
+  return safe;
+}
+function getOfflineLittleBrainThreshold(force){
+  return force ? 1 : OFFLINE_LITTLE_BRAIN_AUTO_THRESHOLD;
+}
+function getOfflineLittleBrainBatchSize(force){
+  return force ? 9999 : OFFLINE_LITTLE_BRAIN_AUTO_BATCH;
+}
+
 async function appendOfflineSharedMemorySummaries(options){
   options = options && typeof options === 'object' ? options : {};
   if(!session || !character || !character.id) return null;
-  var ui = getOfflineUiPrefs();
   var force = !!options.force;
   var manual = !!options.manual;
-  if(!ui.summaryAuto && !force) return null;
-  var cadence = normalizeOfflineStageSummaryEvery(options.overrideCount || ui.summaryEvery);
+  if(!shouldRunOfflineLittleBrainAuto(force)) return null;
+  var cadence = force
+    ? normalizeOfflineStageSummaryEvery(options.overrideCount || OFFLINE_LITTLE_BRAIN_AUTO_BATCH)
+    : getOfflineLittleBrainBatchSize(false);
   var entries = getOfflineStoryEntries().filter(function(entry){
     return entry && (entry.role === 'user' || entry.role === 'assistant') && String(entry.text || '').trim();
   });
   if(!entries.length) return null;
   var store = await loadOfflineMemoryStore().catch(function(){ return defaultOnlineMemorySummaryStore(); });
-  store = normalizeOnlineMemorySummaryStore(store || defaultOnlineMemorySummaryStore());
-  store.advancedMemory = normalizeOfflineAdvancedMemoryState(store.advancedMemory);
-  var mode = getOfflineMemoryModeFromStore(store) === 'structured' ? 'structured' : 'diary';
-  var covered = mode === 'structured'
-    ? Math.max(0, Math.min(Number(store.advancedMemory.structured.offlineCovered || 0) || 0, entries.length))
-    : Math.max(0, Math.min(Number(store.offlineCovered || 0) || 0, entries.length));
+  store = activateOfflineLittleBrainStore(store || defaultOnlineMemorySummaryStore());
+  var structuredCovered = Math.max(0, Math.min(Number(store.advancedMemory.structured.offlineCovered || 0) || 0, entries.length));
+  var vectorCovered = Math.max(0, Math.min(Number(store.advancedMemory.vector.offlineCovered || 0) || 0, entries.length));
+  var covered = Math.min(structuredCovered, vectorCovered);
+  var threshold = getOfflineLittleBrainThreshold(force);
   var ranges = [];
   if(force){
     var manualTo = entries.length;
     var manualFrom = Math.max(0, manualTo - cadence);
     if(manualTo > manualFrom) ranges.push({ from: manualFrom, to: manualTo });
   }else{
-    if(entries.length - covered < cadence) return null;
-    while(entries.length - covered >= cadence){
-      ranges.push({ from: covered, to: covered + cadence });
-      covered += cadence;
-    }
+    if(entries.length - covered < threshold) return null;
+    ranges.push({ from: covered, to: Math.min(entries.length, covered + cadence) });
   }
   if(!ranges.length) return null;
   for(var r = 0; r < ranges.length; r += 1){
     var from = ranges[r].from;
     var to = ranges[r].to;
     var slice = entries.slice(from, to);
-    var diaryText = await generateOfflineSharedDiaryMemory(slice, from);
-    if(!diaryText) throw new Error('线下总结没有返回内容');
     var now = Date.now();
-    store.items = Array.isArray(store.items) ? store.items : [];
-    store.items.push({
-      id: 'offline_mem_' + now.toString(36) + '_' + Math.random().toString(36).slice(2, 7),
-      from: from,
-      to: to,
-      text: diaryText,
-      tokens: approxOfflineTokenCount(diaryText),
-      createdAt: now,
-      updatedAt: now,
-      manual: manual,
-      pinned: manual,
-      label: manual ? '线下手动总结' : '线下聊天',
-      sourceType: manual ? 'offline_chat_manual' : 'offline_chat'
-    });
-    if(mode === 'structured'){
-      var raw = await callAIWithTimeout(buildOfflineSharedStructuredPrompt(slice, from, store), '请沉淀小脑瓜记忆。', Math.min(getOfflineReplyTimeoutMs(), 30000));
-      var structuredEntries = parseOfflineStructuredMemoryEntries(String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''), store);
-      if(structuredEntries.length){
-        var shortTerm = Array.isArray(store.advancedMemory.structured.shortTerm) ? store.advancedMemory.structured.shortTerm.slice() : [];
-        structuredEntries.forEach(function(entry, idx){
-          var text = offlineStructuredEntryTextForShortTerm(entry);
-          if(!text) return;
-          shortTerm.push({
-            id: 'offline_mem_st_' + now.toString(36) + '_' + idx.toString(36),
-            from: from,
-            to: to,
-            text: text,
-            tokens: approxOfflineTokenCount(text),
-            createdAt: now,
-            updatedAt: now,
-            manual: manual,
-            pinned: true,
-            label: offlineStructuredMemoryLabelForCategory(entry && entry.category, store),
-            sourceType: manual ? 'offline_chat_manual' : 'offline_chat',
-            memoryCategory: offlineShortTermCategoryForStructuredCode(entry && entry.category)
-          });
+    var raw = await callAIWithTimeout(buildOfflineSharedStructuredPrompt(slice, from, store), '请沉淀小脑瓜记忆。', Math.min(getOfflineReplyTimeoutMs(), 30000));
+    var structuredEntries = parseOfflineStructuredMemoryEntries(String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''), store);
+    if(structuredEntries.length){
+      var shortTerm = Array.isArray(store.advancedMemory.structured.shortTerm) ? store.advancedMemory.structured.shortTerm.slice() : [];
+      var seenShort = Object.create(null);
+      shortTerm.forEach(function(item){
+        var key = String(item && item.text || '').replace(/\s+/g, ' ').trim();
+        if(key) seenShort[key] = true;
+      });
+      structuredEntries.forEach(function(entry, idx){
+        var text = offlineStructuredEntryTextForShortTerm(entry);
+        var key = String(text || '').replace(/\s+/g, ' ').trim();
+        if(!key || seenShort[key]) return;
+        seenShort[key] = true;
+        shortTerm.push({
+          id: 'offline_mem_st_' + now.toString(36) + '_' + idx.toString(36),
+          from: from,
+          to: to,
+          text: text,
+          tokens: approxOfflineTokenCount(text),
+          createdAt: now,
+          updatedAt: now,
+          manual: manual,
+          pinned: false,
+          label: offlineStructuredMemoryLabelForCategory(entry && entry.category, store),
+          sourceType: manual ? 'offline_chat_manual' : 'offline_chat',
+          memoryCategory: offlineShortTermCategoryForStructuredCode(entry && entry.category)
         });
-        store.advancedMemory.structured.shortTerm = normalizeOfflineLittleBrainShortTermItems(shortTerm);
-      }
-      try{
-        var vectorRaw = await callAIWithTimeout(buildOfflineSharedVectorPrompt(slice, from, store), '请提取这段线下互动的小脑瓜检索记忆。', Math.min(getOfflineReplyTimeoutMs(), 30000));
-        var vectorItems = parseOfflineVectorExtractionResult(String(vectorRaw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''));
-        if(vectorItems.length){
-          var vectorResult = appendOfflineVectorMemories(store, vectorItems, { sourceType: manual ? 'offline_chat_manual' : 'offline_chat' });
-          store = vectorResult.store;
-        }
-      }catch(vectorErr){}
-      store.advancedMemory.mode = 'structured';
-      store.advancedMemory.structured.offlineCovered = to;
-      store.advancedMemory.vector.offlineCovered = to;
-      store.advancedMemory.structured.lastUpdated = now;
-    }else{
-      store.advancedMemory.mode = 'diary';
-      store.offlineCovered = to;
-      store.offlineProgress = Math.max(Number(store.offlineProgress || 0) || 0, to);
+      });
+      store.advancedMemory.structured.shortTerm = normalizeOfflineLittleBrainShortTermItems(shortTerm);
     }
+    try{
+      var vectorRaw = await callAIWithTimeout(buildOfflineSharedVectorPrompt(slice, from, store), '请提取这段线下互动的小脑瓜检索记忆。', Math.min(getOfflineReplyTimeoutMs(), 30000));
+      var vectorItems = parseOfflineVectorExtractionResult(String(vectorRaw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''));
+      if(vectorItems.length){
+        var vectorResult = appendOfflineVectorMemories(store, vectorItems, { sourceType: manual ? 'offline_chat_manual' : 'offline_chat' });
+        store = vectorResult.store;
+      }
+    }catch(vectorErr){}
+    store.advancedMemory.mode = 'structured';
+    store.advancedMemory.structured.offlineCovered = to;
+    store.advancedMemory.vector.offlineCovered = to;
+    store.advancedMemory.structured.lastUpdated = now;
+    store.offlineCovered = to;
+    store.offlineProgress = Math.max(Number(store.offlineProgress || 0) || 0, to);
     await saveOfflineMemoryStore({ items: store.items, advancedMemory: store.advancedMemory, covered: store.covered, progress: store.progress, offlineCovered: store.offlineCovered, offlineProgress: store.offlineProgress });
   }
   refreshOfflineMemoryButton();
@@ -5095,20 +4934,28 @@ function queueOfflineSharedMemorySummaryGeneration(){
   if(offlineSharedMemorySummaryQueue[key]) return;
   offlineSharedMemorySummaryQueue[key] = true;
   var queuedCount = offlineSharedMemoryPendingCount;
+  var resultStore = null;
   offlineSharedMemoryPendingCount = 0;
   Promise.resolve().then(function(){
     return appendOfflineSharedMemorySummaries();
+  }).then(function(store){
+    resultStore = store || null;
   }).catch(function(err){
     if(session && typeof session === 'object'){
-      session.lastStageSummaryError = summarizeOfflineError(err);
-      session.lastStageSummaryErrorAt = Date.now();
+      session.lastLittleBrainMemoryError = summarizeOfflineError(err);
+      session.lastLittleBrainMemoryErrorAt = Date.now();
       try{ saveSession(); }catch(e){}
     }
     pushOfflineBackendLog('warn', 'offline.memory_summary.call', '线下自动总结失败', err);
   }).finally(function(){
     delete offlineSharedMemorySummaryQueue[key];
     var latestCount = getOfflineSharedMemoryEntryCount();
-    if(offlineSharedMemoryPendingCount > 0 || latestCount > queuedCount){
+    var covered = 0;
+    try{
+      var mem = normalizeOfflineAdvancedMemoryState(resultStore && resultStore.advancedMemory);
+      covered = Math.max(Number(mem.structured.offlineCovered || 0) || 0, Number(mem.vector.offlineCovered || 0) || 0);
+    }catch(e){}
+    if(offlineSharedMemoryPendingCount > 0 || latestCount > queuedCount || latestCount - covered >= getOfflineLittleBrainThreshold(false)){
       setTimeout(queueOfflineSharedMemorySummaryGeneration, 0);
     }
   });
@@ -5126,25 +4973,6 @@ function queueOfflineSharedMemorySummaryCheck(){
   }, 160);
 }
 
-async function manualOfflineStageSummary(overrideCount){
-  var btn = document.getElementById('offlineDrawerSummarizeBtn');
-  if(btn) btn.disabled = true;
-  try{
-    var result = await generateOfflineStageSummary(true, overrideCount);
-    var memoryResult = await appendOfflineSharedMemorySummaries({ force:true, manual:true, overrideCount: overrideCount || (getOfflineUiPrefs().summaryEvery || 1) });
-    if(result || memoryResult){
-      offlineStageSummaryPreviewOpen = true;
-      toast('阶段总结已经写进记忆');
-    }else{
-      toast('再多聊几幕就能总结了');
-    }
-  }catch(err){
-    toast('阶段总结失败：' + summarizeOfflineError(err), { sticky:true });
-  }finally{
-    if(btn) btn.disabled = false;
-    renderOfflineStageSummaryList();
-  }
-}
 var offlineStatusGenerating = false;
 var offlineStatusQueue = {};
 function offlineStatusEntryKey(entry){
@@ -5774,15 +5602,9 @@ function normalizeOfflineStageSummaryEvery(value, fallback){
   return Math.max(1, Math.floor(numeric));
 }
 function getOfflineUiPrefs(){
-  var summaryEvery = normalizeOfflineStageSummaryEvery(character && character.offlineSummaryEvery);
-  var summaryAuto = character && character.offlineSummaryAuto != null ? !!character.offlineSummaryAuto : true;
-  var memoryReadCount = Math.max(1, Math.min(12, Number(character && character.offlineMemoryReadCount) || 5));
   var sideStoryType = String(character && character.offlineSideStoryType || 'future');
   if(!/^(future|be|fourthwall|nogrow|parallelworld|dropped|gossip|divination|privateclip|searchrecord)$/.test(sideStoryType)) sideStoryType = 'future';
   return {
-    summaryEvery: summaryEvery,
-    summaryAuto: summaryAuto,
-    memoryReadCount: memoryReadCount,
     sideStoryType: sideStoryType,
     builtinTheme: normalizeOfflineBuiltinTheme(character && character.offlineBuiltinTheme)
   };
@@ -5921,10 +5743,6 @@ function buildOfflineDrawerDraft(){
     translationEnabled: !!(character && character.translationEnabled),
     replyLanguage: normalizeReplyLanguage(character && character.replyLanguage || 'zh'),
     translationMode: normalizeTranslationMode(character && character.translationMode || 'ondemand'),
-    summaryEvery: ui.summaryEvery,
-    summaryAuto: ui.summaryAuto,
-    memoryReadCount: ui.memoryReadCount,
-    memoryMode: loadOfflineSharedMemoryModeSync(),
     sideStoryType: ui.sideStoryType,
     builtinTheme: ui.builtinTheme,
     birthdayUserMonth: normalizeOfflineBirthdayMonth(character && character.offlineBirthdayUserMonth, 6),
@@ -5968,9 +5786,7 @@ function applyOfflineDrawerDraftToCharacter(){
   character.translationEnabled = !!draft.translationEnabled;
   character.replyLanguage = normalizeReplyLanguage(draft.replyLanguage || 'zh');
   character.translationMode = normalizeTranslationMode(draft.translationMode || 'ondemand');
-  character.offlineSummaryEvery = normalizeOfflineStageSummaryEvery(draft.summaryEvery);
-  character.offlineSummaryAuto = !!draft.summaryAuto;
-  character.offlineMemoryReadCount = Math.max(1, Math.min(12, Number(draft.memoryReadCount) || 5));
+  character.memoryMode = 'structured';
   character.offlineSideStoryType = String(draft.sideStoryType || 'future');
   character.offlineBuiltinTheme = normalizeOfflineBuiltinTheme(draft.builtinTheme);
   character.offlineBirthdayUserMonth = normalizeOfflineBirthdayMonth(draft.birthdayUserMonth, 6);
@@ -5984,7 +5800,6 @@ function applyOfflineDrawerDraftToCharacter(){
 }
 async function saveOfflineDrawerSettings(){
   await persistOfflineBackgroundSelection({ silent:true, dirtyOnly:true }).catch(function(){});
-  await persistOfflineDrawerMemoryMode({ silent:true }).catch(function(){ return null; });
   persistOfflineDrawerSettings();
 }
 function persistOfflineDrawerSettings(options){
@@ -6140,30 +5955,23 @@ function offlineSharedMemoryModeKey(charId){
   return scopedKey('memory_mode_' + String(charId || '').trim());
 }
 function readOfflineSharedMemoryModeMirror(charId){
-  try{
-    var raw = String(localStorage.getItem(offlineSharedMemoryModeKey(charId)) || '').trim();
-    if(raw === 'structured' || raw === 'diary') return raw;
-  }catch(e){}
-  return '';
+  return 'structured';
 }
 function writeOfflineSharedMemoryModeMirror(charId, mode){
   if(!charId) return;
   try{
-    localStorage.setItem(offlineSharedMemoryModeKey(charId), String(mode || '').trim() === 'structured' ? 'structured' : 'diary');
+    localStorage.setItem(offlineSharedMemoryModeKey(charId), 'structured');
   }catch(e){}
 }
 function loadOfflineSharedMemoryModeSync(){
-  if(!character || !character.id) return 'diary';
-  var mirrorMode = readOfflineSharedMemoryModeMirror(character.id);
-  if(mirrorMode) return mirrorMode;
-  return String(character && character.memoryMode || '').trim() === 'structured' ? 'structured' : 'diary';
+  return 'structured';
 }
 function getOfflineDrawerMessageCount(){
   return Array.isArray(session && session.entries) ? session.entries.length : 0;
 }
 async function persistOfflineDrawerMemoryMode(options){
   if(!character || !character.id) return;
-  var nextMode = String(getOfflineDrawerDraft().memoryMode || 'diary').trim() === 'structured' ? 'structured' : 'diary';
+  var nextMode = 'structured';
   var store = await loadOnlineMemorySummaryStoreByCharId(character.id);
   store.advancedMemory = normalizeOfflineAdvancedMemoryState(store.advancedMemory);
   store.advancedMemory.mode = nextMode;
@@ -6180,20 +5988,14 @@ async function persistOfflineDrawerMemoryMode(options){
 async function refreshOfflineDrawerMemoryModeFromStore(){
   if(!character || !character.id) return;
   var store = await loadOnlineMemorySummaryStoreByCharId(character.id);
-  var storeMode = getOfflineMemoryModeFromStore(store);
-  var charRaw = String(character && character.memoryMode || '').trim();
-  var charMode = charRaw === 'structured' ? 'structured' : (charRaw === 'diary' ? 'diary' : '');
-  var nextMode = charMode || storeMode || 'diary';
-  if(storeMode !== nextMode){
-    try{
-      store.advancedMemory = normalizeOfflineAdvancedMemoryState(store.advancedMemory);
-      store.advancedMemory.mode = nextMode;
-      await persistOnlineMemorySummaryStoreByCharId(character.id, store);
-    }catch(e){}
-  }
+  var nextMode = 'structured';
+  try{
+    store.advancedMemory = normalizeOfflineAdvancedMemoryState(store.advancedMemory);
+    store.advancedMemory.mode = nextMode;
+    await persistOnlineMemorySummaryStoreByCharId(character.id, store);
+  }catch(e){}
   writeOfflineSharedMemoryModeMirror(character.id, nextMode);
   character.memoryMode = nextMode;
-  getOfflineDrawerDraft().memoryMode = nextMode;
   syncOfflineDrawerControls();
 }
 function getOfflineSideStoryProfile(type){
@@ -6354,31 +6156,10 @@ function renderOfflineStageHeader(){
   if(userPhoto) userPhoto.innerHTML = renderOfflineDrawerPolaroid('user');
   if(bondText) bondText.textContent = resolveUserName() + ' ♡ ' + getCharDisplayName();
 }
-function getOfflineStageSummaries(){
-  if(!session || typeof session !== 'object') return [];
-  if(!Array.isArray(session.stageSummaries)) session.stageSummaries = [];
-  return session.stageSummaries;
-}
-function getOfflineStageSummaryCoveredCount(){
-  return getOfflineStageSummaries().reduce(function(max, item){
-    return Math.max(max, Number(item && (item.uptoAssistantCount || item.uptoFloorCount) || 0));
-  }, 0);
+function getOfflineLegacySummaryItems(){
+  return Array.isArray(session && session['stage' + 'Summaries']) ? session['stage' + 'Summaries'] : [];
 }
 function renderOfflineStageSummaryList(){
-  var wrap = document.getElementById('offlineDrawerSummaryList');
-  if(!wrap) return;
-  wrap.hidden = !offlineStageSummaryPreviewOpen;
-  if(!offlineStageSummaryPreviewOpen) return;
-  var list = getOfflineStageSummaries().slice().sort(function(a, b){
-    return Number(b && (b.uptoAssistantCount || b.uptoFloorCount) || 0) - Number(a && (a.uptoAssistantCount || a.uptoFloorCount) || 0);
-  });
-  if(!list.length){
-    wrap.innerHTML = '<div class="offline-stage-summary-empty">还没有阶段总结。</div>';
-    return;
-  }
-  wrap.innerHTML = list.map(function(item){
-    return '<div class="offline-stage-summary-item"><div class="offline-stage-summary-kicker">' + esc(String(item.label || '阶段总结')) + '</div><div class="offline-stage-summary-copy">' + esc(String(item.summary || '')) + '</div></div>';
-  }).join('');
 }
 function syncOfflineUnderlineInputWidth(input){
   if(!input) return;
@@ -6433,9 +6214,6 @@ function syncOfflineDrawerControls(){
   var retellEnabled = document.getElementById('offlineDrawerRetellEnabled');
   var userEnhanceEnabled = document.getElementById('offlineDrawerUserEnhanceEnabled');
   var presetMeta = document.getElementById('offlineDrawerPresetMeta');
-  var summaryEvery = document.getElementById('offlineDrawerSummaryEvery');
-  var summaryAuto = document.getElementById('offlineDrawerSummaryAuto');
-  var memoryReadCount = document.getElementById('offlineDrawerMemoryReadCount');
   var translationEnabled = document.getElementById('offlineDrawerTranslationEnabled');
   var languageGrid = document.getElementById('offlineDrawerLanguageGrid');
   var translationModeGrid = document.getElementById('offlineDrawerTranslationModeGrid');
@@ -6477,14 +6255,6 @@ function syncOfflineDrawerControls(){
   if(userTitle && document.activeElement !== userTitle) userTitle.value = String(draft.userTitle || '');
   if(userQuote && document.activeElement !== userQuote) userQuote.value = String(draft.userQuote || '');
   if(presetMeta) presetMeta.textContent = describeOfflinePresetMeta(draft);
-  if(summaryEvery && document.activeElement !== summaryEvery) summaryEvery.value = String(draft.summaryEvery);
-  if(memoryReadCount && document.activeElement !== memoryReadCount) memoryReadCount.value = String(draft.memoryReadCount);
-  var manualCount = document.getElementById('offlineDrawerManualSummaryCount');
-  if(manualCount && document.activeElement !== manualCount && !String(manualCount.value || '').trim()) manualCount.value = String(draft.summaryEvery);
-  if(summaryAuto){
-    summaryAuto.classList.toggle('is-on', !!draft.summaryAuto);
-    summaryAuto.setAttribute('aria-pressed', draft.summaryAuto ? 'true' : 'false');
-  }
   if(translationEnabled){
     translationEnabled.classList.toggle('is-on', !!draft.translationEnabled);
     translationEnabled.setAttribute('aria-pressed', draft.translationEnabled ? 'true' : 'false');
@@ -6538,9 +6308,6 @@ function bindOfflineDrawerControls(){
   var asideMaxChars = document.getElementById('offlineDrawerAsideMaxChars');
   var presetImportBtn = document.getElementById('offlineDrawerPresetImportBtn');
   var presetFile = document.getElementById('offlineDrawerPresetFile');
-  var summaryEvery = document.getElementById('offlineDrawerSummaryEvery');
-  var summaryAuto = document.getElementById('offlineDrawerSummaryAuto');
-  var memoryReadCount = document.getElementById('offlineDrawerMemoryReadCount');
   var translationEnabled = document.getElementById('offlineDrawerTranslationEnabled');
   var languageGrid = document.getElementById('offlineDrawerLanguageGrid');
   var translationModeGrid = document.getElementById('offlineDrawerTranslationModeGrid');
@@ -6561,10 +6328,8 @@ function bindOfflineDrawerControls(){
   var cardBgUrl = document.getElementById('offlineDrawerCardBgUrl');
   var cardBgSaveBtn = document.getElementById('offlineDrawerCardBgSaveBtn');
   var cardBgResetBtn = document.getElementById('offlineDrawerCardBgResetBtn');
-  var summarizeBtn = document.getElementById('offlineDrawerSummarizeBtn');
   var statusHistoryBtn = document.getElementById('offlineDrawerStatusHistoryBtn');
   var saveBtn = document.querySelector('.offline-stage-drawer-save');
-  var manualCount = document.getElementById('offlineDrawerManualSummaryCount');
   var thoughtPromptInput = document.getElementById('offlineThoughtPromptInput');
   var thoughtPromptApplyBtn = document.getElementById('offlineThoughtPromptApplyBtn');
   var thoughtPromptResetBtn = document.getElementById('offlineThoughtPromptResetBtn');
@@ -6808,37 +6573,6 @@ function bindOfflineDrawerControls(){
       });
     });
   }
-  if(summaryEvery){
-    bindNumericCommit(summaryEvery, function(){
-      if(Number(summaryEvery.value) < 1){
-        toast('自动总结数字不能小于 1');
-        summaryEvery.value = String(getOfflineDrawerDraft().summaryEvery);
-        return;
-      }
-      getOfflineDrawerDraft().summaryEvery = normalizeOfflineStageSummaryEvery(summaryEvery.value);
-      persistOfflineDrawerSettings({ silent:true });
-      queueOfflineSharedMemorySummaryCheck();
-      queueOfflineStageSummaryGeneration();
-    });
-  }
-  if(summaryAuto){
-    summaryAuto.addEventListener('click', function(){
-      var draft = getOfflineDrawerDraft();
-      draft.summaryAuto = !draft.summaryAuto;
-      persistOfflineDrawerSettings({ silent:true });
-      if(draft.summaryAuto){
-        queueOfflineSharedMemorySummaryCheck();
-        queueOfflineStageSummaryGeneration();
-      }
-      syncOfflineDrawerControls();
-    });
-  }
-  if(memoryReadCount){
-    bindNumericCommit(memoryReadCount, function(){
-      getOfflineDrawerDraft().memoryReadCount = Math.max(1, Math.min(12, Number(memoryReadCount.value) || 4));
-      persistOfflineDrawerSettings({ silent:true });
-    });
-  }
   if(translationEnabled){
     translationEnabled.addEventListener('click', function(){
       var draft = getOfflineDrawerDraft();
@@ -6968,11 +6702,6 @@ function bindOfflineDrawerControls(){
       });
     });
   }
-  if(summarizeBtn){
-    summarizeBtn.addEventListener('click', function(){
-      manualOfflineStageSummary(Number(manualCount && manualCount.value || 0));
-    });
-  }
   [
     bodyMinChars,
     bodyMaxChars,
@@ -6980,9 +6709,6 @@ function bindOfflineDrawerControls(){
     paragraphMaxCount,
     asideMinChars,
     asideMaxChars,
-    summaryEvery,
-    memoryReadCount,
-    manualCount,
     pageBgUrl,
     cardBgUrl
   ].forEach(function(input){
@@ -8677,28 +8403,16 @@ function formatOfflineHistoryForPrompt(detailLimit, summaryLimit){
   var recentCount = Math.max(2, Number(detailLimit) || 4);
   var summaryCount = Math.max(0, Number(summaryLimit) || 6);
   var totalFloorCount = countOfflineStoryFloors();
-  var coveredFloorCount = getOfflineStageSummaryCoveredCount();
-  var hiddenFloorCount = Math.max(0, coveredFloorCount - 2);
   var fullDetailStartFloor = Math.max(1, totalFloorCount - recentCount + 1);
-  var seamKeepStartFloor = coveredFloorCount ? Math.max(1, coveredFloorCount - 1) : fullDetailStartFloor;
-  var fullTextStartFloor = Math.min(fullDetailStartFloor, seamKeepStartFloor);
+  var fullTextStartFloor = fullDetailStartFloor;
   var olderLines = [];
   var recentLines = [];
-  var stageSummaries = getOfflineStageSummaries().filter(function(item){
-    return Number(item && (item.uptoFloorCount || item.uptoAssistantCount) || 0) > 0 && Number(item && (item.uptoFloorCount || item.uptoAssistantCount) || 0) <= hiddenFloorCount;
-  });
-  if(stageSummaries.length){
-    stageSummaries.slice(-Math.min(2, stageSummaries.length)).forEach(function(item){
-      olderLines.push('阶段总结（' + String(item.label || '') + '）：' + clipOfflinePromptText(String(item.summary || '').trim(), 160));
-    });
-  }
   var floorNo = 0;
   list.forEach(function(entry){
     if(!entry) return;
     var text = String(entry.text || '').replace(/\s+/g, ' ').trim();
     if(!text) return;
     floorNo += 1;
-    if(floorNo <= hiddenFloorCount) return;
     if(floorNo >= fullTextStartFloor){
       recentLines.push((entry.role === 'user' ? '用户：' : '角色：') + text);
       return;
@@ -8708,7 +8422,7 @@ function formatOfflineHistoryForPrompt(detailLimit, summaryLimit){
       return;
     }
     var summary = String(entry.summaryText || '').replace(/\s+/g, ' ').trim();
-    olderLines.push('角色（旧幕摘要）：' + clipOfflinePromptText(summary || text, 120));
+    olderLines.push('角色摘要：' + clipOfflinePromptText(summary || text, 120));
   });
   if(summaryCount > 0 && olderLines.length > summaryCount){
     olderLines = olderLines.slice(-summaryCount);
@@ -9833,7 +9547,7 @@ function memorySummaryStorageKeyCandidates(charId){
 }
 function defaultOfflineAdvancedMemoryState(){
   return {
-    mode:'diary',
+    mode:'structured',
     structured:{
       facts:{},
       events:{},
@@ -9844,7 +9558,8 @@ function defaultOfflineAdvancedMemoryState(){
       shortTerm:[],
       custom:{},
       customCategories:{},
-      offlineCovered:0
+      offlineCovered:0,
+      callCovered:0
     },
     vector:{
       coreMemories:[],
@@ -9852,6 +9567,7 @@ function defaultOfflineAdvancedMemoryState(){
       timelineSummaries:{},
       covered:0,
       offlineCovered:0,
+      callCovered:0,
       lastExtractionAt:0,
       settings:{ enabled:true, topN:8 }
     }
@@ -9876,46 +9592,10 @@ function normalizeOfflineLittleBrainShortTermItems(items){
     };
   }).filter(function(it){ return !!it.text; }) : [];
 }
-function buildOfflineLegacyVectorDiaryItems(items, vectorState){
-  var sourceItems = Array.isArray(items) ? items : [];
-  var existingIds = Object.create(null);
-  sourceItems.forEach(function(item){
-    existingIds[String(item && item.id || '')] = true;
-  });
-  var vector = vectorState && typeof vectorState === 'object' ? vectorState : {};
-  var next = [];
-  function pushLegacy(id, text, createdAt, label){
-    var safeText = String(text || '').trim();
-    var safeId = String(id || '').trim();
-    if(!safeText || !safeId || existingIds[safeId]) return;
-    existingIds[safeId] = true;
-    var at = Math.max(0, Number(createdAt || Date.now()) || Date.now());
-    next.push({
-      id: safeId,
-      from: 0,
-      to: 0,
-      text: safeText,
-      tokens: approxOfflineTokenCount(safeText),
-      createdAt: at,
-      updatedAt: at,
-      manual: true,
-      pinned: true,
-      label: String(label || '').trim(),
-      sourceType: 'legacy_vector'
-    });
-  }
-  (Array.isArray(vector.coreMemories) ? vector.coreMemories : []).forEach(function(item, idx){
-    pushLegacy('legacy_vector_core_' + String(item && item.id || idx), String(item && item.content || '').trim(), Number(item && item.createdAt || Date.now()) || Date.now(), '旧核心记忆');
-  });
-  (Array.isArray(vector.fragments) ? vector.fragments : []).forEach(function(item, idx){
-    pushLegacy('legacy_vector_fragment_' + String(item && item.id || idx), String(item && item.content || '').trim(), Number(item && (item.lastRecalled || item.createdAt) || Date.now()) || Date.now(), '旧向量记忆');
-  });
-  return next;
-}
 function normalizeOfflineAdvancedMemoryState(raw){
   var base = defaultOfflineAdvancedMemoryState();
   var source = raw && typeof raw === 'object' ? raw : {};
-  base.mode = /^(diary|structured)$/.test(String(source.mode || '').trim()) ? String(source.mode || '').trim() : 'diary';
+  base.mode = 'structured';
   var structured = source.structured && typeof source.structured === 'object' ? source.structured : {};
   base.structured = {
     facts: structured.facts && typeof structured.facts === 'object' ? structured.facts : {},
@@ -9929,6 +9609,7 @@ function normalizeOfflineAdvancedMemoryState(raw){
     customCategories: structured.customCategories && typeof structured.customCategories === 'object' ? structured.customCategories : {},
     covered: Math.max(0, Number(structured.covered || 0) || 0),
     offlineCovered: Math.max(0, Number(structured.offlineCovered || 0) || 0),
+    callCovered: Math.max(0, Number(structured.callCovered || 0) || 0),
     lastUpdated: Math.max(0, Number(structured.lastUpdated || 0) || 0)
   };
   var vector = source.vector && typeof source.vector === 'object' ? source.vector : {};
@@ -9938,33 +9619,14 @@ function normalizeOfflineAdvancedMemoryState(raw){
     timelineSummaries: vector.timelineSummaries && typeof vector.timelineSummaries === 'object' ? vector.timelineSummaries : {},
     covered: Math.max(0, Number(vector.covered || 0) || 0),
     offlineCovered: Math.max(0, Number(vector.offlineCovered || 0) || 0),
+    callCovered: Math.max(0, Number(vector.callCovered || 0) || 0),
     lastExtractionAt: Math.max(0, Number(vector.lastExtractionAt || 0) || 0),
     settings: Object.assign({ enabled:true, topN:8 }, vector.settings && typeof vector.settings === 'object' ? vector.settings : {})
   };
   return base;
 }
 function getOfflineMemoryModeFromStore(store){
-  var safe = normalizeOnlineMemorySummaryStore(store || defaultOnlineMemorySummaryStore());
-  var advanced = normalizeOfflineAdvancedMemoryState(safe.advancedMemory);
-  var storeMode = advanced.mode === 'structured' ? 'structured' : 'diary';
-  var charRaw = String(character && character.memoryMode || '').trim();
-  var charMode = charRaw === 'structured' ? 'structured' : (charRaw === 'diary' ? 'diary' : '');
-  var hasStructuredContent = false;
-  if(String(advanced.structured.relationship || '').trim()) hasStructuredContent = true;
-  if(!hasStructuredContent && Object.keys(advanced.structured.facts || {}).length) hasStructuredContent = true;
-  if(!hasStructuredContent && Object.keys(advanced.structured.events || {}).length) hasStructuredContent = true;
-  if(!hasStructuredContent && Array.isArray(advanced.structured.decisions) && advanced.structured.decisions.length) hasStructuredContent = true;
-  if(!hasStructuredContent && Array.isArray(advanced.structured.plans) && advanced.structured.plans.length) hasStructuredContent = true;
-  if(!hasStructuredContent && Array.isArray(advanced.structured.emotions) && advanced.structured.emotions.length) hasStructuredContent = true;
-  if(!hasStructuredContent && Array.isArray(advanced.structured.shortTerm) && advanced.structured.shortTerm.length) hasStructuredContent = true;
-  if(!hasStructuredContent && advanced.structured.custom && typeof advanced.structured.custom === 'object'){
-    hasStructuredContent = Object.keys(advanced.structured.custom).some(function(code){
-      return Array.isArray(advanced.structured.custom[code]) && advanced.structured.custom[code].length;
-    });
-  }
-  if(storeMode === 'structured') return 'structured';
-  if(charMode) return charMode;
-  return hasStructuredContent ? 'structured' : storeMode;
+  return 'structured';
 }
 function isOfflineLittleBrainShortTermLegacyItem(item){
   var category = String(item && item.memoryCategory || '').trim();
@@ -9999,13 +9661,6 @@ async function migrateOfflineLittleBrainShortTermItems(store){
   safe.advancedMemory.structured.shortTerm = normalizeOfflineLittleBrainShortTermItems(shortTerm);
   await saveOfflineMemoryStore(safe);
   return safe;
-}
-function buildOfflineDiaryMemoryPromptText(items){
-  var list = sortOfflineMemoryItemsForPrompt(items).map(function(it){
-    return String((it && it.text) || '').trim();
-  }).filter(Boolean);
-  if(!list.length) return '';
-  return list.slice(-getOfflineMemoryReadCount()).join('\n');
 }
 function buildOfflineStructuredMemoryPromptText(store){
   var safe = normalizeOnlineMemorySummaryStore(store || defaultOnlineMemorySummaryStore());
@@ -10106,16 +9761,13 @@ function buildOfflineSupplementalMemoryPromptText(store){
 }
 function buildOfflineSharedMemoryPromptText(store){
   var safe = normalizeOnlineMemorySummaryStore(store || defaultOnlineMemorySummaryStore());
-  var mode = getOfflineMemoryModeFromStore(safe);
-  var base = '';
-  if(mode === 'structured') base = buildOfflineStructuredMemoryPromptText(safe);
-  else return buildOfflineDiaryMemoryPromptText(safe.items || []);
+  var base = buildOfflineStructuredMemoryPromptText(safe);
   var extra = buildOfflineSupplementalMemoryPromptText(safe);
   var vector = buildOfflineVectorMemoryPromptText(safe);
   return [String(base || '').trim(), String(vector || '').trim(), String(extra || '').trim()].filter(Boolean).join('\n\n').trim();
 }
 function getOfflineMemoryReadCount(){
-  return Math.max(1, Math.min(12, Number(character && character.offlineMemoryReadCount) || 5));
+  return 5;
 }
 function hasOfflineMemoryContent(store){
   var safe = normalizeOnlineMemorySummaryStore(store || defaultOnlineMemorySummaryStore());
@@ -14246,35 +13898,6 @@ function summarizeOfflineMemoryLocally(snapshot){
   if(lastAssistant) parts.push('角色最后回应了：' + lastAssistant.slice(0, 60) + '。');
   return parts.join('');
 }
-async function buildOfflineEndStageSummary(snapshot){
-  var existing = (Array.isArray(snapshot && snapshot.stageSummaries) ? snapshot.stageSummaries : []).filter(function(item){
-    return !!String(item && item.summary || '').trim();
-  });
-  if(existing.length) return existing;
-  var list = Array.isArray(snapshot && snapshot.entries) ? snapshot.entries : [];
-  if(!list.length) return [];
-  var summary = '';
-  try{
-    summary = await summarizeOfflineMemoryEntries(list);
-  }catch(e){
-    summary = '';
-  }
-  if(!summary){
-    summary = summarizeOfflineMemoryLocally(snapshot);
-  }
-  summary = String(summary || '').trim();
-  if(!summary) return [];
-  var assistantCount = list.filter(function(entry){ return entry && entry.role === 'assistant'; }).length;
-  var now = Date.now();
-  return [{
-    label: '结束总结',
-    summary: summary,
-    createdAt: Number(snapshot && (snapshot.completedAt || snapshot.updatedAt || snapshot.createdAt) || now) || now,
-    updatedAt: now,
-    uptoAssistantCount: assistantCount,
-    sourceType: 'offline_end'
-  }];
-}
 function currentOfflineInviteFocusId(){
   return currentOfflineInviteRecordId() || getOfflineInviteRecordIdFromSource(session) || '';
 }
@@ -15625,7 +15248,7 @@ async function init(){
     active: !!(session && session.active)
   });
   runOfflineInitTask(function(){
-    return syncOfflineStageSummariesToMemoryStore(getOfflineStageSummaries());
+    return syncOfflineStageSummariesToMemoryStore(getOfflineLegacySummaryItems());
   }, 1800);
   bindOfflineDrawerControls();
   if(!offlineReadOnlyMode) patchCurrentOfflineInviteMeetState('ongoing');

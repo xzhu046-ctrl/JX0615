@@ -340,14 +340,14 @@
     </section>
   </div>
   <div class="toast" id="toast"></div>
-  <script src="../assetStore.js?v=2026-05-13T20:46:51Z"></script>
-  <script src="../accountManager.js?v=2026-05-13T20:46:51Z"></script>
-  <script src="../chatStorage.js?v=2026-05-13T20:46:51Z"></script>
-  <script src="../metadataStore.js?v=2026-05-13T20:46:51Z"></script>
+  <script src="../assetStore.js?v=2026-05-13T21:35:30Z"></script>
+  <script src="../accountManager.js?v=2026-05-13T21:35:30Z"></script>
+  <script src="../chatStorage.js?v=2026-05-13T21:35:30Z"></script>
+  <script src="../metadataStore.js?v=2026-05-13T21:35:30Z"></script>
   <script>
   (function(){
     'use strict';
-    var BUILD_ID = '2026-05-13T20:46:51Z';
+    var BUILD_ID = '2026-05-13T21:35:30Z';
     var LITTLE_BRAIN_CONFIG_KEY = 'little_brain_config_v1';
     var state = { view:'picker', chars:[], char:null, store:null, config:null, memoryFilter:'all' };
     var avatarHydrateToken = 0;
@@ -522,9 +522,33 @@
       var next = raw && typeof raw === 'object' ? clone(raw, {}) : {};
       next.items = Array.isArray(next.items) ? next.items : [];
       next.advancedMemory = next.advancedMemory && typeof next.advancedMemory === 'object' ? next.advancedMemory : {};
-      next.advancedMemory.mode = String(next.advancedMemory.mode || 'structured') === 'diary' ? 'diary' : 'structured';
+      next.advancedMemory.mode = 'structured';
       next.advancedMemory.structured = Object.assign(defaultStructured(), next.advancedMemory.structured || {});
       next.advancedMemory.structured.shortTerm = Array.isArray(next.advancedMemory.structured.shortTerm) ? next.advancedMemory.structured.shortTerm : [];
+      if(next.items.length){
+        var seen = Object.create(null);
+        next.advancedMemory.structured.shortTerm.forEach(function(item){
+          var key = String(item && item.text || '').replace(/\s+/g, ' ').trim();
+          if(key) seen[key] = true;
+        });
+        next.items.forEach(function(item){
+          var text = String(item && item.text || '').trim();
+          var key = text.replace(/\s+/g, ' ').trim();
+          if(!key || seen[key]) return;
+          seen[key] = true;
+          next.advancedMemory.structured.shortTerm.push({
+            id:'legacy_st_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7),
+            text:text,
+            label:String(item && item.label || '历史整理'),
+            memoryCategory:String(item && item.memoryCategory || 'events'),
+            sourceType:'legacy_migrated',
+            createdAt:Number(item && item.createdAt || Date.now()) || Date.now(),
+            updatedAt:Date.now()
+          });
+        });
+        next.items = [];
+        next.advancedMemory.structured.lastUpdated = Date.now();
+      }
       next.advancedMemory.vector = Object.assign(defaultVector(), next.advancedMemory.vector || {});
       next.advancedMemory.vector.settings = Object.assign(defaultVector().settings, next.advancedMemory.vector.settings || {});
       next.advancedMemory.vector.fragments = Array.isArray(next.advancedMemory.vector.fragments) ? next.advancedMemory.vector.fragments : [];
@@ -834,13 +858,13 @@
       return lines;
     }
     function buildLittleBrainResummaryMaterial(chatHistory, offlineSession, store){
-      var oldItems = (Array.isArray(store && store.items) ? store.items : []).map(function(item){
+      var historyItems = (Array.isArray(store && store.items) ? store.items : []).map(function(item){
         return String(item && item.text || '').trim();
       }).filter(Boolean).slice(-50);
       var chatLines = (Array.isArray(chatHistory) ? chatHistory : []).map(chatEntryToText).filter(Boolean).slice(-120);
       var offlineLines = collectOfflineSessionLines(offlineSession).slice(-120);
       return [
-        oldItems.length ? ('【已有摘要】\n' + oldItems.join('\n')) : '',
+        historyItems.length ? ('【已有摘要】\n' + historyItems.join('\n')) : '',
         chatLines.length ? ('【线上聊天】\n' + chatLines.join('\n')) : '',
         offlineLines.length ? ('【线下邀约】\n' + offlineLines.join('\n')) : ''
       ].filter(Boolean).join('\n\n');
@@ -1210,8 +1234,9 @@
       var store = state.store || normalizeStore(null);
       var rows = structuredItems(store);
       var vector = store.advancedMemory.vector;
+      var shortTermCount = Array.isArray(store.advancedMemory.structured.shortTerm) ? store.advancedMemory.structured.shortTerm.length : 0;
       $('subtitle').textContent = c.name ? ('正在整理 ' + (c.nickname || c.name) + ' 的小脑瓜') : '还没有角色';
-      $('heroPanel').innerHTML = avatarHtml(c, 'hero-avatar') + '<div class="hero-main"><div class="hero-name"><span>' + esc(c.nickname || c.name || '未选择') + '</span><i class="status-dot"></i></div><div class="stats"><div class="stat"><b>' + rows.length + '</b><span>分类记忆</span></div><div class="stat"><b>' + (vector.fragments || []).length + '</b><span>检索片段</span></div><div class="stat"><b>' + (store.items || []).length + '</b><span>旧片段</span></div><div class="stat"><b>' + ((vector.settings && vector.settings.enabled !== false) ? '开' : '关') + '</b><span>检索</span></div></div><div class="actions"><button class="action" id="enableBtn" type="button">开启小脑瓜</button><button class="action secondary" id="rebuildBtn" type="button">重建检索</button><button class="action secondary" id="promoteBtn" type="button">归集短期</button></div></div>';
+      $('heroPanel').innerHTML = avatarHtml(c, 'hero-avatar') + '<div class="hero-main"><div class="hero-name"><span>' + esc(c.nickname || c.name || '未选择') + '</span><i class="status-dot"></i></div><div class="stats"><div class="stat"><b>' + rows.length + '</b><span>分类记忆</span></div><div class="stat"><b>' + (vector.fragments || []).length + '</b><span>检索片段</span></div><div class="stat"><b>' + shortTermCount + '</b><span>短期</span></div><div class="stat"><b>' + ((vector.settings && vector.settings.enabled !== false) ? '开' : '关') + '</b><span>检索</span></div></div><div class="actions"><button class="action" id="enableBtn" type="button">开启小脑瓜</button><button class="action secondary" id="rebuildBtn" type="button">重建检索</button><button class="action secondary" id="promoteBtn" type="button">归集短期</button></div></div>';
       $('enableBtn').onclick = enableLittleBrain;
       $('rebuildBtn').onclick = rebuildVectorFromKnownMemory;
       $('promoteBtn').onclick = promoteShortTerm;
@@ -1442,10 +1467,10 @@
       await patchCharacter(id, {
         littleBrainEnabled:!!on,
         memoryPalaceEnabled:!!on,
-        memoryMode:on ? 'structured' : 'diary'
+        memoryMode:'structured'
       });
       if(state.char && String(state.char.id) === String(id) && state.store){
-        state.store.advancedMemory.mode = on ? 'structured' : 'diary';
+        state.store.advancedMemory.mode = 'structured';
         state.store.advancedMemory.vector.settings.enabled = on ? true : state.store.advancedMemory.vector.settings.enabled;
         await saveMemory();
       }
@@ -1475,7 +1500,7 @@
       render();
       toast(on ? '全自动记忆已开启' : '全自动记忆已关闭');
     }
-    function foldDiaryItemsIntoShortTerm(){
+    function foldStoredItemsIntoShortTerm(){
       if(!state.store) return 0;
       var mem = state.store.advancedMemory.structured;
       var list = Array.isArray(mem.shortTerm) ? mem.shortTerm : [];
@@ -1486,7 +1511,7 @@
         list.push({
           id:'st_existing_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7),
           text:text,
-          label:String(item && item.label || '旧摘要整理'),
+          label:String(item && item.label || '历史整理'),
           memoryCategory:String(item && item.memoryCategory || 'E'),
           sourceType:String(item && item.sourceType || 'existing_summary'),
           createdAt:Number(item && item.createdAt || Date.now()) || Date.now(),
@@ -1496,6 +1521,7 @@
       });
       mem.shortTerm = list;
       mem.lastUpdated = Date.now();
+      state.store.items = [];
       return added;
     }
     async function enableLittleBrain(){
@@ -1517,7 +1543,7 @@
       }catch(err){
         toast('副 API 重整失败，先整理现有摘要');
       }
-      folded = foldDiaryItemsIntoShortTerm();
+      folded = foldStoredItemsIntoShortTerm();
       var vectorAdded = addVectorRowsFromKnownMemory();
       await saveMemory();
       if(state.char && state.char.id){
@@ -1539,9 +1565,7 @@
       if(!state.store) return;
       var vector = state.store.advancedMemory.vector;
       vector.fragments = Array.isArray(vector.fragments) ? vector.fragments : [];
-      var rows = structuredItems(state.store).concat((state.store.items || []).map(function(item){
-        return { label:String(item.label || item.sourceType || '日记'), text:String(item.text || ''), sourceType:String(item.sourceType || 'diary') };
-      }));
+      var rows = structuredItems(state.store);
       var added = 0;
       rows.forEach(function(row){
         var text = String(row.text || '').trim();

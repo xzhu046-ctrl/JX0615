@@ -62,11 +62,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T20:46:51Z';
+const APP_BUILD_ID = '2026-05-13T21:35:30Z';
 const APP_UPDATE_NOTES = [
-  '头像空白时会按原链接强制重载',
-  '清空聊天会同步清掉记忆和线下记录',
-  '清空聊天会同步清掉当前角色日程'
+  '旧记忆入口已经断开',
+  '线上线下通话只写入小脑瓜',
+  '历史残留会迁入小脑瓜后清空旧槽'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -2490,10 +2490,6 @@ function slimChar(c){
     msgMin:c.msgMin, msgMax:c.msgMax,
     chatRenderPageSize:c.chatRenderPageSize,
     contextWindow:c.contextWindow,
-    summaryEvery:c.summaryEvery,
-    manualSummarySize:c.manualSummarySize,
-    memoryMergeThreshold:c.memoryMergeThreshold,
-    autoSummaryEnabled:c.autoSummaryEnabled,
     translationEnabled:!!c.translationEnabled,
     replyLanguage:String(c.replyLanguage||c.language||'zh'),
     translationMode:String(c.translationMode||'ondemand'),
