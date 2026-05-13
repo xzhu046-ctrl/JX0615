@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../promptManager.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../accountManager.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T21:39:44Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T21:39:44Z"></script>
+<script src="../assetStore.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../promptManager.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../accountManager.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T22:16:17Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -1269,8 +1269,10 @@ var offlineSharedMemorySummaryQueue = {};
 var offlineSharedMemoryCheckTimer = 0;
 var offlineSharedMemoryLastQueuedCount = 0;
 var offlineSharedMemoryPendingCount = 0;
-var OFFLINE_LITTLE_BRAIN_AUTO_THRESHOLD = 2;
-var OFFLINE_LITTLE_BRAIN_AUTO_BATCH = 6;
+var OFFLINE_LITTLE_BRAIN_HOT_ZONE_SIZE = 200;
+var OFFLINE_LITTLE_BRAIN_BUFFER_THRESHOLD = 100;
+var OFFLINE_LITTLE_BRAIN_PROCESS_RATIO = 0.85;
+var OFFLINE_LITTLE_BRAIN_FORCE_BUFFER_THRESHOLD = 10;
 var offlineDrawerBound = false;
 var offlineDrawerDraft = null;
 var offlineDrawerPageBgPendingAsset = '';
@@ -4830,10 +4832,48 @@ function activateOfflineLittleBrainStore(store){
   return safe;
 }
 function getOfflineLittleBrainThreshold(force){
-  return force ? 1 : OFFLINE_LITTLE_BRAIN_AUTO_THRESHOLD;
+  return force ? OFFLINE_LITTLE_BRAIN_FORCE_BUFFER_THRESHOLD : OFFLINE_LITTLE_BRAIN_BUFFER_THRESHOLD;
 }
 function getOfflineLittleBrainBatchSize(force){
-  return force ? 9999 : OFFLINE_LITTLE_BRAIN_AUTO_BATCH;
+  return force ? 9999 : Math.ceil(OFFLINE_LITTLE_BRAIN_BUFFER_THRESHOLD * OFFLINE_LITTLE_BRAIN_PROCESS_RATIO);
+}
+function computeOfflineLittleBrainBufferWindow(totalCount, coveredCount, options){
+  var opts = options && typeof options === 'object' ? options : {};
+  var force = !!opts.force;
+  var hotZone = Math.max(20, Number(opts.hotZoneSize || OFFLINE_LITTLE_BRAIN_HOT_ZONE_SIZE) || OFFLINE_LITTLE_BRAIN_HOT_ZONE_SIZE);
+  var threshold = force
+    ? Math.max(1, Number(opts.forceThreshold || OFFLINE_LITTLE_BRAIN_FORCE_BUFFER_THRESHOLD) || OFFLINE_LITTLE_BRAIN_FORCE_BUFFER_THRESHOLD)
+    : Math.max(1, Number(opts.bufferThreshold || OFFLINE_LITTLE_BRAIN_BUFFER_THRESHOLD) || OFFLINE_LITTLE_BRAIN_BUFFER_THRESHOLD);
+  var ratio = Math.max(0.1, Math.min(1, Number(opts.processRatio || OFFLINE_LITTLE_BRAIN_PROCESS_RATIO) || OFFLINE_LITTLE_BRAIN_PROCESS_RATIO));
+  var total = Math.max(0, Number(totalCount || 0) || 0);
+  var covered = Math.max(0, Math.min(Number(coveredCount || 0) || 0, total));
+  if(total <= hotZone){
+    return { ok:false, reason:'hot_zone', from:covered, to:covered, hotZoneStart:0, buffered:0, processCount:0 };
+  }
+  var hotZoneStart = Math.max(0, total - hotZone);
+  var from = Math.min(covered, hotZoneStart);
+  var buffered = Math.max(0, hotZoneStart - from);
+  if(buffered < threshold){
+    return { ok:false, reason:'threshold', from:from, to:from, hotZoneStart:hotZoneStart, buffered:buffered, processCount:0 };
+  }
+  var processCount = Math.max(1, Math.min(buffered, Math.ceil(buffered * ratio)));
+  return { ok:true, reason:'', from:from, to:Math.min(hotZoneStart, from + processCount), hotZoneStart:hotZoneStart, buffered:buffered, processCount:processCount };
+}
+function noteOfflineLittleBrainPipelineRun(store, sourceType, windowInfo, processedCount){
+  store = activateOfflineLittleBrainStore(store || defaultOnlineMemorySummaryStore());
+  var pipe = store.advancedMemory.pipeline && typeof store.advancedMemory.pipeline === 'object' ? store.advancedMemory.pipeline : {};
+  store.advancedMemory.pipeline = {
+    hotZoneSize: OFFLINE_LITTLE_BRAIN_HOT_ZONE_SIZE,
+    bufferThreshold: OFFLINE_LITTLE_BRAIN_BUFFER_THRESHOLD,
+    processRatio: OFFLINE_LITTLE_BRAIN_PROCESS_RATIO,
+    lastRunAt: Date.now(),
+    lastSourceType: String(sourceType || 'offline_chat'),
+    lastSkipReason: String(windowInfo && windowInfo.reason || ''),
+    lastBufferedCount: Math.max(0, Number(windowInfo && windowInfo.buffered || 0) || 0),
+    lastProcessedCount: Math.max(0, Number(processedCount || 0) || 0),
+    lastHotZoneStart: Math.max(0, Number(windowInfo && windowInfo.hotZoneStart || 0) || 0)
+  };
+  return store;
 }
 
 async function appendOfflineSharedMemorySummaries(options){
@@ -4842,9 +4882,6 @@ async function appendOfflineSharedMemorySummaries(options){
   var force = !!options.force;
   var manual = !!options.manual;
   if(!shouldRunOfflineLittleBrainAuto(force)) return null;
-  var cadence = force
-    ? normalizeOfflineStageSummaryEvery(options.overrideCount || OFFLINE_LITTLE_BRAIN_AUTO_BATCH)
-    : getOfflineLittleBrainBatchSize(false);
   var entries = getOfflineStoryEntries().filter(function(entry){
     return entry && (entry.role === 'user' || entry.role === 'assistant') && String(entry.text || '').trim();
   });
@@ -4854,20 +4891,19 @@ async function appendOfflineSharedMemorySummaries(options){
   var structuredCovered = Math.max(0, Math.min(Number(store.advancedMemory.structured.offlineCovered || 0) || 0, entries.length));
   var vectorCovered = Math.max(0, Math.min(Number(store.advancedMemory.vector.offlineCovered || 0) || 0, entries.length));
   var covered = Math.min(structuredCovered, vectorCovered);
-  var threshold = getOfflineLittleBrainThreshold(force);
   var ranges = [];
-  if(force){
-    var manualTo = entries.length;
-    var manualFrom = Math.max(0, manualTo - cadence);
-    if(manualTo > manualFrom) ranges.push({ from: manualFrom, to: manualTo });
-  }else{
-    if(entries.length - covered < threshold) return null;
-    ranges.push({ from: covered, to: Math.min(entries.length, covered + cadence) });
+  var windowInfo = computeOfflineLittleBrainBufferWindow(entries.length, covered, { force:force });
+  if(!windowInfo.ok){
+    store = noteOfflineLittleBrainPipelineRun(store, manual ? 'offline_chat_manual' : 'offline_chat', windowInfo, 0);
+    await saveOfflineMemoryStore({ items: store.items, advancedMemory: store.advancedMemory, covered: store.covered, progress: store.progress, offlineCovered: store.offlineCovered, offlineProgress: store.offlineProgress });
+    return null;
   }
+  ranges.push({ from: windowInfo.from, to: windowInfo.to, windowInfo: windowInfo });
   if(!ranges.length) return null;
   for(var r = 0; r < ranges.length; r += 1){
     var from = ranges[r].from;
     var to = ranges[r].to;
+    var activeWindow = ranges[r].windowInfo || windowInfo;
     var slice = entries.slice(from, to);
     var now = Date.now();
     var raw = await callAIWithTimeout(buildOfflineSharedStructuredPrompt(slice, from, store), '请沉淀小脑瓜记忆。', Math.min(getOfflineReplyTimeoutMs(), 30000));
@@ -4913,6 +4949,7 @@ async function appendOfflineSharedMemorySummaries(options){
     store.advancedMemory.structured.offlineCovered = to;
     store.advancedMemory.vector.offlineCovered = to;
     store.advancedMemory.structured.lastUpdated = now;
+    store = noteOfflineLittleBrainPipelineRun(store, manual ? 'offline_chat_manual' : 'offline_chat', activeWindow, slice.length);
     store.offlineCovered = to;
     store.offlineProgress = Math.max(Number(store.offlineProgress || 0) || 0, to);
     await saveOfflineMemoryStore({ items: store.items, advancedMemory: store.advancedMemory, covered: store.covered, progress: store.progress, offlineCovered: store.offlineCovered, offlineProgress: store.offlineProgress });
@@ -4955,7 +4992,8 @@ function queueOfflineSharedMemorySummaryGeneration(){
       var mem = normalizeOfflineAdvancedMemoryState(resultStore && resultStore.advancedMemory);
       covered = Math.max(Number(mem.structured.offlineCovered || 0) || 0, Number(mem.vector.offlineCovered || 0) || 0);
     }catch(e){}
-    if(offlineSharedMemoryPendingCount > 0 || latestCount > queuedCount || latestCount - covered >= getOfflineLittleBrainThreshold(false)){
+    var followupWindow = computeOfflineLittleBrainBufferWindow(latestCount, covered, { force:false });
+    if(offlineSharedMemoryPendingCount > 0 || latestCount > queuedCount || followupWindow.ok){
       setTimeout(queueOfflineSharedMemorySummaryGeneration, 0);
     }
   });
@@ -8405,6 +8443,13 @@ function formatOfflineHistoryForPrompt(detailLimit, summaryLimit){
   var totalFloorCount = countOfflineStoryFloors();
   var fullDetailStartFloor = Math.max(1, totalFloorCount - recentCount + 1);
   var fullTextStartFloor = fullDetailStartFloor;
+  var promptStartFloor = 1;
+  var useLittleBrainHotRead = isOfflineLittleBrainEnabled();
+  if(useLittleBrainHotRead){
+    var coveredFloor = getOfflineLittleBrainPromptCoveredFloorSync();
+    promptStartFloor = coveredFloor > 0 ? Math.max(1, coveredFloor + 1) : 1;
+    summaryCount = Math.max(summaryCount, totalFloorCount - promptStartFloor + 1, OFFLINE_LITTLE_BRAIN_HOT_ZONE_SIZE);
+  }
   var olderLines = [];
   var recentLines = [];
   var floorNo = 0;
@@ -8413,21 +8458,47 @@ function formatOfflineHistoryForPrompt(detailLimit, summaryLimit){
     var text = String(entry.text || '').replace(/\s+/g, ' ').trim();
     if(!text) return;
     floorNo += 1;
+    if(floorNo < promptStartFloor) return;
     if(floorNo >= fullTextStartFloor){
       recentLines.push((entry.role === 'user' ? '用户：' : '角色：') + text);
       return;
     }
     if(entry.role === 'user'){
-      olderLines.push('用户：' + clipOfflinePromptText(text, 88));
+      olderLines.push('用户：' + clipOfflinePromptText(text, useLittleBrainHotRead ? 72 : 88));
       return;
     }
     var summary = String(entry.summaryText || '').replace(/\s+/g, ' ').trim();
-    olderLines.push('角色摘要：' + clipOfflinePromptText(summary || text, 120));
+    olderLines.push('角色摘要：' + clipOfflinePromptText(summary || text, useLittleBrainHotRead ? 92 : 120));
   });
   if(summaryCount > 0 && olderLines.length > summaryCount){
     olderLines = olderLines.slice(-summaryCount);
   }
   return olderLines.concat(recentLines).join('\n');
+}
+function getOfflineLittleBrainPromptCoveredFloorSync(){
+  if(!character || !character.id || !isOfflineLittleBrainEnabled()) return 0;
+  var keys = [];
+  try{ keys = memorySummaryStorageKeyCandidates(character.id); }catch(e){ keys = []; }
+  var best = null;
+  var bestAt = 0;
+  for(var i = 0; i < keys.length; i += 1){
+    try{
+      var raw = localStorage.getItem(keys[i]) || '';
+      if(!raw) continue;
+      var parsed = normalizeOnlineMemorySummaryStore(JSON.parse(raw));
+      var at = getOfflineMemoryStoreUpdatedAt(parsed, 0);
+      if(!best || at >= bestAt){
+        best = parsed;
+        bestAt = at;
+      }
+    }catch(err){}
+  }
+  if(!best) return 0;
+  var mem = normalizeOfflineAdvancedMemoryState(best.advancedMemory);
+  var structuredCovered = Math.max(0, Number(mem.structured && mem.structured.offlineCovered || 0) || 0);
+  var vectorCovered = Math.max(0, Number(mem.vector && mem.vector.offlineCovered || 0) || 0);
+  if(structuredCovered && vectorCovered) return Math.min(structuredCovered, vectorCovered);
+  return Math.max(structuredCovered, vectorCovered);
 }
 function buildOfflineRecentRepeatGuardPrompt(){
   var entries = getOfflineStoryEntries().slice(-8);
@@ -9570,6 +9641,17 @@ function defaultOfflineAdvancedMemoryState(){
       callCovered:0,
       lastExtractionAt:0,
       settings:{ enabled:true, topN:8 }
+    },
+    pipeline:{
+      hotZoneSize:OFFLINE_LITTLE_BRAIN_HOT_ZONE_SIZE,
+      bufferThreshold:OFFLINE_LITTLE_BRAIN_BUFFER_THRESHOLD,
+      processRatio:OFFLINE_LITTLE_BRAIN_PROCESS_RATIO,
+      lastRunAt:0,
+      lastSkipReason:'',
+      lastSourceType:'',
+      lastBufferedCount:0,
+      lastProcessedCount:0,
+      lastHotZoneStart:0
     }
   };
 }
@@ -9623,6 +9705,15 @@ function normalizeOfflineAdvancedMemoryState(raw){
     lastExtractionAt: Math.max(0, Number(vector.lastExtractionAt || 0) || 0),
     settings: Object.assign({ enabled:true, topN:8 }, vector.settings && typeof vector.settings === 'object' ? vector.settings : {})
   };
+  var pipeline = source.pipeline && typeof source.pipeline === 'object' ? source.pipeline : {};
+  base.pipeline = Object.assign({}, base.pipeline, {
+    lastRunAt: Math.max(0, Number(pipeline.lastRunAt || 0) || 0),
+    lastSkipReason: String(pipeline.lastSkipReason || '').trim(),
+    lastSourceType: String(pipeline.lastSourceType || '').trim(),
+    lastBufferedCount: Math.max(0, Number(pipeline.lastBufferedCount || 0) || 0),
+    lastProcessedCount: Math.max(0, Number(pipeline.lastProcessedCount || 0) || 0),
+    lastHotZoneStart: Math.max(0, Number(pipeline.lastHotZoneStart || 0) || 0)
+  });
   return base;
 }
 function getOfflineMemoryModeFromStore(store){
@@ -9859,7 +9950,10 @@ function getOfflineOnlineContextWindow(){
     }
   }
   if(!Number.isFinite(value) || value <= 0) value = 30;
-  return Math.max(6, Math.min(120, Math.round(value)));
+  if(isOfflineLittleBrainEnabled()){
+    value = Math.max(value, OFFLINE_LITTLE_BRAIN_HOT_ZONE_SIZE);
+  }
+  return Math.max(6, Math.min(Math.max(120, OFFLINE_LITTLE_BRAIN_HOT_ZONE_SIZE), Math.round(value)));
 }
 function normalizeOfflineOnlineChatEntry(raw){
   if(Array.isArray(raw)){
@@ -10150,7 +10244,12 @@ function getOfflineMemorySnippetByBudget(maxChars){
 function getOfflineHistorySnippetByBudget(limit, maxChars){
   var detailLimit = Math.max(2, Number(limit) || 4);
   var summaryLimit = Math.max(2, detailLimit * 2);
-  return clipOfflinePromptText(formatOfflineHistoryForPrompt(detailLimit, summaryLimit) || '无', maxChars);
+  var budget = Math.max(120, Number(maxChars) || 0);
+  if(isOfflineLittleBrainEnabled()){
+    summaryLimit = Math.max(summaryLimit, OFFLINE_LITTLE_BRAIN_HOT_ZONE_SIZE);
+    budget = Math.max(budget, isMobileOfflineRuntime() ? 4800 : 7200);
+  }
+  return clipOfflinePromptText(formatOfflineHistoryForPrompt(detailLimit, summaryLimit) || '无', budget);
 }
 function buildOfflinePresencePromptBlock(){
   if(!(window.PresenceShared && character && character.id && typeof window.PresenceShared.getPresenceSnapshot === 'function')) return '';
@@ -10520,7 +10619,8 @@ function clipOfflinePromptText(text, maxChars){
   return (head + '\n...\n' + tail).trim();
 }
 function normalizeOfflineStoredChatHistory(text){
-  return clipOfflinePromptText(text, isMobileOfflineRuntime() ? 1600 : 2200);
+  var limit = isOfflineLittleBrainEnabled() ? (isMobileOfflineRuntime() ? 4800 : 7200) : (isMobileOfflineRuntime() ? 1600 : 2200);
+  return clipOfflinePromptText(text, limit);
 }
 function offlinePromptLimit(base, compactLevel, min){
   var level = Math.max(0, Number(compactLevel) || 0);

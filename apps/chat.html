@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T21:52:40Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T21:52:40Z"></script>
-<script src="../assetStore.js?v=2026-05-13T21:52:40Z"></script>
-<script src="../accountManager.js?v=2026-05-13T21:52:40Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T21:52:40Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T21:52:40Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T21:52:40Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T21:52:40Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T21:52:40Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T21:52:40Z"></script>
+<script src="../promptManager.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../assetStore.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../accountManager.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T22:16:17Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T22:16:17Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -3977,7 +3977,7 @@ var pendingBlockAction = '';
 var blockedWallMinimized = false;
 var DEFAULT_CONTEXT_WINDOW = 30;
 var MIN_CONTEXT_WINDOW = 6;
-var MAX_CONTEXT_WINDOW = 120;
+var MAX_CONTEXT_WINDOW = 200;
 var DEFAULT_CHAT_RENDER_PAGE_SIZE = 40;
 var MIN_CHAT_RENDER_PAGE_SIZE = 10;
 var MAX_CHAT_RENDER_PAGE_SIZE = 200;
@@ -4098,10 +4098,10 @@ var suppressNextMemeClickId = null;
 var memeManageMode = false;
 var selectedMemeIds = new Set();
 var memeVisionPromiseMap = {};
-var LITTLE_BRAIN_AUTO_CHAT_THRESHOLD = 4;
-var LITTLE_BRAIN_AUTO_CHAT_BATCH = 10;
-var LITTLE_BRAIN_AUTO_CALL_THRESHOLD = 2;
-var LITTLE_BRAIN_AUTO_CALL_BATCH = 8;
+var LITTLE_BRAIN_HOT_ZONE_SIZE = 200;
+var LITTLE_BRAIN_BUFFER_THRESHOLD = 100;
+var LITTLE_BRAIN_PROCESS_RATIO = 0.85;
+var LITTLE_BRAIN_FORCE_BUFFER_THRESHOLD = 10;
 
 function contextWindowKey(){
   return character && character.id ? accountScopedKey('ctx_window_' + character.id) : '';
@@ -4541,6 +4541,13 @@ function loadContextWindowSize(){
   if(Number.isNaN(n)) n = DEFAULT_CONTEXT_WINDOW;
   return Math.max(MIN_CONTEXT_WINDOW, Math.min(MAX_CONTEXT_WINDOW, n));
 }
+function getEffectiveModelContextWindowSize(){
+  var windowSize = loadContextWindowSize();
+  if(isLittleBrainEnabledForCurrentCharacter()){
+    windowSize = Math.max(windowSize, LITTLE_BRAIN_HOT_ZONE_SIZE);
+  }
+  return Math.max(MIN_CONTEXT_WINDOW, Math.min(Math.max(MAX_CONTEXT_WINDOW, LITTLE_BRAIN_HOT_ZONE_SIZE), windowSize));
+}
 function loadChatRenderPageSize(){
   if(!character) return DEFAULT_CHAT_RENDER_PAGE_SIZE;
   var source = character.chatRenderPageSize;
@@ -4590,6 +4597,75 @@ function normalizeMemoryMode(mode){
   var v = String(mode || '').trim().toLowerCase();
   if(v === MEMORY_MODE_VECTOR) return MEMORY_MODE_VECTOR;
   return MEMORY_MODE_STRUCTURED;
+}
+function defaultLittleBrainPipelineState(){
+  return {
+    hotZoneSize: LITTLE_BRAIN_HOT_ZONE_SIZE,
+    bufferThreshold: LITTLE_BRAIN_BUFFER_THRESHOLD,
+    processRatio: LITTLE_BRAIN_PROCESS_RATIO,
+    lastRunAt: 0,
+    lastSkipReason: '',
+    lastSourceType: '',
+    lastBufferedCount: 0,
+    lastProcessedCount: 0,
+    lastHotZoneStart: 0
+  };
+}
+function normalizeLittleBrainPipelineState(raw){
+  var src = raw && typeof raw === 'object' ? raw : {};
+  var base = defaultLittleBrainPipelineState();
+  base.hotZoneSize = Math.max(20, Number(src.hotZoneSize || base.hotZoneSize) || base.hotZoneSize);
+  base.bufferThreshold = Math.max(1, Number(src.bufferThreshold || base.bufferThreshold) || base.bufferThreshold);
+  base.processRatio = Math.max(0.1, Math.min(1, Number(src.processRatio || base.processRatio) || base.processRatio));
+  base.lastRunAt = Math.max(0, Number(src.lastRunAt || 0) || 0);
+  base.lastSkipReason = String(src.lastSkipReason || '').trim();
+  base.lastSourceType = String(src.lastSourceType || '').trim();
+  base.lastBufferedCount = Math.max(0, Number(src.lastBufferedCount || 0) || 0);
+  base.lastProcessedCount = Math.max(0, Number(src.lastProcessedCount || 0) || 0);
+  base.lastHotZoneStart = Math.max(0, Number(src.lastHotZoneStart || 0) || 0);
+  return base;
+}
+function computeLittleBrainBufferWindow(totalCount, coveredCount, options){
+  var opts = options && typeof options === 'object' ? options : {};
+  var force = !!opts.force;
+  var hotZone = Math.max(20, Number(opts.hotZoneSize || LITTLE_BRAIN_HOT_ZONE_SIZE) || LITTLE_BRAIN_HOT_ZONE_SIZE);
+  var threshold = force
+    ? Math.max(1, Number(opts.forceThreshold || LITTLE_BRAIN_FORCE_BUFFER_THRESHOLD) || LITTLE_BRAIN_FORCE_BUFFER_THRESHOLD)
+    : Math.max(1, Number(opts.bufferThreshold || LITTLE_BRAIN_BUFFER_THRESHOLD) || LITTLE_BRAIN_BUFFER_THRESHOLD);
+  var ratio = Math.max(0.1, Math.min(1, Number(opts.processRatio || LITTLE_BRAIN_PROCESS_RATIO) || LITTLE_BRAIN_PROCESS_RATIO));
+  var total = Math.max(0, Number(totalCount || 0) || 0);
+  var covered = Math.max(0, Math.min(Number(coveredCount || 0) || 0, total));
+  if(total <= hotZone){
+    return { ok:false, reason:'hot_zone', from:covered, to:covered, hotZoneStart:0, buffered:0, processCount:0 };
+  }
+  var hotZoneStart = Math.max(0, total - hotZone);
+  var from = Math.min(covered, hotZoneStart);
+  var buffered = Math.max(0, hotZoneStart - from);
+  if(buffered < threshold){
+    return { ok:false, reason:'threshold', from:from, to:from, hotZoneStart:hotZoneStart, buffered:buffered, processCount:0 };
+  }
+  var processCount = Math.max(1, Math.min(buffered, Math.ceil(buffered * ratio)));
+  return {
+    ok:true,
+    reason:'',
+    from:from,
+    to:Math.min(hotZoneStart, from + processCount),
+    hotZoneStart:hotZoneStart,
+    buffered:buffered,
+    processCount:processCount
+  };
+}
+function noteLittleBrainPipelineRun(store, sourceType, windowInfo, processedCount){
+  var safe = ensureAdvancedMemoryOnStore(store || loadMemorySummaryStore());
+  var pipe = normalizeLittleBrainPipelineState(safe.advancedMemory.pipeline);
+  pipe.lastRunAt = Date.now();
+  pipe.lastSourceType = String(sourceType || '').trim();
+  pipe.lastSkipReason = String(windowInfo && windowInfo.reason || '').trim();
+  pipe.lastBufferedCount = Math.max(0, Number(windowInfo && windowInfo.buffered || 0) || 0);
+  pipe.lastProcessedCount = Math.max(0, Number(processedCount || 0) || 0);
+  pipe.lastHotZoneStart = Math.max(0, Number(windowInfo && windowInfo.hotZoneStart || 0) || 0);
+  safe.advancedMemory.pipeline = pipe;
+  return safe;
 }
 function defaultStructuredMemoryState(){
   return {
@@ -4739,7 +4815,8 @@ function defaultAdvancedMemoryState(){
   return {
     mode: DEFAULT_MEMORY_MODE,
     structured: defaultStructuredMemoryState(),
-    vector: defaultVectorMemoryState()
+    vector: defaultVectorMemoryState(),
+    pipeline: defaultLittleBrainPipelineState()
   };
 }
 function normalizeAdvancedMemoryState(raw){
@@ -4747,7 +4824,8 @@ function normalizeAdvancedMemoryState(raw){
   return {
     mode: normalizeMemoryMode(src.mode || DEFAULT_MEMORY_MODE),
     structured: normalizeStructuredMemoryState(src.structured),
-    vector: normalizeVectorMemoryState(src.vector)
+    vector: normalizeVectorMemoryState(src.vector),
+    pipeline: normalizeLittleBrainPipelineState(src.pipeline)
   };
 }
 function migrateSummaryItemsIntoLittleBrainShortTerm(advancedMemory, items){
@@ -5250,7 +5328,7 @@ function getScopedDataKeyCandidates(base){
   try{ add(accountScopedKey(safeBase)); }catch(err){}
   add(safeBase);
   try{
-    getWriteAccountIdCandidates().forEach(function(accountId){
+    getAccountIdCandidates().forEach(function(accountId){
       if(accountId) add(safeBase + '__acct_' + accountId);
     });
   }catch(err2){}
@@ -5749,12 +5827,10 @@ function activateLittleBrainStore(store){
   return safe;
 }
 function getLittleBrainAutoThreshold(sourceType, force){
-  if(force) return 1;
-  return sourceType === 'voice_call' ? LITTLE_BRAIN_AUTO_CALL_THRESHOLD : LITTLE_BRAIN_AUTO_CHAT_THRESHOLD;
+  return force ? LITTLE_BRAIN_FORCE_BUFFER_THRESHOLD : LITTLE_BRAIN_BUFFER_THRESHOLD;
 }
 function getLittleBrainAutoBatchSize(sourceType, force){
-  if(force) return 9999;
-  return sourceType === 'voice_call' ? LITTLE_BRAIN_AUTO_CALL_BATCH : LITTLE_BRAIN_AUTO_CHAT_BATCH;
+  return force ? 9999 : Math.ceil(LITTLE_BRAIN_BUFFER_THRESHOLD * LITTLE_BRAIN_PROCESS_RATIO);
 }
 function isChatEntryMeaningfulForLittleBrain(msg){
   if(!msg || msg.hidden || msg.role === 'system') return false;
@@ -6170,21 +6246,26 @@ async function maybeCreateMemorySummaries(){
     ? Math.max(0, Math.min(Number(store.advancedMemory.vector.covered || 0) || 0, total))
     : structuredCovered;
   var covered = Math.min(structuredCovered, vectorCovered);
-  var threshold = getLittleBrainAutoThreshold('chat', false);
-  if(total - covered < threshold) return;
-  var to = Math.min(total, covered + Math.max(threshold, getLittleBrainAutoBatchSize('chat', false)));
-  var slice = chatLog.slice(covered, to);
+  var windowInfo = computeLittleBrainBufferWindow(total, covered, { sourceType:'chat' });
+  if(!windowInfo.ok){
+    store = noteLittleBrainPipelineRun(store, 'chat', windowInfo, 0);
+    saveMemorySummaryStore(store);
+    return;
+  }
+  var to = windowInfo.to;
+  var slice = chatLog.slice(windowInfo.from, to);
   memorySummaryBusy = true;
   try{
     store = await runLittleBrainExtractionForChatSlice(store, slice, 'chat');
     store.advancedMemory.structured.covered = to;
     if(isLittleBrainVectorEnabled(store)) store.advancedMemory.vector.covered = to;
+    store = noteLittleBrainPipelineRun(store, 'chat', windowInfo, slice.length);
     saveMemorySummaryStore(store);
   }finally{
     memorySummaryBusy = false;
     refreshMemoryUi();
   }
-  if(total - to >= threshold){
+  if(computeLittleBrainBufferWindow(total, to, { sourceType:'chat' }).ok){
     setTimeout(function(){
       maybeCreateMemorySummaries().catch(function(err){ console.warn('little brain chat follow-up failed', err); });
     }, 1200);
@@ -6215,7 +6296,7 @@ function getMemorySummaryTokens(){
   return approxTokenCount(memoryText);
 }
 function getVisibleChatForModel(){
-  var windowSize = loadContextWindowSize();
+  var windowSize = getEffectiveModelContextWindowSize();
   var visible = chatLog.slice(Math.max(0, chatLog.length - windowSize));
   if(Array.isArray(transientHiddenModelMsgIds) && transientHiddenModelMsgIds.length){
     var hidden = new Set(transientHiddenModelMsgIds.map(function(id){ return String(id || ''); }).filter(Boolean));
@@ -23074,12 +23155,12 @@ async function callAI(provider, key) {
   ensureMemeVisionForPrompt().catch(function(err){
     console.warn('ensureMemeVisionForPrompt failed', err);
   });
-  var visibleForModel = getVisibleChatForModel().slice(-14);
+  var visibleForModel = getVisibleChatForModel();
   if(shouldPrepareRecentUserImageVisionBeforeCall(visibleForModel)){
     await ensureRecentUserImageVisionForPrompt().catch(function(err){
       console.warn('ensureRecentUserImageVisionForPrompt failed', err);
     });
-    visibleForModel = getVisibleChatForModel().slice(-14);
+    visibleForModel = getVisibleChatForModel();
   }
   var msgs = visibleForModel.map(function(m){
     if(!m) return null;
@@ -28235,10 +28316,14 @@ async function processVoiceCallLittleBrainLines(lines, options){
   if(!shouldRunLittleBrainAutoMemory(!!opts.force)) return Math.max(0, Number(opts.covered || 0) || 0);
   var allLines = getVoiceCallMemoryLinesFromTranscript(lines);
   var covered = Math.max(0, Math.min(Number(opts.covered || 0) || 0, allLines.length));
-  var threshold = getLittleBrainAutoThreshold('voice_call', !!opts.force);
-  if(allLines.length - covered < threshold) return covered;
-  var to = opts.force ? allLines.length : Math.min(allLines.length, covered + Math.max(threshold, getLittleBrainAutoBatchSize('voice_call', false)));
-  var slice = allLines.slice(covered, to).map(voiceCallLineToMemoryChatEntry).filter(function(item){
+  var windowInfo = computeLittleBrainBufferWindow(allLines.length, covered, { sourceType:'voice_call', force:!!opts.force });
+  if(!windowInfo.ok){
+    var skippedStore = noteLittleBrainPipelineRun(activateLittleBrainStore(loadMemorySummaryStore()), 'voice_call', windowInfo, 0);
+    saveMemorySummaryStore(skippedStore);
+    return covered;
+  }
+  var to = windowInfo.to;
+  var slice = allLines.slice(windowInfo.from, to).map(voiceCallLineToMemoryChatEntry).filter(function(item){
     return item && String(item.content || '').trim();
   });
   var store = activateLittleBrainStore(loadMemorySummaryStore());
@@ -28247,6 +28332,7 @@ async function processVoiceCallLittleBrainLines(lines, options){
   if(isLittleBrainVectorEnabled(store)){
     store.advancedMemory.vector.callCovered = Math.max(Number(store.advancedMemory.vector.callCovered || 0) || 0, to);
   }
+  store = noteLittleBrainPipelineRun(store, 'voice_call', windowInfo, slice.length);
   saveMemorySummaryStore(store);
   refreshMemoryUi();
   return to;
@@ -28273,7 +28359,7 @@ async function maybeCreateVoiceCallMemorySummaries(options){
         voiceCallState.memoryCovered = covered;
         persistVoiceCallSession();
       }
-      if(!opts.force && getVoiceCallMemoryLinesFromTranscript(state.transcript).length - covered >= getLittleBrainAutoThreshold('voice_call', false)){
+      if(!opts.force && computeLittleBrainBufferWindow(getVoiceCallMemoryLinesFromTranscript(state.transcript).length, covered, { sourceType:'voice_call' }).ok){
         voiceCallMemoryNeedsRun = true;
       }
     }while(voiceCallMemoryNeedsRun);

@@ -62,11 +62,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T21:52:40Z';
+const APP_BUILD_ID = '2026-05-13T22:16:17Z';
 const APP_UPDATE_NOTES = [
-  '清空聊天会同步清掉旧邀约和记忆残留',
-  '进 app 前复用已加载头像',
-  '小脑瓜记忆链路更稳定'
+  '头像跨 App 加载会走本机缓存',
+  '小脑瓜最近 200 条保持热区读取',
+  '线上线下通话统一 buffer 高水位总结'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -1152,6 +1152,18 @@ function seedShellAvatarPoolFromImage(img, source){
   try{ clone.src = img.currentSrc || img.src || getShellAvatarRenderSrc(key); }catch(assignErr){ return false; }
   if(isShellAvatarPoolImageReady(clone)) clone.onload();
   return true;
+}
+
+function rememberLoadedShellAvatarImage(img, src){
+  if(!isShellAvatarPoolImageReady(img)) return;
+  var key = getShellAvatarPoolKey(src || getShellFrameAvatarImgSource(img));
+  if(!key) return;
+  seedShellAvatarPoolFromImage(img, key);
+  try{
+    var host = img.closest && img.closest('[data-char-id]');
+    var charId = String(host && host.dataset && host.dataset.charId || '').trim();
+    if(charId) saveShellCharacterAvatarAsset(charId, key).catch(function(){});
+  }catch(err){}
 }
 
 function seedShellAvatarPoolFromDocument(doc){
@@ -13691,27 +13703,37 @@ function renderWidgetCharacterAvatarNode(target, src, fallback){
   var safeFallback = String(fallback || 'C').trim().slice(0, 2) || 'C';
   target.dataset.avatarSrc = isRenderableShellAvatarSrc(safeSrc) ? safeSrc : '';
   target.dataset.avatarFallback = safeFallback;
+  target.style.backgroundImage = '';
   if(isRenderableShellAvatarSrc(safeSrc)){
     prewarmShellAvatarImagePool(safeSrc, 14);
+    target.style.backgroundImage = 'url("' + renderSrc.replace(/"/g, '\\"') + '")';
+    target.style.backgroundSize = 'cover';
+    target.style.backgroundPosition = 'center';
     var existingImg = target.querySelector && target.querySelector('img');
     if(existingImg && isSameShellAvatarImageSrc(existingImg, safeSrc)){
       if(isShellAvatarPoolImageReady(existingImg)) return;
       if(replaceShellAvatarWithPooledImage(existingImg, safeSrc)) return;
     }
-    target.innerHTML = '<img src="' + escapeHtmlAttr(renderSrc) + '" data-avatar-src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center" onerror="handleShellWidgetAvatarError(this)">';
+    target.innerHTML = '<img src="' + escapeHtmlAttr(renderSrc) + '" data-avatar-src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center" onload="handleShellWidgetAvatarLoad(this)" onerror="handleShellWidgetAvatarError(this)">';
   }else{
+    target.style.backgroundImage = '';
     target.textContent = safeFallback;
   }
+}
+function handleShellWidgetAvatarLoad(img){
+  rememberLoadedShellAvatarImage(img);
 }
 function handleShellWidgetAvatarError(img){
   try{
     if(!img || !img.parentNode) return;
     var target = img.parentNode;
-    var failedSrc = normalizeShellAssetSrc(img.getAttribute('src') || img.src || '');
+    var requestedSrc = normalizeShellAssetSrc(img.getAttribute('data-avatar-src') || target.dataset && target.dataset.avatarSrc || img.getAttribute('src') || img.src || '');
+    var failedSrc = normalizeShellAssetSrc(img.getAttribute('src') || img.src || requestedSrc || '');
     var charId = String(target.dataset && target.dataset.charId || '').trim();
     var fallback = String(target.dataset && target.dataset.avatarFallback || 'C').trim().slice(0, 2) || 'C';
-    target.textContent = fallback;
-    target.removeAttribute('data-avatar-src');
+    if(requestedSrc && replaceShellAvatarWithPooledImage(img, requestedSrc)) return;
+    if(requestedSrc && applyShellAvatarBlobFallbackToImage(img, requestedSrc)) return;
+    if(requestedSrc && retryShellAvatarImageLoad(img, requestedSrc)) return;
     if(!charId || target.dataset.avatarRetrying === failedSrc) return;
     target.dataset.avatarRetrying = failedSrc;
     loadCharacterAvatarForShell(charId).then(function(nextSrc){
@@ -13719,6 +13741,14 @@ function handleShellWidgetAvatarError(img){
       if(!isRenderableShellAvatarSrc(nextSrc) || nextSrc === failedSrc) return;
       renderWidgetCharacterAvatarNode(target, nextSrc, fallback);
     }).catch(function(){});
+    setTimeout(function(){
+      try{
+        var currentImg = target.querySelector && target.querySelector('img');
+        if(currentImg && (!currentImg.complete || Number(currentImg.naturalWidth || 0) <= 0)){
+          target.textContent = fallback;
+        }
+      }catch(lateErr){}
+    }, 2600);
   }catch(err){}
 }
 

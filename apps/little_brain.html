@@ -340,14 +340,14 @@
     </section>
   </div>
   <div class="toast" id="toast"></div>
-  <script src="../assetStore.js?v=2026-05-13T21:39:44Z"></script>
-  <script src="../accountManager.js?v=2026-05-13T21:39:44Z"></script>
-  <script src="../chatStorage.js?v=2026-05-13T21:39:44Z"></script>
-  <script src="../metadataStore.js?v=2026-05-13T21:39:44Z"></script>
+  <script src="../assetStore.js?v=2026-05-13T22:16:17Z"></script>
+  <script src="../accountManager.js?v=2026-05-13T22:16:17Z"></script>
+  <script src="../chatStorage.js?v=2026-05-13T22:16:17Z"></script>
+  <script src="../metadataStore.js?v=2026-05-13T22:16:17Z"></script>
   <script>
   (function(){
     'use strict';
-    var BUILD_ID = '2026-05-13T21:39:44Z';
+    var BUILD_ID = '2026-05-13T22:16:17Z';
     var LITTLE_BRAIN_CONFIG_KEY = 'little_brain_config_v1';
     var state = { view:'picker', chars:[], char:null, store:null, config:null, memoryFilter:'all' };
     var avatarHydrateToken = 0;
@@ -518,6 +518,9 @@
     function defaultVector(){
       return { coreMemories:[], fragments:[], timelineSummaries:{}, covered:0, offlineCovered:0, lastExtractionAt:0, settings:{ enabled:true, topN:8, retrievalStrategy:'user-only', retrievalUserMsgCount:3, scoreWeights:{ semantic:.4, keyword:.3, importance:.15, emotion:.1, recency:.05 } }, retrievalCache:{ query:'', resultIds:[], timestamp:0, msgCount:0 } };
     }
+    function defaultPipeline(){
+      return { hotZoneSize:200, bufferThreshold:100, processRatio:.85, lastRunAt:0, lastSkipReason:'', lastSourceType:'', lastBufferedCount:0, lastProcessedCount:0, lastHotZoneStart:0 };
+    }
     function normalizeStore(raw){
       var next = raw && typeof raw === 'object' ? clone(raw, {}) : {};
       next.items = Array.isArray(next.items) ? next.items : [];
@@ -552,6 +555,7 @@
       next.advancedMemory.vector = Object.assign(defaultVector(), next.advancedMemory.vector || {});
       next.advancedMemory.vector.settings = Object.assign(defaultVector().settings, next.advancedMemory.vector.settings || {});
       next.advancedMemory.vector.fragments = Array.isArray(next.advancedMemory.vector.fragments) ? next.advancedMemory.vector.fragments : [];
+      next.advancedMemory.pipeline = Object.assign(defaultPipeline(), next.advancedMemory.pipeline || {});
       next.updatedAt = Math.max(Number(next.updatedAt || 0) || 0, Number(next.advancedMemory.structured.lastUpdated || 0) || 0, Number(next.advancedMemory.vector.lastExtractionAt || 0) || 0);
       return next;
     }

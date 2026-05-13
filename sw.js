@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-05-13T21:52:40Z';
+const CACHE_VERSION = '2026-05-13T22:16:17Z';
 const CACHE_NAME = 'phone-shell-' + CACHE_VERSION;
 const CORE_URLS = [
   './',
@@ -45,6 +45,45 @@ function isApiRequestUrl(requestUrl){
   }catch(err){
     return false;
   }
+}
+
+function isExternalAvatarCacheUrl(url, request){
+  try{
+    if(!url || isSameOrigin(url.href)) return false;
+    var host = String(url.hostname || '').toLowerCase();
+    var path = String(url.pathname || '').toLowerCase();
+    var looksImage = (request && request.destination === 'image')
+      || /\.(?:png|jpe?g|gif|webp|svg|avif)(?:$|\?)/i.test(path);
+    if(!looksImage) return false;
+    return /(?:^|\.)files\.catbox\.moe$/.test(host)
+      || /(?:^|\.)catbox\.moe$/.test(host)
+      || /(?:^|\.)ibb\.co$/.test(host)
+      || /(?:^|\.)i\.ibb\.co$/.test(host)
+      || /(?:^|\.)postimg\.cc$/.test(host)
+      || /(?:^|\.)postimages\.org$/.test(host)
+      || /(?:^|\.)imgur\.com$/.test(host)
+      || /(?:^|\.)i\.imgur\.com$/.test(host);
+  }catch(err){
+    return false;
+  }
+}
+
+function cacheableImageResponse(response){
+  return !!(response && (response.ok || response.type === 'opaque'));
+}
+
+async function respondWithExternalAvatarCache(request){
+  var cache = await caches.open(CACHE_NAME);
+  var cached = await cache.match(request, { ignoreSearch:true }).catch(function(){ return null; });
+  if(cached) return cached;
+  return fetch(request).then(function(response){
+    if(cacheableImageResponse(response)){
+      cache.put(request, response.clone()).catch(function(){ return null; });
+    }
+    return response;
+  }).catch(function(){
+    return cache.match(request, { ignoreSearch:true });
+  });
 }
 
 function shouldBypassDocumentCache(url){
@@ -222,9 +261,14 @@ self.addEventListener('notificationclick', (event)=>{
 self.addEventListener('fetch', (event)=>{
   if(isApiRequestUrl(event.request.url)) return;
   if(event.request.method !== 'GET') return;
-  if(!isSameOrigin(event.request.url)) return;
 
   const url = new URL(event.request.url);
+  if(!isSameOrigin(event.request.url)){
+    if(isExternalAvatarCacheUrl(url, event.request)){
+      event.respondWith(respondWithExternalAvatarCache(event.request));
+    }
+    return;
+  }
   const isNavigate = event.request.mode === 'navigate';
   const isDocument = event.request.destination === 'document' || /\.html?$/i.test(url.pathname) || url.pathname === '/';
   const isShellAsset = /(?:^|\/)(?:main\.js|style\.css|assetStore\.js|chatStorage\.js|metadataStore\.js|avatar-frames\.js|manifest\.webmanifest|version\.json)$/i.test(url.pathname);
