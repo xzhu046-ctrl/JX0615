@@ -62,12 +62,12 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T22:43:53Z';
+const APP_BUILD_ID = '2026-05-13T22:53:19Z';
 const APP_UPDATE_NOTES = [
-  '聊天启动不会无限卡加载',
-  '暂时离开会立刻退回',
-  '头像进出 App 会主动修复',
-  '小脑瓜读取补上 buffer 尾巴'
+  '刷新按钮不会点不动',
+  '返回聊天室不再排队卡死',
+  '聊天头像不再抓头像框',
+  'App 切换加了兜底超时'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -177,6 +177,7 @@ let hostedUpdateRemoteNotes = {};
 let hostedPagesReadyBuilds = {};
 let installedUpdateNoticeActive = false;
 let installedUpdateNoticeChecked = false;
+let updateToastActionBound = false;
 let chatInputFocusActive = false;
 let chatInputFocusStartedAt = 0;
 let chatReportedKeyboardShift = 0;
@@ -2325,7 +2326,15 @@ function refreshInstalledApp(evt){
   }
   var targetBuild = String(pendingRemoteAppFingerprint || shownHostedUpdateFingerprint || getLastSeenHostedRemoteBuild() || APP_BUILD_ID).trim() || APP_BUILD_ID;
   var totalRefreshFiles = FORCE_UPDATE_CORE_FILES.length;
+  var refreshFinished = false;
+  var refreshHardTimer = 0;
   var finishReload = function(){
+    if(refreshFinished) return;
+    refreshFinished = true;
+    if(refreshHardTimer){
+      clearTimeout(refreshHardTimer);
+      refreshHardTimer = 0;
+    }
     swControllerRefreshPending = false;
     hostedRefreshInFlight = false;
     hostedUpdateLockedOpen = false;
@@ -2351,6 +2360,10 @@ function refreshInstalledApp(evt){
       return;
     }catch(err){}
   };
+  refreshHardTimer = setTimeout(function(){
+    console.warn('[update-check] refresh hard fallback');
+    finishReload();
+  }, 6500);
   Promise.resolve()
     .then(function(){
       setHostedRefreshProgress('正在保存当前数据', 0, totalRefreshFiles, targetBuild);
@@ -2390,6 +2403,25 @@ function handleUpdateToastAction(evt){
   }
   refreshInstalledApp(evt);
 }
+
+function bindUpdateToastButton(){
+  if(updateToastActionBound) return;
+  updateToastActionBound = true;
+  var directBtn = document.getElementById('update-toast-btn');
+  if(directBtn){
+    ['click', 'pointerup', 'touchend'].forEach(function(type){
+      directBtn.addEventListener(type, handleUpdateToastAction, { passive:false });
+    });
+  }
+  ['click', 'pointerup', 'touchend'].forEach(function(type){
+    document.addEventListener(type, function(evt){
+      var target = evt && evt.target && evt.target.closest ? evt.target.closest('#update-toast-btn') : null;
+      if(!target) return;
+      handleUpdateToastAction(evt);
+    }, true);
+  });
+}
+
 window.refreshInstalledApp = refreshInstalledApp;
 window.refreshInstalledNoticeAndApp = refreshInstalledNoticeAndApp;
 window.handleUpdateToastAction = handleUpdateToastAction;
@@ -8151,14 +8183,45 @@ function isSameShellAvatarImageSrc(img, src){
 
 function getShellFrameAvatarImgSource(img){
   if(!img) return '';
+  if(isShellAvatarFrameDecorationImage(img)) return '';
   var raw = '';
   try{ raw = String((img.getAttribute && (img.getAttribute('data-avatar-src') || img.getAttribute('src'))) || img.src || '').trim(); }catch(err){}
   raw = normalizeShellAssetSrc(raw);
   return isRenderableShellAvatarSrc(raw) ? raw : '';
 }
 
+function isKnownShellAvatarFrameSrc(src){
+  var text = normalizeShellAssetSrc(src || '');
+  if(!text) return false;
+  try{
+    if(typeof avatarFrames !== 'undefined' && Array.isArray(avatarFrames)){
+      return avatarFrames.some(function(frame){
+        return frame && normalizeShellAssetSrc(frame.url || '') === text;
+      });
+    }
+  }catch(err){}
+  return /^https?:\/\/i\.ibb\.co\/[^/]+\/D\d{3}\.gif(?:[?#].*)?$/i.test(text);
+}
+
+function isShellAvatarFrameDecorationImage(img){
+  if(!img) return false;
+  var src = '';
+  try{ src = String((img.getAttribute && (img.getAttribute('data-avatar-src') || img.getAttribute('src'))) || img.src || '').trim(); }catch(err){}
+  var bits = [];
+  try{
+    bits = [
+      img.className,
+      img.parentNode && img.parentNode.className,
+      img.closest && img.closest('.avatar-frame-stack,.avatar-frame-inline,.bond-avatar-frame,.slot-frame,.avatar-frame-fallback')
+    ];
+  }catch(classErr){}
+  if(/avatar-frame|bond-avatar-frame|slot-frame/i.test(bits.join(' '))) return true;
+  return isKnownShellAvatarFrameSrc(src);
+}
+
 function isShellFrameAvatarLikeImage(img){
   if(!img) return false;
+  if(isShellAvatarFrameDecorationImage(img)) return false;
   var bits = [];
   try{
     bits = [
@@ -12096,7 +12159,9 @@ function consumePendingOfflineLaunchRecord(options){
 window.consumePendingOfflineLaunchRecord = consumePendingOfflineLaunchRecord;
 
 function runAppTransition(task){
-  appTransitionPromise = appTransitionPromise.then(task).catch(function(err){
+  appTransitionPromise = appTransitionPromise.then(function(){
+    return withShellTransitionTimeout(Promise.resolve().then(task), 'appTransition', 6500);
+  }).catch(function(err){
     console.error('app transition failed', err);
   });
   return appTransitionPromise;
@@ -13007,7 +13072,9 @@ window.addEventListener('message',(e)=>{
   if(type==='OFFLINE_MINIMIZED'){
     if(shouldBlockOfflineModeShellExitMessage(type, payload)) return;
     setMinimizedOfflineCharId(payload && payload.charId ? payload.charId : '');
-    openApp('chat');
+    offlineModeBusy = false;
+    offlineModeBusyUntil = 0;
+    forceOpenApp('chat');
   }
   if(type==='OFFLINE_EXITED'){
     if(shouldBlockOfflineModeShellExitMessage(type, payload)) return;
@@ -14745,6 +14812,7 @@ function restoreState(){
   compactCharKey('pendingChatChar');
   bindAppFrameLoadHandlers();
   bindTextNormalization();
+  bindUpdateToastButton();
   renderOfflineMiniLauncher();
   bindHostedServiceWorker();
   clearStaleHostedCodeCaches();
