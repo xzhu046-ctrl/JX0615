@@ -62,11 +62,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T19:21:38Z';
+const APP_BUILD_ID = '2026-05-13T19:30:46Z';
 const APP_UPDATE_NOTES = [
-  '小脑瓜入口改成选择角色',
-  '补上副 API 和向量 API 输入',
-  '聊天记忆后台优先使用小脑瓜配置'
+  '小脑瓜标题改成 CHAR',
+  '小脑瓜顶栏收紧空白',
+  '继续保留朋友圈式角色卡片'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
