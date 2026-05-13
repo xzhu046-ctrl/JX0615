@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-13T17:56:16Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T17:56:16Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T17:56:16Z"></script>
-<script src="../promptManager.js?v=2026-05-13T17:56:16Z"></script>
-<script src="../accountManager.js?v=2026-05-13T17:56:16Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T17:56:16Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T17:56:16Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T17:56:16Z"></script>
+<script src="../assetStore.js?v=2026-05-13T18:03:42Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T18:03:42Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T18:03:42Z"></script>
+<script src="../promptManager.js?v=2026-05-13T18:03:42Z"></script>
+<script src="../accountManager.js?v=2026-05-13T18:03:42Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T18:03:42Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T18:03:42Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T18:03:42Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -3189,18 +3189,10 @@ function normalizeOfflineAssetSrc(src){
   return text;
 }
 function shouldUseOfflineAvatarProxy(src){
-  var text = normalizeOfflineAssetSrc(src || '');
-  if(!/^https?:/i.test(text)) return false;
-  try{
-    return new URL(text, location.href).origin !== location.origin;
-  }catch(err){
-    return false;
-  }
+  return false;
 }
 function getOfflineAvatarRenderSrc(src){
-  var text = normalizeOfflineAssetSrc(src || '');
-  if(!shouldUseOfflineAvatarProxy(text)) return text;
-  return '/avatar-proxy?u=' + encodeURIComponent(text);
+  return normalizeOfflineAssetSrc(src || '');
 }
 function isRenderableOfflineAvatarSrc(src){
   var value = normalizeOfflineAssetSrc(src);

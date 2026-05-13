@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T17:56:16Z';
+const APP_BUILD_ID = '2026-05-13T18:03:42Z';
 const APP_UPDATE_NOTES = [
-  '头像改用同源代理',
-  'App 内外链头像不直连',
-  '图床头像加载更稳'
+  '头像恢复直连渲染',
+  '撤掉失败头像代理',
+  '保留坏图强制重绘'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -968,19 +968,11 @@ function normalizeShellAssetSrc(value){
 }
 
 function shouldUseShellAvatarProxy(src){
-  var text = normalizeShellAssetSrc(src || '');
-  if(!/^https?:/i.test(text)) return false;
-  try{
-    return new URL(text, window.location.href).origin !== window.location.origin;
-  }catch(err){
-    return false;
-  }
+  return false;
 }
 
 function getShellAvatarRenderSrc(src){
-  var text = normalizeShellAssetSrc(src || '');
-  if(!shouldUseShellAvatarProxy(text)) return text;
-  return '/avatar-proxy?u=' + encodeURIComponent(text);
+  return normalizeShellAssetSrc(src || '');
 }
 
 var shellAvatarImagePool = Object.create(null);
