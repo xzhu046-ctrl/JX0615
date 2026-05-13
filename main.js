@@ -60,7 +60,7 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T06:36:08Z';
+const APP_BUILD_ID = '2026-05-13T06:56:16Z';
 const APP_UPDATE_NOTES = [
   '通话记忆随时总结',
   '星星按钮打开记忆面板',

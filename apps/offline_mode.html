@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../promptManager.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../accountManager.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T03:54:50Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T03:54:50Z"></script>
+<script src="../assetStore.js?v=2026-05-13T06:56:16Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T06:56:16Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T06:56:16Z"></script>
+<script src="../promptManager.js?v=2026-05-13T06:56:16Z"></script>
+<script src="../accountManager.js?v=2026-05-13T06:56:16Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T06:56:16Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T06:56:16Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T06:56:16Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -168,6 +168,8 @@ body.offline-mobile-safe.offline-runtime-safe .offline-status-history-overlay{ba
 .offline-setting-grid{display:flex;flex-direction:column;gap:10px}
 .offline-setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .offline-setting-row.align-end{align-items:flex-end}
+.offline-setting-inline-panel{display:flex;flex-direction:column;gap:10px;padding:11px 11px 12px;border:1.5px solid rgba(17,17,17,.24);border-radius:14px;background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(255,255,255,.78)}
+.offline-setting-inline-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .offline-setting-copy{flex:1;min-width:0}
 .offline-setting-copy .offline-setting-label{margin-bottom:2px}
 .offline-setting-sub{font-size:11px;color:#6a6a6a;line-height:1.55}
@@ -968,6 +970,26 @@ body.offline-theme-love .offline-stage-action.memory img{display:none}
                 <button class="offline-setting-choice-btn" type="button" data-user-perspective="first">第一</button>
                 <button class="offline-setting-choice-btn" type="button" data-user-perspective="second">第二</button>
                 <button class="offline-setting-choice-btn" type="button" data-user-perspective="third">第三</button>
+              </div>
+            </div>
+            <div class="offline-setting-inline-panel" aria-label="转述强化">
+              <div class="offline-setting-inline-head">
+                <div class="offline-setting-title">转述强化</div>
+                <div class="offline-setting-note">控制 user 输入进入正文的方式</div>
+              </div>
+              <div class="offline-setting-row">
+                <div class="offline-setting-copy">
+                  <div class="offline-setting-label">转述</div>
+                  <div class="offline-setting-sub">默认开启：用正文约 20%-25% 生动转述并润色 user 刚刚说的话。</div>
+                </div>
+                <button class="offline-setting-toggle" id="offlineDrawerRetellEnabled" type="button" aria-label="转述" aria-pressed="true"></button>
+              </div>
+              <div class="offline-setting-row">
+                <div class="offline-setting-copy">
+                  <div class="offline-setting-label">强化</div>
+                  <div class="offline-setting-sub">默认关闭：只在不抢话的前提下，让 user 有少量动作或明确需要的台词。</div>
+                </div>
+                <button class="offline-setting-toggle" id="offlineDrawerUserEnhanceEnabled" type="button" aria-label="强化" aria-pressed="false"></button>
               </div>
             </div>
             <label class="offline-setting-label" for="offlineDrawerStyle">文风补充</label>
@@ -5860,6 +5882,8 @@ function buildOfflineDrawerDraft(){
     userPerspective: prefs.userPerspective,
     perspective: prefs.perspective,
     style: prefs.style,
+    retellEnabled: prefs.retellEnabled !== false,
+    userEnhanceEnabled: !!prefs.userEnhanceEnabled,
     presetName: String(prefs.presetName || '').trim(),
     maxContextTokens: Math.max(1024, Math.min(64000, Number(prefs.maxContextTokens) || 8192)),
     maxOutputTokens: Math.max(128, Math.min(6000, Number(prefs.maxOutputTokens) || estimateOfflineOutputTokensFromChars(prefs.maxChars))),
@@ -5904,6 +5928,8 @@ function applyOfflineDrawerDraftToCharacter(){
   character.offlineUserPerspective = String(draft.userPerspective || draft.perspective || 'first');
   character.offlineInvitePerspective = String(draft.userPerspective || draft.perspective || 'first');
   character.offlineInviteStyle = String(draft.style || '').trim();
+  character.offlineRetellEnabled = draft.retellEnabled !== false;
+  character.offlineUserEnhanceEnabled = !!draft.userEnhanceEnabled;
   character.offlineStreamEnabled = false;
   character.offlinePresetName = String(draft.presetName || '').trim();
   character.offlineMaxContextTokens = Math.max(1024, Math.min(64000, Number(draft.maxContextTokens) || 8192));
@@ -6380,6 +6406,8 @@ function syncOfflineDrawerControls(){
   var charPerspective = document.getElementById('offlineDrawerCharPerspective');
   var userPerspective = document.getElementById('offlineDrawerUserPerspective');
   var style = document.getElementById('offlineDrawerStyle');
+  var retellEnabled = document.getElementById('offlineDrawerRetellEnabled');
+  var userEnhanceEnabled = document.getElementById('offlineDrawerUserEnhanceEnabled');
   var presetMeta = document.getElementById('offlineDrawerPresetMeta');
   var summaryEvery = document.getElementById('offlineDrawerSummaryEvery');
   var summaryAuto = document.getElementById('offlineDrawerSummaryAuto');
@@ -6415,6 +6443,14 @@ function syncOfflineDrawerControls(){
     });
   }
   if(style && document.activeElement !== style) style.value = draft.style;
+  if(retellEnabled){
+    retellEnabled.classList.toggle('is-on', draft.retellEnabled !== false);
+    retellEnabled.setAttribute('aria-pressed', draft.retellEnabled !== false ? 'true' : 'false');
+  }
+  if(userEnhanceEnabled){
+    userEnhanceEnabled.classList.toggle('is-on', !!draft.userEnhanceEnabled);
+    userEnhanceEnabled.setAttribute('aria-pressed', draft.userEnhanceEnabled ? 'true' : 'false');
+  }
   if(userTitle && document.activeElement !== userTitle) userTitle.value = String(draft.userTitle || '');
   if(userQuote && document.activeElement !== userQuote) userQuote.value = String(draft.userQuote || '');
   if(presetMeta) presetMeta.textContent = describeOfflinePresetMeta(draft);
@@ -6469,6 +6505,8 @@ function bindOfflineDrawerControls(){
   var charPerspective = document.getElementById('offlineDrawerCharPerspective');
   var userPerspective = document.getElementById('offlineDrawerUserPerspective');
   var style = document.getElementById('offlineDrawerStyle');
+  var retellEnabled = document.getElementById('offlineDrawerRetellEnabled');
+  var userEnhanceEnabled = document.getElementById('offlineDrawerUserEnhanceEnabled');
   var bodyMinChars = document.getElementById('offlineDrawerBodyMinChars');
   var bodyMaxChars = document.getElementById('offlineDrawerBodyMaxChars');
   var paragraphMinCount = document.getElementById('offlineDrawerParagraphMinCount');
@@ -6610,6 +6648,20 @@ function bindOfflineDrawerControls(){
   if(style){
     style.addEventListener('input', function(){
       getOfflineDrawerDraft().style = String(style.value || '').trim();
+    });
+  }
+  if(retellEnabled){
+    retellEnabled.addEventListener('click', function(){
+      var draft = getOfflineDrawerDraft();
+      draft.retellEnabled = draft.retellEnabled === false;
+      syncOfflineDrawerControls();
+    });
+  }
+  if(userEnhanceEnabled){
+    userEnhanceEnabled.addEventListener('click', function(){
+      var draft = getOfflineDrawerDraft();
+      draft.userEnhanceEnabled = !draft.userEnhanceEnabled;
+      syncOfflineDrawerControls();
     });
   }
   if(userTitle){
@@ -8693,6 +8745,8 @@ function getOfflineStoryPrefs(){
   var userPerspective = String(character && character.offlineUserPerspective || legacyPerspective || 'first');
   var perspective = userPerspective;
   var style = String(character && character.offlineInviteStyle || '').trim();
+  var retellEnabled = !(character && character.offlineRetellEnabled === false);
+  var userEnhanceEnabled = !!(character && character.offlineUserEnhanceEnabled);
   var maxContextTokens = getOfflineContextLimitTokens();
   var maxOutputTokens = getOfflineMaxOutputTokens();
   var presetName = getOfflinePresetName();
@@ -8715,6 +8769,8 @@ function getOfflineStoryPrefs(){
     userPerspective:userPerspective,
     perspective:perspective,
     style:style,
+    retellEnabled:retellEnabled,
+    userEnhanceEnabled:userEnhanceEnabled,
     maxContextTokens:maxContextTokens,
     maxOutputTokens:maxOutputTokens,
     presetName:presetName
@@ -8763,6 +8819,38 @@ function getOfflineStoryPerspectiveLabel(value){
 function getOfflineDualPerspectiveLabel(){
   var prefs = getOfflineStoryPrefs();
   return 'char ' + getOfflineStoryPerspectiveLabel(prefs.charPerspective) + '；user ' + getOfflineStoryPerspectiveLabel(prefs.userPerspective) + '；心声固定 char 第一人称';
+}
+function offlineRetellEnhanceSettingLine(prefs){
+  var storyPrefs = prefs || getOfflineStoryPrefs();
+  var retellOn = storyPrefs.retellEnabled !== false;
+  var enhanceOn = !!storyPrefs.userEnhanceEnabled;
+  return [
+    '转述强化设置：转述' + (retellOn ? '开启' : '关闭') + '，强化' + (enhanceOn ? '开启' : '关闭') + '。',
+    retellOn
+      ? '若本轮存在 user 最新线下输入，正文需要自然吸收它，用约 20%-25% 的正文篇幅转述、扩写并润色 user 刚刚表达的内容，再承接 char 的反应与剧情推进。'
+      : '转述关闭时，只把 user 最新线下输入当作触发信息，不刻意占用正文篇幅复述它。',
+    enhanceOn
+      ? '强化开启时，可以根据 user persona 和本轮明确指令补少量可观察互动；强化不等于抢话，不能让 user 的新台词压过 char 的回应，不能替 user 写内心或重大决定。'
+      : '强化关闭时，不主动给 user 添加新台词或额外动作，更不能让 user 抢话；只呈现 user 输入里已经明确发生的内容。'
+  ].join(' ');
+}
+function offlineRetellEnhanceUserPromptBlock(userText, prefs){
+  var text = String(userText || '').trim();
+  var storyPrefs = prefs || getOfflineStoryPrefs();
+  var lines = [];
+  if(text && storyPrefs.retellEnabled !== false){
+    lines.push('【转述】已开启：本轮 user input 是现场已经发生的话、动作或指令。正文需要用总篇幅约 20%-25% 自然转述、扩写并润色它，让读者清楚 user 刚刚表达/推动了什么；之后再写 char 的反应和接下来的剧情，直到达到字数要求。');
+    lines.push('转述不能写成聊天记录复制粘贴，也不能篡改 user 的核心意思；要像正文里自然发生的叙述。');
+  }else if(text){
+    lines.push('【转述】已关闭：不要刻意用大段正文复述 user input，只把它作为 char 当下回应的触发信息。');
+  }
+  if(storyPrefs.userEnhanceEnabled){
+    lines.push('【强化】已开启：可以根据 user persona 和本轮明确指令，给 user 少量可观察互动，例如动作、停顿、表情、靠近/退开或已经明确要说出口的短句。');
+    lines.push('强化不是抢话：没有明确台词意图时不要主动替 user 加新台词；即使需要写 user 台词，也必须短、贴本轮输入，不能盖过 char 的回应，不能替 user 做重大决定，不能写 user 内心。');
+  }else{
+    lines.push('【强化】已关闭：不要主动替 user 新增台词、动作或抢话；只处理 user input 中已经明说的内容，user 仍然只能通过 char 观察到的反应呈现。');
+  }
+  return lines.join('\n');
 }
 function offlinePerspectiveSubjectRuleLine(label, value, canonicalName){
   var safeLabel = String(label || '').trim() || '对象';
@@ -11477,6 +11565,7 @@ function buildOfflineBodySystemPrompt(options){
     '最终检查 asides 和引号台词：它们必须严格使用当前语言设置的原文，不要偷回中文，也不要夹英文。',
     '注意：thought_chain、幕摘要、阶段记忆总结固定使用简体中文，不跟随语言设置。',
     offlinePerspectiveRuleLine(storyPrefs.perspective),
+    offlineRetellEnhanceSettingLine(storyPrefs),
     '镜头和感知中心必须是 char 本人，优先写动作、停顿、语气、眼神和现场变化。',
     '反车轱辘话：必须对照最近线下记录，已经写过的安抚句、解释、拥抱、道歉、承诺、同一种身体动作、同一种比喻和同一种情绪回路不要换皮重复；这一幕必须出现新的现场细节、新的动作变化、新的关系推进或新的心理转折。',
     '线下可以细腻，但不能原地打转；不要每一幕都反复说“我会陪着你”、反复抱紧、反复道歉、反复解释同一个理由。',
@@ -11513,6 +11602,7 @@ function buildOfflineBodyTextSystemPrompt(options){
     '正文的旁白叙述、动作描写、环境描写固定使用简体中文；只有 char 真正说出口的引号台词跟随当前语言设置。',
     '最终检查 text：除了引号里的 char 台词，其余所有正文都必须是简体中文。',
     offlinePerspectiveRuleLine(storyPrefs.perspective),
+    offlineRetellEnhanceSettingLine(storyPrefs),
     '镜头和感知中心必须是 char 本人，优先写动作、停顿、语气、眼神和现场变化。',
     '反车轱辘话：必须对照最近线下记录，已经写过的安抚句、解释、拥抱、道歉、承诺、同一种身体动作、同一种比喻和同一种情绪回路不要换皮重复；这一幕必须出现新的现场细节、新的动作变化、新的关系推进或新的心理转折。',
     '至少 3 个自然段，每段都用完整句子收尾。',
@@ -11650,6 +11740,7 @@ function buildOfflineSystemPrompt(options){
     isOfflineBirthdayTheme() ? (isOfflineLoveTheme() ? '不要把整段正文旁白或 song.reason 切成外语；外层旁白也绝对不许变成外语。' : '不要把整段正文旁白或 lyrics 切成外语；外层旁白也绝对不许变成外语。') : '不要把整段正文旁白切成外语；title、quote 和外层旁白也绝对不许变成外语。',
     '灰色旁白心声、引号台词、status_card future_title、future_note 和小物件里的可见文字，必须严格使用当前语言设置的原文，不要偷回中文，不要乱跳成英文。',
     offlinePerspectiveRuleLine(storyPrefs.perspective),
+    offlineRetellEnhanceSettingLine(storyPrefs),
     offlineForbiddenWordRuleLine(),
     offlineLaoziSelfReferenceRuleLine(),
     '正文的镜头和感知中心必须是 char 本人：重点写 char 看到的、听到的、想到的、做出的动作和反应。',
@@ -11784,6 +11875,7 @@ function buildOfflineUserPrompt(userText){
     '当前时间/天气/日程：\n' + (clipOfflinePromptText([weatherRule ? ('天气：' + weatherRule) : '', liveContext || ''].filter(Boolean).join('\n') || '无', offlinePromptLimit(isMobileOfflineRuntime() ? 620 : 900, compactLevel, 220)) || '无'),
     '最近线下记录：\n' + (clipOfflinePromptText(formatOfflineHistoryForPrompt(compactLevel >= 2 ? 3 : 4, compactLevel >= 2 ? 4 : 6) || '无', offlinePromptLimit(isMobileOfflineRuntime() ? 1200 : 1800, compactLevel, 360)) || '无'),
     repeatGuardText || '反重复提醒：请避开最近线下记录里刚出现过的安抚、解释、动作、比喻和情绪回路，这一幕要有新的现场推进。',
+    offlineRetellEnhanceUserPromptBlock(userText, getOfflineStoryPrefs()),
     '用户刚刚线下说：' + String(userText || '').trim()
   ].filter(Boolean).join('\n\n');
 }
