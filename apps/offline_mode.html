@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../promptManager.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../accountManager.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T18:03:42Z"></script>
+<script src="../assetStore.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../promptManager.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../accountManager.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T18:54:14Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -2696,8 +2696,7 @@ function normalizeOnlineMemorySummaryStore(store){
   var legacyVectorItems = buildOfflineLegacyVectorDiaryItems(next.items, advanced.vector);
   if(legacyVectorItems.length) next.items = next.items.concat(legacyVectorItems);
   next.advancedMemory = Object.assign({}, advanced, {
-    mode: advanced.mode === 'structured' ? 'structured' : 'diary',
-    vector: { coreMemories:[], fragments:[], timelineSummaries:{}, settings:{} }
+    mode: advanced.mode === 'structured' ? 'structured' : 'diary'
   });
   return next;
 }
@@ -2910,6 +2909,98 @@ function offlineStructuredEntryTextForShortTerm(entry){
     content = String(content.slice(0, eq)).trim() + '：' + String(content.slice(eq + 1)).trim();
   }
   return (date ? ('[' + date + ']') : '') + content;
+}
+function buildOfflineSharedVectorPrompt(slice, fromIndex, store){
+  var safe = normalizeOnlineMemorySummaryStore(store || defaultOnlineMemorySummaryStore());
+  return [
+    '你是"' + (getOfflineCharCanonicalName() || '角色') + '"。请从这段线下互动里提取值得进入你小脑瓜检索层的记忆。',
+    '只返回 JSON 数组，每项格式：{"content":"...","tags":["..."],"category":"F/E/D/P/R/M/A/H/X","importance":1-10,"emotionalWeight":1-10,"context":"...","eventName":"...","eventTags":["..."]}',
+    'source 不要写成“线下”类别；线下只是来源，内容仍然归到人物底稿、已经发生、关系、爱好习惯、正在推进、未来挂念等正常类别。',
+    '普通闲聊、无后续影响的内容不要记；不要重复已有小脑瓜记忆。',
+    '现有小脑瓜记忆：\n' + buildOfflineSharedMemoryPromptText(safe),
+    '线下聊天内容：\n' + buildOfflineSharedMemoryEntryLines(slice, fromIndex)
+  ].join('\n\n');
+}
+function parseOfflineVectorExtractionResult(rawText){
+  var txt = String(rawText || '').trim();
+  if(!txt) return [];
+  try{
+    var hit = txt.match(/\[[\s\S]*\]/);
+    if(!hit) return [];
+    var arr = JSON.parse(hit[0]);
+    if(!Array.isArray(arr)) return [];
+    return arr.map(function(item){
+      var obj = item && typeof item === 'object' ? item : {};
+      var category = String(obj.category || 'E').trim().toUpperCase();
+      if(!/^[FEDPRMAHX]$/.test(category)) category = 'E';
+      return {
+        content: String(obj.content || '').trim(),
+        tags: Array.isArray(obj.tags) ? obj.tags.map(function(v){ return String(v || '').trim(); }).filter(Boolean).slice(0, 8) : [],
+        category: category,
+        importance: Math.max(1, Math.min(10, Number(obj.importance || 5) || 5)),
+        emotionalWeight: Math.max(1, Math.min(10, Number(obj.emotionalWeight || 3) || 3)),
+        context: String(obj.context || '').trim(),
+        eventName: String(obj.eventName || '').trim(),
+        eventTags: Array.isArray(obj.eventTags) ? obj.eventTags.map(function(v){ return String(v || '').trim(); }).filter(Boolean).slice(0, 8) : []
+      };
+    }).filter(function(item){ return !!item.content; });
+  }catch(err){
+    return [];
+  }
+}
+function offlineVectorWords(text){
+  var src = String(text || '').toLowerCase();
+  var words = src.match(/[\u4e00-\u9fff]{1,2}|[a-z0-9_]{2,}/g) || [];
+  return words.slice(0, 80);
+}
+function offlineVectorTextSimilarity(a, b){
+  var left = offlineVectorWords(a);
+  var right = offlineVectorWords(b);
+  if(!left.length || !right.length) return 0;
+  var set = Object.create(null);
+  left.forEach(function(w){ set[w] = true; });
+  var hit = 0;
+  right.forEach(function(w){ if(set[w]) hit += 1; });
+  return hit / Math.max(left.length, right.length, 1);
+}
+function appendOfflineVectorMemories(store, items, options){
+  var safe = normalizeOnlineMemorySummaryStore(store || defaultOnlineMemorySummaryStore());
+  safe.advancedMemory = normalizeOfflineAdvancedMemoryState(safe.advancedMemory);
+  var mem = safe.advancedMemory.vector;
+  var opts = options && typeof options === 'object' ? options : {};
+  var added = 0;
+  mem.fragments = Array.isArray(mem.fragments) ? mem.fragments : [];
+  (Array.isArray(items) ? items : []).forEach(function(item){
+    if(!item || !item.content) return;
+    var dup = mem.fragments.some(function(frag){
+      return offlineVectorTextSimilarity(frag && frag.content, item.content) > 0.8;
+    });
+    if(dup) return;
+    mem.fragments.push({
+      id: 'offline_vec_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
+      content: String(item.content || '').trim(),
+      tags: Array.isArray(item.tags) ? item.tags : [],
+      category: String(item.category || 'E').trim() || 'E',
+      importance: Math.max(1, Math.min(10, Number(item.importance || 5) || 5)),
+      emotionalWeight: Math.max(1, Math.min(10, Number(item.emotionalWeight || 3) || 3)),
+      createdAt: Date.now(),
+      lastRecalled: 0,
+      recallCount: 0,
+      embedding: null,
+      linkedMemories: [],
+      source: String(opts.sourceType || 'offline_chat'),
+      sourceType: String(opts.sourceType || 'offline_chat'),
+      eventName: String(item.eventName || '').trim(),
+      eventTags: Array.isArray(item.eventTags) ? item.eventTags : [],
+      context: String(item.context || '').trim()
+    });
+    added += 1;
+  });
+  if(added){
+    mem.lastExtractionAt = Date.now();
+    safe.advancedMemory.vector = mem;
+  }
+  return { store:safe, added:added };
 }
 function buildOfflineStructuredStageSummaryPrompt(item, store){
   var safe = normalizeOnlineMemorySummaryStore(store || defaultOnlineMemorySummaryStore());
@@ -5035,8 +5126,17 @@ async function appendOfflineSharedMemorySummaries(options){
         });
         store.advancedMemory.structured.shortTerm = normalizeOfflineLittleBrainShortTermItems(shortTerm);
       }
+      try{
+        var vectorRaw = await callAIWithTimeout(buildOfflineSharedVectorPrompt(slice, from, store), '请提取这段线下互动的小脑瓜检索记忆。', Math.min(getOfflineReplyTimeoutMs(), 30000));
+        var vectorItems = parseOfflineVectorExtractionResult(String(vectorRaw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''));
+        if(vectorItems.length){
+          var vectorResult = appendOfflineVectorMemories(store, vectorItems, { sourceType: manual ? 'offline_chat_manual' : 'offline_chat' });
+          store = vectorResult.store;
+        }
+      }catch(vectorErr){}
       store.advancedMemory.mode = 'structured';
       store.advancedMemory.structured.offlineCovered = to;
+      store.advancedMemory.vector.offlineCovered = to;
       store.advancedMemory.structured.lastUpdated = now;
     }else{
       store.advancedMemory.mode = 'diary';
@@ -9837,7 +9937,10 @@ function defaultOfflineAdvancedMemoryState(){
       coreMemories:[],
       fragments:[],
       timelineSummaries:{},
-      settings:{}
+      covered:0,
+      offlineCovered:0,
+      lastExtractionAt:0,
+      settings:{ enabled:true, topN:8 }
     }
   };
 }
@@ -9920,7 +10023,10 @@ function normalizeOfflineAdvancedMemoryState(raw){
     coreMemories: Array.isArray(vector.coreMemories) ? vector.coreMemories : [],
     fragments: Array.isArray(vector.fragments) ? vector.fragments : [],
     timelineSummaries: vector.timelineSummaries && typeof vector.timelineSummaries === 'object' ? vector.timelineSummaries : {},
-    settings: vector.settings && typeof vector.settings === 'object' ? vector.settings : {}
+    covered: Math.max(0, Number(vector.covered || 0) || 0),
+    offlineCovered: Math.max(0, Number(vector.offlineCovered || 0) || 0),
+    lastExtractionAt: Math.max(0, Number(vector.lastExtractionAt || 0) || 0),
+    settings: Object.assign({ enabled:true, topN:8 }, vector.settings && typeof vector.settings === 'object' ? vector.settings : {})
   };
   return base;
 }
@@ -10092,7 +10198,8 @@ function buildOfflineSharedMemoryPromptText(store){
   if(mode === 'structured') base = buildOfflineStructuredMemoryPromptText(safe);
   else return buildOfflineDiaryMemoryPromptText(safe.items || []);
   var extra = buildOfflineSupplementalMemoryPromptText(safe);
-  return [String(base || '').trim(), String(extra || '').trim()].filter(Boolean).join('\n\n').trim();
+  var vector = buildOfflineVectorMemoryPromptText(safe);
+  return [String(base || '').trim(), String(vector || '').trim(), String(extra || '').trim()].filter(Boolean).join('\n\n').trim();
 }
 function getOfflineMemoryReadCount(){
   return Math.max(1, Math.min(12, Number(character && character.offlineMemoryReadCount) || 5));

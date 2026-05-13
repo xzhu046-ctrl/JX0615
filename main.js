@@ -9,6 +9,8 @@ const APP_MAP = {
   schedule:   { title: '日程',           src: 'apps/schedule.html', hideTopbar: true },
   offline:    { title: '约会',           src: 'apps/offline.html', hideTopbar: true },
   offline_mode:{ title: '线下',          src: 'apps/offline_mode.html', hideTopbar: true },
+  user:       { title: '小脑瓜',         src: 'apps/little_brain.html', hideTopbar: true },
+  little_brain:{ title: '小脑瓜',        src: 'apps/little_brain.html', hideTopbar: true },
   couple:     { title: '情侣空间',       src: 'apps/qq_profile.html?couple=1', hideTopbar: true },
   backend:    { title: '后台',           src: 'apps/backend.html' },
   map6:       { title: '地图',           src: 'apps/map6.html' },
@@ -23,7 +25,7 @@ const HOME_ICON_DEFAULTS = {
   backend: '后台',
   map6: '地图',
   char: 'CHAR',
-  user: 'USER',
+  user: '小脑瓜',
   'placeholder-1': '占位1',
   'placeholder-2': '占位2',
   'placeholder-3': '占位3',
@@ -60,11 +62,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T18:03:42Z';
+const APP_BUILD_ID = '2026-05-13T18:54:14Z';
 const APP_UPDATE_NOTES = [
-  '头像恢复直连渲染',
-  '撤掉失败头像代理',
-  '保留坏图强制重绘'
+  'App 内头像改用父壳稳定补图',
+  'USER 入口改成小脑瓜',
+  '小脑瓜接入后台记忆骨架'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -108,6 +110,7 @@ const FORCE_UPDATE_CORE_FILES = [
   'apps/characters.html',
   'apps/chat.html',
   'apps/customize.html',
+  'apps/little_brain.html',
   'apps/map6.html',
   'apps/offline.html',
   'apps/offlineInvite.js',
@@ -977,6 +980,8 @@ function getShellAvatarRenderSrc(src){
 
 var shellAvatarImagePool = Object.create(null);
 var shellAvatarPoolLoading = Object.create(null);
+var shellAvatarBlobUrlCache = Object.create(null);
+var shellAvatarBlobUrlLoading = Object.create(null);
 var shellAvatarFrameRepairTimers = [];
 var shellAvatarPrewarmRoot = null;
 
@@ -998,6 +1003,91 @@ function getShellAvatarPoolKey(src){
   var text = normalizeShellAssetSrc(src || '');
   if(!isRenderableShellAvatarSrc(text) || /^data:|^blob:/i.test(text)) return '';
   return text;
+}
+
+function getShellAvatarBlobKey(src){
+  var key = getShellAvatarPoolKey(src);
+  return /^https?:/i.test(key || '') ? key : '';
+}
+
+function setShellAvatarImageSrcFromBlobFallback(img, originalSrc, blobSrc){
+  if(!img || !blobSrc) return false;
+  var key = getShellAvatarBlobKey(originalSrc);
+  if(!key) return false;
+  try{ img.removeAttribute('srcset'); }catch(srcsetErr){}
+  try{ img.setAttribute('data-avatar-src', key); }catch(dataErr){}
+  try{ img.setAttribute('data-shell-avatar-fallback', 'blob'); }catch(flagErr){}
+  try{ img.setAttribute('referrerpolicy', 'no-referrer'); }catch(refErr){}
+  try{ img.referrerPolicy = 'no-referrer'; }catch(policyErr){}
+  try{ img.decoding = 'async'; }catch(decErr){}
+  try{ img.loading = 'eager'; }catch(loadErr){}
+  try{ img.style.display = ''; }catch(styleErr){}
+  try{
+    var fallback = img.nextElementSibling;
+    if(fallback && /fallback|avatar-fallback/i.test(String(fallback.className || ''))){
+      fallback.style.display = 'none';
+    }
+  }catch(fallbackErr){}
+  try{ img.src = blobSrc; }catch(assignErr){ return false; }
+  return true;
+}
+
+function ensureShellAvatarBlobFallback(src){
+  var key = getShellAvatarBlobKey(src);
+  if(!key || typeof fetch !== 'function') return Promise.resolve('');
+  if(shellAvatarBlobUrlCache[key]) return Promise.resolve(shellAvatarBlobUrlCache[key]);
+  if(shellAvatarBlobUrlLoading[key]) return shellAvatarBlobUrlLoading[key];
+  function fetchBlob(url, options){
+    return fetch(url, options || {}).then(function(resp){
+      if(!resp || !resp.ok) throw new Error('avatar fetch failed');
+      return resp.blob();
+    });
+  }
+  var directOptions = {
+    cache: 'force-cache',
+    mode: 'cors',
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer'
+  };
+  var proxyUrl = '/avatar-proxy?u=' + encodeURIComponent(key);
+  shellAvatarBlobUrlLoading[key] = fetchBlob(getShellAvatarRenderSrc(key), directOptions).catch(function(){
+    return fetchBlob(proxyUrl, { cache:'force-cache', credentials:'same-origin' });
+  }).then(function(blob){
+    if(!blob || !/^image\//i.test(String(blob.type || 'image/'))) throw new Error('avatar blob is not image');
+    var url = '';
+    try{ url = URL.createObjectURL(blob); }catch(urlErr){}
+    if(url) shellAvatarBlobUrlCache[key] = url;
+    return url || '';
+  }).catch(function(err){
+    try{
+      pushBackendLogEntry({
+        level: 'warn',
+        app: currentApp || 'shell',
+        source: 'avatar.blob_fallback',
+        message: '头像稳定补图失败',
+        detail: { src: key, error: String(err && err.message || err || '') }
+      });
+    }catch(logErr){}
+    return '';
+  }).finally(function(){
+    delete shellAvatarBlobUrlLoading[key];
+  });
+  return shellAvatarBlobUrlLoading[key];
+}
+
+function applyShellAvatarBlobFallbackToImage(img, src){
+  var key = getShellAvatarBlobKey(src);
+  if(!img || !key) return false;
+  var cached = shellAvatarBlobUrlCache[key] || '';
+  if(cached) return setShellAvatarImageSrcFromBlobFallback(img, key, cached);
+  ensureShellAvatarBlobFallback(key).then(function(blobSrc){
+    if(!blobSrc || !img || !img.parentNode) return;
+    var currentKey = getShellFrameAvatarImgSource(img);
+    if(currentKey && currentKey !== key) return;
+    var broken = !img.complete || Number(img.naturalWidth || 0) <= 0;
+    if(broken) setShellAvatarImageSrcFromBlobFallback(img, key, blobSrc);
+  }).catch(function(){});
+  return false;
 }
 
 function isShellAvatarPoolImageReady(img){
@@ -1046,6 +1136,12 @@ function prewarmShellAvatarImagePool(src, wantedCount){
       return function(){
         shellAvatarPoolLoading[poolKey] = Math.max(0, Number(shellAvatarPoolLoading[poolKey] || 0) - 1);
         try{ if(poolImg.parentNode) poolImg.parentNode.removeChild(poolImg); }catch(removeErr){}
+        ensureShellAvatarBlobFallback(poolKey).then(function(blobSrc){
+          if(blobSrc){
+            repairShellAvatarImages();
+            repairAppFrameAvatarImages(document.getElementById('app-iframe'));
+          }
+        }).catch(function(){});
       };
     })(img, key);
     img.src = getShellAvatarRenderSrc(key);
@@ -1087,6 +1183,7 @@ function prewarmShellAvatarSourcesForApps(){
   }catch(rosterErr){}
   sources.slice(0, 48).forEach(function(src, idx){
     prewarmShellAvatarImagePool(src, idx < 4 ? 14 : 4);
+    ensureShellAvatarBlobFallback(src).catch(function(){});
   });
 }
 
@@ -7310,7 +7407,7 @@ function bindHomePager(){
 }
 
 function openPlaceholderMiniApp(idx){
-  if(Number(idx) === 1 || Number(idx) === 2){
+  if(Number(idx) === 1){
     var activeChat = getActiveCharacterData();
     if(activeChat && activeChat.id){
       persistShellActiveCharacter(activeChat);
@@ -7320,6 +7417,10 @@ function openPlaceholderMiniApp(idx){
     }else{
       openApp('qq');
     }
+    return;
+  }
+  if(Number(idx) === 2){
+    openApp('little_brain');
     return;
   }
   if(Number(idx) === 3){
@@ -8035,7 +8136,9 @@ function repairShellAvatarImages(){
     prewarmShellAvatarImagePool(src, 8);
     var broken = !img.complete || Number(img.naturalWidth || 0) <= 0;
     if(!broken) return;
-    if(replaceShellAvatarWithPooledImage(img, src)) repaired = true;
+    if(shellAvatarBlobUrlCache[getShellAvatarBlobKey(src)] && applyShellAvatarBlobFallbackToImage(img, src)) repaired = true;
+    else if(replaceShellAvatarWithPooledImage(img, src)) repaired = true;
+    else if(applyShellAvatarBlobFallbackToImage(img, src)) repaired = true;
   });
   return repaired;
 }
@@ -8056,7 +8159,9 @@ function repairAppFrameAvatarImages(frame){
     prewarmShellAvatarImagePool(src, 8);
     var broken = !img.complete || Number(img.naturalWidth || 0) <= 0;
     if(!broken) return;
-    if(replaceFrameAvatarWithPooledImage(img, src)) repaired = true;
+    if(shellAvatarBlobUrlCache[getShellAvatarBlobKey(src)] && applyShellAvatarBlobFallbackToImage(img, src)) repaired = true;
+    else if(replaceFrameAvatarWithPooledImage(img, src)) repaired = true;
+    else if(applyShellAvatarBlobFallbackToImage(img, src)) repaired = true;
   });
   return repaired;
 }

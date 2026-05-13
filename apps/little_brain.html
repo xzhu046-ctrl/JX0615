@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>小脑瓜</title>
+  <style>
+    :root{
+      --wine:#7f1d2d;
+      --wine-deep:#5f1421;
+      --ink:#2d1720;
+      --muted:#8b6f78;
+      --line:rgba(127,29,45,.16);
+      --paper:rgba(255,251,252,.92);
+      --soft:rgba(255,244,247,.82);
+      --bg:#fff7f9;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; min-height:100%; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Helvetica Neue",Arial,sans-serif; }
+    body{ overflow:hidden; }
+    button,input,textarea{ font:inherit; }
+    button{ -webkit-tap-highlight-color:transparent; }
+    .app{ height:100vh; height:100dvh; display:flex; flex-direction:column; background:
+      radial-gradient(circle at 12% -8%, rgba(127,29,45,.12), transparent 36%),
+      linear-gradient(180deg, #fffafb 0%, #fff5f7 48%, #fff9fa 100%);
+    }
+    .topbar{ flex:0 0 auto; padding:calc(env(safe-area-inset-top,0px) + 12px) 14px 10px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--line); background:rgba(255,250,251,.86); }
+    .icon-btn{ width:36px; height:36px; border:0; background:transparent; color:var(--wine); display:grid; place-items:center; border-radius:50%; }
+    .title{ min-width:0; flex:1; }
+    .title h1{ margin:0; font-size:20px; line-height:1.1; letter-spacing:0; color:var(--wine-deep); }
+    .title p{ margin:4px 0 0; font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .content{ flex:1 1 auto; min-height:0; overflow:auto; padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 18px); }
+    .char-strip{ display:flex; gap:10px; overflow-x:auto; padding:2px 0 12px; scrollbar-width:none; }
+    .char-strip::-webkit-scrollbar{ display:none; }
+    .char-chip{ flex:0 0 auto; width:72px; border:0; background:transparent; color:var(--ink); display:flex; flex-direction:column; align-items:center; gap:6px; padding:4px 2px; }
+    .char-chip .avatar{ width:52px; height:52px; border-radius:17px; overflow:hidden; background:#fff; border:1px solid rgba(127,29,45,.12); display:grid; place-items:center; box-shadow:0 8px 18px rgba(127,29,45,.10); color:var(--wine); font-weight:700; }
+    .char-chip.active .avatar{ outline:2px solid rgba(127,29,45,.36); outline-offset:2px; }
+    .char-chip img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .char-chip span:last-child{ width:100%; text-align:center; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .panel{ background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:12px; box-shadow:0 10px 28px rgba(127,29,45,.08); margin-bottom:12px; }
+    .hero{ display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:center; }
+    .hero-avatar{ width:58px; height:58px; border-radius:20px; overflow:hidden; background:#fff; display:grid; place-items:center; color:var(--wine); font-weight:800; border:1px solid rgba(127,29,45,.14); }
+    .hero-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .hero-main{ min-width:0; }
+    .hero-name{ display:flex; align-items:center; gap:8px; font-size:18px; color:var(--wine-deep); font-weight:800; }
+    .status-dot{ width:8px; height:8px; border-radius:50%; background:#b4233a; box-shadow:0 0 0 4px rgba(180,35,58,.12); }
+    .hero-sub{ margin-top:4px; font-size:12px; color:var(--muted); line-height:1.45; }
+    .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px; }
+    .stat{ background:var(--soft); border:1px solid rgba(127,29,45,.10); border-radius:8px; padding:8px; min-width:0; }
+    .stat b{ display:block; font-size:17px; color:var(--wine); line-height:1.1; }
+    .stat span{ display:block; margin-top:3px; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .actions{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+    .action{ border:0; border-radius:8px; min-height:38px; color:#fff; background:linear-gradient(180deg,#9a283c,#6f1928); font-weight:700; }
+    .action.secondary{ color:var(--wine); background:#fff; border:1px solid rgba(127,29,45,.18); }
+    .section-title{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:4px 0 9px; }
+    .section-title h2{ margin:0; font-size:15px; color:var(--wine-deep); }
+    .section-title span{ font-size:12px; color:var(--muted); }
+    .memory-grid{ display:grid; grid-template-columns:1fr; gap:8px; }
+    .mem-row{ border:1px solid rgba(127,29,45,.11); background:#fff; border-radius:8px; padding:9px 10px; }
+    .mem-row strong{ display:flex; justify-content:space-between; gap:8px; font-size:13px; color:var(--wine); }
+    .mem-row p{ margin:6px 0 0; font-size:13px; line-height:1.55; color:#4a2a34; white-space:pre-wrap; }
+    .empty{ color:var(--muted); font-size:13px; line-height:1.6; padding:12px 2px; }
+    .settings{ display:grid; gap:10px; }
+    .field{ display:grid; gap:6px; }
+    .field label{ font-size:12px; color:var(--muted); }
+    .field input{ width:100%; border:1px solid rgba(127,29,45,.18); border-radius:8px; padding:10px 11px; background:#fff; color:var(--ink); outline:none; }
+    .switch-line{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid rgba(127,29,45,.08); }
+    .switch-line:last-child{ border-bottom:0; }
+    .switch-line span{ font-size:13px; color:var(--ink); }
+    .switch{ width:48px; height:28px; border:0; border-radius:999px; background:#ead5db; padding:3px; transition:.18s ease; }
+    .switch::before{ content:""; display:block; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.16); transition:.18s ease; }
+    .switch.on{ background:var(--wine); }
+    .switch.on::before{ transform:translateX(20px); }
+    .toast{ position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom,0px) + 20px); transform:translateX(-50%) translateY(20px); opacity:0; pointer-events:none; background:rgba(75,18,31,.92); color:#fff; padding:9px 13px; border-radius:999px; font-size:13px; transition:.2s ease; max-width:86vw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+    @media (min-width:720px){
+      .content{ max-width:720px; width:100%; margin:0 auto; }
+      .memory-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <button class="icon-btn" type="button" id="backBtn" aria-label="返回">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <div class="title">
+        <h1>小脑瓜</h1>
+        <p id="subtitle">读取角色记忆中</p>
+      </div>
+      <button class="icon-btn" type="button" id="refreshBtn" aria-label="刷新">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M16 8h5V3"/></svg>
+      </button>
+    </header>
+    <main class="content">
+      <div class="char-strip" id="charStrip"></div>
+      <section class="panel hero" id="heroPanel"></section>
+      <section class="panel">
+        <div class="section-title"><h2>分类记忆</h2><span id="structuredCount">0 条</span></div>
+        <div class="memory-grid" id="structuredList"></div>
+      </section>
+      <section class="panel">
+        <div class="section-title"><h2>检索层</h2><span id="vectorCount">0 条</span></div>
+        <div class="memory-grid" id="vectorList"></div>
+      </section>
+      <section class="panel">
+        <div class="section-title"><h2>副 API / rerank</h2><span>回复前重排</span></div>
+        <div class="settings" id="settingsPanel"></div>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script src="../accountManager.js?v=2026-05-13T18:54:14Z"></script>
+  <script src="../chatStorage.js?v=2026-05-13T18:54:14Z"></script>
+  <script src="../metadataStore.js?v=2026-05-13T18:54:14Z"></script>
+  <script>
+  (function(){
+    'use strict';
+    var BUILD_ID = '2026-05-13T18:54:14Z';
+    var LITTLE_BRAIN_CONFIG_KEY = 'little_brain_config_v1';
+    var state = { chars:[], char:null, store:null, config:null };
+    var categoryLabels = {
+      F:'人物底稿', E:'已经发生', D:'未来挂念', P:'正在推进',
+      R:'关系温度', M:'关系温度', A:'代办与约定', H:'爱好习惯', X:'下次改正'
+    };
+    function $(id){ return document.getElementById(id); }
+    function esc(value){
+      return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch){
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]);
+      });
+    }
+    function toast(text){
+      var el = $('toast');
+      if(!el) return;
+      el.textContent = String(text || '');
+      el.classList.add('show');
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(function(){ el.classList.remove('show'); }, 1600);
+    }
+    function parentWindow(){
+      try{ return window.parent && window.parent !== window ? window.parent : null; }catch(err){ return null; }
+    }
+    function activeAccountId(){
+      try{
+        var p = parentWindow();
+        if(p && typeof p.getActiveAccountId === 'function') return String(p.getActiveAccountId() || '').trim();
+      }catch(err){}
+      try{
+        if(window.AccountManager && typeof window.AccountManager.getActive === 'function'){
+          var acct = window.AccountManager.getActive();
+          if(acct && acct.id) return String(acct.id || '').trim();
+        }
+      }catch(err2){}
+      return '';
+    }
+    function scopedKey(base, accountId){
+      var id = String(accountId || activeAccountId() || '').trim();
+      return id ? (base + '__acct_' + id) : base;
+    }
+    function memoryKeys(charId){
+      var base = 'memory_summaries_' + String(charId || '').trim();
+      var keys = [];
+      function add(key){ if(key && keys.indexOf(key) < 0) keys.push(key); }
+      add(scopedKey(base));
+      add(base);
+      return keys;
+    }
+    function storage(){
+      try{
+        if(window.PhoneStorage) return window.PhoneStorage;
+        var p = parentWindow();
+        if(p && p.PhoneStorage) return p.PhoneStorage;
+      }catch(err){}
+      return null;
+    }
+    async function readJsonKey(key){
+      var store = storage();
+      if(store && typeof store.getJson === 'function'){
+        var data = await store.getJson(key).catch(function(){ return null; });
+        if(data) return data;
+      }
+      try{ return JSON.parse(localStorage.getItem(key) || 'null'); }catch(err){ return null; }
+    }
+    async function writeJsonKey(key, value){
+      var store = storage();
+      if(store && typeof store.putJson === 'function'){
+        await store.putJson(key, value).catch(function(){});
+      }
+      try{ localStorage.setItem(key, JSON.stringify(value)); }catch(err){}
+    }
+    function clone(value, fallback){
+      try{ return JSON.parse(JSON.stringify(value)); }catch(err){ return fallback; }
+    }
+    function defaultStructured(){
+      return { facts:{}, events:{}, relationship:'', decisions:[], plans:[], emotions:[], shortTerm:[], customCategories:{ A:{name:'代办与约定'}, H:{name:'爱好习惯'}, X:{name:'下次改正'} }, custom:{}, covered:0, offlineCovered:0, lastUpdated:0 };
+    }
+    function defaultVector(){
+      return { coreMemories:[], fragments:[], timelineSummaries:{}, covered:0, offlineCovered:0, lastExtractionAt:0, settings:{ enabled:true, topN:8, retrievalStrategy:'user-only', retrievalUserMsgCount:3, scoreWeights:{ semantic:.4, keyword:.3, importance:.15, emotion:.1, recency:.05 } }, retrievalCache:{ query:'', resultIds:[], timestamp:0, msgCount:0 } };
+    }
+    function normalizeStore(raw){
+      var next = raw && typeof raw === 'object' ? clone(raw, {}) : {};
+      next.items = Array.isArray(next.items) ? next.items : [];
+      next.advancedMemory = next.advancedMemory && typeof next.advancedMemory === 'object' ? next.advancedMemory : {};
+      next.advancedMemory.mode = String(next.advancedMemory.mode || 'structured') === 'diary' ? 'diary' : 'structured';
+      next.advancedMemory.structured = Object.assign(defaultStructured(), next.advancedMemory.structured || {});
+      next.advancedMemory.structured.shortTerm = Array.isArray(next.advancedMemory.structured.shortTerm) ? next.advancedMemory.structured.shortTerm : [];
+      next.advancedMemory.vector = Object.assign(defaultVector(), next.advancedMemory.vector || {});
+      next.advancedMemory.vector.settings = Object.assign(defaultVector().settings, next.advancedMemory.vector.settings || {});
+      next.advancedMemory.vector.fragments = Array.isArray(next.advancedMemory.vector.fragments) ? next.advancedMemory.vector.fragments : [];
+      next.updatedAt = Math.max(Number(next.updatedAt || 0) || 0, Number(next.advancedMemory.structured.lastUpdated || 0) || 0, Number(next.advancedMemory.vector.lastExtractionAt || 0) || 0);
+      return next;
+    }
+    function avatarCandidate(c){
+      var list = [c && c.avatarUrl, c && c.imageData];
+      try{
+        (c.importedAvatarResources || []).forEach(function(item){ list.push(item && item.previewData); });
+      }catch(err){}
+      list.push(c && c.avatar);
+      for(var i = 0; i < list.length; i += 1){
+        var src = String(list[i] || '').trim();
+        if(/^(data:|https?:|blob:|\/|\.\.?\/|assets\/|apps\/)/i.test(src)) return src;
+      }
+      return '';
+    }
+    function avatarHtml(c, cls){
+      var src = avatarCandidate(c);
+      var name = String((c && (c.nickname || c.name)) || 'C').trim();
+      if(src) return '<span class="' + cls + '"><img src="' + esc(src) + '" data-avatar-src="' + esc(src) + '" avatar-like alt="" referrerpolicy="no-referrer" decoding="async"><span style="display:none">' + esc(name.slice(0,2)) + '</span></span>';
+      return '<span class="' + cls + '">' + esc(name.slice(0,2)) + '</span>';
+    }
+    async function loadCharacters(){
+      try{
+        if(window.MetadataStore && typeof window.MetadataStore.loadCharacters === 'function'){
+          var list = await window.MetadataStore.loadCharacters(true);
+          if(Array.isArray(list)) return list;
+        }
+      }catch(err){}
+      try{
+        var p = parentWindow();
+        if(p && p.MetadataStore && typeof p.MetadataStore.loadCharacters === 'function'){
+          var parentList = await p.MetadataStore.loadCharacters(true);
+          if(Array.isArray(parentList)) return parentList;
+        }
+      }catch(parentErr){}
+      try{
+        var raw = JSON.parse(localStorage.getItem('characters') || '[]');
+        return Array.isArray(raw) ? raw : [];
+      }catch(localErr){ return []; }
+    }
+    function activeCharacterId(chars){
+      try{
+        var raw = localStorage.getItem(scopedKey('activeCharacter')) || localStorage.getItem('activeCharacter') || '';
+        var parsed = raw ? JSON.parse(raw) : null;
+        if(parsed && parsed.id) return String(parsed.id || '');
+      }catch(err){}
+      try{
+        var p = parentWindow();
+        if(p && typeof p.getActiveCharacterData === 'function'){
+          var active = p.getActiveCharacterData();
+          if(active && active.id) return String(active.id || '');
+        }
+      }catch(parentErr){}
+      return chars[0] && chars[0].id ? String(chars[0].id) : '';
+    }
+    async function loadMemory(charId){
+      var keys = memoryKeys(charId);
+      var best = null;
+      for(var i = 0; i < keys.length; i += 1){
+        var data = normalizeStore(await readJsonKey(keys[i]));
+        if(!best || Number(data.updatedAt || 0) > Number(best.updatedAt || 0)) best = data;
+      }
+      return normalizeStore(best);
+    }
+    async function saveMemory(){
+      if(!state.char || !state.store) return;
+      state.store.updatedAt = Date.now();
+      var keys = memoryKeys(state.char.id);
+      for(var i = 0; i < keys.length; i += 1){
+        await writeJsonKey(keys[i], state.store);
+      }
+    }
+    function getConfig(){
+      try{
+        var raw = localStorage.getItem(LITTLE_BRAIN_CONFIG_KEY) || '';
+        return raw ? JSON.parse(raw) : { vectorEnabled:true, rerank:{ enabled:false, baseUrl:'', apiKey:'', model:'', topN:5 } };
+      }catch(err){
+        return { vectorEnabled:true, rerank:{ enabled:false, baseUrl:'', apiKey:'', model:'', topN:5 } };
+      }
+    }
+    function saveConfig(){
+      localStorage.setItem(LITTLE_BRAIN_CONFIG_KEY, JSON.stringify(state.config || {}));
+    }
+    function structuredItems(store){
+      var mem = store.advancedMemory.structured;
+      var rows = [];
+      Object.keys(mem.facts || {}).forEach(function(key){ rows.push({ label:'人物底稿', text:key + '：' + mem.facts[key] }); });
+      Object.keys(mem.events || {}).sort().forEach(function(key){ rows.push({ label:'已经发生 ' + key, text:String(mem.events[key] || '').split('|').filter(Boolean).join('\n') }); });
+      if(mem.relationship) rows.push({ label:'关系温度', text:mem.relationship });
+      (mem.plans || []).forEach(function(text){ rows.push({ label:'正在推进', text:text }); });
+      (mem.decisions || []).forEach(function(text){ rows.push({ label:'未来挂念', text:text }); });
+      (mem.emotions || []).forEach(function(text){ rows.push({ label:'关系温度', text:text }); });
+      Object.keys(mem.custom || {}).forEach(function(code){
+        var label = categoryLabels[code] || (mem.customCategories && mem.customCategories[code] && mem.customCategories[code].name) || code;
+        (Array.isArray(mem.custom[code]) ? mem.custom[code] : []).forEach(function(text){ rows.push({ label:label, text:text }); });
+      });
+      (mem.shortTerm || []).forEach(function(item){
+        rows.push({ label:String(item.label || '短期记忆'), text:String(item.text || '') });
+      });
+      return rows.filter(function(row){ return String(row.text || '').trim(); });
+    }
+    function renderChars(){
+      var strip = $('charStrip');
+      if(!strip) return;
+      strip.innerHTML = state.chars.map(function(c){
+        var active = state.char && String(c.id) === String(state.char.id);
+        var name = String(c.nickname || c.name || '角色');
+        return '<button class="char-chip' + (active ? ' active' : '') + '" type="button" data-id="' + esc(c.id) + '">' + avatarHtml(c, 'avatar') + '<span>' + esc(name) + '</span></button>';
+      }).join('');
+      Array.prototype.slice.call(strip.querySelectorAll('.char-chip')).forEach(function(btn){
+        btn.addEventListener('click', function(){ selectCharacter(btn.getAttribute('data-id')); });
+      });
+    }
+    function renderHero(){
+      var c = state.char || {};
+      var store = state.store || normalizeStore(null);
+      var rows = structuredItems(store);
+      var vector = store.advancedMemory.vector;
+      $('subtitle').textContent = c.name ? ('正在整理 ' + (c.nickname || c.name) + ' 的小脑瓜') : '还没有角色';
+      $('heroPanel').innerHTML = avatarHtml(c, 'hero-avatar') + '<div class="hero-main"><div class="hero-name"><span>' + esc(c.nickname || c.name || '未选择') + '</span><i class="status-dot"></i></div><div class="hero-sub">后台记忆会从聊天、线下和通话流入同一套分类；来源只是来源，不会变成单独类别。</div><div class="stats"><div class="stat"><b>' + rows.length + '</b><span>分类记忆</span></div><div class="stat"><b>' + (vector.fragments || []).length + '</b><span>检索片段</span></div><div class="stat"><b>' + (store.items || []).length + '</b><span>日记片段</span></div><div class="stat"><b>' + ((vector.settings && vector.settings.enabled !== false) ? '开' : '关') + '</b><span>向量侧路</span></div></div><div class="actions"><button class="action" id="enableBtn" type="button">启用</button><button class="action secondary" id="rebuildBtn" type="button">重建检索</button><button class="action secondary" id="promoteBtn" type="button">归集短期</button></div></div>';
+      $('enableBtn').onclick = enableLittleBrain;
+      $('rebuildBtn').onclick = rebuildVectorFromKnownMemory;
+      $('promoteBtn').onclick = promoteShortTerm;
+    }
+    function renderMemoryLists(){
+      var store = state.store || normalizeStore(null);
+      var rows = structuredItems(store);
+      $('structuredCount').textContent = rows.length + ' 条';
+      $('structuredList').innerHTML = rows.length ? rows.slice(-40).reverse().map(function(row){
+        return '<article class="mem-row"><strong><span>' + esc(row.label) + '</span></strong><p>' + esc(row.text) + '</p></article>';
+      }).join('') : '<div class="empty">这里会沉淀人物底稿、已经发生、关系温度、爱好习惯、约定和下次改正。</div>';
+      var frags = (store.advancedMemory.vector.fragments || []).slice().sort(function(a,b){
+        return (Number(b.createdAt || 0) || 0) - (Number(a.createdAt || 0) || 0);
+      });
+      $('vectorCount').textContent = frags.length + ' 条';
+      $('vectorList').innerHTML = frags.length ? frags.slice(0, 40).map(function(frag){
+        var label = (categoryLabels[frag.category] || frag.category || '记忆') + (frag.sourceType ? (' · ' + frag.sourceType) : '');
+        return '<article class="mem-row"><strong><span>' + esc(label) + '</span><span>' + esc(String(frag.importance || 5)) + '</span></strong><p>' + esc(frag.content || '') + '</p></article>';
+      }).join('') : '<div class="empty">检索层会保存可召回的片段；聊天会继续用 embedding、关键词和 rerank 去挑相关记忆。</div>';
+    }
+    function renderSettings(){
+      state.config = state.config || getConfig();
+      var rerank = state.config.rerank || {};
+      var vectorOn = !(state.store && state.store.advancedMemory && state.store.advancedMemory.vector && state.store.advancedMemory.vector.settings && state.store.advancedMemory.vector.settings.enabled === false);
+      $('settingsPanel').innerHTML = '<div class="switch-line"><span>向量检索侧路</span><button class="switch ' + (vectorOn ? 'on' : '') + '" id="vectorSwitch" type="button" aria-label="向量检索侧路"></button></div><div class="switch-line"><span>rerank 副 API</span><button class="switch ' + (rerank.enabled ? 'on' : '') + '" id="rerankSwitch" type="button" aria-label="rerank 副 API"></button></div><div class="field"><label>rerank baseUrl</label><input id="rerankBaseUrl" value="' + esc(rerank.baseUrl || '') + '" placeholder="https://..."></div><div class="field"><label>rerank apiKey</label><input id="rerankApiKey" value="' + esc(rerank.apiKey || '') + '" placeholder="sk-..."></div><div class="field"><label>rerank model</label><input id="rerankModel" value="' + esc(rerank.model || '') + '" placeholder="bge-reranker / jina-reranker"></div><div class="field"><label>topN</label><input id="rerankTopN" type="number" min="1" max="20" value="' + esc(rerank.topN || 5) + '"></div><button class="action" id="saveSettingsBtn" type="button">保存设置</button>';
+      $('vectorSwitch').onclick = function(){
+        state.store.advancedMemory.vector.settings.enabled = !vectorOn;
+        saveMemory().then(function(){ render(); toast('已保存'); });
+      };
+      $('rerankSwitch').onclick = function(){
+        state.config.rerank = Object.assign({}, state.config.rerank || {}, { enabled: !rerank.enabled });
+        saveConfig();
+        renderSettings();
+      };
+      $('saveSettingsBtn').onclick = function(){
+        state.config.rerank = {
+          enabled: $('rerankSwitch').classList.contains('on'),
+          baseUrl: $('rerankBaseUrl').value.trim(),
+          apiKey: $('rerankApiKey').value.trim(),
+          model: $('rerankModel').value.trim(),
+          topN: Math.max(1, Math.min(20, Number($('rerankTopN').value || 5) || 5))
+        };
+        saveConfig();
+        toast('副 API 设置已保存');
+      };
+    }
+    function render(){
+      renderChars();
+      renderHero();
+      renderMemoryLists();
+      renderSettings();
+    }
+    async function selectCharacter(id){
+      var next = state.chars.find(function(c){ return String(c.id) === String(id); }) || state.chars[0] || null;
+      state.char = next;
+      state.store = next ? await loadMemory(next.id) : normalizeStore(null);
+      render();
+    }
+    async function enableLittleBrain(){
+      if(!state.store) return;
+      state.store.advancedMemory.mode = 'structured';
+      state.store.advancedMemory.vector.settings.enabled = true;
+      await saveMemory();
+      render();
+      toast('小脑瓜已启用');
+    }
+    function vectorDup(list, text){
+      var src = String(text || '').trim();
+      if(!src) return true;
+      return list.some(function(item){ return String(item.content || '').trim() === src; });
+    }
+    async function rebuildVectorFromKnownMemory(){
+      if(!state.store) return;
+      var vector = state.store.advancedMemory.vector;
+      vector.fragments = Array.isArray(vector.fragments) ? vector.fragments : [];
+      var rows = structuredItems(state.store).concat((state.store.items || []).map(function(item){
+        return { label:String(item.label || item.sourceType || '日记'), text:String(item.text || ''), sourceType:String(item.sourceType || 'diary') };
+      }));
+      var added = 0;
+      rows.forEach(function(row){
+        var text = String(row.text || '').trim();
+        if(!text || vectorDup(vector.fragments, text)) return;
+        vector.fragments.push({
+          id:'brain_vec_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7),
+          content:text,
+          tags:String(row.label || '').split(/[，,\s]+/).filter(Boolean).slice(0,6),
+          category:'E',
+          importance:5,
+          emotionalWeight:3,
+          createdAt:Date.now(),
+          lastRecalled:0,
+          recallCount:0,
+          embedding:null,
+          linkedMemories:[],
+          source:'little_brain_rebuild',
+          sourceType:String(row.sourceType || 'little_brain_rebuild'),
+          context:String(row.label || '')
+        });
+        added += 1;
+      });
+      vector.lastExtractionAt = Date.now();
+      await saveMemory();
+      render();
+      toast('已补入 ' + added + ' 条检索片段');
+    }
+    async function promoteShortTerm(){
+      if(!state.store) return;
+      var mem = state.store.advancedMemory.structured;
+      var list = Array.isArray(mem.shortTerm) ? mem.shortTerm.slice() : [];
+      if(!list.length){ toast('没有短期记忆要归集'); return; }
+      mem.custom = mem.custom && typeof mem.custom === 'object' ? mem.custom : {};
+      list.forEach(function(item){
+        var category = String(item.memoryCategory || '').replace(/^custom:/,'') || 'E';
+        var text = String(item.text || '').trim();
+        if(!text) return;
+        if(category === 'relationship'){
+          mem.emotions = Array.isArray(mem.emotions) ? mem.emotions : [];
+          mem.emotions.push(text);
+        }else if(category === 'plans'){
+          mem.plans = Array.isArray(mem.plans) ? mem.plans : [];
+          mem.plans.push(text);
+        }else if(category === 'decisions'){
+          mem.decisions = Array.isArray(mem.decisions) ? mem.decisions : [];
+          mem.decisions.push(text);
+        }else{
+          var code = /^[AHX]$/.test(category) ? category : 'E';
+          mem.custom[code] = Array.isArray(mem.custom[code]) ? mem.custom[code] : [];
+          mem.custom[code].push(text);
+        }
+      });
+      mem.shortTerm = [];
+      mem.lastUpdated = Date.now();
+      await saveMemory();
+      render();
+      toast('短期记忆已归集');
+    }
+    async function init(){
+      $('backBtn').onclick = function(){ try{ window.parent.postMessage({ type:'CLOSE_APP' }, '*'); }catch(err){} };
+      $('refreshBtn').onclick = function(){ init().catch(function(){}); };
+      state.config = getConfig();
+      state.chars = await loadCharacters();
+      await selectCharacter(activeCharacterId(state.chars));
+      if(!state.chars.length){
+        $('subtitle').textContent = '还没有角色';
+      }
+    }
+    window.addEventListener('message', function(event){
+      var data = event && event.data || {};
+      if(data.type === 'SHELL_METADATA_DIRTY'){
+        init().catch(function(){});
+      }
+    });
+    init().catch(function(err){
+      $('subtitle').textContent = '小脑瓜读取失败';
+      toast(String(err && err.message || err || '读取失败'));
+    });
+    window.__LITTLE_BRAIN_BUILD_ID__ = BUILD_ID;
+  })();
+  </script>
+</body>
+</html>

@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../assetStore.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../accountManager.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T18:03:42Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T18:03:42Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T18:03:42Z"></script>
+<script src="../promptManager.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../assetStore.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../accountManager.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T18:54:14Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T18:54:14Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T18:54:14Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -4066,10 +4066,11 @@ var DEFAULT_MANUAL_SUMMARY_SIZE = 30;
 var MEMORY_MODE_DIARY = 'diary';
 var MEMORY_MODE_STRUCTURED = 'structured';
 var MEMORY_MODE_VECTOR = 'vector';
-var DEFAULT_MEMORY_MODE = MEMORY_MODE_DIARY;
+var DEFAULT_MEMORY_MODE = MEMORY_MODE_STRUCTURED;
 var DEFAULT_VECTOR_TOP_N = 8;
 var DEFAULT_VECTOR_RETRIEVAL_STRATEGY = 'user-only';
 var DEFAULT_VECTOR_USER_MSG_COUNT = 3;
+var LITTLE_BRAIN_CONFIG_KEY = 'little_brain_config_v1';
 var DEFAULT_MOMENTS_FREQ = 'medium';
 var memorySummaryBusy = false;
 var pendingCharBgEnabled = null;
@@ -4750,6 +4751,7 @@ function formatTok(n){
 function normalizeMemoryMode(mode){
   var v = String(mode || '').trim().toLowerCase();
   if(v === MEMORY_MODE_STRUCTURED) return MEMORY_MODE_STRUCTURED;
+  if(v === MEMORY_MODE_VECTOR) return MEMORY_MODE_VECTOR;
   return MEMORY_MODE_DIARY;
 }
 function defaultStructuredMemoryState(){
@@ -4800,6 +4802,7 @@ function defaultVectorMemoryState(){
     covered: 0,
     lastExtractionAt: 0,
     settings: {
+      enabled: true,
       topN: DEFAULT_VECTOR_TOP_N,
       retrievalStrategy: DEFAULT_VECTOR_RETRIEVAL_STRATEGY,
       retrievalUserMsgCount: DEFAULT_VECTOR_USER_MSG_COUNT,
@@ -4846,7 +4849,7 @@ function normalizeVectorMemoryState(raw){
       id: String(obj.id || ('mem_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7))),
       content: String(obj.content || '').trim(),
       tags: Array.isArray(obj.tags) ? obj.tags.map(function(tag){ return String(tag || '').trim(); }).filter(Boolean) : [],
-      category: /^[FEDPRMC]$/.test(String(obj.category || 'E')) ? String(obj.category || 'E') : 'E',
+      category: /^[FEDPRMAHXC]$/.test(String(obj.category || 'E')) ? String(obj.category || 'E') : 'E',
       importance: Math.max(1, Math.min(10, Number(obj.importance || 5) || 5)),
       emotionalWeight: Math.max(1, Math.min(10, Number(obj.emotionalWeight || 3) || 3)),
       createdAt: Math.max(0, Number(obj.createdAt || Date.now()) || Date.now()),
@@ -4855,6 +4858,9 @@ function normalizeVectorMemoryState(raw){
       embedding: Array.isArray(obj.embedding) ? obj.embedding.map(function(n){ return Number(n) || 0; }) : null,
       linkedMemories: Array.isArray(obj.linkedMemories) ? obj.linkedMemories.map(function(v){ return String(v || '').trim(); }).filter(Boolean) : [],
       source: String(obj.source || 'auto').trim() || 'auto',
+      sourceType: String(obj.sourceType || obj.source || '').trim(),
+      eventName: String(obj.eventName || '').trim(),
+      eventTags: Array.isArray(obj.eventTags) ? obj.eventTags.map(function(v){ return String(v || '').trim(); }).filter(Boolean) : [],
       context: String(obj.context || '').trim()
     };
   }).filter(function(item){ return !!item.content; }) : [];
@@ -4863,6 +4869,7 @@ function normalizeVectorMemoryState(raw){
   next.lastExtractionAt = Math.max(0, Number(src.lastExtractionAt || 0) || 0);
   var weights = src.settings && src.settings.scoreWeights && typeof src.settings.scoreWeights === 'object' ? src.settings.scoreWeights : {};
   next.settings = {
+    enabled: src.settings && src.settings.enabled === false ? false : true,
     topN: Math.max(1, Math.min(20, Number(src.settings && src.settings.topN || DEFAULT_VECTOR_TOP_N) || DEFAULT_VECTOR_TOP_N)),
     retrievalStrategy: (function(v){
       v = String(v || DEFAULT_VECTOR_RETRIEVAL_STRATEGY).toLowerCase();
@@ -4973,10 +4980,7 @@ function parseLegacyMemorySummaryStore(rawText){
       offlineCovered: Math.max(0, Number(raw.offlineCovered || 0) || 0),
       offlineProgress: Math.max(0, Number(raw.offlineProgress || raw.offlineCovered || 0) || 0),
       items: items,
-      advancedMemory: Object.assign({}, advancedMemory, {
-        mode: advancedMemory.mode === MEMORY_MODE_STRUCTURED ? MEMORY_MODE_STRUCTURED : MEMORY_MODE_DIARY,
-        vector: defaultVectorMemoryState()
-      })
+      advancedMemory: advancedMemory
     };
   }catch(e){
     return defaultMemorySummaryStore();
@@ -5009,8 +5013,6 @@ function normalizeMemorySummaryStore(store){
   next.progress = Math.max(next.covered, Number(next.progress || 0) || 0);
   next.offlineCovered = Math.max(0, Number(next.offlineCovered || 0) || 0);
   next.offlineProgress = Math.max(next.offlineCovered, Number(next.offlineProgress || 0) || 0);
-  next.advancedMemory.mode = next.advancedMemory.mode === MEMORY_MODE_STRUCTURED ? MEMORY_MODE_STRUCTURED : MEMORY_MODE_DIARY;
-  next.advancedMemory.vector = defaultVectorMemoryState();
   return next;
 }
 
@@ -5939,6 +5941,69 @@ function vectorTimeDecay(timestamp){
   var days = (Date.now() - Number(timestamp || 0)) / (1000 * 60 * 60 * 24);
   return Math.exp(-0.693 * days / 30);
 }
+function loadLittleBrainConfig(){
+  try{
+    var raw = localStorage.getItem(LITTLE_BRAIN_CONFIG_KEY) || '';
+    var parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  }catch(err){
+    return {};
+  }
+}
+function getLittleBrainRerankConfig(){
+  var cfg = loadLittleBrainConfig();
+  var r = cfg && cfg.rerank && typeof cfg.rerank === 'object' ? cfg.rerank : {};
+  if(!r.enabled || !r.baseUrl || !r.apiKey || !r.model) return null;
+  return {
+    baseUrl: String(r.baseUrl || '').trim().replace(/\/$/, ''),
+    apiKey: String(r.apiKey || '').trim(),
+    model: String(r.model || '').trim(),
+    topN: Math.max(1, Math.min(20, Number(r.topN || 5) || 5))
+  };
+}
+function isLittleBrainVectorEnabled(store){
+  var safe = store && typeof store === 'object' ? store : loadMemorySummaryStore();
+  var advanced = normalizeAdvancedMemoryState(safe.advancedMemory || null);
+  var settings = advanced.vector && advanced.vector.settings || {};
+  if(settings.enabled === false) return false;
+  return advanced.mode === MEMORY_MODE_STRUCTURED || advanced.mode === MEMORY_MODE_VECTOR || settings.enabled === true;
+}
+async function rerankLittleBrainVectorResults(query, scored, topN){
+  var config = getLittleBrainRerankConfig();
+  var list = Array.isArray(scored) ? scored.slice() : [];
+  var safeQuery = String(query || '').trim();
+  if(!config || !safeQuery || !list.length) return list;
+  var pool = list.slice(0, Math.max(topN * 3, topN, config.topN));
+  var documents = pool.map(function(item){ return String(item && item.frag && item.frag.content || '').trim(); }).filter(Boolean);
+  if(!documents.length) return list;
+  try{
+    var resp = await fetch(config.baseUrl + '/rerank', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + config.apiKey },
+      body: JSON.stringify({ model: config.model, query: safeQuery, documents: documents, top_n: Math.min(config.topN, documents.length) })
+    });
+    if(!resp.ok) return list;
+    var data = await resp.json();
+    var results = Array.isArray(data && data.results) ? data.results : [];
+    if(!results.length) return list;
+    var rerankScoreByIndex = Object.create(null);
+    results.forEach(function(item, rank){
+      var idx = Number(item && (item.index != null ? item.index : item.document_index));
+      if(!Number.isFinite(idx)) idx = rank;
+      rerankScoreByIndex[idx] = Math.max(0, Number(item && (item.relevance_score != null ? item.relevance_score : item.score)) || 0);
+    });
+    var boosted = pool.map(function(item, idx){
+      var rerank = rerankScoreByIndex[idx];
+      return Object.assign({}, item, { score: Number(item.score || 0) + (rerank != null ? rerank : 0) * 0.35 });
+    });
+    boosted.sort(function(a, b){ return b.score - a.score; });
+    var boostedIds = Object.create(null);
+    boosted.forEach(function(item){ if(item && item.frag) boostedIds[item.frag.id] = true; });
+    return boosted.concat(list.filter(function(item){ return !(item && item.frag && boostedIds[item.frag.id]); }));
+  }catch(err){
+    return list;
+  }
+}
 function buildVectorExtractionPrompt(slice){
   var userName = String(getChatUserName(character && character.id) || resolveDisplayUserName() || '用户').trim() || '用户';
   var history = slice.map(function(msg){
@@ -5947,7 +6012,7 @@ function buildVectorExtractionPrompt(slice){
   }).join('\n');
   return [
     '你是"' + (getCurrentCharDisplayName() || '角色') + '"。请从对话里提取值得放进你小脑瓜里的信息。',
-    '只返回 JSON 数组，每项格式：{"content":"...","tags":["..."],"category":"F/E/D/P/R/M","importance":1-10,"emotionalWeight":1-10,"context":"..."}',
+    '只返回 JSON 数组，每项格式：{"content":"...","tags":["..."],"category":"F/E/D/P/R/M/A/H/X","importance":1-10,"emotionalWeight":1-10,"context":"...","eventName":"...","eventTags":["..."]}',
     '只提取重要信息，不要提取寒暄或无后续影响的闲聊。',
     '如果没有可提取内容，返回 []。',
     '对话内容：\n' + history
@@ -5964,13 +6029,15 @@ function parseVectorExtractionResult(rawText){
     return arr.map(function(item){
       var obj = item && typeof item === 'object' ? item : {};
       var category = String(obj.category || 'E').trim().toUpperCase();
-      if(!/^[FEDPRM]$/.test(category)) category = 'E';
+      if(!/^[FEDPRMAHX]$/.test(category)) category = 'E';
       return {
         content: String(obj.content || '').trim(),
         tags: Array.isArray(obj.tags) ? obj.tags.map(function(v){ return String(v || '').trim(); }).filter(Boolean).slice(0, 8) : [],
         category: category,
         importance: Math.max(1, Math.min(10, Number(obj.importance || 5) || 5)),
         emotionalWeight: Math.max(1, Math.min(10, Number(obj.emotionalWeight || 3) || 3)),
+        eventName: String(obj.eventName || '').trim(),
+        eventTags: Array.isArray(obj.eventTags) ? obj.eventTags.map(function(v){ return String(v || '').trim(); }).filter(Boolean).slice(0, 8) : [],
         context: String(obj.context || '').trim()
       };
     }).filter(function(item){ return !!item.content; });
@@ -6021,7 +6088,9 @@ async function getVectorEmbedding(text){
     if(timer) clearTimeout(timer);
   }
 }
-async function mergeVectorExtractedMemories(store, extractedItems){
+async function mergeVectorExtractedMemories(store, extractedItems, options){
+  var opts = options && typeof options === 'object' ? options : {};
+  extractedItems = Array.isArray(extractedItems) ? extractedItems : [];
   var safe = ensureAdvancedMemoryOnStore(store || loadMemorySummaryStore());
   var mem = safe.advancedMemory.vector;
   var added = 0;
@@ -6045,7 +6114,10 @@ async function mergeVectorExtractedMemories(store, extractedItems){
       recallCount: 0,
       embedding: embedding,
       linkedMemories: [],
-      source: 'auto',
+      source: String(opts.source || opts.sourceType || 'auto').trim() || 'auto',
+      sourceType: String(opts.sourceType || opts.source || 'auto').trim() || 'auto',
+      eventName: String(item.eventName || '').trim(),
+      eventTags: Array.isArray(item.eventTags) ? item.eventTags : [],
       context: item.context || ''
     });
     added += 1;
@@ -6088,7 +6160,15 @@ async function retrieveVectorRelevantMemories(store, queryText){
   }
   var weights = mem.settings && mem.settings.scoreWeights ? mem.settings.scoreWeights : { semantic: 0.4, keyword: 0.3, importance: 0.15, emotion: 0.1, recency: 0.05 };
   var queryTokens = vectorTokenize(query);
-  var queryEmbedding = null;
+  var queryEmbedding = await getVectorEmbedding(query);
+  if(queryEmbedding){
+    var lazyPool = frags.filter(function(frag){ return frag && !Array.isArray(frag.embedding); }).slice(0, 10);
+    for(var embIdx = 0; embIdx < lazyPool.length; embIdx += 1){
+      try{
+        lazyPool[embIdx].embedding = await getVectorEmbedding(lazyPool[embIdx].content);
+      }catch(embedErr){}
+    }
+  }
   var scored = frags.map(function(frag){
     var semantic = queryEmbedding && Array.isArray(frag.embedding) ? vectorCosineSimilarity(queryEmbedding, frag.embedding) : 0;
     var keyword = Math.max(
@@ -6106,6 +6186,7 @@ async function retrieveVectorRelevantMemories(store, queryText){
     return { frag: frag, score: total };
   });
   scored.sort(function(a, b){ return b.score - a.score; });
+  scored = await rerankLittleBrainVectorResults(query, scored, topN);
   var picked = scored.slice(0, topN).map(function(item){ return item.frag; });
   picked.forEach(function(frag){
     frag.lastRecalled = Date.now();
@@ -6191,9 +6272,10 @@ async function prepareVectorPromptMemory(messages){
   if(!character) return '';
   var store = loadMemorySummaryStore();
   var mode = getMemoryModeFromStore(store);
-  if(mode !== MEMORY_MODE_VECTOR) return '';
+  if(mode !== MEMORY_MODE_VECTOR && !isLittleBrainVectorEnabled(store)) return '';
   store = ensureAdvancedMemoryOnStore(store);
   var vectorState = store.advancedMemory.vector;
+  if(!Array.isArray(vectorState.fragments) || !vectorState.fragments.length) return '';
   var query = getVectorRetrievalQueryFromMessages(messages, vectorState.settings || {});
   var related = await retrieveVectorRelevantMemories(store, query);
   vectorMemoryPromptCache = serializeVectorMemoryForPrompt(store, related);
@@ -6203,14 +6285,19 @@ async function prepareVectorPromptMemory(messages){
 function buildMemoryPromptText(store){
   var safe = ensureAdvancedMemoryOnStore(store || loadMemorySummaryStore());
   var mode = getMemoryModeFromStore(safe);
+  var vectorExtra = mode === MEMORY_MODE_VECTOR ? '' : vectorMemoryPromptCache;
   var extra = [
     buildOfflineSupplementalMemoryPromptText(safe),
-    buildVoiceCallSupplementalMemoryPromptText(safe)
+    buildVoiceCallSupplementalMemoryPromptText(safe),
+    vectorExtra
   ].filter(Boolean).join('\n\n');
   if(mode === MEMORY_MODE_STRUCTURED){
     return appendSupplementalMemoryPromptText(serializeStructuredMemoryForPrompt(safe), extra);
   }
-  return buildDiaryMemoryPromptText(safe.items || []);
+  if(mode === MEMORY_MODE_VECTOR){
+    return appendSupplementalMemoryPromptText(vectorMemoryPromptCache, extra);
+  }
+  return appendSupplementalMemoryPromptText(buildDiaryMemoryPromptText(safe.items || []), extra);
 }
 async function maybeCreateDiaryMemorySummaries(store, summaryEvery){
   var safe = ensureAdvancedMemoryOnStore(store || loadMemorySummaryStore());
@@ -6279,7 +6366,7 @@ async function maybeCreateVectorMemorySummaries(store, summaryEvery){
       var raw = await callAIWithCustomPrompts(prompt, '请开始提取。');
       var extracted = parseVectorExtractionResult(String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''));
       if(extracted.length){
-        await mergeVectorExtractedMemories(safe, extracted);
+        await mergeVectorExtractedMemories(safe, extracted, { sourceType:'chat' });
       }else{
         safe.advancedMemory.vector.lastExtractionAt = Date.now();
       }
@@ -6302,6 +6389,9 @@ async function maybeCreateMemorySummaries(){
   }else{
     hasPending = chatLog.length - Math.max(0, Math.min(store.covered || 0, chatLog.length)) >= summaryEvery;
   }
+  if(!hasPending && isLittleBrainVectorEnabled(store)){
+    hasPending = chatLog.length - Math.max(0, Math.min(Number(store.advancedMemory.vector.covered || 0) || 0, chatLog.length)) >= summaryEvery;
+  }
   if(!hasPending) return;
   memorySummaryBusy = true;
   try{
@@ -6311,6 +6401,9 @@ async function maybeCreateMemorySummaries(){
       store = await maybeCreateStructuredMemorySummaries(store, summaryEvery);
     }else{
       store = await maybeCreateDiaryMemorySummaries(store, summaryEvery);
+    }
+    if(isLittleBrainVectorEnabled(store)){
+      store = await maybeCreateVectorMemorySummaries(store, summaryEvery);
     }
   }finally{
     memorySummaryBusy = false;
@@ -28520,6 +28613,15 @@ async function appendVoiceCallMemoryChunk(slice, summaryText, from, to){
         store = appendStructuredMemoryEntriesToShortTerm(store, entries).store;
       }
     }catch(err){}
+  }
+  if(isLittleBrainVectorEnabled(store)){
+    try{
+      var vectorRaw = await callAIWithCustomPrompts(buildVectorExtractionPrompt(slice), '请从这段通话里提取小脑瓜向量记忆。');
+      var vectorItems = parseVectorExtractionResult(String(vectorRaw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''));
+      if(vectorItems.length){
+        await mergeVectorExtractedMemories(store, vectorItems, { sourceType:'voice_call' });
+      }
+    }catch(vectorErr){}
   }
   saveMemorySummaryStore(store);
   refreshMemoryUi();
