@@ -60,9 +60,9 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T00:08:19Z';
+const APP_BUILD_ID = '2026-05-13T00:24:20Z';
 const APP_UPDATE_NOTES = [
-  '修复主屏和约会头像空白',
+  '阻止进 App 后头像被覆盖',
   '恢复线上长按完整操作菜单',
   '线下气泡改为 kiss 入口操作'
 ];
@@ -2278,6 +2278,24 @@ function activeCharacterLocalMirror(c){
     msgMin: Number(c.msgMin) || 1,
     msgMax: Number(c.msgMax) || Math.max(Number(c.msgMin) || 1, 3)
   };
+}
+
+function hydrateShellCharacterPayload(payload){
+  var incoming = payload && typeof payload === 'object' ? payload : null;
+  if(!incoming) return null;
+  var id = String(incoming.id || '').trim();
+  var roster = id ? resolveShellCharacterById(id, null) : null;
+  var merged = Object.assign({}, roster || {}, incoming || {});
+  var rosterAvatarUrl = normalizeShellAssetSrc(roster && roster.avatarUrl || '');
+  var rosterImageData = normalizeShellAssetSrc(roster && roster.imageData || '');
+  var incomingAvatarUrl = normalizeShellAssetSrc(incoming.avatarUrl || '');
+  var incomingImageData = normalizeShellAssetSrc(incoming.imageData || '');
+  if(isRenderableShellAvatarSrc(rosterAvatarUrl)) merged.avatarUrl = rosterAvatarUrl;
+  else if(isRenderableShellAvatarSrc(incomingAvatarUrl)) merged.avatarUrl = incomingAvatarUrl;
+  if(isRenderableShellAvatarSrc(rosterImageData)) merged.imageData = rosterImageData;
+  else if(isRenderableShellAvatarSrc(incomingImageData)) merged.imageData = incomingImageData;
+  else if(isRenderableShellAvatarSrc(merged.avatarUrl)) merged.imageData = merged.avatarUrl;
+  return merged;
 }
 
 function cacheAvatar(c){
@@ -7006,6 +7024,7 @@ function getActiveCharacterData(){
 }
 
 function persistShellActiveCharacter(character){
+  character = hydrateShellCharacterPayload(character) || character;
   var slim = slimChar(character);
   if(!slim || !slim.id) return null;
   var resolvedAvatar = getCharacterAvatarForBg(character);
@@ -11933,11 +11952,12 @@ window.addEventListener('message',(e)=>{
   if(type==='OFFLINE_BUSY_STATE'){
     updateOfflineModeBusyState(payload || {});
   }
-  if(type==='SET_ACTIVE_CHARACTER'){
-    const slim = persistShellActiveCharacter(payload) || slimChar(payload);
-    setWidgetCharacter(payload);
-    cacheAvatar(payload);
-    renderBondWidget(payload);
+	  if(type==='SET_ACTIVE_CHARACTER'){
+	    const hydratedPayload = hydrateShellCharacterPayload(payload) || payload;
+	    const slim = persistShellActiveCharacter(hydratedPayload) || slimChar(hydratedPayload);
+	    setWidgetCharacter(hydratedPayload);
+	    cacheAvatar(hydratedPayload);
+	    renderBondWidget(hydratedPayload);
     renderHomeDockBadges();
     if(currentApp === 'chat'){
       postToChat({ type:'SET_ACTIVE_CHARACTER', payload: slim });
@@ -12006,12 +12026,13 @@ window.addEventListener('message',(e)=>{
       renderBondWidget(activeCharForAvatar);
     }
   }
-  if(type==='CHARACTER_IMPORTED'){
-    // When a card is imported, immediately reflect it on the home widget.
-    const slim = persistShellActiveCharacter(payload) || slimChar(payload);
-    cacheAvatar(payload);
-    setWidgetCharacter(payload);
-    renderBondWidget(payload);
+	  if(type==='CHARACTER_IMPORTED'){
+	    // When a card is imported, immediately reflect it on the home widget.
+	    const hydratedPayload = hydrateShellCharacterPayload(payload) || payload;
+	    const slim = persistShellActiveCharacter(hydratedPayload) || slimChar(hydratedPayload);
+	    cacheAvatar(hydratedPayload);
+	    setWidgetCharacter(hydratedPayload);
+	    renderBondWidget(hydratedPayload);
     renderHomeDockBadges();
     if(window.MetadataStore && typeof window.MetadataStore.reloadCharacters === 'function'){
       window.MetadataStore.reloadCharacters().then(function(){
@@ -12024,23 +12045,25 @@ window.addEventListener('message',(e)=>{
       postShellMetadataDirtyToCurrentApp('characters');
     }
   }
-  if(type==='OPEN_CHAT_WITH'){
-    const slim = persistShellActiveCharacter(payload) || slimChar(payload);
-    if(slim && slim.id) markShellChatAsRead(slim.id).catch(function(){});
-    setWidgetCharacter(payload);
-    renderBondWidget(payload);
+	  if(type==='OPEN_CHAT_WITH'){
+	    const hydratedPayload = hydrateShellCharacterPayload(payload) || payload;
+	    const slim = persistShellActiveCharacter(hydratedPayload) || slimChar(hydratedPayload);
+	    if(slim && slim.id) markShellChatAsRead(slim.id).catch(function(){});
+	    setWidgetCharacter(hydratedPayload);
+	    renderBondWidget(hydratedPayload);
     try{ localStorage.setItem('pendingChatChar',JSON.stringify(slim)); }catch(e){}
     try{ localStorage.setItem('pendingChatCharId', String((slim && slim.id) || '')); }catch(e){}
     pendingOpenChatCharId = String((slim && slim.id) || '').trim();
     pendingOpenChatNonce = String(Date.now()) + '_' + Math.random().toString(36).slice(2, 8);
     replaceApp('chat');
   }
-  if(type==='OPEN_CHAT_SETTINGS'){
-    var activeSlim = payload ? slimChar(payload) : getActiveCharacterData();
-    openApp('chat');
-    if(activeSlim && activeSlim.id){
-      persistShellActiveCharacter(activeSlim);
-      setWidgetCharacter(activeSlim);
+	  if(type==='OPEN_CHAT_SETTINGS'){
+	    var activePayload = payload ? (hydrateShellCharacterPayload(payload) || payload) : getActiveCharacterData();
+	    var activeSlim = activePayload ? slimChar(activePayload) : null;
+	    openApp('chat');
+	    if(activeSlim && activeSlim.id){
+	      persistShellActiveCharacter(activeSlim);
+	      setWidgetCharacter(activeSlim);
       renderBondWidget(activeSlim);
       postToChat({ type:'SET_ACTIVE_CHARACTER', payload: activeSlim });
     }
