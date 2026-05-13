@@ -5445,7 +5445,7 @@ async function generateMemorySummary(slice){
       promptLines
     ].join('\n\n');
   try{
-    var raw = await callAIWithCustomPrompts(systemPrompt, userPrompt);
+    var raw = await callLittleBrainBackgroundAI(userPrompt, systemPrompt);
     var txt = String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,'').trim();
     return txt || fallbackSummaryText(slice);
   }catch(e){
@@ -5477,7 +5477,7 @@ async function generateMemoryMetaSummary(items){
       lines
     ].join('\n\n');
   try{
-    var raw = await callAIWithCustomPrompts(systemPrompt, userPrompt);
+    var raw = await callLittleBrainBackgroundAI(userPrompt, systemPrompt);
     var txt = String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,'').trim();
     return txt || fallbackMetaSummaryText(items);
   }catch(e){
@@ -5961,6 +5961,43 @@ function getLittleBrainRerankConfig(){
     topN: Math.max(1, Math.min(20, Number(r.topN || 5) || 5))
   };
 }
+function getLittleBrainLightApiConfig(){
+  var cfg = loadLittleBrainConfig();
+  var api = cfg && cfg.lightLLM && typeof cfg.lightLLM === 'object' ? cfg.lightLLM : {};
+  if(!api.baseUrl || !api.apiKey || !api.model) return null;
+  return {
+    baseUrl: String(api.baseUrl || '').trim().replace(/\/$/, ''),
+    apiKey: String(api.apiKey || '').trim(),
+    model: String(api.model || '').trim()
+  };
+}
+function getLittleBrainEmbeddingConfig(){
+  var cfg = loadLittleBrainConfig();
+  var emb = cfg && cfg.embedding && typeof cfg.embedding === 'object' ? cfg.embedding : {};
+  if(!emb.baseUrl || !emb.apiKey || !emb.model) return null;
+  return {
+    baseUrl: String(emb.baseUrl || '').trim().replace(/\/$/, ''),
+    apiKey: String(emb.apiKey || '').trim(),
+    model: String(emb.model || '').trim(),
+    dimensions: Math.max(0, Number(emb.dimensions || 0) || 0)
+  };
+}
+async function callLittleBrainBackgroundAI(prompt, systemPrompt){
+  var cfg = getLittleBrainLightApiConfig();
+  if(!cfg) return await callAIWithCustomPrompts(systemPrompt, prompt);
+  var messages = [];
+  var sys = String(systemPrompt || '').trim();
+  if(sys) messages.push({ role:'system', content:sys });
+  messages.push({ role:'user', content:String(prompt || '') });
+  var resp = await fetch(cfg.baseUrl + '/chat/completions', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + cfg.apiKey },
+    body:JSON.stringify({ model:cfg.model, messages:messages, temperature:0.25, max_tokens:3000, stream:false })
+  });
+  if(!resp.ok) throw new Error('LittleBrain API HTTP ' + resp.status);
+  var data = await resp.json();
+  return String(data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '').trim();
+}
 function isLittleBrainVectorEnabled(store){
   var safe = store && typeof store === 'object' ? store : loadMemorySummaryStore();
   var advanced = normalizeAdvancedMemoryState(safe.advancedMemory || null);
@@ -6050,6 +6087,38 @@ async function getVectorEmbedding(text){
   if(!src) return null;
   var cacheKey = src.slice(0, 220);
   if(vectorEmbeddingCache[cacheKey]) return vectorEmbeddingCache[cacheKey];
+  var brainEmbedding = getLittleBrainEmbeddingConfig();
+  if(brainEmbedding){
+    var brainController = null;
+    var brainTimer = null;
+    if(typeof AbortController !== 'undefined'){
+      brainController = new AbortController();
+      brainTimer = setTimeout(function(){
+        try{ brainController.abort(); }catch(e){}
+      }, 2500);
+    }
+    try{
+      var body = { model:brainEmbedding.model, input:src };
+      if(brainEmbedding.dimensions) body.dimensions = brainEmbedding.dimensions;
+      var brainResp = await fetch(brainEmbedding.baseUrl + '/embeddings', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + brainEmbedding.apiKey },
+        signal: brainController ? brainController.signal : undefined,
+        body: JSON.stringify(body)
+      });
+      if(brainResp.ok){
+        var brainData = await brainResp.json();
+        var brainEmb = brainData && brainData.data && brainData.data[0] && Array.isArray(brainData.data[0].embedding) ? brainData.data[0].embedding : null;
+        if(brainEmb){
+          vectorEmbeddingCache[cacheKey] = brainEmb;
+          return brainEmb;
+        }
+      }
+    }catch(brainErr){
+    }finally{
+      if(brainTimer) clearTimeout(brainTimer);
+    }
+  }
   await hydrateChatApiSettingsFromStorage();
   var provider = String(getChatApiSetting('provider', 'openai') || 'openai');
   var key = String(getChatApiSetting('key_' + provider, '') || '').trim();
@@ -6338,7 +6407,7 @@ async function maybeCreateStructuredMemorySummaries(store, summaryEvery){
     if(!slice.length) break;
     var prompt = buildStructuredSummaryPrompt(slice, safe);
     try{
-      var raw = await callAIWithCustomPrompts(prompt, '请沉淀小脑瓜记忆。');
+      var raw = await callLittleBrainBackgroundAI(prompt, '请沉淀小脑瓜记忆。');
       var entries = parseStructuredMemoryEntries(String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''), safe);
       if(entries.length){
         safe = appendStructuredMemoryEntriesToShortTerm(safe, entries).store;
@@ -6363,7 +6432,7 @@ async function maybeCreateVectorMemorySummaries(store, summaryEvery){
     if(!slice.length) break;
     var prompt = buildVectorExtractionPrompt(slice);
     try{
-      var raw = await callAIWithCustomPrompts(prompt, '请开始提取。');
+      var raw = await callLittleBrainBackgroundAI(prompt, '请开始提取。');
       var extracted = parseVectorExtractionResult(String(raw || '').replace(/^```[a-zA-Z]*\s*/,'').replace(/```$/,''));
       if(extracted.length){
         await mergeVectorExtractedMemories(safe, extracted, { sourceType:'chat' });
