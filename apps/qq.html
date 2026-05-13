@@ -6,11 +6,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>QQ</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Cormorant+Garamond:wght@600;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../chatStorage.js?v=2026-05-10T06:10:16Z"></script>
-<script src="../assetStore.js?v=2026-05-10T06:10:16Z"></script>
-<script src="../accountManager.js?v=2026-05-10T06:10:16Z"></script>
-<script src="../metadataStore.js?v=2026-05-10T06:10:16Z"></script>
-<script src="../sunnySupport.js?v=2026-05-10T06:10:16Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../assetStore.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../accountManager.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T03:05:31Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -1439,7 +1439,7 @@ body{
   <input id="contactsImportInput" class="native-file-input-hidden" type="file" accept=".png,.json,application/json,image/png" multiple onchange="handleContactsImportFiles(this.files)">
   <input id="contactsCreateAvatarInput" type="file" accept="image/*" style="display:none" onchange="handleContactsCreateAvatarFile(this.files[0])">
   <input id="qqHeroPhotoInput" type="file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.svg" style="display:none" onchange="handleQqHeroPhotoFile(this.files[0])">
-  <iframe id="contactsHelperFrame" class="contacts-helper-frame" src="characters.html?helper=1&__appBuild=2026-05-10T06:10:16Z" tabindex="-1" aria-hidden="true"></iframe>
+  <iframe id="contactsHelperFrame" class="contacts-helper-frame" src="characters.html?helper=1&__appBuild=2026-05-13T03:05:31Z" tabindex="-1" aria-hidden="true"></iframe>
   <div class="toast" id="toast"></div>
 
 <script>
@@ -1756,6 +1756,39 @@ function loadStoredAsset(key){
 function isRenderableAssetSource(src){
   var value = String(src || '').trim();
   return !!(value && value !== '__asset__' && (value.indexOf('data:') === 0 || value.indexOf('blob:') === 0 || value.indexOf('http') === 0 || value.indexOf('/') === 0 || value.indexOf('./') === 0 || value.indexOf('../') === 0 || value.indexOf('assets/') === 0));
+}
+function normalizeAvatarRenderSource(src){
+  var value = String(src || '').trim();
+  if(!value) return '';
+  try{
+    var proxyUrl = new URL(value, location.href);
+    if(proxyUrl.pathname === '/avatar-proxy'){
+      var raw = proxyUrl.searchParams.get('u') || proxyUrl.searchParams.get('url') || '';
+      if(raw) value = raw;
+    }
+  }catch(err){}
+  return value;
+}
+function shouldUseQqAvatarProxy(src){
+  var value = normalizeAvatarRenderSource(src || '');
+  if(!/^https?:\/\//i.test(value)) return false;
+  try{
+    var target = new URL(value);
+    if(target.origin === location.origin) return false;
+    return /\.pages\.dev$/i.test(location.hostname);
+  }catch(err){
+    return false;
+  }
+}
+function getQqAvatarRenderSrc(src){
+  var value = normalizeAvatarRenderSource(src || '');
+  if(!shouldUseQqAvatarProxy(value)) return value;
+  return '/avatar-proxy?u=' + encodeURIComponent(value);
+}
+function qqAvatarImgHtml(src){
+  var raw = normalizeAvatarRenderSource(src || '');
+  if(!isRenderableAssetSource(raw)) return '';
+  return '<img src="' + esc(getQqAvatarRenderSrc(raw)) + '" data-avatar-src="' + esc(raw) + '" alt="" referrerpolicy="no-referrer" decoding="async">';
 }
 
 async function loadChatSettingsBundleForQq(charId){
@@ -2944,7 +2977,7 @@ function renderQuickAvatarStrip(renderChars){
   strip.innerHTML = picks.map(function(c){
     var src = getAvatarSrc(c);
     var inner = src
-      ? '<img src="' + esc(src) + '" alt="">'
+      ? qqAvatarImgHtml(src)
       : '<div class="quick-face-fallback">' + esc(c.avatar || '✦') + '</div>';
     var name = String(c.nickname || c.name || '未命名');
     return '<button class="quick-face" type="button" data-chat-id="' + esc(c.id) + '"><span class="quick-face-photo">' + inner + '</span><span class="quick-face-meta"><span>聊天</span><span>' + esc(name.slice(0, 8)) + '</span></span></button>';
@@ -2974,7 +3007,7 @@ function renderContactsDrawer(renderChars){
     var name = String(c.name || c.nickname || '未命名');
     var sub = String(c.id || '').trim() || 'char_id_missing';
     var avatar = src
-      ? '<img src="' + esc(src) + '" alt="">'
+      ? qqAvatarImgHtml(src)
       : '<span>' + esc(c.avatar || '✦') + '</span>';
     return '<div class="contacts-drawer-item" role="button" tabindex="0" data-chat-id="' + esc(c.id) + '">' +
       '<span class="contacts-drawer-avatar">' + avatar + '</span>' +
@@ -3105,7 +3138,7 @@ function renderList(){
   list.innerHTML = sections.map(function(group){
     return '<section class="chat-section' + (group.pinned ? ' pinned-section' : '') + '">' + group.items.map(function(c){
     var avSrc = getAvatarSrc(c);
-    var av = avSrc ? '<img src="'+avSrc+'">' : (c.avatar||'🌸');
+    var av = avSrc ? qqAvatarImgHtml(avSrc) : (c.avatar||'🌸');
     var displayName = c.nickname || c.name || '未命名';
     var last = lastMsgOf(c);
     var unread = unreadCountOf(c);
@@ -3383,16 +3416,16 @@ function getContactsFrameWindow(){
 function getQqPageBuildId(){
   try{
     var build = String(new URL(window.location.href).searchParams.get('__appBuild') || '').trim();
-    return build || '2026-05-10T06:10:16Z';
+    return build || '2026-05-13T03:05:31Z';
   }catch(err){
-    return '2026-05-10T06:10:16Z';
+    return '2026-05-13T03:05:31Z';
   }
 }
 function buildContactsHelperSrc(cacheBust){
   var build = getQqPageBuildId();
   var url = new URL('characters.html', window.location.href);
   url.searchParams.set('helper', '1');
-  url.searchParams.set('__appBuild', build || '2026-05-10T06:10:16Z');
+  url.searchParams.set('__appBuild', build || '2026-05-13T03:05:31Z');
   if(cacheBust) url.searchParams.set('__ts', String(Date.now()));
   return url.toString();
 }

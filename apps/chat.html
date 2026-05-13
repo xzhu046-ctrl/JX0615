@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../assetStore.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../accountManager.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T02:53:20Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T02:53:20Z"></script>
+<script src="../promptManager.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../assetStore.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../accountManager.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T03:05:31Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T03:05:31Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -25917,7 +25917,7 @@ function familyCardAvatarHtml(src, fallback, extraClass){
   var safeSrc = String(src || '').trim();
   var cls = 'family-card-avatar' + (extraClass ? (' ' + extraClass) : '');
   if(isRenderableAvatarSrc(safeSrc)){
-    return '<div class="' + cls + '"><img src="' + escAttr(safeSrc) + '" alt=""></div>';
+    return '<div class="' + cls + '"><img src="' + escAttr(getChatAvatarRenderSrc(safeSrc)) + '" data-avatar-src="' + escAttr(normalizeAvatarSrc(safeSrc)) + '" alt="" referrerpolicy="no-referrer"></div>';
   }
   var label = String(fallback || '').trim();
   if(label.length > 4) label = label.slice(0, 4);
@@ -26044,7 +26044,7 @@ function setFamilyCardAvatarNode(node, avatar){
   var src = String((avatar && avatar.src) || '').trim();
   var fallback = String((avatar && avatar.fallback) || '').trim();
   if(isRenderableAvatarSrc(src)){
-    node.innerHTML = '<img src="' + escAttr(src) + '" alt="">';
+    node.innerHTML = '<img src="' + escAttr(getChatAvatarRenderSrc(src)) + '" data-avatar-src="' + escAttr(normalizeAvatarSrc(src)) + '" alt="" referrerpolicy="no-referrer">';
     return;
   }
   if(fallback.length > 4) fallback = fallback.slice(0, 4);
@@ -33470,6 +33470,13 @@ function renderLoadedAvatarToObjectUrl(preferredSrc){
 function normalizeAvatarSrc(src){
   var text = String(src || '').trim();
   if(!text) return '';
+  try{
+    var proxyUrl = new URL(text, location.href);
+    if(proxyUrl.pathname === '/avatar-proxy'){
+      var raw = proxyUrl.searchParams.get('u') || proxyUrl.searchParams.get('url') || '';
+      if(raw) text = raw;
+    }
+  }catch(proxyErr){}
   if(text.startsWith('data:')){
     return text.replace(/\s+/g, '');
   }
@@ -33477,6 +33484,24 @@ function normalizeAvatarSrc(src){
   if(text.indexOf('./apps/assets/') === 0) return '../' + text.slice(2);
   if(text.indexOf('/apps/assets/') === 0) return '..' + text;
   return text;
+}
+
+function shouldUseChatAvatarProxy(src){
+  var text = normalizeAvatarSrc(src || '');
+  if(!/^https?:\/\//i.test(text)) return false;
+  try{
+    var target = new URL(text);
+    if(target.origin === location.origin) return false;
+    return /\.pages\.dev$/i.test(location.hostname);
+  }catch(err){
+    return false;
+  }
+}
+
+function getChatAvatarRenderSrc(src){
+  var text = normalizeAvatarSrc(src || '');
+  if(!shouldUseChatAvatarProxy(text)) return text;
+  return '/avatar-proxy?u=' + encodeURIComponent(text);
 }
 
 function isRenderableAvatarSrc(src){
@@ -33491,7 +33516,7 @@ function ensureChatRenderableAvatarSrc(src){
   if(!isRenderableAvatarSrc(text)) return Promise.resolve('');
   return renderLoadedAvatarToObjectUrl(text).then(function(rendered){
     if(rendered) return rendered;
-    if(!text.startsWith('data:')) return text;
+    if(!text.startsWith('data:')) return getChatAvatarRenderSrc(text);
     if(chatAvatarObjectUrlCache[text]) return chatAvatarObjectUrlCache[text];
     return fetch(text).then(function(res){
       return res.blob();
@@ -33500,7 +33525,7 @@ function ensureChatRenderableAvatarSrc(src){
       chatAvatarObjectUrlCache[text] = blobUrl;
       return blobUrl;
     }).catch(function(){
-      return text;
+      return getChatAvatarRenderSrc(text);
     });
   });
 }
@@ -33565,6 +33590,7 @@ function setAvatarNodeFromSource(targetEl, src, fallbackText, includeHint){
     }
   }catch(err){}
   if(isRenderableAvatarSrc(text)){
+    var renderSrc = getChatAvatarRenderSrc(text);
     var existingSrc = normalizeAvatarSrc(getAvatarSourceFromNode(targetEl));
     var existingImg = targetEl.querySelector && targetEl.querySelector('img');
     if(existingSrc && existingSrc === text && existingImg && (!existingImg.complete || Number(existingImg.naturalWidth || 0) > 0)){
@@ -33582,6 +33608,7 @@ function setAvatarNodeFromSource(targetEl, src, fallbackText, includeHint){
       clonedImg.referrerPolicy = 'no-referrer';
       clonedImg.setAttribute('referrerpolicy', 'no-referrer');
       clonedImg.setAttribute('data-fallback', safeText);
+      clonedImg.setAttribute('data-avatar-src', text);
       clonedImg.onerror = function(){ handleAvatarImgError(clonedImg); };
       targetEl.appendChild(clonedImg);
       targetEl.setAttribute('data-avatar-src', text);
@@ -33600,8 +33627,9 @@ function setAvatarNodeFromSource(targetEl, src, fallbackText, includeHint){
     img.referrerPolicy = 'no-referrer';
     img.setAttribute('referrerpolicy', 'no-referrer');
     img.setAttribute('data-fallback', safeText);
+    img.setAttribute('data-avatar-src', text);
     img.onerror = function(){ handleAvatarImgError(img); };
-    img.src = text;
+    img.src = renderSrc;
     targetEl.appendChild(img);
     targetEl.setAttribute('data-avatar-src', text);
     if(includeHint){

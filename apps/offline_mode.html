@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../promptManager.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../accountManager.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T02:53:20Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T02:53:20Z"></script>
+<script src="../assetStore.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../promptManager.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../accountManager.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T03:05:31Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T03:05:31Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -3155,7 +3155,32 @@ function loadStoredAsset(key){
   return Promise.resolve(localStorage.getItem(key) || '');
 }
 function normalizeOfflineAssetSrc(src){
-  return String(src || '').trim();
+  var text = String(src || '').trim();
+  if(!text) return '';
+  try{
+    var proxyUrl = new URL(text, location.href);
+    if(proxyUrl.pathname === '/avatar-proxy'){
+      var raw = proxyUrl.searchParams.get('u') || proxyUrl.searchParams.get('url') || '';
+      if(raw) text = raw;
+    }
+  }catch(proxyErr){}
+  return text;
+}
+function shouldUseOfflineAvatarProxy(src){
+  var text = normalizeOfflineAssetSrc(src || '');
+  if(!/^https?:\/\//i.test(text)) return false;
+  try{
+    var target = new URL(text);
+    if(target.origin === location.origin) return false;
+    return /\.pages\.dev$/i.test(location.hostname);
+  }catch(err){
+    return false;
+  }
+}
+function getOfflineAvatarRenderSrc(src){
+  var text = normalizeOfflineAssetSrc(src || '');
+  if(!shouldUseOfflineAvatarProxy(text)) return text;
+  return '/avatar-proxy?u=' + encodeURIComponent(text);
 }
 function isRenderableOfflineAvatarSrc(src){
   var value = normalizeOfflineAssetSrc(src);
@@ -5327,7 +5352,7 @@ async function openOfflineStatusModal(entryIndex, options){
     }
   }
   top.innerHTML =
-    '<div class="offline-status-avatar">' + (snap.avatar ? ('<img src="' + esc(snap.avatar) + '" alt="">') : esc((snap.name || 'C').slice(0,2))) + '</div>' +
+    '<div class="offline-status-avatar">' + (snap.avatar ? ('<img src="' + esc(getOfflineAvatarRenderSrc(snap.avatar)) + '" data-avatar-src="' + esc(normalizeOfflineAssetSrc(snap.avatar)) + '" alt="" referrerpolicy="no-referrer">') : esc((snap.name || 'C').slice(0,2))) + '</div>' +
     '<div class="offline-status-head">' +
       '<div class="offline-status-kicker">' + esc(String(snap.typeLabel || modalProfile.label)) + '</div>' +
     '</div>';
@@ -6257,7 +6282,7 @@ function renderOfflineAvatarImageHtml(src, fallbackText){
   if(!isRenderableOfflineAvatarSrc(safeSrc)){
     return '<span class="offline-story-avatar-fallback">' + fallback + '</span>';
   }
-  return '<img src="' + esc(safeSrc) + '" alt="" onerror="this.style.display=&quot;none&quot;;var n=this.nextElementSibling;if(n)n.style.display=&quot;flex&quot;;"><span class="offline-story-avatar-fallback" style="display:none">' + fallback + '</span>';
+  return '<img src="' + esc(getOfflineAvatarRenderSrc(safeSrc)) + '" data-avatar-src="' + esc(safeSrc) + '" alt="" referrerpolicy="no-referrer" onerror="this.style.display=&quot;none&quot;;var n=this.nextElementSibling;if(n)n.style.display=&quot;flex&quot;;"><span class="offline-story-avatar-fallback" style="display:none">' + fallback + '</span>';
 }
 function countOfflineAssistantScenes(){
   var list = Array.isArray(session && session.entries) ? session.entries : [];
@@ -6272,7 +6297,7 @@ function renderOfflineDrawerPolaroid(role){
   var isChar = role === 'char';
   var avatar = isChar ? resolveCharAvatar() : resolveUserAvatar();
   var label = isChar ? getCharDisplayName() : resolveUserName();
-  return (avatar ? ('<img src="' + esc(avatar) + '" alt="" onerror="this.style.display=&quot;none&quot;;var n=this.nextElementSibling;if(n)n.style.display=&quot;flex&quot;;"><div class="offline-stage-drawer-polaroid-fallback" style="display:none">' + esc((label || (isChar ? 'C' : 'U')).slice(0, 2)) + '</div>') : ('<div class="offline-stage-drawer-polaroid-fallback">' + esc((label || (isChar ? 'C' : 'U')).slice(0, 2)) + '</div>')) +
+  return (avatar ? ('<img src="' + esc(getOfflineAvatarRenderSrc(avatar)) + '" data-avatar-src="' + esc(normalizeOfflineAssetSrc(avatar)) + '" alt="" referrerpolicy="no-referrer" onerror="this.style.display=&quot;none&quot;;var n=this.nextElementSibling;if(n)n.style.display=&quot;flex&quot;;"><div class="offline-stage-drawer-polaroid-fallback" style="display:none">' + esc((label || (isChar ? 'C' : 'U')).slice(0, 2)) + '</div>') : ('<div class="offline-stage-drawer-polaroid-fallback">' + esc((label || (isChar ? 'C' : 'U')).slice(0, 2)) + '</div>')) +
     '<div class="offline-stage-drawer-polaroid-label"><span>' + (isChar ? 'char' : 'user') + '</span><span>' + esc(label.slice(0, 6)) + '</span></div>';
 }
 function renderOfflineStageHeader(){
@@ -7296,7 +7321,7 @@ function renderBirthdayCoverHtml(src, fallbackText){
   if(!isRenderableOfflineAvatarSrc(safeSrc)){
     return '<div class="birthday-cover-fallback">' + fallback + '</div>';
   }
-  return '<img src="' + escAttr(safeSrc) + '" alt="" onerror="this.style.display=&quot;none&quot;"><div class="birthday-cover-fallback">' + fallback + '</div>';
+  return '<img src="' + escAttr(getOfflineAvatarRenderSrc(safeSrc)) + '" data-avatar-src="' + escAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" onerror="this.style.display=&quot;none&quot;"><div class="birthday-cover-fallback">' + fallback + '</div>';
 }
 function getBirthdayMonthName(month){
   var names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -7370,7 +7395,7 @@ function renderLoveRecordHtml(src, fallbackText){
   if(!isRenderableOfflineAvatarSrc(safeSrc)){
     return '<div class="love-record-fallback">' + fallback + '</div>';
   }
-  return '<img src="' + escAttr(safeSrc) + '" alt="" onerror="this.style.display=&quot;none&quot;"><div class="love-record-fallback">' + fallback + '</div>';
+  return '<img src="' + escAttr(getOfflineAvatarRenderSrc(safeSrc)) + '" data-avatar-src="' + escAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" onerror="this.style.display=&quot;none&quot;"><div class="love-record-fallback">' + fallback + '</div>';
 }
 function parseOfflineLoveLyrics(text){
   var seen = {};
@@ -15402,7 +15427,7 @@ function formatOfflineGoodbyeBubbleTime(index){
 function getOfflineGoodbyeAvatarHtml(){
   var src = String(resolveCharAvatar ? resolveCharAvatar() : '').trim();
   if(src){
-    return '<img src="' + escAttr(src) + '" alt="">';
+    return '<img src="' + escAttr(getOfflineAvatarRenderSrc(src)) + '" data-avatar-src="' + escAttr(normalizeOfflineAssetSrc(src)) + '" alt="" referrerpolicy="no-referrer">';
   }
   var name = String((character && (character.nickname || character.name)) || (offlineGoodbyePhotoSnapshot && offlineGoodbyePhotoSnapshot.invite && offlineGoodbyePhotoSnapshot.invite.charName) || 'C').trim();
   return esc(name.slice(0, 1) || 'C');
