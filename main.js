@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T17:22:10Z';
+const APP_BUILD_ID = '2026-05-13T17:35:02Z';
 const APP_UPDATE_NOTES = [
-  '通话记忆随时总结',
-  '星星按钮打开记忆面板',
-  '通话消息不再变淡'
+  '头像白屏会强制重绘',
+  'App 内头像预热更稳',
+  '同链接失效不再跳过'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -980,6 +980,21 @@ function getShellAvatarRenderSrc(src){
 var shellAvatarImagePool = Object.create(null);
 var shellAvatarPoolLoading = Object.create(null);
 var shellAvatarFrameRepairTimers = [];
+var shellAvatarPrewarmRoot = null;
+
+function getShellAvatarPrewarmRoot(){
+  if(shellAvatarPrewarmRoot && shellAvatarPrewarmRoot.parentNode) return shellAvatarPrewarmRoot;
+  try{
+    shellAvatarPrewarmRoot = document.createElement('div');
+    shellAvatarPrewarmRoot.id = 'shell-avatar-prewarm-root';
+    shellAvatarPrewarmRoot.setAttribute('aria-hidden', 'true');
+    shellAvatarPrewarmRoot.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;';
+    (document.body || document.documentElement).appendChild(shellAvatarPrewarmRoot);
+  }catch(err){
+    shellAvatarPrewarmRoot = null;
+  }
+  return shellAvatarPrewarmRoot;
+}
 
 function getShellAvatarPoolKey(src){
   var text = normalizeShellAssetSrc(src || '');
@@ -1011,11 +1026,16 @@ function prewarmShellAvatarImagePool(src, wantedCount){
     img.setAttribute('referrerpolicy', 'no-referrer');
     img.setAttribute('data-avatar-src', key);
     img.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;';
+    var root = getShellAvatarPrewarmRoot();
+    if(root){
+      try{ root.appendChild(img); }catch(appendErr){}
+    }
     img.onload = (function(poolImg, poolKey){
       return function(){
         shellAvatarPoolLoading[poolKey] = Math.max(0, Number(shellAvatarPoolLoading[poolKey] || 0) - 1);
         if(isShellAvatarPoolImageReady(poolImg)){
           (shellAvatarImagePool[poolKey] || (shellAvatarImagePool[poolKey] = [])).push(poolImg);
+          repairShellAvatarImages();
           if(currentApp){
             setTimeout(function(){
               repairAppFrameAvatarImages(document.getElementById('app-iframe'));
@@ -1024,11 +1044,12 @@ function prewarmShellAvatarImagePool(src, wantedCount){
         }
       };
     })(img, key);
-    img.onerror = (function(poolKey){
+    img.onerror = (function(poolImg, poolKey){
       return function(){
         shellAvatarPoolLoading[poolKey] = Math.max(0, Number(shellAvatarPoolLoading[poolKey] || 0) - 1);
+        try{ if(poolImg.parentNode) poolImg.parentNode.removeChild(poolImg); }catch(removeErr){}
       };
-    })(key);
+    })(img, key);
     img.src = getShellAvatarRenderSrc(key);
   }
 }
@@ -7986,7 +8007,7 @@ function cloneShellAvatarAttributes(fromImg, toImg, source){
   return toImg;
 }
 
-function replaceFrameAvatarWithPooledImage(img, src){
+function replaceShellAvatarWithPooledImage(img, src){
   if(!img || !img.parentNode) return false;
   var pooled = takeShellAvatarPoolImage(src);
   if(!pooled) return false;
@@ -7999,6 +8020,26 @@ function replaceFrameAvatarWithPooledImage(img, src){
   }catch(err){
     return false;
   }
+}
+
+function replaceFrameAvatarWithPooledImage(img, src){
+  return replaceShellAvatarWithPooledImage(img, src);
+}
+
+function repairShellAvatarImages(){
+  var repaired = false;
+  var imgs = [];
+  try{ imgs = Array.prototype.slice.call(document.querySelectorAll('img')); }catch(queryErr){}
+  imgs.forEach(function(img){
+    if(!isShellFrameAvatarLikeImage(img)) return;
+    var src = getShellFrameAvatarImgSource(img);
+    if(!getShellAvatarPoolKey(src)) return;
+    prewarmShellAvatarImagePool(src, 8);
+    var broken = !img.complete || Number(img.naturalWidth || 0) <= 0;
+    if(!broken) return;
+    if(replaceShellAvatarWithPooledImage(img, src)) repaired = true;
+  });
+  return repaired;
 }
 
 function repairAppFrameAvatarImages(frame){
@@ -8029,6 +8070,7 @@ function scheduleAppFrameAvatarRepairs(frame){
   shellAvatarFrameRepairTimers = [];
   [80, 220, 520, 1000, 1800, 3200].forEach(function(delay){
     shellAvatarFrameRepairTimers.push(setTimeout(function(){
+      repairShellAvatarImages();
       repairAppFrameAvatarImages(frame);
     }, delay));
   });
@@ -8079,9 +8121,16 @@ function applyBondAvatarContent(role, src, fallback, charId){
   var previousFrameUrl = String(target.dataset.avatarFrameUrl || '');
   var previousFrameStyle = String(target.dataset.avatarFrameStyle || '');
   if(hasImage && existingImg && isSameShellAvatarImageSrc(existingImg, safeSrc) && previousFrameUrl === String(frameUrl || '') && previousFrameStyle === String(frameStyle || '')){
-    target.dataset.avatarFrameUrl = String(frameUrl || '');
-    target.dataset.avatarFrameStyle = String(frameStyle || '');
-    return;
+    if(isShellAvatarPoolImageReady(existingImg)){
+      target.dataset.avatarFrameUrl = String(frameUrl || '');
+      target.dataset.avatarFrameStyle = String(frameStyle || '');
+      return;
+    }
+    if(replaceShellAvatarWithPooledImage(existingImg, safeSrc)){
+      target.dataset.avatarFrameUrl = String(frameUrl || '');
+      target.dataset.avatarFrameStyle = String(frameStyle || '');
+      return;
+    }
   }
   var baseHtml = isRenderableShellAvatarSrc(safeSrc)
     ? '<span class="bond-avatar-base"><img src="' + escapeHtmlAttr(renderSrc) + '" data-avatar-src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" onerror="handleShellBondAvatarError(this,\'' + escapeHtmlAttr(safeRole) + '\')"></span>'
@@ -13449,7 +13498,8 @@ function renderWidgetCharacterAvatarNode(target, src, fallback){
     prewarmShellAvatarImagePool(safeSrc, 14);
     var existingImg = target.querySelector && target.querySelector('img');
     if(existingImg && isSameShellAvatarImageSrc(existingImg, safeSrc)){
-      return;
+      if(isShellAvatarPoolImageReady(existingImg)) return;
+      if(replaceShellAvatarWithPooledImage(existingImg, safeSrc)) return;
     }
     target.innerHTML = '<img src="' + escapeHtmlAttr(renderSrc) + '" data-avatar-src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center" onerror="handleShellWidgetAvatarError(this)">';
   }else{
