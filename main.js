@@ -62,11 +62,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T22:16:17Z';
+const APP_BUILD_ID = '2026-05-13T22:26:15Z';
 const APP_UPDATE_NOTES = [
   '头像跨 App 加载会走本机缓存',
-  '小脑瓜最近 200 条保持热区读取',
-  '线上线下通话统一 buffer 高水位总结'
+  '小脑瓜读取补上 buffer 尾巴',
+  '通话也按最近 200 条热区读取'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';

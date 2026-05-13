@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T22:16:17Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T22:16:17Z"></script>
-<script src="../assetStore.js?v=2026-05-13T22:16:17Z"></script>
-<script src="../accountManager.js?v=2026-05-13T22:16:17Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T22:16:17Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T22:16:17Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T22:16:17Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T22:16:17Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T22:16:17Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T22:16:17Z"></script>
+<script src="../promptManager.js?v=2026-05-13T22:26:15Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T22:26:15Z"></script>
+<script src="../assetStore.js?v=2026-05-13T22:26:15Z"></script>
+<script src="../accountManager.js?v=2026-05-13T22:26:15Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T22:26:15Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T22:26:15Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T22:26:15Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T22:26:15Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T22:26:15Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T22:26:15Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -6295,9 +6295,25 @@ function getMemorySummaryTokens(){
   var memoryText = buildMemoryPromptText(loadMemorySummaryStore());
   return approxTokenCount(memoryText);
 }
+function getLittleBrainPromptStartIndex(totalCount){
+  var total = Math.max(0, Number(totalCount || 0) || 0);
+  if(!isLittleBrainEnabledForCurrentCharacter()) return Math.max(0, total - loadContextWindowSize());
+  var hotStart = Math.max(0, total - LITTLE_BRAIN_HOT_ZONE_SIZE);
+  var store = activateLittleBrainStore(loadMemorySummaryStore());
+  var structuredCovered = Math.max(0, Math.min(Number(store.advancedMemory.structured.covered || 0) || 0, total));
+  var vectorCovered = isLittleBrainVectorEnabled(store)
+    ? Math.max(0, Math.min(Number(store.advancedMemory.vector.covered || 0) || 0, total))
+    : structuredCovered;
+  var covered = Math.min(structuredCovered, vectorCovered);
+  if(covered > 0 && covered < hotStart) return covered;
+  return hotStart;
+}
 function getVisibleChatForModel(){
   var windowSize = getEffectiveModelContextWindowSize();
-  var visible = chatLog.slice(Math.max(0, chatLog.length - windowSize));
+  var startIndex = isLittleBrainEnabledForCurrentCharacter()
+    ? getLittleBrainPromptStartIndex(chatLog.length)
+    : Math.max(0, chatLog.length - windowSize);
+  var visible = chatLog.slice(startIndex);
   if(Array.isArray(transientHiddenModelMsgIds) && transientHiddenModelMsgIds.length){
     var hidden = new Set(transientHiddenModelMsgIds.map(function(id){ return String(id || ''); }).filter(Boolean));
     visible = visible.filter(function(msg){
@@ -8399,7 +8415,7 @@ function normalizeVoiceCallTranscriptLine(raw){
 function normalizeVoiceCallSessionSnapshot(raw){
   var source = raw && typeof raw === 'object' ? raw : {};
   var transcript = Array.isArray(source.transcript)
-    ? source.transcript.map(normalizeVoiceCallTranscriptLine).filter(Boolean).slice(-120)
+    ? source.transcript.map(normalizeVoiceCallTranscriptLine).filter(Boolean)
     : [];
 	  var normalized = Object.assign(defaultVoiceCallState(), {
     sessionId: String(source.sessionId || '').trim(),
@@ -28549,14 +28565,32 @@ function buildVoiceCallContextLines(limit){
   return selected.map(voiceCallContextLineFromEntry).filter(Boolean).join('\n');
 }
 
+function getVoiceCallPromptTranscriptStartIndex(lines){
+  var list = Array.isArray(lines) ? lines : [];
+  if(!isLittleBrainEnabledForCurrentCharacter()) return Math.max(0, list.length - 18);
+  var state = ensureVoiceCallState();
+  var covered = Math.max(0, Math.min(Number(state.memoryCovered || 0) || 0, list.length));
+  var hotStart = Math.max(0, list.length - LITTLE_BRAIN_HOT_ZONE_SIZE);
+  if(covered > 0 && covered < hotStart) return covered;
+  return hotStart;
+}
+function formatVoiceCallTranscriptPromptLine(item, compact){
+  var speaker = getVoiceCallRoleLabel(item.role, item);
+  var label = item.role === 'narrator' ? '通话旁白' : '通话';
+  var text = String(item.text || '').replace(/\s+/g, ' ').trim();
+  if(compact && text.length > 96) text = text.slice(0, 76).trim() + ' ... ' + text.slice(-18).trim();
+  return '[' + label + '] ' + speaker + '：' + text;
+}
 function buildVoiceCallTranscriptLines(){
   var state = ensureVoiceCallState();
-  return (Array.isArray(state.transcript) ? state.transcript : []).filter(function(item){
+  var lines = (Array.isArray(state.transcript) ? state.transcript : []).filter(function(item){
     return item && item.role !== 'system';
-  }).slice(-18).map(function(item){
-    var speaker = getVoiceCallRoleLabel(item.role, item);
-    var label = item.role === 'narrator' ? '通话旁白' : '通话';
-    return '[' + label + '] ' + speaker + '：' + String(item.text || '').trim();
+  });
+  var start = getVoiceCallPromptTranscriptStartIndex(lines);
+  var selected = lines.slice(start);
+  var fullStart = Math.max(0, selected.length - 18);
+  return selected.map(function(item, idx){
+    return formatVoiceCallTranscriptPromptLine(item, idx < fullStart);
   }).join('\n');
 }
 
