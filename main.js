@@ -60,11 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T02:07:20Z';
+const APP_BUILD_ID = '2026-05-13T02:13:19Z';
 const APP_UPDATE_NOTES = [
-  '主动修复本机坏头像缓存',
-  '图床头像会写回头像资产',
-  '后台会记录头像修复日志'
+  '阻止临时 blob 头像污染主屏',
+  '返回主屏改用稳定图床头像',
+  '清掉本机白头像缓存来源'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -2204,7 +2204,7 @@ function bindHomeAppPressState(){
 function slimChar(c){
   if(!c) return null;
   var imageData = String(c.imageData || '').trim();
-  if(/^data:/i.test(imageData)) imageData = '';
+  if(/^(data:|blob:)/i.test(imageData)) imageData = '';
   if(!imageData) imageData = normalizeShellAssetSrc(c.avatarUrl || '');
   var userPersonaProfile = String(c.userPersonaProfile || '');
   if(userPersonaProfile.length > 20000) userPersonaProfile = userPersonaProfile.slice(0, 20000);
@@ -2266,7 +2266,7 @@ function activeCharacterLocalMirror(c){
   var id = String(c.id || '').trim();
   if(!id) return null;
   var imageData = getShellCharacterAvatarCandidateSync(c);
-  if(/^data:/i.test(imageData)) imageData = '';
+  if(/^(data:|blob:)/i.test(imageData)) imageData = '';
   return {
     id: id,
     name: String(c.name || ''),
@@ -2330,9 +2330,13 @@ function getShellCharacterAvatarCandidateSync(character){
     ordered.push(getBundleAvatarForShell(getCachedShellChatSettingsBundleForChar(id), 'char'));
     ordered.push(getImmediateStoredCharacterAvatarForShell(id));
   }
+  for(var stableIndex = 0; stableIndex < ordered.length; stableIndex += 1){
+    var stableSrc = normalizeShellAssetSrc(ordered[stableIndex] || '');
+    if(isStableShellAvatarSrc(stableSrc)) return stableSrc;
+  }
   for(var i = 0; i < ordered.length; i += 1){
     var src = normalizeShellAssetSrc(ordered[i] || '');
-    if(isRenderableShellAvatarSrc(src)) return src;
+    if(isRenderableShellAvatarSrc(src) && !/^blob:/i.test(src)) return src;
   }
   return '';
 }
@@ -2364,7 +2368,7 @@ function hydrateShellCharacterPayload(payload){
 function cacheAvatar(c){
   try{
     var avatarSrc = getShellCharacterAvatarCandidateSync(c || {});
-    if(c?.id && avatarSrc && /^(data:|https?:|blob:|\/|\.\.?\/|apps\/|assets\/)/i.test(String(avatarSrc || '').trim())){
+    if(c?.id && avatarSrc && /^(data:|https?:|\/|\.\.?\/|apps\/|assets\/)/i.test(String(avatarSrc || '').trim())){
       saveStoredAsset('char_avatar_' + c.id, avatarSrc);
       var acct = getActiveAccountId();
       if(acct) saveStoredAsset(scopedKeyForAccount('char_avatar_' + c.id, acct), avatarSrc);
@@ -3154,7 +3158,7 @@ function getImmediateStoredCharacterAvatarForShell(charId){
   for(var i = 0; i < keys.length; i += 1){
     try{
       var saved = normalizeShellAssetSrc(localStorage.getItem(keys[i]) || '');
-      if(isRenderableShellAvatarSrc(saved)) return saved;
+      if(isStableShellAvatarSrc(saved)) return saved;
     }catch(e){}
   }
   return '';
@@ -3176,7 +3180,7 @@ function loadCharacterAvatarForShell(charId){
         if(isRenderableShellAvatarSrc(found)) return found;
         return loadStoredAsset(key).then(function(src){
           var safeSrc = normalizeShellAssetSrc(src || '');
-          return isRenderableShellAvatarSrc(safeSrc) ? safeSrc : '';
+          return isStableShellAvatarSrc(safeSrc) ? safeSrc : '';
         }).catch(function(){ return ''; });
       });
     });
@@ -3198,7 +3202,7 @@ function loadCharacterAvatarForShell(charId){
 function saveShellCharacterAvatarAsset(charId, src){
   var safeId = String(charId || '').trim();
   var safeSrc = normalizeShellAssetSrc(src || '');
-  if(!safeId || !isRenderableShellAvatarSrc(safeSrc)) return Promise.resolve(false);
+  if(!safeId || !isStableShellAvatarSrc(safeSrc)) return Promise.resolve(false);
   var keys = getCharacterAvatarAssetKeysForShell(safeId);
   return Promise.all(keys.map(function(key){
     return saveStoredAsset(key, safeSrc).catch(function(){ return false; });
@@ -7192,7 +7196,7 @@ function getCurrentForegroundCharacter(){
           for(var i = 0; i < selectors.length; i++){
             var node = win.document ? win.document.querySelector(selectors[i]) : null;
             var src = String((node && node.getAttribute && node.getAttribute('src')) || (node && node.src) || '').trim();
-            if(src){
+            if(isStableShellAvatarSrc(src)){
               slim.imageData = src;
               break;
             }
