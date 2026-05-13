@@ -64,39 +64,77 @@
     }
     .topbar,.content{ position:relative; z-index:1; }
     .topbar{
-      flex:0 0 auto;
-      padding:calc(env(safe-area-inset-top,0px) + 7px) 14px 6px;
+      position:absolute;
+      z-index:40;
+      left:12px;
+      right:12px;
+      top:calc(env(safe-area-inset-top,0px) + 9px);
+      height:44px;
+      padding:0;
       display:flex;
       align-items:center;
-      gap:10px;
+      justify-content:space-between;
+      gap:8px;
       border-bottom:0;
-      background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.50));
-      backdrop-filter:blur(16px) saturate(128%);
-      -webkit-backdrop-filter:blur(16px) saturate(128%);
-    }
-    .topbar::after{
-      content:"";
-      position:absolute;
-      left:14px;
-      right:14px;
-      bottom:0;
-      border-bottom:1.5px dashed rgba(17,17,17,.28);
+      background:transparent;
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
       pointer-events:none;
     }
+    .topbar::after{ display:none; }
     .icon-btn{
-      width:32px;
-      height:32px;
+      width:42px;
+      height:42px;
       border:2px solid #111;
-      background:rgba(255,255,255,.86);
+      background:rgba(255,255,255,.78);
       color:var(--black);
       display:grid;
       place-items:center;
-      border-radius:12px;
-      box-shadow:2px 2px 0 rgba(17,17,17,.18);
+      border-radius:14px;
+      box-shadow:3px 3px 0 rgba(17,17,17,.18);
+      backdrop-filter:blur(12px) saturate(128%);
+      -webkit-backdrop-filter:blur(12px) saturate(128%);
+      pointer-events:auto;
     }
+    .icon-btn svg{ width:22px; height:22px; display:block; }
+    .settings-symbol{ font-family:var(--fontd); font-size:25px; font-weight:900; line-height:1; transform:translateY(-1px); }
     .icon-btn:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 rgba(17,17,17,.24); background:#fff; }
-    .title{ min-width:0; flex:1; }
-    .title h1{ margin:0; font-family:var(--fontcute); font-size:21px; line-height:1; letter-spacing:0; color:var(--black); font-weight:900; }
+    .title{
+      position:absolute;
+      left:52px;
+      right:52px;
+      top:0;
+      bottom:0;
+      min-width:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+    }
+    .title h1{
+      margin:0;
+      width:100%;
+      min-height:42px;
+      padding:0 12px;
+      border:0;
+      border-radius:16px;
+      background:rgba(255,255,255,.54);
+      box-shadow:0 10px 28px rgba(0,0,0,.10), inset 0 0 0 1px rgba(255,255,255,.72);
+      backdrop-filter:blur(12px) saturate(126%);
+      -webkit-backdrop-filter:blur(12px) saturate(126%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:0;
+      font-family:var(--fontcute);
+      font-size:32px;
+      line-height:1;
+      letter-spacing:0;
+      color:var(--black);
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .title-latin{ font-family:var(--fontd); font-weight:900; letter-spacing:.02em; text-transform:uppercase; }
     .title p{ display:none; }
     .content{ flex:1 1 auto; min-height:0; overflow:auto; padding:8px 12px calc(env(safe-area-inset-bottom,0px) + 20px); -webkit-overflow-scrolling:touch; }
     .char-strip{ display:flex; gap:14px; overflow-x:auto; padding:4px 2px 18px; scrollbar-width:none; }
@@ -151,13 +189,13 @@
     .switch::before{ content:""; display:block; width:20px; height:20px; border-radius:50%; background:#111; box-shadow:0 2px 6px rgba(0,0,0,.16); transition:.18s ease; }
     .switch.on{ background:var(--black); }
     .switch.on::before{ transform:translateX(20px); background:#fff; }
-    .toast{ position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom,0px) + 20px); transform:translateX(-50%) translateY(20px); opacity:0; pointer-events:none; background:rgba(5,5,5,.94); color:#fff; padding:9px 13px; border-radius:999px; font-size:13px; transition:.2s ease; max-width:86vw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .toast{ position:fixed; left:50%; top:calc(env(safe-area-inset-top,0px) + 64px); z-index:900; transform:translateX(-50%) translateY(-12px); opacity:0; pointer-events:none; background:rgba(5,5,5,.94); color:#fff; padding:10px 14px; border-radius:999px; font-size:13px; font-weight:800; transition:.2s ease; max-width:86vw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; box-shadow:0 12px 30px rgba(0,0,0,.22); }
     .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
     .picker-panel{ display:block; padding:0; overflow:hidden; border:2px solid #111; border-radius:0 24px 24px 0; background:rgba(255,255,255,.64); box-shadow:8px 8px 0 rgba(17,17,17,.13),0 22px 48px rgba(0,0,0,.10); }
     .picker-hero{
       position:relative;
-      min-height:214px;
-      padding:24px 18px 70px;
+      min-height:196px;
+      padding:78px 18px 58px;
       text-align:left;
       border-bottom:0;
       margin:0;
@@ -176,11 +214,11 @@
       bottom:48px;
       border-bottom:2px dashed rgba(17,17,17,.38);
     }
-    .picker-kicker{ display:inline-flex; align-items:center; min-height:24px; padding:0 10px; border:2px solid #111; border-radius:999px; background:rgba(255,255,255,.88); box-shadow:2px 2px 0 rgba(17,17,17,.18); font-family:var(--fontd); font-size:10px; font-weight:900; letter-spacing:.16em; color:#111; text-transform:uppercase; }
-    .picker-title{ margin:72px 0 0; font-family:var(--fontcute); font-size:38px; line-height:1.02; color:var(--black); font-weight:900; letter-spacing:0; }
+    .picker-kicker{ display:none; }
+    .picker-title{ display:none; }
     .picker-title .latin{ font-family:var(--fontd); font-weight:900; letter-spacing:.02em; }
-    .picker-copy{ margin:9px 0 0; max-width:310px; font-size:12px; line-height:1.65; color:#3d3d3d; font-weight:800; }
-    .config-alert{ position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 13px 12px 17px; border:0; border-radius:0 18px 18px 0; background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(240,240,240,.46)),linear-gradient(180deg,rgba(17,17,17,.14) 0%,rgba(17,17,17,.86) 24%,rgba(17,17,17,.86) 76%,rgba(17,17,17,.14) 100%); background-repeat:no-repeat; background-size:100% 100%,3px 100%; margin:-48px 14px 16px; box-shadow:0 14px 30px rgba(0,0,0,.11); }
+    .picker-copy{ display:none; }
+    .config-alert{ position:relative; z-index:2; width:calc(100% - 28px); display:flex; align-items:center; justify-content:space-between; gap:10px; padding:15px 15px 15px 18px; border:0; border-radius:0 18px 18px 0; background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(240,240,240,.46)),linear-gradient(180deg,rgba(17,17,17,.14) 0%,rgba(17,17,17,.86) 24%,rgba(17,17,17,.86) 76%,rgba(17,17,17,.14) 100%); background-repeat:no-repeat; background-size:100% 100%,3px 100%; margin:-48px 14px 16px; box-shadow:0 14px 30px rgba(0,0,0,.11); }
     .config-alert strong{ display:block; font-family:var(--fontcute); font-size:16px; color:var(--black); }
     .config-alert span{ display:block; margin-top:3px; font-size:11px; font-weight:750; color:#555; line-height:1.5; }
     .char-card-list{ display:grid; gap:14px; padding:0 14px 16px; }
@@ -189,8 +227,8 @@
     .char-card:nth-child(2n+1){ transform:rotate(-.65deg); }
     .char-card:active{ transform:translate(1px,1px) rotate(0deg); box-shadow:3px 3px 0 rgba(0,0,0,.82); }
     .char-card-top{ display:grid; grid-template-columns:72px minmax(0,1fr) 38px; align-items:center; gap:12px; cursor:pointer; }
-    .char-card-avatar{ width:72px; min-height:78px; overflow:hidden; border:2px solid #111; background:#fff; padding:5px 5px 13px; display:grid; place-items:center; color:#111; font-family:var(--fontd); font-weight:900; flex:0 0 auto; box-shadow:2px 2px 0 #111; }
-    .char-card-avatar img{ width:100%; aspect-ratio:1/1; height:auto; object-fit:cover; display:block; border:1.5px solid #111; background:#eee; }
+    .char-card-avatar{ width:72px; height:72px; min-height:72px; overflow:hidden; border:2px solid #111; background:#111; padding:0; display:grid; place-items:center; color:#fff; font-family:var(--fontd); font-weight:900; flex:0 0 auto; box-shadow:2px 2px 0 #111; }
+    .char-card-avatar img{ width:100%; height:100%; object-fit:cover; display:block; border:0; background:#eee; }
     .char-card-main{ min-width:0; flex:1; }
     .char-card-name{ font-family:var(--fontcute); font-size:20px; font-weight:900; color:#050505; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .char-card-status{ margin-top:5px; display:inline-flex; align-items:center; gap:6px; font-size:10px; font-family:var(--fontd); font-weight:900; letter-spacing:.12em; text-transform:uppercase; color:#6d6d6d; }
@@ -200,10 +238,9 @@
     .enter-btn{ width:36px; height:36px; border-radius:999px; border:2px solid #111; background:#111; color:#fff; display:grid; place-items:center; flex:0 0 auto; box-shadow:2px 2px 0 rgba(17,17,17,.20); }
     .char-card-controls{ margin-top:12px; padding-top:10px; border-top:2px dashed rgba(17,17,17,.28); display:grid; gap:6px; }
     .compact-switch{ display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:32px; }
-    .compact-switch small{ display:block; color:#686868; font-size:10px; font-weight:800; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .compact-switch small{ display:none; }
     .compact-switch b{ display:block; color:var(--black); font-size:13px; font-weight:900; }
-    #settingsSection{ border-radius:0 22px 22px 0; box-shadow:8px 8px 0 rgba(17,17,17,.13),0 18px 44px rgba(0,0,0,.10); }
-    #settingsSection .section-title{ border-bottom:3px double #111; padding-bottom:10px; }
+    #settingsSection{ display:none!important; }
     .settings-panel{ display:grid; gap:14px; }
     .settings-lede{ border:2px solid #111; background:rgba(255,255,255,.86); box-shadow:3px 3px 0 rgba(17,17,17,.16); padding:13px 14px; }
     .settings-lede span{ display:inline-flex; padding:2px 8px; border-radius:999px; background:#111; color:#fff; font-family:var(--fontd); font-size:9px; font-weight:900; letter-spacing:.14em; }
@@ -217,9 +254,51 @@
     .config-badge.ready{ background:#111; color:#fff; }
     .field-grid{ display:grid; gap:10px; }
     .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .api-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .tiny-action{ min-height:34px; border-radius:999px; border:2px solid #111; background:#fff; color:#111; font-family:var(--fontd); font-size:12px; font-weight:900; box-shadow:2px 2px 0 rgba(17,17,17,.18); }
+    .tiny-action.primary{ background:#111; color:#fff; }
     .tiny-action:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 rgba(17,17,17,.22); }
+    .model-choice-list{ display:flex; flex-wrap:wrap; gap:7px; min-height:0; }
+    .model-choice{ border:1.5px solid #111; border-radius:999px; background:#fff; color:#111; padding:7px 10px; font-size:11px; font-family:var(--fontd); font-weight:900; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .model-choice:active{ transform:translate(1px,1px); }
     .save-all{ width:100%; margin-top:2px; }
+    .settings-overlay{
+      position:fixed;
+      inset:0;
+      z-index:520;
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding:calc(env(safe-area-inset-top,0px) + 18px) 14px calc(env(safe-area-inset-bottom,0px) + 14px);
+      background:rgba(255,255,255,.28);
+      backdrop-filter:blur(12px) saturate(120%);
+      -webkit-backdrop-filter:blur(12px) saturate(120%);
+    }
+    .settings-overlay.open{ display:flex; }
+    .settings-sheet{
+      width:min(720px,100%);
+      max-height:min(82vh,760px);
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+      border:2px solid #111;
+      border-radius:0 24px 24px 0;
+      background:rgba(255,255,255,.90);
+      box-shadow:8px 8px 0 rgba(17,17,17,.16),0 24px 58px rgba(0,0,0,.18);
+      padding:14px;
+    }
+    .settings-sheet-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding-bottom:11px;
+      margin-bottom:13px;
+      border-bottom:3px double #111;
+    }
+    .settings-sheet-title{ font-family:var(--fontcute); font-size:20px; font-weight:900; color:#111; }
+    .settings-sheet-sub{ margin-top:3px; font-size:10px; font-family:var(--fontd); font-weight:900; letter-spacing:.12em; color:#666; text-transform:uppercase; }
+    .settings-close{ width:34px; height:34px; border:2px solid #111; border-radius:999px; background:#111; color:#fff; font-family:var(--fontd); font-size:18px; font-weight:900; line-height:1; display:grid; place-items:center; box-shadow:2px 2px 0 rgba(17,17,17,.18); }
+    .settings-close:active{ transform:translate(1px,1px); box-shadow:1px 1px 0 rgba(17,17,17,.22); }
     @media (min-width:720px){
       .content{ max-width:720px; width:100%; margin:0 auto; }
       .memory-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -237,11 +316,11 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
       </button>
       <div class="title">
-        <h1>小脑瓜</h1>
+        <h1 aria-label="CHAR的小脑瓜"><span class="title-latin" aria-hidden="true">CHAR</span><span aria-hidden="true">的小脑瓜</span></h1>
         <p id="subtitle">读取角色记忆中</p>
       </div>
-      <button class="icon-btn" type="button" id="refreshBtn" aria-label="刷新">
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M16 8h5V3"/></svg>
+      <button class="icon-btn" type="button" id="settingsBtn" aria-label="设置">
+        <span class="settings-symbol" aria-hidden="true">✱</span>
       </button>
     </header>
     <main class="content">
@@ -257,20 +336,33 @@
       </section>
       <section class="panel" id="settingsSection">
         <div class="section-title"><h2>全局配置</h2><span>副 API / 向量 / rerank</span></div>
-        <div class="settings" id="settingsPanel"></div>
       </section>
     </main>
   </div>
+  <div class="settings-overlay" id="settingsOverlay" hidden>
+    <section class="settings-sheet" role="dialog" aria-modal="true" aria-label="全局配置">
+      <div class="settings-sheet-head">
+        <div>
+          <div class="settings-sheet-title">全局配置</div>
+          <div class="settings-sheet-sub">副 API / 向量 / rerank</div>
+        </div>
+        <button class="settings-close" id="closeSettingsBtn" type="button" aria-label="关闭设置">×</button>
+      </div>
+      <div class="settings" id="settingsPanel"></div>
+    </section>
+  </div>
   <div class="toast" id="toast"></div>
-  <script src="../accountManager.js?v=2026-05-13T19:30:46Z"></script>
-  <script src="../chatStorage.js?v=2026-05-13T19:30:46Z"></script>
-  <script src="../metadataStore.js?v=2026-05-13T19:30:46Z"></script>
+  <script src="../assetStore.js?v=2026-05-13T19:59:00Z"></script>
+  <script src="../accountManager.js?v=2026-05-13T19:59:00Z"></script>
+  <script src="../chatStorage.js?v=2026-05-13T19:59:00Z"></script>
+  <script src="../metadataStore.js?v=2026-05-13T19:59:00Z"></script>
   <script>
   (function(){
     'use strict';
-    var BUILD_ID = '2026-05-13T19:30:46Z';
+    var BUILD_ID = '2026-05-13T19:59:00Z';
     var LITTLE_BRAIN_CONFIG_KEY = 'little_brain_config_v1';
     var state = { view:'picker', chars:[], char:null, store:null, config:null };
+    var avatarHydrateToken = 0;
     var categoryLabels = {
       F:'人物底稿', E:'已经发生', D:'未来挂念', P:'正在推进',
       R:'关系温度', M:'关系温度', A:'代办与约定', H:'爱好习惯', X:'下次改正'
@@ -325,6 +417,47 @@
       }catch(err){}
       return null;
     }
+    function normalizeAvatarSrc(src){
+      var text = String(src || '').trim();
+      if(!text) return '';
+      try{
+        var proxyUrl = new URL(text, location.href);
+        if(proxyUrl.pathname === '/avatar-proxy'){
+          var raw = proxyUrl.searchParams.get('u') || proxyUrl.searchParams.get('url') || '';
+          if(raw) text = raw;
+        }
+      }catch(proxyErr){}
+      if(text.startsWith('data:')) return text.replace(/\s+/g, '');
+      if(text.indexOf('apps/assets/') === 0) return '../' + text;
+      if(text.indexOf('./apps/assets/') === 0) return '../' + text.slice(2);
+      if(text.indexOf('/apps/assets/') === 0) return '..' + text;
+      return text;
+    }
+    function isRenderableAvatarSrc(src){
+      var text = normalizeAvatarSrc(src);
+      return !!(text && /^(data:|https?:|blob:|\/|\.\.?\/|assets\/|apps\/)/i.test(text));
+    }
+    function loadStoredAsset(key){
+      var safeKey = String(key || '').trim();
+      if(!safeKey) return Promise.resolve('');
+      try{
+        if(window.assetStore && typeof window.assetStore.load === 'function'){
+          return window.assetStore.load(safeKey).then(function(value){
+            if(value) return value;
+            try{ return localStorage.getItem(safeKey) || ''; }catch(e){ return ''; }
+          }).catch(function(){
+            try{ return localStorage.getItem(safeKey) || ''; }catch(e){ return ''; }
+          });
+        }
+      }catch(assetErr){}
+      try{
+        var p = parentWindow();
+        if(p && p.assetStore && typeof p.assetStore.load === 'function'){
+          return p.assetStore.load(safeKey).catch(function(){ return ''; });
+        }
+      }catch(parentAssetErr){}
+      try{ return Promise.resolve(localStorage.getItem(safeKey) || ''); }catch(localErr){ return Promise.resolve(''); }
+    }
     async function readJsonKey(key){
       var store = storage();
       if(store && typeof store.getJson === 'function'){
@@ -369,16 +502,159 @@
       }catch(err){}
       list.push(c && c.avatar);
       for(var i = 0; i < list.length; i += 1){
-        var src = String(list[i] || '').trim();
-        if(/^(data:|https?:|blob:|\/|\.\.?\/|assets\/|apps\/)/i.test(src)) return src;
+        var src = normalizeAvatarSrc(list[i]);
+        if(isRenderableAvatarSrc(src)) return src;
       }
+      return '';
+    }
+    function avatarStorageKeys(c){
+      var keys = [];
+      var id = String(c && c.id || '').trim();
+      function add(key){
+        key = String(key || '').trim();
+        if(key && keys.indexOf(key) === -1) keys.push(key);
+      }
+      if(id){
+        add(scopedKey('char_avatar_' + id));
+        add('char_avatar_' + id);
+      }
+      try{
+        (c.importedAvatarResources || []).forEach(function(item){
+          if(!item || typeof item !== 'object') return;
+          add(item.assetKey);
+          var preview = String(item.previewData || '').trim();
+          if(preview && !isRenderableAvatarSrc(preview)) add(preview);
+        });
+      }catch(err){}
+      return keys;
+    }
+    function chatSettingsBundleKeys(charId){
+      var id = String(charId || '').trim();
+      if(!id) return [];
+      var base = 'chat_settings_bundle_' + id;
+      var keys = [];
+      function add(key){
+        key = String(key || '').trim();
+        if(key && keys.indexOf(key) === -1) keys.push(key);
+      }
+      add(scopedKey(base));
+      add(base);
+      return keys;
+    }
+    function avatarLibraryKeys(charId){
+      var id = String(charId || '').trim();
+      if(!id) return [];
+      var base = 'avatar_library_' + id;
+      var keys = [];
+      function add(key){
+        key = String(key || '').trim();
+        if(key && keys.indexOf(key) === -1) keys.push(key);
+      }
+      add(scopedKey(base));
+      add(base);
+      return keys;
+    }
+    async function readLatestJson(keys){
+      var list = Array.isArray(keys) ? keys : [];
+      var best = null;
+      for(var i = 0; i < list.length; i += 1){
+        var data = await readJsonKey(list[i]).catch(function(){ return null; });
+        if(!data || typeof data !== 'object') continue;
+        if(!best || Number(data.updatedAt || 0) > Number(best.updatedAt || 0)) best = data;
+      }
+      return best;
+    }
+    async function resolveAvatarLibraryItem(item){
+      var preview = normalizeAvatarSrc(item && item.previewData);
+      if(isRenderableAvatarSrc(preview)) return preview;
+      var assetKey = String(item && item.assetKey || '').trim();
+      if(!assetKey) return '';
+      var stored = normalizeAvatarSrc(await loadStoredAsset(assetKey).catch(function(){ return ''; }));
+      return isRenderableAvatarSrc(stored) ? stored : '';
+    }
+    async function resolveStoredSelectedAvatar(c){
+      var id = String(c && c.id || '').trim();
+      if(!id) return '';
+      var bundle = await readLatestJson(chatSettingsBundleKeys(id)).catch(function(){ return null; });
+      if(bundle && typeof bundle === 'object'){
+        var bundled = normalizeAvatarSrc(bundle.charAvatar);
+        if(isRenderableAvatarSrc(bundled)) return bundled;
+        var selectedId = String(bundle.selectedCharAvatarItemId || '').trim();
+        if(selectedId){
+          var library = await readLatestJson(avatarLibraryKeys(id)).catch(function(){ return null; });
+          var items = library && Array.isArray(library.char) ? library.char : [];
+          for(var i = 0; i < items.length; i += 1){
+            if(String(items[i] && items[i].id || '') !== selectedId) continue;
+            var selectedSrc = await resolveAvatarLibraryItem(items[i]).catch(function(){ return ''; });
+            if(isRenderableAvatarSrc(selectedSrc)) return selectedSrc;
+          }
+        }
+      }
+      return '';
+    }
+    async function resolveAvatarForCharacter(c){
+      var selected = await resolveStoredSelectedAvatar(c).catch(function(){ return ''; });
+      if(isRenderableAvatarSrc(selected)) return selected;
+      var immediate = avatarCandidate(c);
+      if(isRenderableAvatarSrc(immediate)) return immediate;
+      var keys = avatarStorageKeys(c);
+      for(var i = 0; i < keys.length; i += 1){
+        var stored = normalizeAvatarSrc(await loadStoredAsset(keys[i]).catch(function(){ return ''; }));
+        if(isRenderableAvatarSrc(stored)) return stored;
+      }
+      try{
+        var resources = c && Array.isArray(c.importedAvatarResources) ? c.importedAvatarResources : [];
+        for(var r = 0; r < resources.length; r += 1){
+          var src = await resolveAvatarLibraryItem(resources[r]).catch(function(){ return ''; });
+          if(isRenderableAvatarSrc(src)) return src;
+        }
+      }catch(err){}
       return '';
     }
     function avatarHtml(c, cls){
       var src = avatarCandidate(c);
       var name = String((c && (c.nickname || c.name)) || 'C').trim();
-      if(src) return '<span class="' + cls + '"><img src="' + esc(src) + '" data-avatar-src="' + esc(src) + '" avatar-like alt="" referrerpolicy="no-referrer" decoding="async"><span style="display:none">' + esc(name.slice(0,2)) + '</span></span>';
-      return '<span class="' + cls + '">' + esc(name.slice(0,2)) + '</span>';
+      var id = String(c && c.id || '').trim();
+      var attrs = ' data-avatar-char-id="' + esc(id) + '" data-avatar-fallback="' + esc(name.slice(0,2) || 'CH') + '"';
+      if(src) return '<span class="' + cls + '"' + attrs + '><img src="' + esc(src) + '" data-avatar-src="' + esc(src) + '" avatar-like alt="" referrerpolicy="no-referrer" decoding="async"><span style="display:none">' + esc(name.slice(0,2)) + '</span></span>';
+      return '<span class="' + cls + '"' + attrs + '>' + esc(name.slice(0,2)) + '</span>';
+    }
+    function setAvatarNodeSource(node, src){
+      if(!node) return;
+      var fallback = String(node.getAttribute('data-avatar-fallback') || 'CH').slice(0,2);
+      var safeSrc = normalizeAvatarSrc(src);
+      if(isRenderableAvatarSrc(safeSrc)){
+        node.innerHTML = '<img src="' + esc(safeSrc) + '" data-avatar-src="' + esc(safeSrc) + '" avatar-like alt="" referrerpolicy="no-referrer" decoding="async"><span style="display:none">' + esc(fallback) + '</span>';
+        var img = node.querySelector('img');
+        if(img){
+          img.onerror = function(){
+            node.removeAttribute('data-avatar-src');
+            node.innerHTML = esc(fallback);
+          };
+        }
+        node.setAttribute('data-avatar-src', safeSrc);
+      }else{
+        node.removeAttribute('data-avatar-src');
+        node.innerHTML = esc(fallback);
+      }
+    }
+    function hydrateAvatarNodes(){
+      var token = ++avatarHydrateToken;
+      var chars = state.chars.slice();
+      if(state.char && !chars.some(function(item){ return String(item && item.id) === String(state.char && state.char.id); })){
+        chars.push(state.char);
+      }
+      chars.forEach(function(c){
+        var id = String(c && c.id || '').trim();
+        if(!id) return;
+        resolveAvatarForCharacter(c).then(function(src){
+          if(token !== avatarHydrateToken || !isRenderableAvatarSrc(src)) return;
+          Array.prototype.slice.call(document.querySelectorAll('[data-avatar-char-id]')).forEach(function(node){
+            if(String(node.getAttribute('data-avatar-char-id') || '') !== id) return;
+            setAvatarNodeSource(node, src);
+          });
+        }).catch(function(){});
+      });
     }
     async function loadCharacters(){
       try{
@@ -495,8 +771,71 @@
       var cfg = normalizeConfig(state.config || {});
       return !!(cfg.embedding.baseUrl && cfg.embedding.apiKey && cfg.embedding.model);
     }
+    function normalizeApiBaseUrl(value){
+      return String(value || '').trim().replace(/\/+$/,'');
+    }
+    function modelIdFromItem(item){
+      if(typeof item === 'string') return item;
+      if(!item || typeof item !== 'object') return '';
+      return String(item.id || item.name || item.model || item.model_name || item.value || '').trim();
+    }
+    function readModelListFromResponse(data){
+      var raw = [];
+      if(Array.isArray(data)) raw = data;
+      else if(data && Array.isArray(data.data)) raw = data.data;
+      else if(data && Array.isArray(data.models)) raw = data.models;
+      else if(data && data.result && Array.isArray(data.result.data)) raw = data.result.data;
+      return raw.map(modelIdFromItem).filter(Boolean).filter(function(id, index, list){
+        return list.indexOf(id) === index;
+      });
+    }
+    async function fetchModelList(baseUrl, apiKey){
+      var url = normalizeApiBaseUrl(baseUrl);
+      var key = String(apiKey || '').trim();
+      if(!url || !key) throw new Error('请先填写 BASE URL 和 API KEY');
+      var resp = await fetch(url + '/models', {
+        method:'GET',
+        headers:{ 'Authorization':'Bearer ' + key }
+      });
+      if(!resp.ok) throw new Error('HTTP ' + resp.status);
+      var data = await resp.json().catch(function(){ return null; });
+      var models = readModelListFromResponse(data);
+      if(!models.length) throw new Error('没有读到模型列表');
+      return models;
+    }
+    function renderModelChoices(hostId, inputId, models){
+      var host = $(hostId);
+      var input = $(inputId);
+      if(!host || !input) return;
+      host.innerHTML = models.slice(0, 80).map(function(model){
+        return '<button class="model-choice" type="button" data-model-choice="' + esc(model) + '">' + esc(model) + '</button>';
+      }).join('');
+      Array.prototype.slice.call(host.querySelectorAll('[data-model-choice]')).forEach(function(btn){
+        btn.addEventListener('click', function(){
+          input.value = btn.getAttribute('data-model-choice') || '';
+          toast('已填入模型');
+        });
+      });
+    }
+    async function pullModels(kind){
+      var map = {
+        light:{ base:'lightBaseUrl', key:'lightApiKey', input:'lightModel', host:'lightModelChoices', label:'副 API' },
+        embedding:{ base:'embBaseUrl', key:'embApiKey', input:'embModel', host:'embModelChoices', label:'向量 API' },
+        rerank:{ base:'rerankBaseUrl', key:'rerankApiKey', input:'rerankModel', host:'rerankModelChoices', label:'rerank API' }
+      };
+      var info = map[kind];
+      if(!info) return;
+      toast(info.label + ' 拉取模型中...');
+      try{
+        var models = await fetchModelList(($(info.base) || {}).value, ($(info.key) || {}).value);
+        renderModelChoices(info.host, info.input, models);
+        toast('已拉到 ' + models.length + ' 个模型');
+      }catch(err){
+        toast('拉取失败：' + String(err && err.message || err));
+      }
+    }
     function isCharacterBrainEnabled(c){
-      return !!(c && (c.littleBrainEnabled || c.memoryPalaceEnabled || String(c.memoryMode || '') === 'structured'));
+      return !!(c && (c.littleBrainEnabled || c.memoryPalaceEnabled));
     }
     function isCharacterAutoMemoryEnabled(c){
       return !!(c && (c.littleBrainAutoMemoryEnabled || c.autoArchiveEnabled));
@@ -553,7 +892,7 @@
       $('charStrip').hidden = picker;
       $('structuredSection').hidden = picker;
       $('vectorSection').hidden = picker;
-      $('settingsSection').hidden = false;
+      $('settingsSection').hidden = true;
       $('heroPanel').className = picker ? 'panel picker-panel' : 'panel hero';
     }
     function iconArrow(){
@@ -564,20 +903,22 @@
       $('subtitle').textContent = '请选择角色';
       var cfgReady = hasLightApi() && hasEmbeddingApi();
       var cards = state.chars.length ? state.chars.map(function(c){
-        var ready = isCharacterBrainEnabled(c);
+        var brainOn = isCharacterBrainEnabled(c);
         var autoOn = isCharacterAutoMemoryEnabled(c);
+        var ready = brainOn && autoOn;
+        var status = ready ? '已就绪' : (brainOn ? '待自动' : '未启用');
         var name = String(c.nickname || c.name || '角色');
         return '<article class="char-card' + (ready ? ' is-ready' : '') + '" data-id="' + esc(c.id) + '">'
           + '<div class="char-card-top" data-enter="' + esc(c.id) + '">' + avatarHtml(c, 'char-card-avatar')
-          + '<div class="char-card-main"><div class="char-card-name">' + esc(name) + '</div><div class="char-card-status">' + (ready ? '已就绪' : '未启用') + '</div></div>'
+          + '<div class="char-card-main"><div class="char-card-name">' + esc(name) + '</div><div class="char-card-status">' + esc(status) + '</div></div>'
           + '<button class="enter-btn" type="button" data-enter="' + esc(c.id) + '" aria-label="进入">' + iconArrow() + '</button></div>'
           + '<div class="char-card-controls">'
-          + '<div class="compact-switch"><div><b>启用小脑瓜</b><small>分类记忆 · 向量检索 · 回复前召回</small></div><button class="switch ' + (ready ? 'on' : '') + '" type="button" data-brain="' + esc(c.id) + '" aria-label="启用小脑瓜"></button></div>'
-          + '<div class="compact-switch"><div><b>全自动记忆</b><small>聊天后台自动总结、提取、归集</small></div><button class="switch ' + (autoOn ? 'on' : '') + '" type="button" data-auto="' + esc(c.id) + '" aria-label="全自动记忆"></button></div>'
+          + '<div class="compact-switch"><div><b>启用小脑瓜</b></div><button class="switch ' + (brainOn ? 'on' : '') + '" type="button" data-brain="' + esc(c.id) + '" aria-label="启用小脑瓜"></button></div>'
+          + '<div class="compact-switch"><div><b>全自动记忆</b></div><button class="switch ' + (autoOn ? 'on' : '') + '" type="button" data-auto="' + esc(c.id) + '" aria-label="全自动记忆"></button></div>'
           + '</div></article>';
       }).join('') : '<div class="empty">还没有角色，先去角色卡里创建一个。</div>';
-      $('heroPanel').innerHTML = '<div class="picker-hero"><div class="picker-kicker">CHAR LITTLE BRAIN</div><div class="picker-title"><span class="latin">char</span> 的小脑瓜</div><div class="picker-copy">请选择一个角色。开启后，聊天、线下和通话里的细节都会流进同一颗小脑瓜。</div></div>'
-        + (!cfgReady ? '<button class="config-alert" id="jumpConfigBtn" type="button"><div><strong>先配置后台 API</strong><span>副 API 用来总结和提取记忆；Embedding API 用来向量化检索。</span></div>' + iconArrow() + '</button>' : '')
+      $('heroPanel').innerHTML = '<div class="picker-hero"></div>'
+        + (!cfgReady ? '<button class="config-alert" id="jumpConfigBtn" type="button"><div><strong>配置 API</strong><span>先填副 API 和向量 API。</span></div>' + iconArrow() + '</button>' : '')
         + '<div class="char-card-list">' + cards + '</div>';
       Array.prototype.slice.call($('heroPanel').querySelectorAll('[data-enter]')).forEach(function(btn){
         btn.addEventListener('click', function(event){
@@ -600,8 +941,7 @@
       var jump = $('jumpConfigBtn');
       if(jump){
         jump.onclick = function(){
-          var sec = $('settingsSection');
-          if(sec && typeof sec.scrollIntoView === 'function') sec.scrollIntoView({ behavior:'smooth', block:'start' });
+          openSettings();
         };
       }
     }
@@ -623,7 +963,7 @@
       var rows = structuredItems(store);
       var vector = store.advancedMemory.vector;
       $('subtitle').textContent = c.name ? ('正在整理 ' + (c.nickname || c.name) + ' 的小脑瓜') : '还没有角色';
-      $('heroPanel').innerHTML = avatarHtml(c, 'hero-avatar') + '<div class="hero-main"><div class="hero-name"><span>' + esc(c.nickname || c.name || '未选择') + '</span><i class="status-dot"></i></div><div class="hero-sub">后台记忆会从聊天、线下和通话流入同一套分类；来源只是来源，不会变成单独类别。</div><div class="stats"><div class="stat"><b>' + rows.length + '</b><span>分类记忆</span></div><div class="stat"><b>' + (vector.fragments || []).length + '</b><span>检索片段</span></div><div class="stat"><b>' + (store.items || []).length + '</b><span>日记片段</span></div><div class="stat"><b>' + ((vector.settings && vector.settings.enabled !== false) ? '开' : '关') + '</b><span>向量侧路</span></div></div><div class="actions"><button class="action" id="enableBtn" type="button">启用</button><button class="action secondary" id="rebuildBtn" type="button">重建检索</button><button class="action secondary" id="promoteBtn" type="button">归集短期</button></div></div>';
+      $('heroPanel').innerHTML = avatarHtml(c, 'hero-avatar') + '<div class="hero-main"><div class="hero-name"><span>' + esc(c.nickname || c.name || '未选择') + '</span><i class="status-dot"></i></div><div class="stats"><div class="stat"><b>' + rows.length + '</b><span>分类记忆</span></div><div class="stat"><b>' + (vector.fragments || []).length + '</b><span>检索片段</span></div><div class="stat"><b>' + (store.items || []).length + '</b><span>旧片段</span></div><div class="stat"><b>' + ((vector.settings && vector.settings.enabled !== false) ? '开' : '关') + '</b><span>检索</span></div></div><div class="actions"><button class="action" id="enableBtn" type="button">开启小脑瓜</button><button class="action secondary" id="rebuildBtn" type="button">重建检索</button><button class="action secondary" id="promoteBtn" type="button">归集短期</button></div></div>';
       $('enableBtn').onclick = enableLittleBrain;
       $('rebuildBtn').onclick = rebuildVectorFromKnownMemory;
       $('promoteBtn').onclick = promoteShortTerm;
@@ -703,6 +1043,19 @@
         toast('rerank 测试失败：' + String(err && err.message || err));
       }
     }
+    function openSettings(){
+      renderSettings();
+      var overlay = $('settingsOverlay');
+      if(!overlay) return;
+      overlay.hidden = false;
+      overlay.classList.add('open');
+    }
+    function closeSettings(){
+      var overlay = $('settingsOverlay');
+      if(!overlay) return;
+      overlay.classList.remove('open');
+      overlay.hidden = true;
+    }
     function renderSettings(){
       state.config = normalizeConfig(state.config || getConfig());
       var light = state.config.lightLLM || {};
@@ -712,15 +1065,14 @@
       var vectorOn = !(state.store && state.store.advancedMemory && state.store.advancedMemory.vector && state.store.advancedMemory.vector.settings && state.store.advancedMemory.vector.settings.enabled === false);
       if(state.view === 'picker') vectorOn = state.config.vectorEnabled !== false;
       $('settingsPanel').innerHTML = '<div class="settings-panel">'
-        + '<div class="settings-lede"><span>MEMORY ENGINE</span><b>后台脑内配置</b><p>副 API 负责悄悄总结，Embedding 负责把记忆变成可检索的线索；rerank 是二次筛选，不开也能跑。</p></div>'
-        + '<section class="config-card"><div class="config-card-head"><div><div class="config-card-title">副 API（后台处理用）</div><div class="config-card-note">用于自动总结、记忆提取、关系归集。这里独立于主聊天 API，适合填便宜模型。</div></div><span class="config-badge ' + (hasLightApi() ? 'ready' : '') + '">' + (hasLightApi() ? '已配置' : '待配置') + '</span></div>'
-        + '<div class="field-grid"><div class="field"><label>BASE URL</label><input id="lightBaseUrl" value="' + esc(light.baseUrl || '') + '" placeholder="https://api.../v1"></div><div class="field"><label>API KEY</label><input id="lightApiKey" type="password" value="' + esc(light.apiKey || '') + '" placeholder="sk-..."></div><div class="field"><label>MODEL</label><input id="lightModel" value="' + esc(light.model || '') + '" placeholder="deepseek / qwen / glm flash"></div><button class="tiny-action" id="testLightBtn" type="button">测试副 API</button></div></section>'
-        + '<section class="config-card"><div class="config-card-head"><div><div class="config-card-title">Embedding API（向量检索）</div><div class="config-card-note">用于把记忆和当前消息转成向量。这里会被聊天检索优先读取，不再偷用主 API。</div></div><span class="config-badge ' + (hasEmbeddingApi() ? 'ready' : '') + '">' + (hasEmbeddingApi() ? '已配置' : '待配置') + '</span></div>'
-        + '<div class="field-grid"><div class="field"><label>BASE URL</label><input id="embBaseUrl" value="' + esc(emb.baseUrl || '') + '" placeholder="https://api.siliconflow.cn/v1"></div><div class="field"><label>API KEY</label><input id="embApiKey" type="password" value="' + esc(emb.apiKey || '') + '" placeholder="sk-..."></div><div class="field-row"><div class="field"><label>EMBEDDING MODEL</label><input id="embModel" value="' + esc(emb.model || 'BAAI/bge-m3') + '" placeholder="BAAI/bge-m3"></div><div class="field"><label>DIMENSIONS</label><input id="embDimensions" type="number" min="1" value="' + esc(emb.dimensions || 1024) + '"></div></div><button class="tiny-action" id="testEmbeddingBtn" type="button">测试向量 API</button></div></section>'
-        + '<section class="config-card"><div class="config-card-head"><div><div class="config-card-title">Rerank API（可选增强）</div><div class="config-card-note">在 embedding 召回后再二次排序。不开也能用，开启后会追加更贴合当前话题的记忆。</div></div><span class="config-badge ' + (rerank.enabled && rerank.baseUrl && rerank.apiKey ? 'ready' : '') + '">' + (rerank.enabled ? '已开启' : '可选') + '</span></div>'
+        + '<section class="config-card"><div class="config-card-head"><div><div class="config-card-title">副 API</div><div class="config-card-note">用于后台总结和提取记忆。</div></div><span class="config-badge ' + (hasLightApi() ? 'ready' : '') + '">' + (hasLightApi() ? '已配置' : '待配置') + '</span></div>'
+        + '<div class="field-grid"><div class="field"><label>BASE URL</label><input id="lightBaseUrl" value="' + esc(light.baseUrl || '') + '" placeholder="https://api.../v1"></div><div class="field"><label>API KEY</label><input id="lightApiKey" type="password" value="' + esc(light.apiKey || '') + '" placeholder="sk-..."></div><div class="field"><label>MODEL</label><input id="lightModel" value="' + esc(light.model || '') + '" placeholder="deepseek / qwen / glm flash"></div><div class="api-actions"><button class="tiny-action primary" id="pullLightModelsBtn" type="button">拉取模型</button><button class="tiny-action" id="testLightBtn" type="button">测试副 API</button></div><div class="model-choice-list" id="lightModelChoices"></div></div></section>'
+        + '<section class="config-card"><div class="config-card-head"><div><div class="config-card-title">Embedding API</div><div class="config-card-note">用于向量检索。</div></div><span class="config-badge ' + (hasEmbeddingApi() ? 'ready' : '') + '">' + (hasEmbeddingApi() ? '已配置' : '待配置') + '</span></div>'
+        + '<div class="field-grid"><div class="field"><label>BASE URL</label><input id="embBaseUrl" value="' + esc(emb.baseUrl || '') + '" placeholder="https://api.siliconflow.cn/v1"></div><div class="field"><label>API KEY</label><input id="embApiKey" type="password" value="' + esc(emb.apiKey || '') + '" placeholder="sk-..."></div><div class="field-row"><div class="field"><label>EMBEDDING MODEL</label><input id="embModel" value="' + esc(emb.model || 'BAAI/bge-m3') + '" placeholder="BAAI/bge-m3"></div><div class="field"><label>DIMENSIONS</label><input id="embDimensions" type="number" min="1" value="' + esc(emb.dimensions || 1024) + '"></div></div><div class="api-actions"><button class="tiny-action primary" id="pullEmbeddingModelsBtn" type="button">拉取模型</button><button class="tiny-action" id="testEmbeddingBtn" type="button">测试向量 API</button></div><div class="model-choice-list" id="embModelChoices"></div></div></section>'
+        + '<section class="config-card"><div class="config-card-head"><div><div class="config-card-title">Rerank API</div><div class="config-card-note">用于检索排序，可选。</div></div><span class="config-badge ' + (rerank.enabled && rerank.baseUrl && rerank.apiKey ? 'ready' : '') + '">' + (rerank.enabled ? '已开启' : '可选') + '</span></div>'
         + '<div class="switch-line"><span>启用 rerank 通道</span><button class="switch ' + (rerank.enabled ? 'on' : '') + '" id="rerankSwitch" type="button" aria-label="启用 rerank"></button></div><button class="tiny-action" id="copyEmbToRerankBtn" type="button">从 Embedding 复制 URL 和 Key</button>'
-        + '<div class="field-grid"><div class="field"><label>RERANK BASE URL</label><input id="rerankBaseUrl" value="' + esc(rerank.baseUrl || '') + '" placeholder="https://.../v1"></div><div class="field"><label>RERANK API KEY</label><input id="rerankApiKey" type="password" value="' + esc(rerank.apiKey || '') + '" placeholder="sk-..."></div><div class="field-row"><div class="field"><label>RERANK MODEL</label><input id="rerankModel" value="' + esc(rerank.model || 'BAAI/bge-reranker-v2-m3') + '" placeholder="BAAI/bge-reranker-v2-m3"></div><div class="field"><label>TOP N</label><input id="rerankTopN" type="number" min="1" max="20" value="' + esc(rerank.topN || 5) + '"></div></div><button class="tiny-action" id="testRerankBtn" type="button">测试 rerank</button></div></section>'
-        + '<section class="config-card"><div class="config-card-head"><div><div class="config-card-title">开关</div><div class="config-card-note">向量检索控制当前角色；全自动记忆在上面的角色卡片里单独开。</div></div></div><div class="switch-line"><span>向量检索侧路</span><button class="switch ' + (vectorOn ? 'on' : '') + '" id="vectorSwitch" type="button" aria-label="向量检索侧路"></button></div><div class="switch-line"><span>远程向量存储（预留）</span><button class="switch ' + (remote.enabled ? 'on' : '') + '" id="remoteVectorSwitch" type="button" aria-label="远程向量存储"></button></div><div class="field-grid"><div class="field"><label>SUPABASE URL</label><input id="remoteVectorUrl" value="' + esc(remote.supabaseUrl || '') + '" placeholder="https://...supabase.co"></div><div class="field"><label>SUPABASE ANON KEY</label><input id="remoteVectorKey" type="password" value="' + esc(remote.supabaseAnonKey || '') + '" placeholder="ey..."></div></div></section>'
+        + '<div class="field-grid"><div class="field"><label>RERANK BASE URL</label><input id="rerankBaseUrl" value="' + esc(rerank.baseUrl || '') + '" placeholder="https://.../v1"></div><div class="field"><label>RERANK API KEY</label><input id="rerankApiKey" type="password" value="' + esc(rerank.apiKey || '') + '" placeholder="sk-..."></div><div class="field-row"><div class="field"><label>RERANK MODEL</label><input id="rerankModel" value="' + esc(rerank.model || 'BAAI/bge-reranker-v2-m3') + '" placeholder="BAAI/bge-reranker-v2-m3"></div><div class="field"><label>TOP N</label><input id="rerankTopN" type="number" min="1" max="20" value="' + esc(rerank.topN || 5) + '"></div></div><div class="api-actions"><button class="tiny-action primary" id="pullRerankModelsBtn" type="button">拉取模型</button><button class="tiny-action" id="testRerankBtn" type="button">测试 rerank</button></div><div class="model-choice-list" id="rerankModelChoices"></div></div></section>'
+        + '<section class="config-card"><div class="config-card-head"><div><div class="config-card-title">开关</div><div class="config-card-note">控制检索和远程存储。</div></div></div><div class="switch-line"><span>向量检索</span><button class="switch ' + (vectorOn ? 'on' : '') + '" id="vectorSwitch" type="button" aria-label="向量检索"></button></div><div class="switch-line"><span>远程向量存储</span><button class="switch ' + (remote.enabled ? 'on' : '') + '" id="remoteVectorSwitch" type="button" aria-label="远程向量存储"></button></div><div class="field-grid"><div class="field"><label>SUPABASE URL</label><input id="remoteVectorUrl" value="' + esc(remote.supabaseUrl || '') + '" placeholder="https://...supabase.co"></div><div class="field"><label>SUPABASE ANON KEY</label><input id="remoteVectorKey" type="password" value="' + esc(remote.supabaseAnonKey || '') + '" placeholder="ey..."></div></div></section>'
         + '<button class="action save-all" id="saveSettingsBtn" type="button">保存全部 API 配置</button>'
         + '</div>';
       $('vectorSwitch').onclick = function(){
@@ -749,6 +1101,9 @@
         $('rerankApiKey').value = $('embApiKey').value.trim();
         toast('已复制');
       };
+      $('pullLightModelsBtn').onclick = function(){ pullModels('light'); };
+      $('pullEmbeddingModelsBtn').onclick = function(){ pullModels('embedding'); };
+      $('pullRerankModelsBtn').onclick = function(){ pullModels('rerank'); };
       $('saveSettingsBtn').onclick = function(){
         var nextCfg = normalizeConfig(state.config || {});
         nextCfg.lightLLM = {
@@ -795,6 +1150,7 @@
         renderMemoryLists();
       }
       renderSettings();
+      hydrateAvatarNodes();
     }
     async function selectCharacter(id, options){
       var opts = options && typeof options === 'object' ? options : {};
@@ -846,6 +1202,13 @@
       state.store.advancedMemory.mode = 'structured';
       state.store.advancedMemory.vector.settings.enabled = true;
       await saveMemory();
+      if(state.char && state.char.id){
+        await patchCharacter(state.char.id, {
+          littleBrainEnabled:true,
+          memoryPalaceEnabled:true,
+          memoryMode:'structured'
+        });
+      }
       render();
       toast('小脑瓜已启用');
     }
@@ -928,7 +1291,11 @@
         }
         try{ window.parent.postMessage({ type:'CLOSE_APP' }, '*'); }catch(err){}
       };
-      $('refreshBtn').onclick = function(){ init().catch(function(){}); };
+      $('settingsBtn').onclick = openSettings;
+      $('closeSettingsBtn').onclick = closeSettings;
+      $('settingsOverlay').addEventListener('click', function(event){
+        if(event.target === $('settingsOverlay')) closeSettings();
+      });
       state.config = getConfig();
       state.chars = await loadCharacters();
       state.view = 'picker';

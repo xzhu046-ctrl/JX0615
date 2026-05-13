@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../promptManager.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../accountManager.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T19:07:23Z"></script>
+<script src="../assetStore.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../promptManager.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../accountManager.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T19:59:00Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -892,7 +892,6 @@ body.offline-theme-love .offline-stage-action.memory img{display:none}
       <button class="offline-stage-action settings" id="offlineSettingsBtn" type="button" onclick="handleOfflineSettingsAction(event)" aria-label="线下设置">
         <img src="assets/%E8%AE%BE%E7%BD%AE.png" alt="">
       </button>
-      <button class="offline-stage-action memory" id="offlineMemoryBtn" type="button" onclick="openOfflineMemoryPanel()" aria-label="聊天记忆"><img src="assets/%E8%AE%B0%E5%BF%86%E6%8C%89%E9%92%AE.png" alt=""></button>
     </div>
   </div>
   <button class="offline-readonly-exit-btn" id="offlineReadOnlyExitBtn" type="button" onclick="exitReadOnlyOfflineInviteToDateApp(event)" aria-label="返回约会">×</button>
@@ -994,44 +993,6 @@ body.offline-theme-love .offline-stage-action.memory img{display:none}
             </div>
             <label class="offline-setting-label" for="offlineDrawerStyle">文风补充</label>
             <textarea class="offline-setting-textarea offline-line-textarea" id="offlineDrawerStyle" placeholder="比如：克制一点、动作感重一点、像旧电影里的慢镜头。"></textarea>
-          </div>
-        </section>
-        <section class="offline-setting-card">
-          <div class="offline-setting-head">
-            <div class="offline-setting-head-main">
-              <div class="offline-setting-title">记忆板块</div>
-              <div class="offline-setting-note spaced" id="offlineDrawerMemoryStats">当前线下共有 0 条消息</div>
-            </div>
-          </div>
-          <div class="offline-setting-grid">
-            <div class="offline-setting-row">
-              <div class="offline-setting-copy">
-                <div class="offline-setting-label">自动总结</div>
-              </div>
-              <button class="offline-setting-toggle" id="offlineDrawerSummaryAuto" type="button" aria-pressed="true"></button>
-            </div>
-            <div>
-              <label class="offline-setting-label" for="offlineDrawerMemoryMode">记忆模式</label>
-              <select class="offline-setting-select" id="offlineDrawerMemoryMode">
-                <option value="diary">日记模式</option>
-                <option value="structured">CHAR的小脑瓜</option>
-              </select>
-            </div>
-            <div class="offline-setting-meta-row">
-              <div>
-                <label class="offline-setting-label" for="offlineDrawerSummaryEvery">自动总结</label>
-                <input class="offline-setting-input offline-underline-input offline-number-input" id="offlineDrawerSummaryEvery" type="number" min="1" max="99" step="1">
-              </div>
-              <div>
-                <label class="offline-setting-label" for="offlineDrawerMemoryReadCount">读取条数</label>
-                <input class="offline-setting-input offline-underline-input offline-number-input" id="offlineDrawerMemoryReadCount" type="number" min="1" max="12" step="1">
-              </div>
-            </div>
-            <div class="offline-setting-actions">
-              <input class="offline-setting-input offline-underline-input offline-number-input" id="offlineDrawerManualSummaryCount" type="number" min="1" max="99" step="1" placeholder="幕数">
-              <button class="offline-setting-btn primary" id="offlineDrawerSummarizeBtn" type="button">手动总结</button>
-            </div>
-            <div class="offline-stage-summary-list" id="offlineDrawerSummaryList" hidden></div>
           </div>
         </section>
         <section class="offline-setting-card">
@@ -1251,39 +1212,6 @@ body.offline-theme-love .offline-stage-action.memory img{display:none}
     <div class="offline-status-history-list" id="offlineStatusHistoryList"></div>
   </div>
 </div>
-<div class="offline-memory-overlay" id="offlineMemoryOverlay">
-  <div class="offline-memory-card">
-    <div class="offline-memory-head">
-      <div class="offline-memory-title" id="offlineMemoryTitle">★ 聊天记忆</div>
-      <div class="offline-memory-head-actions">
-        <button class="offline-memory-close" type="button" onclick="openOfflineMemoryEditor()">+</button>
-        <button class="offline-memory-close" type="button" onclick="closeOfflineMemoryPanel()">×</button>
-      </div>
-    </div>
-    <div class="offline-memory-body" id="offlineMemoryBody"></div>
-  </div>
-</div>
-<div class="offline-memory-editor-overlay" id="offlineMemoryEditorOverlay">
-  <div class="offline-memory-editor-card">
-    <div class="offline-memory-editor-title" id="offlineMemoryEditorTitle">新建记忆总结</div>
-    <textarea class="offline-memory-editor-input" id="offlineMemoryEditorInput" placeholder="输入记忆总结..."></textarea>
-    <div class="offline-memory-editor-actions">
-      <button class="offline-setting-btn" type="button" onclick="closeOfflineMemoryEditor()">取消</button>
-      <button class="offline-setting-btn primary" type="button" onclick="confirmOfflineMemoryEditor()">保存</button>
-    </div>
-  </div>
-</div>
-<div class="offline-confirm-overlay" id="offlineMemoryConfirmOverlay">
-  <div class="offline-confirm-card">
-    <div class="offline-confirm-title" id="offlineMemoryConfirmTitle">确认操作</div>
-    <div class="offline-confirm-copy" id="offlineMemoryConfirmCopy">确定要继续吗？</div>
-    <div class="offline-confirm-actions">
-      <button class="offline-confirm-btn" type="button" onclick="resolveOfflineMemoryConfirm(false)">取消</button>
-      <button class="offline-confirm-btn primary" type="button" onclick="resolveOfflineMemoryConfirm(true)">确认</button>
-    </div>
-  </div>
-</div>
-
 <script>
 var promptManager = new (window.PromptManager || function(){})();
 var session = null;

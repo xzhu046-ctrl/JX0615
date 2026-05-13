@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../chatStorage.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../assetStore.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../accountManager.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-13T19:07:23Z"></script>
-<script src="../sunnySupport.js?v=2026-05-13T19:07:23Z"></script>
-<script src="offlineInvite.js?v=2026-05-13T19:07:23Z"></script>
+<script src="../promptManager.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../chatStorage.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../assetStore.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../accountManager.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../metadataStore.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../scheduleShared.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../presenceShared.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T19:59:00Z"></script>
+<script src="../sunnySupport.js?v=2026-05-13T19:59:00Z"></script>
+<script src="offlineInvite.js?v=2026-05-13T19:59:00Z"></script>
 <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
@@ -2403,7 +2403,6 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
     <div class="hdr-actions">
       <button class="hdr-btn hdr-icon-btn" id="chatSettingsBtn" onclick="openChatSettings()" title="聊天设置"><img src="assets/聊天设置.png" alt="聊天设置" style="width:18px;height:18px;object-fit:contain;display:block"></button>
       <button class="hdr-btn hdr-icon-btn" id="listenAlongBtn" onclick="openListenAlongModal()" title="一起听歌">♪</button>
-      <button class="hdr-btn hdr-memory-btn" id="memoryBtn" onclick="openMemoryPanel()" title="聊天记忆">★ 0</button>
       <button class="hdr-btn hdr-icon-btn hdr-danger-btn" id="sunnyClearBtn" onclick="clearSunnyAllDirect()" title="清空 Sunny 会话">🗑</button>
     </div>
   </div>
@@ -2510,9 +2509,6 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
       <div class="voice-call-side-actions" aria-label="通话工具">
         <button class="voice-call-menu-btn" type="button" onclick="openVoiceCallSettingsPanel()" aria-label="通话设置">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Z"></path><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8.92 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.47.51.83.98 1H21a2 2 0 0 1 0 4h-.62c-.47.17-.84.53-.98 1Z"></path></svg>
-        </button>
-        <button class="voice-call-menu-btn" type="button" onclick="openVoiceCallMemoryPanel()" aria-label="通话记忆">
-          <img src="assets/记忆按钮.png" alt="">
         </button>
       </div>
     </div>
@@ -3052,57 +3048,6 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
               <div class="token-total-value" id="contextTokenTotal">0 tok</div>
             </div>
             <div class="token-breakdown" id="contextTokenBreakdown"></div>
-          </div>
-        </div>
-
-        <div class="cs-card">
-          <div class="cs-card-title">记忆板块</div>
-          <div class="toggle-sub" id="summaryStatsSub" style="margin:-2px 0 10px 0">当前聊天共有 0 条信息</div>
-          <div class="toggle-row" style="margin-bottom:10px">
-            <div class="toggle-left">
-              <div class="toggle-label">自动总结</div>
-              <div class="toggle-sub" id="autoSummarySub">默认开启</div>
-            </div>
-            <div class="toggle-switch on" id="autoSummaryToggle" onclick="toggleAutoSummarySwitch()"></div>
-          </div>
-          <div class="cs-stack">
-            <div>
-              <span class="cs-label">记忆模式</span>
-              <select class="cs-input" id="csMemoryMode" onchange="renderMemoryModeSettingsUi()">
-                <option value="diary">日记模式</option>
-                <option value="structured">CHAR的小脑瓜</option>
-              </select>
-              <div class="toggle-sub">切换只改变读取方式，不会自动全量调用 AI；已有日记和小脑瓜内容都会保留。</div>
-            </div>
-            <div class="cs-memory-row">
-              <div>
-                <span class="cs-label">加载条数</span>
-                <input class="cs-input cs-number-underline" id="csChatRenderPageSize" type="number" min="10" max="200" step="1" placeholder="40" oninput="syncChatSettingsFieldWidths()">
-              </div>
-              <div>
-                <span class="cs-label">读取条数</span>
-                <input class="cs-input cs-number-underline" id="csContextWindow" type="number" min="6" max="120" step="1" placeholder="30" oninput="syncChatSettingsFieldWidths()">
-              </div>
-            </div>
-            <div class="cs-memory-row">
-              <div>
-                <span class="cs-label">自动总结</span>
-                <input class="cs-input cs-number-underline" id="csSummaryEvery" type="number" min="6" max="120" step="1" placeholder="30" oninput="syncChatSettingsFieldWidths()">
-              </div>
-              <div>
-                <span class="cs-label">记忆合并</span>
-                <input class="cs-input cs-number-underline" id="csMemoryMergeThreshold" type="number" min="2" max="50" step="1" placeholder="10" oninput="syncChatSettingsFieldWidths()">
-              </div>
-            </div>
-            <div class="cs-memory-row">
-              <div>
-                <span class="cs-label">手动总结</span>
-                <input class="cs-input cs-number-underline" id="csManualSummarySize" type="number" min="6" max="120" step="1" placeholder="30" oninput="syncChatSettingsFieldWidths()">
-              </div>
-              <div>
-                <button class="cs-plain-btn cs-memory-action-btn" type="button" onclick="runManualSummaryNow()">立即手动总结</button>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -3695,19 +3640,6 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
   </div>
 </div>
 
-<div class="memory-overlay" id="memoryOverlay">
-  <div class="memory-card">
-    <div class="memory-head">
-      <div class="memory-title" id="memoryPanelTitle">★ 聊天记忆</div>
-      <div class="memory-head-actions">
-        <button class="memory-close" type="button" onclick="openMemoryEditor()">+</button>
-        <button class="memory-close" type="button" onclick="closeMemoryPanel()">×</button>
-      </div>
-    </div>
-    <div class="memory-body" id="memoryPanelBody"></div>
-  </div>
-</div>
-
 <div class="listen-along-overlay" id="listenAlongIdleOverlay">
   <div class="listen-along-card listen-along-idle-card">
     <button class="listen-along-close" type="button" onclick="handleListenAlongClose(event)">×</button>
@@ -3784,17 +3716,6 @@ url('assets/%E5%B0%8F%E7%8B%97%E6%B5%B7%E9%B8%A5.jpg') center top / cover no-rep
     <div class="confirm-actions">
       <button class="confirm-btn" type="button" onclick="confirmOfflineInviteDecision(false)">拒绝</button>
       <button class="confirm-btn primary" type="button" onclick="confirmOfflineInviteDecision(true)">同意</button>
-    </div>
-  </div>
-</div>
-
-<div class="mem-editor-overlay" id="memEditorOverlay">
-  <div class="mem-editor-card">
-    <div class="mem-editor-title" id="memEditorTitle">新建记忆总结</div>
-    <textarea class="mem-editor-input" id="memEditorInput" placeholder="输入记忆总结..."></textarea>
-    <div class="mem-editor-actions">
-      <button class="confirm-btn" type="button" onclick="closeMemoryEditor()">取消</button>
-      <button class="confirm-btn" type="button" onclick="confirmMemoryEditor()">确认</button>
     </div>
   </div>
 </div>
@@ -35027,11 +34948,16 @@ async function openChatSettings() {
     updateWbInfoText();
     renderWbBookList();
     syncPresenceWorldHint();
-    document.getElementById('csChatRenderPageSize').value = loadChatRenderPageSize();
-    document.getElementById('csContextWindow').value = loadContextWindowSize();
-    document.getElementById('csSummaryEvery').value = loadSummaryEverySize();
-    document.getElementById('csManualSummarySize').value = loadManualSummarySize();
-    document.getElementById('csMemoryMergeThreshold').value = loadMemoryMergeThreshold();
+    var chatRenderPageSizeInput = document.getElementById('csChatRenderPageSize');
+    var contextWindowInput = document.getElementById('csContextWindow');
+    var summaryEveryInput = document.getElementById('csSummaryEvery');
+    var manualSummaryInput = document.getElementById('csManualSummarySize');
+    var memoryMergeInput = document.getElementById('csMemoryMergeThreshold');
+    if(chatRenderPageSizeInput) chatRenderPageSizeInput.value = loadChatRenderPageSize();
+    if(contextWindowInput) contextWindowInput.value = loadContextWindowSize();
+    if(summaryEveryInput) summaryEveryInput.value = loadSummaryEverySize();
+    if(manualSummaryInput) manualSummaryInput.value = loadManualSummarySize();
+    if(memoryMergeInput) memoryMergeInput.value = loadMemoryMergeThreshold();
     var memModeEl = document.getElementById('csMemoryMode');
     if(memModeEl) memModeEl.value = loadMemoryMode();
     var vectorTopEl = document.getElementById('csVectorTopN');
@@ -36012,11 +35938,16 @@ async function saveChatSettings() {
     aiRight: String((document.getElementById('csBubbleCharmAiRight') || {}).value || ''),
     aiTop: String((document.getElementById('csBubbleCharmAiTop') || {}).value || '')
   });
-  var renderPageSize = parseInt(document.getElementById('csChatRenderPageSize').value || String(DEFAULT_CHAT_RENDER_PAGE_SIZE), 10);
-  var cwin = parseInt(document.getElementById('csContextWindow').value || String(DEFAULT_CONTEXT_WINDOW), 10);
-  var severy = parseInt(document.getElementById('csSummaryEvery').value || String(DEFAULT_SUMMARY_EVERY), 10);
-  var manualSize = parseInt(document.getElementById('csManualSummarySize').value || String(DEFAULT_MANUAL_SUMMARY_SIZE), 10);
-  var mergeThreshold = parseInt(document.getElementById('csMemoryMergeThreshold').value || String(DEFAULT_MEMORY_MERGE_THRESHOLD), 10);
+  var chatRenderPageSizeInput = document.getElementById('csChatRenderPageSize');
+  var contextWindowInput = document.getElementById('csContextWindow');
+  var summaryEveryInput = document.getElementById('csSummaryEvery');
+  var manualSummaryInput = document.getElementById('csManualSummarySize');
+  var memoryMergeInput = document.getElementById('csMemoryMergeThreshold');
+  var renderPageSize = parseInt((chatRenderPageSizeInput && chatRenderPageSizeInput.value) || String(loadChatRenderPageSize ? loadChatRenderPageSize() : DEFAULT_CHAT_RENDER_PAGE_SIZE), 10);
+  var cwin = parseInt((contextWindowInput && contextWindowInput.value) || String(loadContextWindowSize ? loadContextWindowSize() : DEFAULT_CONTEXT_WINDOW), 10);
+  var severy = parseInt((summaryEveryInput && summaryEveryInput.value) || String(loadSummaryEverySize ? loadSummaryEverySize() : DEFAULT_SUMMARY_EVERY), 10);
+  var manualSize = parseInt((manualSummaryInput && manualSummaryInput.value) || String(loadManualSummarySize ? loadManualSummarySize() : DEFAULT_MANUAL_SUMMARY_SIZE), 10);
+  var mergeThreshold = parseInt((memoryMergeInput && memoryMergeInput.value) || String(loadMemoryMergeThreshold ? loadMemoryMergeThreshold() : DEFAULT_MEMORY_MERGE_THRESHOLD), 10);
   var memoryModeNext = normalizeMemoryMode((document.getElementById('csMemoryMode') || {}).value || loadMemoryMode());
   var vectorTopNNext = Math.max(1, Math.min(20, parseInt((document.getElementById('csVectorTopN') || {}).value || String(DEFAULT_VECTOR_TOP_N), 10) || DEFAULT_VECTOR_TOP_N));
   var vectorStrategyNext = String((document.getElementById('csVectorStrategy') || {}).value || DEFAULT_VECTOR_RETRIEVAL_STRATEGY);
