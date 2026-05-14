@@ -62,12 +62,12 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-13T22:53:19Z';
+const APP_BUILD_ID = '2026-05-14T00:25:51Z';
 const APP_UPDATE_NOTES = [
-  '刷新按钮不会点不动',
-  '返回聊天室不再排队卡死',
-  '聊天头像不再抓头像框',
-  'App 切换加了兜底超时'
+  '线下邀约打开不再等头像预热',
+  '线下首屏不等归档全量扫描',
+  '加载猫会自动让出页面',
+  '线下记录读取改成并行兜底'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -12328,7 +12328,8 @@ function showShellLoadingOverlay(kind){
   var image = document.getElementById('shell-loading-image');
   var copy = document.getElementById('shell-loading-copy');
   if(!overlay || !image || !copy) return;
-  overlay.classList.toggle('instant', currentApp === 'chat' || String(kind || '').trim() === 'chat');
+  var safeKind = String(kind || '').trim();
+  overlay.classList.toggle('instant', currentApp === 'chat' || safeKind === 'chat');
   if(shellLoadingHideTimer){
     clearTimeout(shellLoadingHideTimer);
     shellLoadingHideTimer = 0;
@@ -12340,6 +12341,11 @@ function showShellLoadingOverlay(kind){
   image.src = 'apps/assets/loading-cat.png';
   shellLoadingShownAt = Date.now();
   overlay.classList.add('show');
+  if(safeKind === 'offline_mode'){
+    shellLoadingForceTimer = setTimeout(function(){
+      if(currentApp === 'offline_mode') hideShellLoadingOverlay(0);
+    }, 1800);
+  }
 }
 
 function hideShellLoadingOverlay(delay){
@@ -12512,7 +12518,7 @@ function renderApp(id){
       chatMeasuredKeyboardOpenSeen = false;
     }
   }
-  showShellLoadingOverlay('app');
+  showShellLoadingOverlay(id === 'chat' ? 'chat' : id);
   var appFrame = document.getElementById('app-iframe');
   bindAppFrameLoadHandlers();
   if(appFrame && appFrame.dataset){
@@ -12636,7 +12642,11 @@ function openApp(id) {
     if(currentApp){
       await flushCurrentAppState();
     }
-    await primeShellCharacterAvatarFromChatSettings(id === 'offline_mode' ? pendingOpenOfflineCharId : '', 'open_' + id).catch(function(){ return null; });
+    await withShellTransitionTimeout(
+      primeShellCharacterAvatarFromChatSettings(id === 'offline_mode' ? pendingOpenOfflineCharId : '', 'open_' + id),
+      'prime_open_' + id,
+      id === 'offline_mode' ? 700 : 1000
+    );
     if(appStack[appStack.length-1]!==id) appStack.push(id);
     renderApp(id);
     markShellAppSeen(id);
@@ -12650,7 +12660,11 @@ function forceOpenApp(id){
     showHomeToast('蕾蕾在赶工^^');
     return;
   }
-  primeShellCharacterAvatarFromChatSettings(id === 'offline_mode' ? pendingOpenOfflineCharId : '', 'force_open_' + id).catch(function(){ return null; }).then(function(){
+  withShellTransitionTimeout(
+    primeShellCharacterAvatarFromChatSettings(id === 'offline_mode' ? pendingOpenOfflineCharId : '', 'force_open_' + id),
+    'prime_force_' + id,
+    id === 'offline_mode' ? 700 : 1000
+  ).then(function(){
     if(appStack[appStack.length - 1] !== id) appStack.push(id);
     renderApp(id);
     markShellAppSeen(id);
@@ -12699,7 +12713,11 @@ function replaceApp(id){
     for(var i = appStack.length - 2; i >= 0; i -= 1){
       if(appStack[i] === id) appStack.splice(i, 1);
     }
-    await primeShellCharacterAvatarFromChatSettings(id === 'offline_mode' ? pendingOpenOfflineCharId : '', 'replace_' + id).catch(function(){ return null; });
+    await withShellTransitionTimeout(
+      primeShellCharacterAvatarFromChatSettings(id === 'offline_mode' ? pendingOpenOfflineCharId : '', 'replace_' + id),
+      'prime_replace_' + id,
+      id === 'offline_mode' ? 700 : 1000
+    );
     currentApp = null;
     renderApp(id);
     markShellAppSeen(id);
@@ -12871,6 +12889,9 @@ window.addEventListener('message',(e)=>{
   };
   if(type==='OFFLINE_BUSY_STATE'){
     updateOfflineModeBusyState(payload || {});
+  }
+  if(type==='OFFLINE_FRAME_READY'){
+    if(currentApp === 'offline_mode') hideShellLoadingOverlay(0);
   }
 	  if(type==='SET_ACTIVE_CHARACTER'){
 	    const hydratedPayload = hydrateShellCharacterPayload(payload) || payload;
