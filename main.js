@@ -62,12 +62,12 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-14T00:42:44Z';
+const APP_BUILD_ID = '2026-05-14T01:00:44Z';
 const APP_UPDATE_NOTES = [
-  '线下继续保持 user 先说',
-  '打开邀约不再露出灰色空壳',
-  '移动端保留线下背景美化',
-  '加载图等首屏渲染后再收起'
+  '聊天室启动先显示聊天',
+  '主题背景和表情库改到后台补载',
+  '头像修复不再打开时狂预热',
+  '长聊天和记忆读取减少卡顿'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -1011,6 +1011,14 @@ var shellAvatarFrameRepairTimers = [];
 var shellAvatarHomeRepairTimers = [];
 var shellAvatarPrewarmRoot = null;
 
+function isShellPerformanceSensitiveMode(){
+  try{
+    return /iPhone|iPad|iPod|Mobile|Safari/i.test(navigator.userAgent || '');
+  }catch(err){
+    return true;
+  }
+}
+
 function getShellAvatarPrewarmRoot(){
   if(shellAvatarPrewarmRoot && shellAvatarPrewarmRoot.parentNode) return shellAvatarPrewarmRoot;
   try{
@@ -1189,7 +1197,7 @@ function seedShellAvatarPoolFromDocument(doc){
 function prewarmShellAvatarImagePool(src, wantedCount){
   var key = getShellAvatarPoolKey(src);
   if(!key || !document || !document.createElement) return;
-  var count = Math.max(1, Math.min(24, Number(wantedCount) || 6));
+  var count = Math.max(1, Math.min(isShellPerformanceSensitiveMode() ? 2 : 8, Number(wantedCount) || 2));
   var list = shellAvatarImagePool[key] || (shellAvatarImagePool[key] = []);
   list = list.filter(isShellAvatarPoolImageReady);
   shellAvatarImagePool[key] = list;
@@ -1247,15 +1255,16 @@ function takeShellAvatarPoolImage(src){
   while(list.length){
     var img = list.shift();
     if(isShellAvatarPoolImageReady(img)){
-      prewarmShellAvatarImagePool(key, 8);
+      if(!isShellPerformanceSensitiveMode()) prewarmShellAvatarImagePool(key, 3);
       return img;
     }
   }
-  prewarmShellAvatarImagePool(key, 8);
+  if(!isShellPerformanceSensitiveMode()) prewarmShellAvatarImagePool(key, 2);
   return null;
 }
 
 function prewarmShellAvatarSourcesForApps(){
+  if(currentApp === 'chat') return;
   var sources = [];
   function push(src){
     var key = getShellAvatarPoolKey(src);
@@ -1269,14 +1278,16 @@ function prewarmShellAvatarSourcesForApps(){
   try{
     collectShellAvatarDomSources(document, ['#wgt-avatar img', '#bond-char-avatar img', '#shell-voice-call-avatar img']).forEach(push);
   }catch(domErr){}
-  try{
+  if(!isShellPerformanceSensitiveMode()){
+    try{
     getStoredCharactersSnapshot().slice(0, 40).forEach(function(c){
       push(getShellCharacterAvatarCandidateSync(c));
     });
-  }catch(rosterErr){}
-  sources.slice(0, 48).forEach(function(src, idx){
-    prewarmShellAvatarImagePool(src, idx < 4 ? 14 : 4);
-    ensureShellAvatarBlobFallback(src).catch(function(){});
+    }catch(rosterErr){}
+  }
+  sources.slice(0, isShellPerformanceSensitiveMode() ? 4 : 18).forEach(function(src, idx){
+    prewarmShellAvatarImagePool(src, idx < 2 ? 2 : 1);
+    if(!isShellPerformanceSensitiveMode()) ensureShellAvatarBlobFallback(src).catch(function(){});
   });
 }
 
@@ -8299,7 +8310,6 @@ function repairShellAvatarImageElement(img){
   if(!isShellFrameAvatarLikeImage(img)) return false;
   var src = getShellFrameAvatarImgSource(img);
   if(!getShellAvatarPoolKey(src)) return false;
-  prewarmShellAvatarImagePool(src, 8);
   var broken = !img.complete || Number(img.naturalWidth || 0) <= 0;
   if(!broken){
     rememberLoadedShellAvatarImage(img, src);
@@ -8307,7 +8317,7 @@ function repairShellAvatarImageElement(img){
   }
   if(shellAvatarBlobUrlCache[getShellAvatarBlobKey(src)] && applyShellAvatarBlobFallbackToImage(img, src)) return true;
   if(replaceShellAvatarWithPooledImage(img, src)) return true;
-  if(applyShellAvatarBlobFallbackToImage(img, src)) return true;
+  if(!isShellPerformanceSensitiveMode() && applyShellAvatarBlobFallbackToImage(img, src)) return true;
   if(retryShellAvatarImageLoad(img, src)) return true;
   return false;
 }
@@ -8376,12 +8386,14 @@ function scheduleAppFrameAvatarRepairs(frame){
   if(!frame) return;
   shellAvatarFrameRepairTimers.forEach(function(timer){ clearTimeout(timer); });
   shellAvatarFrameRepairTimers = [];
-  [80, 220, 520, 1000, 1800, 3200].forEach(function(delay){
+  var lightMode = currentApp === 'chat' || isShellPerformanceSensitiveMode();
+  (lightMode ? [900, 2600] : [160, 520, 1400, 3200]).forEach(function(delay){
     shellAvatarFrameRepairTimers.push(setTimeout(function(){
-      repairShellAvatarImages();
+      if(!lightMode) repairShellAvatarImages();
       repairAppFrameAvatarImages(frame);
     }, delay));
   });
+  if(lightMode) return;
   try{
     var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
     bindShellAvatarRepairEvents(doc);
@@ -12468,8 +12480,13 @@ function armAppFrameLoadWatchdog(frame, appId, attempt){
 function renderApp(id){
   const a=APP_MAP[id]; if(!a) return;
   bindShellAvatarRepairEvents(document);
-  prewarmShellAvatarSourcesForApps();
-  scheduleShellAvatarRepairs();
+  if(id !== 'chat'){
+    runShellDeferredTask(function(){
+      if(currentApp !== id) return;
+      prewarmShellAvatarSourcesForApps();
+      scheduleShellAvatarRepairs();
+    }, 900);
+  }
   if(appFrameClearTimer){
     clearTimeout(appFrameClearTimer);
     appFrameClearTimer = 0;
@@ -12529,7 +12546,9 @@ function renderApp(id){
     appFrame.src = buildAppFrameUrl(a.src);
     armAppFrameLoadWatchdog(appFrame, id, 0);
     settleAlreadyLoadedAppFrame(appFrame, id);
-    scheduleAppFrameAvatarRepairs(appFrame);
+    if(id !== 'chat'){
+      scheduleAppFrameAvatarRepairs(appFrame);
+    }
   }
   if(id === 'chat'){
     pendingOpenChatCharId = '';
@@ -14890,14 +14909,20 @@ function restoreState(){
       const c = getActiveCharacterData();
       if(c){ setWidgetCharacter(c); }
       renderBondWidget(c);
-      prewarmShellAvatarSourcesForApps();
-      scheduleShellAvatarRepairs();
+      runShellDeferredTask(function(){
+        if(currentApp === 'chat') return;
+        prewarmShellAvatarSourcesForApps();
+        scheduleShellAvatarRepairs();
+      }, 900);
     }catch(e){}
   });
   renderHomeDockBadges();
   renderHomePages(true);
   ensureAvatarDebugWindows();
-  runShellDeferredTask(prewarmShellAvatarSourcesForApps, 450);
+  runShellDeferredTask(function(){
+    if(currentApp === 'chat') return;
+    prewarmShellAvatarSourcesForApps();
+  }, 1200);
   setupAiBgScheduler();
   try{
     if(sessionStorage.getItem(REFRESH_RECALC_FLAG_KEY) === '1'){
@@ -15078,16 +15103,22 @@ restoreState();
 window.addEventListener('focus', ()=>{
   hydrateShellActiveCharacterState().finally(function(){
     renderBondWidget();
-    prewarmShellAvatarSourcesForApps();
-    scheduleShellAvatarRepairs();
+    runShellDeferredTask(function(){
+      if(currentApp === 'chat') return;
+      prewarmShellAvatarSourcesForApps();
+      scheduleShellAvatarRepairs();
+    }, 900);
   });
 });
 document.addEventListener('visibilitychange', ()=>{
   if(!document.hidden){
     renderBondWidget();
     renderHomeDockBadges();
-    prewarmShellAvatarSourcesForApps();
-    scheduleShellAvatarRepairs();
+    runShellDeferredTask(function(){
+      if(currentApp === 'chat') return;
+      prewarmShellAvatarSourcesForApps();
+      scheduleShellAvatarRepairs();
+    }, 900);
   }
 });
 window.addEventListener('resize', ()=>{
