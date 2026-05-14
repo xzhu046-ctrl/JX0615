@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-14T00:42:44Z"></script>
-<script src="../chatStorage.js?v=2026-05-14T00:42:44Z"></script>
-<script src="../metadataStore.js?v=2026-05-14T00:42:44Z"></script>
-<script src="../promptManager.js?v=2026-05-14T00:42:44Z"></script>
-<script src="../accountManager.js?v=2026-05-14T00:42:44Z"></script>
-<script src="../scheduleShared.js?v=2026-05-14T00:42:44Z"></script>
-<script src="../presenceShared.js?v=2026-05-14T00:42:44Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-14T00:42:44Z"></script>
+<script src="../assetStore.js?v=2026-05-14T01:34:22Z"></script>
+<script src="../chatStorage.js?v=2026-05-14T01:34:22Z"></script>
+<script src="../metadataStore.js?v=2026-05-14T01:34:22Z"></script>
+<script src="../promptManager.js?v=2026-05-14T01:34:22Z"></script>
+<script src="../accountManager.js?v=2026-05-14T01:34:22Z"></script>
+<script src="../scheduleShared.js?v=2026-05-14T01:34:22Z"></script>
+<script src="../presenceShared.js?v=2026-05-14T01:34:22Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-14T01:34:22Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -308,6 +308,8 @@ body.offline-mobile-safe.offline-runtime-safe .offline-status-history-overlay{ba
 .offline-artifact-preview > *{width:100%;max-width:100%;margin:0 auto}
 .story-wrap{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:calc(var(--offline-header-height) + env(safe-area-inset-top) - 6px) 14px calc(var(--offline-composer-height) + 2px) 14px;display:flex;flex-direction:column;gap:6px;scrollbar-width:none;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
 .story-wrap::-webkit-scrollbar{display:none}
+.offline-load-earlier{align-self:center;min-height:32px;padding:0 13px;border:2px solid #111;border-radius:999px;background:rgba(255,255,255,.96);box-shadow:2px 2px 0 rgba(17,17,17,.88);font-family:var(--fontd);font-size:11px;font-weight:900;color:#111;letter-spacing:.04em;cursor:pointer}
+.offline-load-earlier:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(17,17,17,.88)}
 body.offline-lobby-open .composer{display:none}
 body.offline-lobby-open .story-wrap{padding:calc(var(--offline-header-height) + env(safe-area-inset-top) + 6px) 14px 22px 14px}
 .offline-lobby{display:flex;flex-direction:column;gap:14px;padding-bottom:20px}
@@ -1273,6 +1275,11 @@ var OFFLINE_LITTLE_BRAIN_HOT_ZONE_SIZE = 200;
 var OFFLINE_LITTLE_BRAIN_BUFFER_THRESHOLD = 100;
 var OFFLINE_LITTLE_BRAIN_PROCESS_RATIO = 0.85;
 var OFFLINE_LITTLE_BRAIN_FORCE_BUFFER_THRESHOLD = 10;
+var OFFLINE_STORY_RENDER_WINDOW_MOBILE = 36;
+var OFFLINE_STORY_RENDER_WINDOW_DESKTOP = 80;
+var OFFLINE_STORY_RENDER_WINDOW_STEP = 48;
+var offlineStoryRenderLimit = 0;
+var offlineStoryRenderWindowKey = '';
 var offlineDrawerBound = false;
 var offlineDrawerDraft = null;
 var offlineDrawerPageBgPendingAsset = '';
@@ -4528,6 +4535,26 @@ function runOfflineInitTask(promiseFactory, timeoutMs){
     });
   });
 }
+
+function runOfflineDeferredTask(promiseFactory, delay){
+  var wait = Math.max(0, Number(delay || 0) || 0);
+  setTimeout(function(){
+    var runner = function(){
+      try{
+        Promise.resolve(typeof promiseFactory === 'function' ? promiseFactory() : null).catch(function(err){
+          pushOfflineBackendLog('warn', 'offline.deferred_task', '线下后台任务失败', err);
+        });
+      }catch(err){
+        pushOfflineBackendLog('warn', 'offline.deferred_task', '线下后台任务失败', err);
+      }
+    };
+    if(typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function'){
+      window.requestIdleCallback(runner, { timeout: 2200 });
+    }else{
+      runner();
+    }
+  }, wait);
+}
 async function consumePendingOfflineResume(charId){
   var safeId = String(charId || '').trim();
   if(!safeId) return null;
@@ -5007,8 +5034,8 @@ function queueOfflineSharedMemorySummaryCheck(){
   clearTimeout(offlineSharedMemoryCheckTimer);
   offlineSharedMemoryCheckTimer = setTimeout(function(){
     offlineSharedMemoryCheckTimer = 0;
-    queueOfflineSharedMemorySummaryGeneration();
-  }, 160);
+    runOfflineDeferredTask(queueOfflineSharedMemorySummaryGeneration, 0);
+  }, isMobileOfflineRuntime() ? 2200 : 900);
 }
 
 var offlineStatusGenerating = false;
@@ -7687,7 +7714,10 @@ function renderStory(){
     return;
   }
   normalizeOfflineSelectionIndexes();
-  wrap.innerHTML = list.map(function(entry, idx){
+  var visibleRange = getOfflineStoryVisibleRange(list.length);
+  var visibleList = list.slice(visibleRange.from, visibleRange.to);
+  wrap.innerHTML = renderOfflineLoadEarlierButton(visibleRange.hidden) + visibleList.map(function(entry, offset){
+    var idx = visibleRange.from + offset;
     var isChar = entry.role !== 'user';
     return renderPaperStoryCard(entry, idx, isChar);
   }).join('') + renderOfflineGoodbyeInlineChat() + renderOfflineMultiSelectBar();
@@ -7730,6 +7760,49 @@ function renderStory(){
     startBirthdayLyricPlayers();
   });
   renderOfflineInviteDebugCard();
+}
+function getOfflineStoryRenderWindowKey(){
+  return [
+    String((character && character.id) || desiredOfflineCharId || ''),
+    String((session && (session.id || session.startedAt || session.createdAt)) || ''),
+    String(currentOfflineInviteRecordId && currentOfflineInviteRecordId() || '')
+  ].join('::');
+}
+function getOfflineStoryBaseRenderLimit(){
+  return isMobileOfflineRuntime() ? OFFLINE_STORY_RENDER_WINDOW_MOBILE : OFFLINE_STORY_RENDER_WINDOW_DESKTOP;
+}
+function getOfflineStoryVisibleRange(total){
+  var count = Math.max(0, Number(total || 0) || 0);
+  var key = getOfflineStoryRenderWindowKey();
+  if(key !== offlineStoryRenderWindowKey){
+    offlineStoryRenderWindowKey = key;
+    offlineStoryRenderLimit = 0;
+  }
+  var base = getOfflineStoryBaseRenderLimit();
+  var limit = Math.max(base, Number(offlineStoryRenderLimit || 0) || 0);
+  limit = Math.min(count, limit);
+  return {
+    from: Math.max(0, count - limit),
+    to: count,
+    hidden: Math.max(0, count - limit),
+    limit: limit
+  };
+}
+function renderOfflineLoadEarlierButton(hiddenCount){
+  var hidden = Math.max(0, Number(hiddenCount || 0) || 0);
+  if(!hidden) return '';
+  return '<button class="offline-load-earlier" type="button" onclick="loadMoreOfflineStoryEntries(event)">查看更早 ' + hidden + ' 楼</button>';
+}
+function loadMoreOfflineStoryEntries(event){
+  if(event){
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  var list = Array.isArray(session && session.entries) ? session.entries : [];
+  var base = getOfflineStoryBaseRenderLimit();
+  var current = Math.max(base, Number(offlineStoryRenderLimit || 0) || 0);
+  offlineStoryRenderLimit = Math.min(list.length, current + OFFLINE_STORY_RENDER_WINDOW_STEP);
+  renderStoryKeepingScroll();
 }
 function renderStoryKeepingScroll(){
   offlinePreserveStoryScrollOnce = true;
@@ -15396,13 +15469,6 @@ async function init(){
   if(normalizeOfflineStatusPendingFlags() && character && character.id){
     saveSession();
   }
-  if(session && character && character.id){
-    runOfflineInitTask(function(){
-      return refreshOfflineRecentOnlineContext().then(function(){
-        saveSession();
-      });
-    }, 420);
-  }
   try{
     localStorage.setItem(scopedKey('offline_invite_debug_latest'), JSON.stringify(Object.assign({}, (function(){
       try{
@@ -15424,47 +15490,50 @@ async function init(){
     pendingOpening: !!(session && session.pendingOpening),
     active: !!(session && session.active)
   });
-  runOfflineInitTask(function(){
-    return syncOfflineStageSummariesToMemoryStore(getOfflineLegacySummaryItems());
-  }, 1800);
   bindOfflineDrawerControls();
   if(!offlineReadOnlyMode) patchCurrentOfflineInviteMeetState('ongoing');
   if(clearOfflineCustomCssState() && character && character.id) persistOfflineCharacterSettings();
   syncOfflineDrawerControls();
   refreshOfflineMemoryButton();
-  var liveProfilePrimePromise = refreshOfflineLiveProfileFromSettings({ suppressRender:true }).catch(function(){ return false; });
-  var liveProfilePrimedBeforePaint = await Promise.race([
-    liveProfilePrimePromise,
-    new Promise(function(resolve){ setTimeout(function(){ resolve(false); }, 480); })
-  ]).catch(function(){ return false; });
   if(character && character.offlineBackgroundUrl) applyOfflinePageBackgroundSource(character.offlineBackgroundUrl);
   if(character && character.offlineCardBackgroundUrl) applyOfflineCardBackgroundSource(character.offlineCardBackgroundUrl);
-  var backgroundPrimePromise = refreshOfflineBackgroundFromSettings().catch(function(){ return false; });
-  var backgroundPrimedBeforePaint = await Promise.race([
-    backgroundPrimePromise,
-    new Promise(function(resolve){ setTimeout(function(){ resolve(false); }, 320); })
-  ]).catch(function(){ return false; });
   applyOfflineReadOnlyMode();
   renderStory();
   postOfflineFrameReady('first_render');
   syncOfflineViewport();
+  runOfflineDeferredTask(function(){
+    return syncOfflineStageSummariesToMemoryStore(getOfflineLegacySummaryItems());
+  }, 1500);
+  if(session && character && character.id){
+    runOfflineDeferredTask(function(){
+      return refreshOfflineRecentOnlineContext().then(function(){
+        saveSession();
+      });
+    }, 900);
+  }
+  var liveProfilePrimePromise = null;
+  runOfflineDeferredTask(function(){
+    liveProfilePrimePromise = refreshOfflineLiveProfileFromSettings({ suppressRender:true }).then(function(changed){
+      if(changed){
+        renderStoryKeepingScroll();
+        syncOfflineViewport();
+      }
+      return changed;
+    });
+    return liveProfilePrimePromise;
+  }, 180);
+  runOfflineDeferredTask(function(){
+    return refreshOfflineBackgroundFromSettings().then(function(){
+      syncOfflineViewport();
+      return true;
+    });
+  }, 260);
   if(!archiveSession && !launchFreshStart && desiredOfflineCharId && launchInviteRecordId){
     hydrateOfflineArchiveAfterFirstPaint(desiredOfflineCharId, launchInviteRecordId);
   }
   refreshOfflineDrawerMemoryModeFromStore().then(function(){
     syncOfflineDrawerControls();
   }).catch(function(){});
-  if(!backgroundPrimedBeforePaint){
-    backgroundPrimePromise.then(function(){
-      syncOfflineViewport();
-    }).catch(function(){});
-  }
-  if(!liveProfilePrimedBeforePaint){
-    liveProfilePrimePromise.then(function(){
-      renderStory();
-      syncOfflineViewport();
-    }).catch(function(){});
-  }
   runOfflineInitTask(function(){
     primeOfflineStatusCards();
     queueOfflineStageSummaryGeneration();

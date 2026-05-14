@@ -62,12 +62,12 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-14T01:00:44Z';
+const APP_BUILD_ID = '2026-05-14T01:34:22Z';
 const APP_UPDATE_NOTES = [
-  '聊天室启动先显示聊天',
-  '主题背景和表情库改到后台补载',
-  '头像修复不再打开时狂预热',
-  '长聊天和记忆读取减少卡顿'
+  '线下打开先显示首屏',
+  '约会列表不再反复全量扫聊天',
+  '线下长记录改成分段渲染',
+  '记忆和背景改到后台补载'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -12480,7 +12480,7 @@ function armAppFrameLoadWatchdog(frame, appId, attempt){
 function renderApp(id){
   const a=APP_MAP[id]; if(!a) return;
   bindShellAvatarRepairEvents(document);
-  if(id !== 'chat'){
+  if(id !== 'chat' && !isShellPerformanceSensitiveMode()){
     runShellDeferredTask(function(){
       if(currentApp !== id) return;
       prewarmShellAvatarSourcesForApps();
@@ -14910,7 +14910,7 @@ function restoreState(){
       if(c){ setWidgetCharacter(c); }
       renderBondWidget(c);
       runShellDeferredTask(function(){
-        if(currentApp === 'chat') return;
+        if(currentApp === 'chat' || isShellPerformanceSensitiveMode()) return;
         prewarmShellAvatarSourcesForApps();
         scheduleShellAvatarRepairs();
       }, 900);
@@ -14920,7 +14920,7 @@ function restoreState(){
   renderHomePages(true);
   ensureAvatarDebugWindows();
   runShellDeferredTask(function(){
-    if(currentApp === 'chat') return;
+    if(currentApp === 'chat' || isShellPerformanceSensitiveMode()) return;
     prewarmShellAvatarSourcesForApps();
   }, 1200);
   setupAiBgScheduler();
@@ -15104,7 +15104,7 @@ window.addEventListener('focus', ()=>{
   hydrateShellActiveCharacterState().finally(function(){
     renderBondWidget();
     runShellDeferredTask(function(){
-      if(currentApp === 'chat') return;
+      if(currentApp === 'chat' || isShellPerformanceSensitiveMode()) return;
       prewarmShellAvatarSourcesForApps();
       scheduleShellAvatarRepairs();
     }, 900);
@@ -15115,7 +15115,7 @@ document.addEventListener('visibilitychange', ()=>{
     renderBondWidget();
     renderHomeDockBadges();
     runShellDeferredTask(function(){
-      if(currentApp === 'chat') return;
+      if(currentApp === 'chat' || isShellPerformanceSensitiveMode()) return;
       prewarmShellAvatarSourcesForApps();
       scheduleShellAvatarRepairs();
     }, 900);
