@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../chatStorage.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../metadataStore.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../promptManager.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../accountManager.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../scheduleShared.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../presenceShared.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-14T02:24:10Z"></script>
+<script src="../assetStore.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../chatStorage.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../metadataStore.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../promptManager.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../accountManager.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../scheduleShared.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../presenceShared.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-14T02:50:12Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -876,6 +876,11 @@ body.offline-theme-love .offline-stage-action.memory img{display:none}
 .offline-error-btn{min-height:28px;padding:0 10px;border:2px solid #111;border-radius:10px;background:#fff;color:#111;font:900 11px/1 var(--fontd);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,.14)}
 .offline-error-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,.14)}
 .offline-error-raw{font-size:10px;font-weight:700;line-height:1.5;color:#383838;white-space:pre-wrap;word-break:break-word;background:rgba(245,245,245,.96);border:1.5px solid rgba(17,17,17,.18);border-radius:12px;padding:8px 9px;max-height:160px;overflow:auto}
+.offline-startup-placeholder{min-height:calc(100vh - var(--offline-composer-height) - var(--safe-top));display:flex;align-items:center;justify-content:center;padding:calc(var(--safe-top) + 72px) 22px calc(var(--offline-composer-height) + 42px)}
+.offline-startup-card{width:min(320px,100%);border:2px solid rgba(17,17,17,.82);background:rgba(255,255,255,.86);box-shadow:5px 5px 0 rgba(17,17,17,.78);padding:18px 20px 16px;text-align:center}
+.offline-startup-kicker{font:900 10px/1 var(--fontd);letter-spacing:.14em;text-transform:uppercase;color:rgba(17,17,17,.56)}
+.offline-startup-title{margin-top:8px;font:900 21px/1.2 var(--fontd);color:#111}
+.offline-startup-copy{margin-top:12px;font:900 13px/1.5 'Huiwen-mincho',"汇文明朝体",'Songti SC','Noto Serif SC',serif;color:#7a1118;display:flex;justify-content:center}
 .inner-voice-overlay{display:none !important}
 @media (max-width:390px){
   :root{--offline-header-height:78px}
@@ -1275,9 +1280,9 @@ var OFFLINE_LITTLE_BRAIN_HOT_ZONE_SIZE = 200;
 var OFFLINE_LITTLE_BRAIN_BUFFER_THRESHOLD = 100;
 var OFFLINE_LITTLE_BRAIN_PROCESS_RATIO = 0.85;
 var OFFLINE_LITTLE_BRAIN_FORCE_BUFFER_THRESHOLD = 10;
-var OFFLINE_STORY_RENDER_WINDOW_MOBILE = 36;
-var OFFLINE_STORY_RENDER_WINDOW_DESKTOP = 80;
-var OFFLINE_STORY_RENDER_WINDOW_STEP = 48;
+var OFFLINE_STORY_RENDER_WINDOW_MOBILE = 18;
+var OFFLINE_STORY_RENDER_WINDOW_DESKTOP = 56;
+var OFFLINE_STORY_RENDER_WINDOW_STEP = 24;
 var offlineStoryRenderLimit = 0;
 var offlineStoryRenderWindowKey = '';
 var offlineDrawerBound = false;
@@ -4555,6 +4560,30 @@ function runOfflineDeferredTask(promiseFactory, delay){
     }
   }, wait);
 }
+function renderOfflineStartupPlaceholder(reason){
+  var wrap = document.getElementById('storyList');
+  if(!wrap || wrap.dataset.startupPainted === '1' || String(wrap.innerHTML || '').trim()) return;
+  wrap.dataset.startupPainted = '1';
+  try{ applyOfflineBuiltinTheme(); }catch(e){}
+  document.body.classList.remove('offline-lobby-open');
+  wrap.innerHTML = '<div class="offline-startup-placeholder" data-startup-reason="' + escAttr(reason || 'init') + '">'
+    + '<div class="offline-startup-card">'
+    + '<div class="offline-startup-kicker">offline</div>'
+    + '<div class="offline-startup-title">正在打开邀约</div>'
+    + '<div class="offline-startup-copy"><span class="offline-typing-text">我们的红线藏在血管里</span></div>'
+    + '</div>'
+    + '</div>';
+  wrap.scrollTop = 0;
+}
+function renderOfflineWaitingForFirstTurnCard(){
+  return '<div class="offline-startup-placeholder">'
+    + '<div class="offline-startup-card">'
+    + '<div class="offline-startup-kicker">offline</div>'
+    + '<div class="offline-startup-title">此刻</div>'
+    + '<div class="offline-startup-copy"><span class="offline-typing-text">我们的红线藏在血管里</span></div>'
+    + '</div>'
+    + '</div>';
+}
 async function consumePendingOfflineResume(charId){
   var safeId = String(charId || '').trim();
   if(!safeId) return null;
@@ -7695,7 +7724,8 @@ function renderStory(){
   if(!list.length){
     var failureText = String(session && session.lastOpeningError || '').trim();
     if(!(session && session.openingFailed)){
-      wrap.innerHTML = '';
+      wrap.innerHTML = renderOfflineWaitingForFirstTurnCard();
+      wrap.scrollTop = 0;
       renderOfflineInviteDebugCard();
       return;
     }
@@ -15161,6 +15191,7 @@ async function init(){
     offlineInitInProgress = true;
     offlineInitCompleted = false;
     syncOfflineRuntimeSafeClass('init_start');
+    renderOfflineStartupPlaceholder('init_start');
     pushOfflineBackendLog('info', 'init.start', '线下初始化开始');
     try{
       if(window.MetadataStore && typeof window.MetadataStore.init === 'function'){

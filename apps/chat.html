@@ -6,16 +6,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>Chat</title>
 <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../promptManager.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../chatStorage.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../assetStore.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../accountManager.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../metadataStore.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../scheduleShared.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../presenceShared.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-14T02:24:10Z"></script>
-<script src="../sunnySupport.js?v=2026-05-14T02:24:10Z"></script>
-<script src="offlineInvite.js?v=2026-05-14T02:24:10Z"></script>
+<script src="../promptManager.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../chatStorage.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../assetStore.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../accountManager.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../metadataStore.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../scheduleShared.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../presenceShared.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../sunnySupport.js?v=2026-05-14T02:50:12Z"></script>
+<script src="offlineInvite.js?v=2026-05-14T02:50:12Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -4083,9 +4083,9 @@ var voiceCallMemoryNeedsRun = false;
 var voiceCallReplyLongPressTimer = null;
 var voiceCallReplyLongPressFired = false;
 var storageHydrationPromise = Promise.resolve();
-var CHAT_STORAGE_GET_TIMEOUT_MS = 1800;
-var CHAT_STORAGE_LIST_TIMEOUT_MS = 2200;
-var CHAT_STARTUP_TIMEOUT_MS = 6500;
+var CHAT_STORAGE_GET_TIMEOUT_MS = 1000;
+var CHAT_STORAGE_LIST_TIMEOUT_MS = 1400;
+var CHAT_STARTUP_TIMEOUT_MS = 1800;
 var storagePersistRequested = false;
 var momentsPostsCache = [];
 var momentsSocialStateCacheMap = {};
@@ -20995,7 +20995,7 @@ async function restoreOrStartChat() {
     storageHydrationPromise = withChatTimeout(rawHydrationPromise, 'hydrateCharacterStorageState', CHAT_STARTUP_TIMEOUT_MS, []);
     rawHydrationPromise.then(function(lateRestored){
       if(!character || !Array.isArray(lateRestored) || !lateRestored.length) return;
-      if(chatLog.length) return;
+      if(chatLog.length && !isLikelyStrayGreetingHistory(chatLog)) return;
       chatLog = lateRestored;
       renderChatLog(false);
     }).catch(function(){});

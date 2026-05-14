@@ -62,12 +62,12 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-14T02:24:10Z';
+const APP_BUILD_ID = '2026-05-14T02:50:12Z';
 const APP_UPDATE_NOTES = [
-  '约会日历入口切到 React',
-  '约会打开不再全量扫聊天记录',
-  '线上聊天移除外部库首屏阻塞',
-  'React 构建缓存已更新'
+  '打开 app 不再等头像预热',
+  '线上聊天加载超时大幅缩短',
+  '线下邀约先显示页面再补存档',
+  '线下长记录首屏渲染更轻'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -12567,6 +12567,21 @@ function renderApp(id){
   renderOfflineMiniLauncher();
 }
 
+function queueShellCharacterAvatarPrimeForApp(id, source){
+  var safeId = String(id || '').trim();
+  var label = String(source || 'open_' + safeId);
+  var safeCharId = safeId === 'offline_mode' ? pendingOpenOfflineCharId : '';
+  runShellDeferredTask(function(){
+    withShellTransitionTimeout(
+      primeShellCharacterAvatarFromChatSettings(safeCharId, label),
+      'prime_' + label,
+      safeId === 'offline_mode' ? 700 : 1000
+    ).catch(function(err){
+      console.warn('deferred shell avatar prime failed', label, err);
+    });
+  }, 0);
+}
+
 function setChatShellBackground(src){
   var outer = document.querySelector('.phone-outer');
   if(!outer) return;
@@ -12668,11 +12683,7 @@ function openApp(id) {
     if(currentApp){
       await flushCurrentAppState();
     }
-    await withShellTransitionTimeout(
-      primeShellCharacterAvatarFromChatSettings(id === 'offline_mode' ? pendingOpenOfflineCharId : '', 'open_' + id),
-      'prime_open_' + id,
-      id === 'offline_mode' ? 700 : 1000
-    );
+    queueShellCharacterAvatarPrimeForApp(id, 'open_' + id);
     if(appStack[appStack.length-1]!==id) appStack.push(id);
     renderApp(id);
     markShellAppSeen(id);
@@ -12686,15 +12697,10 @@ function forceOpenApp(id){
     showHomeToast('蕾蕾在赶工^^');
     return;
   }
-  withShellTransitionTimeout(
-    primeShellCharacterAvatarFromChatSettings(id === 'offline_mode' ? pendingOpenOfflineCharId : '', 'force_open_' + id),
-    'prime_force_' + id,
-    id === 'offline_mode' ? 700 : 1000
-  ).then(function(){
-    if(appStack[appStack.length - 1] !== id) appStack.push(id);
-    renderApp(id);
-    markShellAppSeen(id);
-  });
+  queueShellCharacterAvatarPrimeForApp(id, 'force_open_' + id);
+  if(appStack[appStack.length - 1] !== id) appStack.push(id);
+  renderApp(id);
+  markShellAppSeen(id);
 }
 window.forceOpenApp = forceOpenApp;
 
@@ -12739,11 +12745,7 @@ function replaceApp(id){
     for(var i = appStack.length - 2; i >= 0; i -= 1){
       if(appStack[i] === id) appStack.splice(i, 1);
     }
-    await withShellTransitionTimeout(
-      primeShellCharacterAvatarFromChatSettings(id === 'offline_mode' ? pendingOpenOfflineCharId : '', 'replace_' + id),
-      'prime_replace_' + id,
-      id === 'offline_mode' ? 700 : 1000
-    );
+    queueShellCharacterAvatarPrimeForApp(id, 'replace_' + id);
     currentApp = null;
     renderApp(id);
     markShellAppSeen(id);
