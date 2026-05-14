@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-05-14T02:04:18Z';
+const CACHE_VERSION = '2026-05-14T02:24:10Z';
 const CACHE_NAME = 'phone-shell-' + CACHE_VERSION;
 const CORE_URLS = [
   './',
@@ -21,7 +21,11 @@ const CORE_URLS = [
   './apps/little_brain.html',
   './apps/react/backend.html',
   './apps/react/assets/backend-DQGivSaa.css',
-  './apps/react/assets/backend-BFGw7tKv.js',
+  './apps/react/assets/backend-axqBlZGI.js',
+  './apps/react/assets/client-DbBKQ37m.js',
+  './apps/react/offline.html',
+  './apps/react/assets/offline-Czkh486s.css',
+  './apps/react/assets/offline-CPVh-CKv.js',
 ];
 
 function isSameOrigin(requestUrl){

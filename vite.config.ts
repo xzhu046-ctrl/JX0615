@@ -16,7 +16,8 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       input: {
-        backend: resolve(rootDir, 'react-src/backend.html')
+        backend: resolve(rootDir, 'react-src/backend.html'),
+        offline: resolve(rootDir, 'react-src/offline.html')
       }
     }
   }
