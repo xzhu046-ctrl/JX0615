@@ -62,13 +62,14 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-14T03:05:00Z';
+const APP_BUILD_ID = '2026-05-14T03:45:00Z';
 const APP_UPDATE_NOTES = [
-  '线下正文渲染开始接入 React',
-  '约会消息列表由 React 接管 DOM',
-  '保留原生成和存档链路',
+  'React 目录改成 Sully 式结构',
+  '新增 App / OSContext / PhoneShell',
+  'app 宿主层继续由 React 接管',
   'React 缓存资源已更新'
 ];
+const SHELL_REACT_APP_HOST_SRC = './apps/react/assets/shell-app-host.js?v=2026-05-14T03:45:00Z';
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
 const REFRESH_RECALC_FLAG_KEY = 'refresh_recalc_needed_v1';
@@ -112,11 +113,13 @@ const FORCE_UPDATE_CORE_FILES = [
   'apps/react/assets/backend-DQGivSaa.css',
   'apps/react/assets/backend-CmOkNhXC.js',
   'apps/react/assets/client-D2eNyhnx.js',
+  'apps/react/assets/index-Bm_FY8Qq.js',
   'apps/react/assets/modulepreload-polyfill-B5Qt9EMX.js',
   'apps/react/offline.html',
   'apps/react/assets/offline-Czkh486s.css',
   'apps/react/assets/offline-Bvfd5iL5.js',
   'apps/react/assets/offline-mode-renderer.js',
+  'apps/react/assets/shell-app-host.js',
   'apps/characters.html',
   'apps/chat.html',
   'apps/customize.html',
@@ -12129,6 +12132,49 @@ let pendingOpenOfflineLaunchRecord=null;
 let pendingOpenOfflineRecordId='';
 let appTransitionPromise = Promise.resolve();
 let appFrameClearTimer = 0;
+let shellReactAppHostReadyPromise = null;
+
+function getShellAppHostSnapshot(appId, appConfig, open){
+  var cfg = appConfig && typeof appConfig === 'object' ? appConfig : {};
+  return {
+    appId: String(appId || ''),
+    title: String(cfg.title || 'App'),
+    hideTopbar: !!cfg.hideTopbar,
+    open: !!open
+  };
+}
+
+function renderShellAppHost(snapshot){
+  var safeSnapshot = snapshot && typeof snapshot === 'object' ? snapshot : getShellAppHostSnapshot('', {}, false);
+  if(window.ShellReactAppHost && typeof window.ShellReactAppHost.render === 'function'){
+    try{
+      var ok = window.ShellReactAppHost.render(safeSnapshot);
+      if(ok) return true;
+    }catch(err){
+      console.warn('shell react app host render failed; falling back to legacy shell', err);
+    }
+  }
+  return false;
+}
+
+function ensureShellReactAppHostReady(){
+  if(window.ShellReactAppHost && typeof window.ShellReactAppHost.render === 'function'){
+    return Promise.resolve(true);
+  }
+  if(shellReactAppHostReadyPromise) return shellReactAppHostReadyPromise;
+  shellReactAppHostReadyPromise = import(SHELL_REACT_APP_HOST_SRC).then(function(){
+    var ready = !!(window.ShellReactAppHost && typeof window.ShellReactAppHost.render === 'function');
+    if(ready && !currentApp){
+      renderShellAppHost(getShellAppHostSnapshot('', {}, false));
+      bindAppFrameLoadHandlers();
+    }
+    return ready;
+  }).catch(function(err){
+    console.warn('shell react app host failed to load', err);
+    return false;
+  });
+  return shellReactAppHostReadyPromise;
+}
 
 function clonePendingOfflineLaunchRecord(record){
   if(!record || typeof record !== 'object') return null;
@@ -12269,6 +12315,8 @@ async function performCloseApp(){
     container.classList.remove('open');
     container.style.removeProperty('--chat-keyboard-shift');
   }
+  renderShellAppHost(getShellAppHostSnapshot('', {}, false));
+  bindAppFrameLoadHandlers();
   chatInputFocusActive = false;
   chatReportedKeyboardShift = 0;
   chatMeasuredKeyboardOpenSeen = false;
@@ -12337,7 +12385,7 @@ var shellLoadingShownAt = 0;
 var shellLoadingMinVisibleMs = 720;
 var appFrameLoadWatchdogTimer = 0;
 var appFrameLoadWatchdogNonce = 0;
-var appFrameLoadHandlersBound = false;
+var appFrameLoadHandlersFrame = null;
 function setChatHardCutMode(enabled){
   var outer = document.querySelector('.phone-outer');
   if(outer) outer.classList.toggle('chat-hard-cut', !!enabled);
@@ -12434,10 +12482,10 @@ function handleAppFrameLoadError(frame){
 }
 
 function bindAppFrameLoadHandlers(){
-  if(appFrameLoadHandlersBound) return;
   var frame = document.getElementById('app-iframe');
   if(!frame) return;
-  appFrameLoadHandlersBound = true;
+  if(appFrameLoadHandlersFrame === frame) return;
+  appFrameLoadHandlersFrame = frame;
   frame.addEventListener('load', function(){
     handleAppFrameLoaded(frame);
   });
@@ -12508,6 +12556,8 @@ function renderApp(id){
     message: '打开 ' + String(a.title || id)
   });
   const outer = document.querySelector('.phone-outer');
+  renderShellAppHost(getShellAppHostSnapshot(id, a, true));
+  bindAppFrameLoadHandlers();
   const container = document.getElementById('app-container');
   const frame = document.getElementById('app-iframe');
   const topbar = document.querySelector('.app-topbar');
@@ -12533,7 +12583,8 @@ function renderApp(id){
       frame.dataset.csPrevMarginTop = '';
     }
   }
-  document.getElementById('app-title-label').textContent=a.title;
+  var titleLabel = document.getElementById('app-title-label');
+  if(titleLabel) titleLabel.textContent=a.title;
   if(container){
     container.classList.toggle('no-topbar', !!a.hideTopbar);
     container.dataset.appId = id;
@@ -12563,8 +12614,10 @@ function renderApp(id){
     pendingOpenChatCharId = '';
     pendingOpenChatNonce = '';
   }
-  document.getElementById('app-container').classList.add('open');
-  document.getElementById('home-screen').classList.add('hidden');
+  var liveContainer = document.getElementById('app-container');
+  if(liveContainer) liveContainer.classList.add('open');
+  var homeScreen = document.getElementById('home-screen');
+  if(homeScreen) homeScreen.classList.add('hidden');
   ensureAvatarDebugWindows();
   renderOfflineMiniLauncher();
 }
@@ -14862,6 +14915,7 @@ function restoreState(){
   compactCharKey('activeCharacter');
   compactCharKey('pendingChatChar');
   bindAppFrameLoadHandlers();
+  ensureShellReactAppHostReady();
   bindTextNormalization();
   bindUpdateToastButton();
   renderOfflineMiniLauncher();
