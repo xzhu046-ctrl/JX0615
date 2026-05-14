@@ -17,7 +17,15 @@ export default defineConfig({
     rollupOptions: {
       input: {
         backend: resolve(rootDir, 'react-src/backend.html'),
-        offline: resolve(rootDir, 'react-src/offline.html')
+        offline: resolve(rootDir, 'react-src/offline.html'),
+        offlineModeRenderer: resolve(rootDir, 'react-src/offline-mode-renderer.tsx')
+      },
+      output: {
+        entryFileNames(chunkInfo) {
+          return chunkInfo.name === 'offlineModeRenderer'
+            ? 'assets/offline-mode-renderer.js'
+            : 'assets/[name]-[hash].js';
+        }
       }
     }
   }

@@ -62,12 +62,12 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-14T02:50:12Z';
+const APP_BUILD_ID = '2026-05-14T03:05:00Z';
 const APP_UPDATE_NOTES = [
-  '打开 app 不再等头像预热',
-  '线上聊天加载超时大幅缩短',
-  '线下邀约先显示页面再补存档',
-  '线下长记录首屏渲染更轻'
+  '线下正文渲染开始接入 React',
+  '约会消息列表由 React 接管 DOM',
+  '保留原生成和存档链路',
+  'React 缓存资源已更新'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -110,11 +110,13 @@ const FORCE_UPDATE_CORE_FILES = [
   'apps/backend.html',
   'apps/react/backend.html',
   'apps/react/assets/backend-DQGivSaa.css',
-  'apps/react/assets/backend-axqBlZGI.js',
-  'apps/react/assets/client-DbBKQ37m.js',
+  'apps/react/assets/backend-CmOkNhXC.js',
+  'apps/react/assets/client-D2eNyhnx.js',
+  'apps/react/assets/modulepreload-polyfill-B5Qt9EMX.js',
   'apps/react/offline.html',
   'apps/react/assets/offline-Czkh486s.css',
-  'apps/react/assets/offline-CPVh-CKv.js',
+  'apps/react/assets/offline-Bvfd5iL5.js',
+  'apps/react/assets/offline-mode-renderer.js',
   'apps/characters.html',
   'apps/chat.html',
   'apps/customize.html',

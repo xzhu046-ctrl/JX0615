@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover,interactive-widget=overlays-content">
 <title>线下模式</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Nunito:wght@700;900&family=Caveat:wght@600;700&family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../assetStore.js?v=2026-05-14T02:50:12Z"></script>
-<script src="../chatStorage.js?v=2026-05-14T02:50:12Z"></script>
-<script src="../metadataStore.js?v=2026-05-14T02:50:12Z"></script>
-<script src="../promptManager.js?v=2026-05-14T02:50:12Z"></script>
-<script src="../accountManager.js?v=2026-05-14T02:50:12Z"></script>
-<script src="../scheduleShared.js?v=2026-05-14T02:50:12Z"></script>
-<script src="../presenceShared.js?v=2026-05-14T02:50:12Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-14T02:50:12Z"></script>
+<script src="../assetStore.js?v=2026-05-14T03:05:00Z"></script>
+<script src="../chatStorage.js?v=2026-05-14T03:05:00Z"></script>
+<script src="../metadataStore.js?v=2026-05-14T03:05:00Z"></script>
+<script src="../promptManager.js?v=2026-05-14T03:05:00Z"></script>
+<script src="../accountManager.js?v=2026-05-14T03:05:00Z"></script>
+<script src="../scheduleShared.js?v=2026-05-14T03:05:00Z"></script>
+<script src="../presenceShared.js?v=2026-05-14T03:05:00Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-14T03:05:00Z"></script>
 <style>
 @import url("https://fontsapi.zeoseven.com/157/main/result.css");
 @import url("https://fontsapi.zeoseven.com/256/main/result.css");
@@ -308,6 +308,7 @@ body.offline-mobile-safe.offline-runtime-safe .offline-status-history-overlay{ba
 .offline-artifact-preview > *{width:100%;max-width:100%;margin:0 auto}
 .story-wrap{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:calc(var(--offline-header-height) + env(safe-area-inset-top) - 6px) 14px calc(var(--offline-composer-height) + 2px) 14px;display:flex;flex-direction:column;gap:6px;scrollbar-width:none;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
 .story-wrap::-webkit-scrollbar{display:none}
+.offline-react-story-surface{display:flex;flex-direction:column;gap:inherit;width:100%;min-height:100%}
 .offline-load-earlier{align-self:center;min-height:32px;padding:0 13px;border:2px solid #111;border-radius:999px;background:rgba(255,255,255,.96);box-shadow:2px 2px 0 rgba(17,17,17,.88);font-family:var(--fontd);font-size:11px;font-weight:900;color:#111;letter-spacing:.04em;cursor:pointer}
 .offline-load-earlier:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(17,17,17,.88)}
 body.offline-lobby-open .composer{display:none}
@@ -1257,6 +1258,8 @@ var offlineCloseIntent = '';
 var OFFLINE_MUSIC_RUNTIME_DISABLED = true;
 var OFFLINE_TYPEWRITER_REVEAL_DISABLED = true;
 var OFFLINE_DECORATIVE_TIMERS_DISABLED = true;
+var OFFLINE_REACT_RENDERER_SRC = './react/assets/offline-mode-renderer.js?v=2026-05-14T03:05:00Z';
+var offlineReactRendererReadyPromise = null;
 var offlineRenderLastAt = 0;
 var offlineRenderThrottleTimer = 0;
 var offlineLastSessionSaveAt = 0;
@@ -1313,6 +1316,20 @@ var offlineMoodFaces = {
   bright:['(๑˃̵ᴗ˂̵)و','(ﾉ´ヮ`)ﾉ*: ･ﾟ','(≧▽≦)','(๑•̀ㅂ•́)و'],
   sleepy:['(∪｡∪)｡｡｡','( ｡•́ - •̀｡)','(=-ω-)=','(つ .•́ _ʖ •̀.)つ']
 };
+
+function ensureOfflineReactRendererReady(){
+  if(window.OfflineModeReactRenderer && typeof window.OfflineModeReactRenderer.render === 'function'){
+    return Promise.resolve(true);
+  }
+  if(offlineReactRendererReadyPromise) return offlineReactRendererReadyPromise;
+  offlineReactRendererReadyPromise = import(OFFLINE_REACT_RENDERER_SRC).then(function(){
+    return !!(window.OfflineModeReactRenderer && typeof window.OfflineModeReactRenderer.render === 'function');
+  }).catch(function(err){
+    console.warn('offline react renderer failed to load', err);
+    return false;
+  });
+  return offlineReactRendererReadyPromise;
+}
 
 function activeAccountId(){
   try{
@@ -7687,6 +7704,44 @@ function renderOfflineGoodbyeInlineChat(){
     + '</div>'
     + '</div>';
 }
+function renderOfflineStorySurface(wrap, html, options){
+  if(!wrap) return false;
+  var opts = options && typeof options === 'object' ? options : {};
+  var scrollMode = String(opts.scrollMode || 'bottom');
+  var preservedScrollTop = Math.max(0, Number(opts.scrollTop || 0) || 0);
+  var renderKey = [
+    String((character && character.id) || desiredOfflineCharId || ''),
+    String(Array.isArray(session && session.entries) ? session.entries.length : 0),
+    String(offlineActionMenuIndex),
+    String(offlineSelectedEntryIndexes.join(',')),
+    String(Date.now())
+  ].join('::');
+  if(window.OfflineModeReactRenderer && typeof window.OfflineModeReactRenderer.render === 'function'){
+    try{
+      if(window.OfflineModeReactRenderer.render({
+        html: String(html || ''),
+        scrollMode: scrollMode,
+        scrollTop: preservedScrollTop,
+        renderKey: renderKey
+      })){
+        return true;
+      }
+    }catch(err){
+      console.warn('offline react story render failed; falling back to legacy html', err);
+    }
+  }else{
+    ensureOfflineReactRendererReady().catch(function(){ return false; });
+  }
+  wrap.innerHTML = String(html || '');
+  if(scrollMode === 'top'){
+    wrap.scrollTop = 0;
+  }else if(scrollMode === 'preserve'){
+    wrap.scrollTop = Math.min(preservedScrollTop, Math.max(0, wrap.scrollHeight - wrap.clientHeight));
+  }else if(scrollMode === 'bottom'){
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+  return false;
+}
 function renderStory(){
   var wrap = document.getElementById('storyList');
   if(!wrap) return;
@@ -7715,8 +7770,7 @@ function renderStory(){
   renderOfflineStageSummaryList();
   document.body.classList.toggle('offline-lobby-open', shouldShowOfflineLobby());
   if(shouldShowOfflineLobby()){
-    wrap.innerHTML = renderOfflineLobby();
-    wrap.scrollTop = 0;
+    renderOfflineStorySurface(wrap, renderOfflineLobby(), { scrollMode:'top' });
     renderOfflineInviteDebugCard();
     return;
   }
@@ -7724,12 +7778,11 @@ function renderStory(){
   if(!list.length){
     var failureText = String(session && session.lastOpeningError || '').trim();
     if(!(session && session.openingFailed)){
-      wrap.innerHTML = renderOfflineWaitingForFirstTurnCard();
-      wrap.scrollTop = 0;
+      renderOfflineStorySurface(wrap, renderOfflineWaitingForFirstTurnCard(), { scrollMode:'top' });
       renderOfflineInviteDebugCard();
       return;
     }
-    wrap.innerHTML = renderPaperStoryCard({
+    renderOfflineStorySurface(wrap, renderPaperStoryCard({
       role: 'assistant',
       isTyping: false,
       text: (session && session.openingFailed)
@@ -7739,18 +7792,22 @@ function renderStory(){
       quote: (session && session.openingFailed) ? '这次不再用占位内容糊过去。' : '…',
       timeLabel: '现在',
       meta: ''
-    }, 0, true);
+    }, 0, true), { scrollMode:'top' });
     renderOfflineInviteDebugCard();
     return;
   }
   normalizeOfflineSelectionIndexes();
   var visibleRange = getOfflineStoryVisibleRange(list.length);
   var visibleList = list.slice(visibleRange.from, visibleRange.to);
-  wrap.innerHTML = renderOfflineLoadEarlierButton(visibleRange.hidden) + visibleList.map(function(entry, offset){
+  var storyHtml = renderOfflineLoadEarlierButton(visibleRange.hidden) + visibleList.map(function(entry, offset){
     var idx = visibleRange.from + offset;
     var isChar = entry.role !== 'user';
     return renderPaperStoryCard(entry, idx, isChar);
   }).join('') + renderOfflineGoodbyeInlineChat() + renderOfflineMultiSelectBar();
+  renderOfflineStorySurface(wrap, storyHtml, {
+    scrollMode: preserveScroll ? 'preserve' : 'bottom',
+    scrollTop: preservedScrollTop
+  });
   var last = list[list.length - 1] || {};
   var statusEl = document.getElementById('offlineStatus');
   if(statusEl) statusEl.textContent = '线下模式 · ' + ((character && (character.nickname || character.name)) || 'Char');
@@ -7781,11 +7838,6 @@ function renderStory(){
     startLoveSongPlayers();
   }
   startBirthdayLyricPlayers();
-  if(preserveScroll){
-    wrap.scrollTop = Math.min(preservedScrollTop, Math.max(0, wrap.scrollHeight - wrap.clientHeight));
-  }else{
-    wrap.scrollTop = wrap.scrollHeight;
-  }
   requestAnimationFrame(function(){
     startBirthdayLyricPlayers();
   });
@@ -15191,6 +15243,7 @@ async function init(){
     offlineInitInProgress = true;
     offlineInitCompleted = false;
     syncOfflineRuntimeSafeClass('init_start');
+    ensureOfflineReactRendererReady().catch(function(){ return false; });
     renderOfflineStartupPlaceholder('init_start');
     pushOfflineBackendLog('info', 'init.start', '线下初始化开始');
     try{
