@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BackendApp } from './BackendApp';
+import { BackendApp } from '../apps/BackendApp';
 
 const root = document.getElementById('root');
 

@@ -8,6 +8,7 @@ Current bridge:
 - `react-src/context/OSContext.tsx` mirrors SullyOS' OS context boundary.
 - `react-src/components/PhoneShell.tsx` owns the app host chrome.
 - `react-src/apps/LegacyFrameApp.tsx` keeps old HTML apps running while each app is replaced by React components.
+- `react-src/apps/BackendApp.tsx` and `react-src/apps/OfflineApp.tsx` expose migrated apps from the same app directory SullyOS uses.
 - `react-src/constants.ts` and `react-src/types.ts` centralize app metadata and app ids.
 - `react-src/offline-mode-renderer.tsx` is a temporary React renderer for the heaviest offline story list.
 
