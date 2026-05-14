@@ -18,14 +18,13 @@ export default defineConfig({
       input: {
         backend: resolve(rootDir, 'react-src/backend.html'),
         offline: resolve(rootDir, 'react-src/offline.html'),
-        offlineModeRenderer: resolve(rootDir, 'react-src/offline-mode-renderer.tsx'),
-        shellAppHost: resolve(rootDir, 'react-src/shell-app-host.tsx')
+        offlineModeRenderer: resolve(rootDir, 'react-src/offline-mode-renderer.tsx')
       },
       output: {
         entryFileNames(chunkInfo) {
-          if (chunkInfo.name === 'offlineModeRenderer') return 'assets/offline-mode-renderer.js';
-          if (chunkInfo.name === 'shellAppHost') return 'assets/shell-app-host.js';
-          return 'assets/[name]-[hash].js';
+          return chunkInfo.name === 'offlineModeRenderer'
+            ? 'assets/offline-mode-renderer.js'
+            : 'assets/[name]-[hash].js';
         }
       }
     }
