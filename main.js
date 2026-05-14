@@ -7,7 +7,7 @@ const APP_MAP = {
   customize:  { title: '外观',           src: 'apps/customize.html' },
   worldbook:  { title: '档案',           src: 'apps/worldbook.html' },
   schedule:   { title: '日程',           src: 'apps/schedule.html', hideTopbar: true },
-  offline:    { title: '约会',           src: 'apps/react/offline.html', hideTopbar: true },
+  offline:    { title: '约会',           src: 'apps/offline.html', hideTopbar: true },
   offline_mode:{ title: '线下',          src: 'apps/offline_mode.html', hideTopbar: true },
   user:       { title: '小脑瓜',         src: 'apps/little_brain.html', hideTopbar: true },
   little_brain:{ title: '小脑瓜',        src: 'apps/little_brain.html', hideTopbar: true },
@@ -62,12 +62,12 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-14T03:05:00Z';
+const APP_BUILD_ID = '2026-05-14T04:05:00Z';
 const APP_UPDATE_NOTES = [
-  '线下正文渲染开始接入 React',
-  '约会消息列表由 React 接管 DOM',
-  '保留原生成和存档链路',
-  'React 缓存资源已更新'
+  '恢复原 app 宿主，修复聊天室卡死',
+  '约会入口退回旧页面',
+  '线下约会恢复原打开链路',
+  '缓存版本已刷新'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -113,9 +113,6 @@ const FORCE_UPDATE_CORE_FILES = [
   'apps/react/assets/backend-CmOkNhXC.js',
   'apps/react/assets/client-D2eNyhnx.js',
   'apps/react/assets/modulepreload-polyfill-B5Qt9EMX.js',
-  'apps/react/offline.html',
-  'apps/react/assets/offline-Czkh486s.css',
-  'apps/react/assets/offline-Bvfd5iL5.js',
   'apps/react/assets/offline-mode-renderer.js',
   'apps/characters.html',
   'apps/chat.html',
