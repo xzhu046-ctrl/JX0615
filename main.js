@@ -12,7 +12,7 @@ const APP_MAP = {
   user:       { title: '小脑瓜',         src: 'apps/little_brain.html', hideTopbar: true },
   little_brain:{ title: '小脑瓜',        src: 'apps/little_brain.html', hideTopbar: true },
   couple:     { title: '情侣空间',       src: 'apps/qq_profile.html?couple=1', hideTopbar: true },
-  backend:    { title: '后台',           src: 'apps/backend.html' },
+  backend:    { title: '后台',           src: 'apps/react/backend.html' },
   map6:       { title: '地图',           src: 'apps/map6.html' },
 };
 const HOME_ICON_DEFAULTS = {
@@ -62,12 +62,12 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-14T01:34:22Z';
+const APP_BUILD_ID = '2026-05-14T02:04:18Z';
 const APP_UPDATE_NOTES = [
-  '线下打开先显示首屏',
-  '约会列表不再反复全量扫聊天',
-  '线下长记录改成分段渲染',
-  '记忆和背景改到后台补载'
+  '开始 React 渐进迁移',
+  '后台 app 已切到 React',
+  '新增 React 构建和类型检查',
+  '旧聊天线下入口保持稳定'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -108,6 +108,9 @@ const FORCE_UPDATE_CORE_FILES = [
   'scheduleShared.js',
   'sunnySupport.js',
   'apps/backend.html',
+  'apps/react/backend.html',
+  'apps/react/assets/backend-DQGivSaa.css',
+  'apps/react/assets/backend-BFGw7tKv.js',
   'apps/characters.html',
   'apps/chat.html',
   'apps/customize.html',

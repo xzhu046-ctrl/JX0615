@@ -1,4 +1,4 @@
-const CACHE_VERSION = '2026-05-14T01:34:22Z';
+const CACHE_VERSION = '2026-05-14T02:04:18Z';
 const CACHE_NAME = 'phone-shell-' + CACHE_VERSION;
 const CORE_URLS = [
   './',
@@ -19,6 +19,9 @@ const CORE_URLS = [
   './version.json',
   './apps/offlineInvite.js',
   './apps/little_brain.html',
+  './apps/react/backend.html',
+  './apps/react/assets/backend-DQGivSaa.css',
+  './apps/react/assets/backend-BFGw7tKv.js',
 ];
 
 function isSameOrigin(requestUrl){

@@ -4,3 +4,4 @@
 **/.wrangler/
 .playwright-cli/
 output/
+node_modules/
