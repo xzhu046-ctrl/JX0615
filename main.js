@@ -62,14 +62,14 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-14T03:52:00Z';
+const APP_BUILD_ID = '2026-05-14T03:45:00Z';
 const APP_UPDATE_NOTES = [
   'React 目录改成 Sully 式结构',
   '新增 App / OSContext / PhoneShell',
-  '后台和约会日历挂进 apps 目录',
+  'app 宿主层继续由 React 接管',
   'React 缓存资源已更新'
 ];
-const SHELL_REACT_APP_HOST_SRC = './apps/react/assets/shell-app-host.js?v=2026-05-14T03:52:00Z';
+const SHELL_REACT_APP_HOST_SRC = './apps/react/assets/shell-app-host.js?v=2026-05-14T03:45:00Z';
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
 const REFRESH_RECALC_FLAG_KEY = 'refresh_recalc_needed_v1';

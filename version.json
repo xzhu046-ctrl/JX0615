@@ -1,9 +1,9 @@
 {
-  "buildId": "2026-05-14T03:52:00Z",
+  "buildId": "2026-05-14T03:45:00Z",
   "updateNotes": [
     "React 目录改成 Sully 式结构",
     "新增 App / OSContext / PhoneShell",
-    "后台和约会日历挂进 apps 目录",
+    "app 宿主层继续由 React 接管",
     "React 缓存资源已更新"
   ]
 }
