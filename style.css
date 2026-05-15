@@ -4443,9 +4443,9 @@ html.ios-device .phone-outer.frame-off .home-page-indicator {
 .update-toast-card {
   position: fixed;
   inset: 0;
-  z-index: 9000;
+  z-index: 1600;
   pointer-events: auto;
-  touch-action: manipulation;
+  touch-action: none;
   display: flex;
   align-items: center;
   justify-content: center;

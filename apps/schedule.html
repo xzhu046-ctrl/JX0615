@@ -6,12 +6,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>日程</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Quicksand:wght@400;500;600;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-<script src="../chatStorage.js?v=2026-05-13T22:53:19Z"></script>
-<script src="../accountManager.js?v=2026-05-13T22:53:19Z"></script>
-<script src="../assetStore.js?v=2026-05-13T22:53:19Z"></script>
-<script src="../metadataStore.js?v=2026-05-13T22:53:19Z"></script>
-<script src="../scheduleShared.js?v=2026-05-13T22:53:19Z"></script>
-<script src="../presenceShared.js?v=2026-05-13T22:53:19Z"></script>
+<script src="../chatStorage.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../accountManager.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../assetStore.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../metadataStore.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../scheduleShared.js?v=2026-05-05T05:03:34Z"></script>
+<script src="../presenceShared.js?v=2026-05-05T05:03:34Z"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -792,7 +792,7 @@ function showScheduleChatPeek(char, text){
   var body = document.getElementById('scheduleChatPeekText');
   if(!card || !avatar || !name || !body) return;
   var src = getCharacterAvatar(char);
-  avatar.style.backgroundImage = src ? ('url(' + JSON.stringify(getScheduleAvatarRenderSrc(src)) + ')') : '';
+  avatar.style.backgroundImage = src ? ('url(' + JSON.stringify(src) + ')') : '';
   name.textContent = getCharacterName(char);
   body.textContent = String(text || '').trim();
   card.classList.add('show');
@@ -1285,33 +1285,8 @@ function getRenderedCharTimelineNote(item){
   return item.secretHint ? ('提示：' + String(item.secretHint || '').trim()) : '需要密码才能偷看。';
 }
 
-function normalizeScheduleAvatarSrc(src){
-  var text = String(src || '').trim();
-  if(!text) return '';
-  try{
-    var proxyUrl = new URL(text, location.href);
-    if(proxyUrl.pathname === '/avatar-proxy'){
-      var raw = proxyUrl.searchParams.get('u') || proxyUrl.searchParams.get('url') || '';
-      if(raw) text = raw;
-    }
-  }catch(err){}
-  return text;
-}
-
-function shouldUseScheduleAvatarProxy(src){
-  return false;
-}
-
-function getScheduleAvatarRenderSrc(src){
-  var text = normalizeScheduleAvatarSrc(src || '');
-  if(shouldUseScheduleAvatarProxy(text)){
-    return '/avatar-proxy?u=' + encodeURIComponent(text);
-  }
-  return text;
-}
-
 function isRenderableScheduleAvatarSrc(src){
-  return /^(data:|https?:|blob:|\/|\.\.?\/|assets\/)/i.test(normalizeScheduleAvatarSrc(src || ''));
+  return /^(data:|https?:|blob:|\/|\.\.?\/|assets\/)/i.test(String(src || '').trim());
 }
 
 function getCharacterAvatar(char){
@@ -1355,8 +1330,7 @@ function renderScheduleAvatarButton(btn, char, avatarSrc){
   if(isRenderableScheduleAvatarSrc(safeSrc)){
     var media = document.createElement('span');
     media.className = 'schedule-current-char-media';
-    var renderSrc = getScheduleAvatarRenderSrc(safeSrc);
-    media.style.backgroundImage = 'url("' + renderSrc.replace(/(["\\])/g, '\\$1') + '")';
+    media.style.backgroundImage = 'url("' + safeSrc.replace(/(["\\])/g, '\\$1') + '")';
     btn.appendChild(media);
     return;
   }
@@ -3232,7 +3206,7 @@ function openShareTargetModal(){
       try{ avatar = getCharacterAvatar(char) || ''; }catch(err){}
       var face = getCharacterName(char).slice(0, 1) || 'C';
       return '<div class="schedule-picker-chip"><button class="schedule-picker-chip-btn" type="button" data-share-char-id="' + esc(String(char.id || '')) + '">'
-        + (avatar ? ('<img src="' + esc(getScheduleAvatarRenderSrc(avatar)) + '" data-avatar-src="' + esc(normalizeScheduleAvatarSrc(avatar)) + '" alt="" referrerpolicy="no-referrer">') : ('<div class="schedule-picker-chip-avatar">' + esc(face) + '</div>'))
+        + (avatar ? ('<img src="' + esc(avatar) + '" alt="">') : ('<div class="schedule-picker-chip-avatar">' + esc(face) + '</div>'))
         + '</button><div class="schedule-picker-chip-label">' + esc(getCharacterName(char)) + '</div></div>';
     }).join('') + '</div>';
     Array.prototype.forEach.call(host.querySelectorAll('[data-share-char-id]'), function(btn){
@@ -3248,7 +3222,7 @@ function openShareTargetModal(){
         if(!src) return;
         var btn = host.querySelector('[data-share-char-id="' + String(char.id || '').replace(/"/g, '&quot;') + '"]');
         if(!btn) return;
-        btn.innerHTML = '<img src="' + esc(getScheduleAvatarRenderSrc(src)) + '" data-avatar-src="' + esc(normalizeScheduleAvatarSrc(src)) + '" alt="" referrerpolicy="no-referrer">';
+        btn.innerHTML = '<img src="' + esc(src) + '" alt="">';
       }).catch(function(){});
     });
     host.scrollLeft = 0;

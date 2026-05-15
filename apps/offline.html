@@ -728,22 +728,16 @@ body{display:flex;justify-content:center}
       </div>
     </div>
   </div>
-<script src="../assetStore.js?v=2026-05-14T04:05:00Z"></script>
-<script src="../offlineInviteStore.js?v=2026-05-14T04:05:00Z"></script>
+<script src="../assetStore.js?v=2026-05-13T05:47:24Z"></script>
+<script src="../offlineInviteStore.js?v=2026-05-13T05:47:24Z"></script>
 <script>
-var OFFLINE_APP_BUILD_ID = '2026-05-14T04:05:00Z';
+var OFFLINE_APP_BUILD_ID = '2026-05-13T05:47:24Z';
 var currentFilter = 'all';
 var currentSelectedId = '';
 var currentSelectedDateKey = '';
 var avatarAssetCache = {};
 var offlineRenderVersion = 0;
 var latestOfflineRecords = [];
-var offlineRecordsCache = null;
-var offlineRecordsCacheAt = 0;
-var offlineRecordsFallbackRefreshTimer = 0;
-var offlineRecordsFallbackRefreshPromise = null;
-var OFFLINE_RECORDS_CACHE_TTL_MS = 45000;
-var OFFLINE_RECORDS_FALLBACK_REFRESH_MS = 90000;
 var offlineSwipeState = null;
 var pendingDeleteRecordId = '';
 var pendingVisitDateKey = '';
@@ -1861,7 +1855,6 @@ async function removeOfflineRecord(id){
   latestOfflineRecords = (Array.isArray(latestOfflineRecords) ? latestOfflineRecords : []).filter(function(item){
     return String(item && item.id || '').trim() !== safeId;
   });
-  invalidateOfflineRecordsCache();
   await cleanupOfflineStorageAfterRecordRemoval(target || { id: safeId }, latestOfflineRecords);
   if(currentSelectedId === safeId) currentSelectedId = '';
 }
@@ -2137,61 +2130,6 @@ function mergeOfflineRecordMaps(target, record){
   target[id] = safeUpdated >= existingUpdated ? Object.assign({}, existing, safe) : Object.assign({}, safe, existing);
 }
 
-function cloneOfflineRecordList(records){
-  return (Array.isArray(records) ? records : []).map(function(item){
-    return item && typeof item === 'object' ? Object.assign({}, item) : item;
-  }).filter(Boolean);
-}
-
-function invalidateOfflineRecordsCache(){
-  offlineRecordsCache = null;
-  offlineRecordsCacheAt = 0;
-}
-
-function finalizeOfflineRecords(fromStore, adoptedRecords, fallbackRecords){
-  var map = Object.create(null);
-  var hiddenIds = readHiddenOfflineRecordIds();
-  (Array.isArray(fromStore) ? fromStore : []).forEach(function(item){
-    mergeOfflineRecordMaps(map, Object.assign({ source:'store' }, item || {}));
-  });
-  (Array.isArray(adoptedRecords) ? adoptedRecords : []).forEach(function(item){
-    mergeOfflineRecordMaps(map, Object.assign({ source:'phoneStorageAdopted' }, item || {}));
-  });
-  var storeIds = (Array.isArray(fromStore) ? fromStore : []).concat(Array.isArray(adoptedRecords) ? adoptedRecords : []).reduce(function(out, item){
-    var id = String(item && item.id || '').trim();
-    if(id) out[id] = true;
-    return out;
-  }, Object.create(null));
-  (Array.isArray(fallbackRecords) ? fallbackRecords : []).forEach(function(item){
-    var fallbackId = String(item && item.id || '').trim();
-    if(fallbackId && storeIds[fallbackId] && !isCompletedInviteRecord(item) && !isOngoingInviteRecord(item) && !isContinuedInviteRecord(item)) return;
-    mergeOfflineRecordMaps(map, Object.assign({ source:'chatFallback' }, item || {}));
-  });
-  var records = Object.keys(map).map(function(id){ return map[id]; }).sort(function(a, b){
-    return (Number(b.updatedAt || b.createdAt || 0) || 0) - (Number(a.updatedAt || a.createdAt || 0) || 0);
-  }).map(function(item){
-    return normalizeCompletedOfflineRecord(item);
-  }).filter(function(item){
-    var safeId = String(item && item.id || '').trim();
-    return !!(item && safeId && !hiddenIds[safeId] && (String(item.charId || '').trim() || String(item.charName || '').trim()));
-  });
-  return dedupeCompletedInviteRecords(collapseCompletedDuplicateInviteRecords(promoteActiveDuplicatesFromCompletedRecords(repairSelectedActiveRecordFromCompletedSameDay(records))));
-}
-
-function scheduleOfflineRecordsFallbackRefresh(delay){
-  if(offlineRecordsFallbackRefreshTimer || offlineRecordsFallbackRefreshPromise) return;
-  offlineRecordsFallbackRefreshTimer = setTimeout(function(){
-    offlineRecordsFallbackRefreshTimer = 0;
-    offlineRecordsFallbackRefreshPromise = getOfflineRecords({ force:true, fullScan:true, background:true }).then(function(){
-      return renderOfflineApp({ useCache:true });
-    }).catch(function(){
-      return null;
-    }).finally(function(){
-      offlineRecordsFallbackRefreshPromise = null;
-    });
-  }, Math.max(300, Number(delay || 0) || 0));
-}
-
 function buildFallbackRecordFromChatEntry(entry, charMeta){
   var normalized = normalizeStoredChatEntry(entry);
   if(!normalized) return null;
@@ -2354,32 +2292,35 @@ function repairSelectedActiveRecordFromCompletedSameDay(records){
   return list;
 }
 
-async function getOfflineRecords(options){
-  var opts = options && typeof options === 'object' ? options : {};
-  var now = Date.now();
-  if(opts.useCache && offlineRecordsCache){
-    return cloneOfflineRecordList(offlineRecordsCache);
-  }
-  if(!opts.force && offlineRecordsCache && now - offlineRecordsCacheAt < OFFLINE_RECORDS_CACHE_TTL_MS){
-    if(now - offlineRecordsCacheAt > OFFLINE_RECORDS_FALLBACK_REFRESH_MS){
-      scheduleOfflineRecordsFallbackRefresh(1200);
-    }
-    return cloneOfflineRecordList(offlineRecordsCache);
-  }
+async function getOfflineRecords(){
   var fromStore = getOfflineRecordsFromStore();
+  var map = Object.create(null);
+  var hiddenIds = readHiddenOfflineRecordIds();
+  var fallback = await loadOfflineRecordsFromChatsFallback();
   var adoptedRecords = await loadAdoptedOfflineInviteRecords();
-  var fallback = [];
-  if(opts.fullScan){
-    fallback = await loadOfflineRecordsFromChatsFallback();
-    adoptedRecords = await adoptChatFallbackRecordsIntoStore(fallback, fromStore, adoptedRecords) || adoptedRecords;
-    fromStore = getOfflineRecordsFromStore();
-  }else{
-    scheduleOfflineRecordsFallbackRefresh(offlineRecordsCache ? 1800 : 900);
-  }
-  var records = finalizeOfflineRecords(fromStore, adoptedRecords, fallback);
-  offlineRecordsCache = cloneOfflineRecordList(records);
-  offlineRecordsCacheAt = now;
-  return cloneOfflineRecordList(records);
+  adoptedRecords = await adoptChatFallbackRecordsIntoStore(fallback, fromStore, adoptedRecords) || adoptedRecords;
+  fromStore = getOfflineRecordsFromStore();
+  fromStore.forEach(function(item){ mergeOfflineRecordMaps(map, Object.assign({ source:'store' }, item || {})); });
+  adoptedRecords.forEach(function(item){ mergeOfflineRecordMaps(map, Object.assign({ source:'phoneStorageAdopted' }, item || {})); });
+  var storeIds = fromStore.concat(adoptedRecords).reduce(function(out, item){
+    var id = String(item && item.id || '').trim();
+    if(id) out[id] = true;
+    return out;
+  }, Object.create(null));
+  fallback.forEach(function(item){
+    var fallbackId = String(item && item.id || '').trim();
+    if(fallbackId && storeIds[fallbackId] && !isCompletedInviteRecord(item) && !isOngoingInviteRecord(item) && !isContinuedInviteRecord(item)) return;
+    mergeOfflineRecordMaps(map, Object.assign({ source:'chatFallback' }, item || {}));
+  });
+  var records = Object.keys(map).map(function(id){ return map[id]; }).sort(function(a, b){
+    return (Number(b.updatedAt || b.createdAt || 0) || 0) - (Number(a.updatedAt || a.createdAt || 0) || 0);
+  }).map(function(item){
+    return normalizeCompletedOfflineRecord(item);
+  }).filter(function(item){
+    var safeId = String(item && item.id || '').trim();
+    return !!(item && safeId && !hiddenIds[safeId] && (String(item.charId || '').trim() || String(item.charName || '').trim()));
+  });
+  return dedupeCompletedInviteRecords(collapseCompletedDuplicateInviteRecords(promoteActiveDuplicatesFromCompletedRecords(repairSelectedActiveRecordFromCompletedSameDay(records))));
 }
 
 function isPendingInviteRecord(item){
@@ -2844,21 +2785,14 @@ function renderThreadList(records, selectedRecord){
   requestAnimationFrame(refreshThreadListElasticSpace);
 }
 
-async function renderOfflineApp(options){
-  var opts = options && typeof options === 'object' ? options : {};
+async function renderOfflineApp(){
   var renderToken = ++offlineRenderVersion;
   var endPayloads = consumePendingOfflineInviteEndRequests();
   lastConsumedEndRequestPayloads = endPayloads.slice();
   var inlinePayloads = pendingInlineForceCompletePayloads.slice();
   pendingInlineForceCompletePayloads = [];
   var forcePayloads = consumePendingForceCompleteOfflineRecords().concat(consumePendingExitCompleteOfflineIntents()).concat(endPayloads).concat(inlinePayloads);
-  var forceRecords = !!(opts.forceRecords || forcePayloads.length);
-  if(forceRecords) invalidateOfflineRecordsCache();
-  var records = await getOfflineRecords({
-    force: forceRecords,
-    useCache: !!opts.useCache,
-    fullScan: !!opts.fullScan
-  });
+  var records = await getOfflineRecords();
   records = forceCompleteRenderedRecords(records, forcePayloads);
   if(renderToken !== offlineRenderVersion) return;
   latestOfflineRecords = Array.isArray(records) ? records.slice() : [];
@@ -3047,7 +2981,6 @@ async function confirmVisitTarget(){
       window.OfflineInviteStore.upsertRecord(record);
     }
   }catch(err){}
-  invalidateOfflineRecordsCache();
   currentSelectedDateKey = getRecordDateKey(record);
   currentSelectedId = String(record.id || '').trim();
   closeVisitConfirm();
@@ -3263,34 +3196,29 @@ window.addEventListener('message', function(e){
     var ids = normalizeOfflineInviteCompleteIds(payload);
     forceCompleteOfflineRecords(ids, payload.charId, payload.charName || payload.name);
     forceCompleteOfflineRecordsByEndPayload(payload);
-    renderOfflineApp({ forceRecords:true });
+    renderOfflineApp();
     return;
   }
   if(data.type === 'OFFLINE_INVITE_STORE_DIRTY' || data.type === 'OPEN_SHELL_NOTIFICATION'){
-    invalidateOfflineRecordsCache();
-    renderOfflineApp({ forceRecords:true });
+    renderOfflineApp();
   }
 });
 
 window.addEventListener('storage', function(e){
   if(e && /offline_invite/i.test(String(e.key || ''))){
-    invalidateOfflineRecordsCache();
-    renderOfflineApp({ forceRecords:true });
+    renderOfflineApp();
   }
 });
 
 document.addEventListener('visibilitychange', function(){
   if(document.visibilityState === 'visible'){
-    renderOfflineApp({ useCache:true });
-    scheduleOfflineRecordsFallbackRefresh(1600);
+    renderOfflineApp();
   }
 });
 
 renderOfflineApp();
-scheduleOfflineRecordsFallbackRefresh(900);
 setInterval(function(){
-  renderOfflineApp({ useCache:true });
-  scheduleOfflineRecordsFallbackRefresh(1800);
+  renderOfflineApp();
 }, 20000);
 </script>
 </body>

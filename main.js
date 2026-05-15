@@ -9,10 +9,8 @@ const APP_MAP = {
   schedule:   { title: '日程',           src: 'apps/schedule.html', hideTopbar: true },
   offline:    { title: '约会',           src: 'apps/offline.html', hideTopbar: true },
   offline_mode:{ title: '线下',          src: 'apps/offline_mode.html', hideTopbar: true },
-  user:       { title: '小脑瓜',         src: 'apps/little_brain.html', hideTopbar: true },
-  little_brain:{ title: '小脑瓜',        src: 'apps/little_brain.html', hideTopbar: true },
   couple:     { title: '情侣空间',       src: 'apps/qq_profile.html?couple=1', hideTopbar: true },
-  backend:    { title: '后台',           src: 'apps/react/backend.html' },
+  backend:    { title: '后台',           src: 'apps/backend.html' },
   map6:       { title: '地图',           src: 'apps/map6.html' },
 };
 const HOME_ICON_DEFAULTS = {
@@ -25,7 +23,7 @@ const HOME_ICON_DEFAULTS = {
   backend: '后台',
   map6: '地图',
   char: 'CHAR',
-  user: '小脑瓜',
+  user: 'USER',
   'placeholder-1': '占位1',
   'placeholder-2': '占位2',
   'placeholder-3': '占位3',
@@ -62,12 +60,11 @@ const OFFLINE_INVITE_FOCUS_KEY = 'offline_invite_focus_id_v1';
 const OFFLINE_INVITE_REMINDER_SNOOZE_MS = 15 * 60 * 1000;
 const BACKEND_LOG_STORAGE_KEY = 'backend_runtime_logs_v1';
 const BACKEND_LOG_MAX = 1000;
-const APP_BUILD_ID = '2026-05-14T04:05:00Z';
+const APP_BUILD_ID = '2026-05-13T06:15:16Z';
 const APP_UPDATE_NOTES = [
-  '恢复原 app 宿主，修复聊天室卡死',
-  '约会入口退回旧页面',
-  '线下约会恢复原打开链路',
-  '缓存版本已刷新'
+  '减少默认使用“老子”',
+  '线上线下通话更贴人设',
+  '只有明确口癖才放行'
 ];
 const HOME_WIDGET_MINI_ORB_KEY = 'home_widget_mini_orb_image';
 const HOME_CLOCK_WIDGET_ART_KEY = 'home_clock_widget_art';
@@ -108,16 +105,9 @@ const FORCE_UPDATE_CORE_FILES = [
   'scheduleShared.js',
   'sunnySupport.js',
   'apps/backend.html',
-  'apps/react/backend.html',
-  'apps/react/assets/backend-DQGivSaa.css',
-  'apps/react/assets/backend-CmOkNhXC.js',
-  'apps/react/assets/client-D2eNyhnx.js',
-  'apps/react/assets/modulepreload-polyfill-B5Qt9EMX.js',
-  'apps/react/assets/offline-mode-renderer.js',
   'apps/characters.html',
   'apps/chat.html',
   'apps/customize.html',
-  'apps/little_brain.html',
   'apps/map6.html',
   'apps/offline.html',
   'apps/offlineInvite.js',
@@ -183,7 +173,6 @@ let hostedUpdateRemoteNotes = {};
 let hostedPagesReadyBuilds = {};
 let installedUpdateNoticeActive = false;
 let installedUpdateNoticeChecked = false;
-let updateToastActionBound = false;
 let chatInputFocusActive = false;
 let chatInputFocusStartedAt = 0;
 let chatReportedKeyboardShift = 0;
@@ -547,14 +536,7 @@ function ensureOfflineMiniLauncher(){
 
 function renderOfflineMiniLauncher(){
   var btn = document.getElementById('offline-mini-launcher-shell');
-  var charId = getMinimizedOfflineCharId();
-  if(!charId){
-    if(btn) btn.remove();
-    return;
-  }
-  btn = ensureOfflineMiniLauncher();
-  btn.style.display = currentApp === 'offline_mode' ? 'none' : 'flex';
-  btn.style.bottom = currentApp === 'chat' ? '104px' : '22px';
+  if(btn) btn.remove();
 }
 
 function setMinimizedOfflineCharId(charId){
@@ -991,53 +973,13 @@ function shouldUseShellAvatarProxy(src){
 
 function getShellAvatarRenderSrc(src){
   var text = normalizeShellAssetSrc(src || '');
-  if(shouldUseShellAvatarProxy(text)){
-    return '/avatar-proxy?u=' + encodeURIComponent(text);
-  }
-  return text;
-}
-
-function getShellAvatarRetryRenderSrc(src){
-  var text = normalizeShellAssetSrc(src || '');
-  if(!/^https?:/i.test(text)) return getShellAvatarRenderSrc(text);
-  try{
-    var url = new URL(text, window.location.href);
-    url.searchParams.set('__avatarRetry', APP_BUILD_ID + '_' + Date.now());
-    return url.toString();
-  }catch(err){
-    return text + (text.indexOf('?') >= 0 ? '&' : '?') + '__avatarRetry=' + encodeURIComponent(APP_BUILD_ID + '_' + Date.now());
-  }
+  if(!shouldUseShellAvatarProxy(text)) return text;
+  return '/avatar-proxy?u=' + encodeURIComponent(text);
 }
 
 var shellAvatarImagePool = Object.create(null);
 var shellAvatarPoolLoading = Object.create(null);
-var shellAvatarBlobUrlCache = Object.create(null);
-var shellAvatarBlobUrlLoading = Object.create(null);
 var shellAvatarFrameRepairTimers = [];
-var shellAvatarHomeRepairTimers = [];
-var shellAvatarPrewarmRoot = null;
-
-function isShellPerformanceSensitiveMode(){
-  try{
-    return /iPhone|iPad|iPod|Mobile|Safari/i.test(navigator.userAgent || '');
-  }catch(err){
-    return true;
-  }
-}
-
-function getShellAvatarPrewarmRoot(){
-  if(shellAvatarPrewarmRoot && shellAvatarPrewarmRoot.parentNode) return shellAvatarPrewarmRoot;
-  try{
-    shellAvatarPrewarmRoot = document.createElement('div');
-    shellAvatarPrewarmRoot.id = 'shell-avatar-prewarm-root';
-    shellAvatarPrewarmRoot.setAttribute('aria-hidden', 'true');
-    shellAvatarPrewarmRoot.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;';
-    (document.body || document.documentElement).appendChild(shellAvatarPrewarmRoot);
-  }catch(err){
-    shellAvatarPrewarmRoot = null;
-  }
-  return shellAvatarPrewarmRoot;
-}
 
 function getShellAvatarPoolKey(src){
   var text = normalizeShellAssetSrc(src || '');
@@ -1045,165 +987,14 @@ function getShellAvatarPoolKey(src){
   return text;
 }
 
-function getShellAvatarBlobKey(src){
-  var key = getShellAvatarPoolKey(src);
-  return /^https?:/i.test(key || '') ? key : '';
-}
-
-function setShellAvatarImageSrcFromBlobFallback(img, originalSrc, blobSrc){
-  if(!img || !blobSrc) return false;
-  var key = getShellAvatarBlobKey(originalSrc);
-  if(!key) return false;
-  try{ img.removeAttribute('srcset'); }catch(srcsetErr){}
-  try{ img.setAttribute('data-avatar-src', key); }catch(dataErr){}
-  try{ img.setAttribute('data-shell-avatar-fallback', 'blob'); }catch(flagErr){}
-  try{ img.setAttribute('referrerpolicy', 'no-referrer'); }catch(refErr){}
-  try{ img.referrerPolicy = 'no-referrer'; }catch(policyErr){}
-  try{ img.decoding = 'async'; }catch(decErr){}
-  try{ img.loading = 'eager'; }catch(loadErr){}
-  try{ img.style.display = ''; }catch(styleErr){}
-  try{
-    var fallback = img.nextElementSibling;
-    if(fallback && /fallback|avatar-fallback/i.test(String(fallback.className || ''))){
-      fallback.style.display = 'none';
-    }
-  }catch(fallbackErr){}
-  try{ img.src = blobSrc; }catch(assignErr){ return false; }
-  return true;
-}
-
-function ensureShellAvatarBlobFallback(src){
-  var key = getShellAvatarBlobKey(src);
-  if(!key || typeof fetch !== 'function') return Promise.resolve('');
-  if(shellAvatarBlobUrlCache[key]) return Promise.resolve(shellAvatarBlobUrlCache[key]);
-  if(shellAvatarBlobUrlLoading[key]) return shellAvatarBlobUrlLoading[key];
-  function fetchBlob(url, options){
-    return fetch(url, options || {}).then(function(resp){
-      if(!resp || !resp.ok) throw new Error('avatar fetch failed');
-      return resp.blob();
-    });
-  }
-  var directOptions = {
-    cache: 'force-cache',
-    mode: 'cors',
-    credentials: 'omit',
-    referrerPolicy: 'no-referrer'
-  };
-  var proxyUrl = '/avatar-proxy?u=' + encodeURIComponent(key);
-  shellAvatarBlobUrlLoading[key] = fetchBlob(getShellAvatarRenderSrc(key), directOptions).catch(function(){
-    return fetchBlob(proxyUrl, { cache:'force-cache', credentials:'same-origin' });
-  }).then(function(blob){
-    if(!blob || !/^image\//i.test(String(blob.type || 'image/'))) throw new Error('avatar blob is not image');
-    var url = '';
-    try{ url = URL.createObjectURL(blob); }catch(urlErr){}
-    if(url) shellAvatarBlobUrlCache[key] = url;
-    return url || '';
-  }).catch(function(err){
-    try{
-      pushBackendLogEntry({
-        level: 'warn',
-        app: currentApp || 'shell',
-        source: 'avatar.blob_fallback',
-        message: '头像稳定补图失败',
-        detail: { src: key, error: String(err && err.message || err || '') }
-      });
-    }catch(logErr){}
-    return '';
-  }).finally(function(){
-    delete shellAvatarBlobUrlLoading[key];
-  });
-  return shellAvatarBlobUrlLoading[key];
-}
-
-function applyShellAvatarBlobFallbackToImage(img, src){
-  var key = getShellAvatarBlobKey(src);
-  if(!img || !key) return false;
-  var cached = shellAvatarBlobUrlCache[key] || '';
-  if(cached) return setShellAvatarImageSrcFromBlobFallback(img, key, cached);
-  ensureShellAvatarBlobFallback(key).then(function(blobSrc){
-    if(!blobSrc || !img || !img.parentNode) return;
-    var currentKey = getShellFrameAvatarImgSource(img);
-    if(currentKey && currentKey !== key) return;
-    var broken = !img.complete || Number(img.naturalWidth || 0) <= 0;
-    if(broken) setShellAvatarImageSrcFromBlobFallback(img, key, blobSrc);
-  }).catch(function(){});
-  return false;
-}
-
 function isShellAvatarPoolImageReady(img){
   return !!(img && img.complete && Number(img.naturalWidth || 0) > 0);
-}
-
-function seedShellAvatarPoolFromImage(img, source){
-  if(!isShellAvatarPoolImageReady(img)) return false;
-  try{
-    if(img.closest && img.closest('#shell-avatar-prewarm-root')) return false;
-  }catch(closestErr){}
-  var key = getShellAvatarPoolKey(source || getShellFrameAvatarImgSource(img));
-  if(!key) return false;
-  var list = shellAvatarImagePool[key] || (shellAvatarImagePool[key] = []);
-  list = list.filter(isShellAvatarPoolImageReady);
-  shellAvatarImagePool[key] = list;
-  if(list.length >= 16) return false;
-  var clone = null;
-  try{ clone = img.cloneNode(false); }catch(cloneErr){ clone = null; }
-  if(!clone || !document || !document.createElement) return false;
-  try{ clone.removeAttribute('id'); }catch(idErr){}
-  try{ clone.removeAttribute('srcset'); }catch(srcsetErr){}
-  try{ clone.setAttribute('data-avatar-src', key); }catch(dataErr){}
-  try{ clone.setAttribute('referrerpolicy', 'no-referrer'); }catch(refErr){}
-  try{ clone.referrerPolicy = 'no-referrer'; }catch(policyErr){}
-  try{ clone.decoding = 'async'; }catch(decErr){}
-  try{ clone.loading = 'eager'; }catch(loadErr){}
-  try{ clone.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;'; }catch(styleErr){}
-  clone.onload = function(){
-    var fresh = shellAvatarImagePool[key] || (shellAvatarImagePool[key] = []);
-    fresh = fresh.filter(isShellAvatarPoolImageReady);
-    shellAvatarImagePool[key] = fresh;
-    if(fresh.indexOf(clone) === -1 && fresh.length < 16 && isShellAvatarPoolImageReady(clone)){
-      fresh.push(clone);
-      try{ repairShellAvatarImages(); }catch(repairErr){}
-      try{ repairAppFrameAvatarImages(document.getElementById('app-iframe')); }catch(frameErr){}
-    }
-  };
-  clone.onerror = function(){
-    try{ if(clone.parentNode) clone.parentNode.removeChild(clone); }catch(removeErr){}
-  };
-  try{
-    var root = getShellAvatarPrewarmRoot();
-    if(root) root.appendChild(clone);
-  }catch(appendErr){}
-  try{ clone.src = img.currentSrc || img.src || getShellAvatarRenderSrc(key); }catch(assignErr){ return false; }
-  if(isShellAvatarPoolImageReady(clone)) clone.onload();
-  return true;
-}
-
-function rememberLoadedShellAvatarImage(img, src){
-  if(!isShellAvatarPoolImageReady(img)) return;
-  var key = getShellAvatarPoolKey(src || getShellFrameAvatarImgSource(img));
-  if(!key) return;
-  seedShellAvatarPoolFromImage(img, key);
-  try{
-    var host = img.closest && img.closest('[data-char-id]');
-    var charId = String(host && host.dataset && host.dataset.charId || '').trim();
-    if(charId) saveShellCharacterAvatarAsset(charId, key).catch(function(){});
-  }catch(err){}
-}
-
-function seedShellAvatarPoolFromDocument(doc){
-  if(!doc || !doc.querySelectorAll) return;
-  var imgs = [];
-  try{ imgs = Array.prototype.slice.call(doc.querySelectorAll('img')); }catch(queryErr){ imgs = []; }
-  imgs.forEach(function(img){
-    if(!isShellFrameAvatarLikeImage(img)) return;
-    seedShellAvatarPoolFromImage(img);
-  });
 }
 
 function prewarmShellAvatarImagePool(src, wantedCount){
   var key = getShellAvatarPoolKey(src);
   if(!key || !document || !document.createElement) return;
-  var count = Math.max(1, Math.min(isShellPerformanceSensitiveMode() ? 2 : 8, Number(wantedCount) || 2));
+  var count = Math.max(1, Math.min(24, Number(wantedCount) || 6));
   var list = shellAvatarImagePool[key] || (shellAvatarImagePool[key] = []);
   list = list.filter(isShellAvatarPoolImageReady);
   shellAvatarImagePool[key] = list;
@@ -1220,16 +1011,11 @@ function prewarmShellAvatarImagePool(src, wantedCount){
     img.setAttribute('referrerpolicy', 'no-referrer');
     img.setAttribute('data-avatar-src', key);
     img.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;';
-    var root = getShellAvatarPrewarmRoot();
-    if(root){
-      try{ root.appendChild(img); }catch(appendErr){}
-    }
     img.onload = (function(poolImg, poolKey){
       return function(){
         shellAvatarPoolLoading[poolKey] = Math.max(0, Number(shellAvatarPoolLoading[poolKey] || 0) - 1);
         if(isShellAvatarPoolImageReady(poolImg)){
           (shellAvatarImagePool[poolKey] || (shellAvatarImagePool[poolKey] = [])).push(poolImg);
-          repairShellAvatarImages();
           if(currentApp){
             setTimeout(function(){
               repairAppFrameAvatarImages(document.getElementById('app-iframe'));
@@ -1238,18 +1024,11 @@ function prewarmShellAvatarImagePool(src, wantedCount){
         }
       };
     })(img, key);
-    img.onerror = (function(poolImg, poolKey){
+    img.onerror = (function(poolKey){
       return function(){
         shellAvatarPoolLoading[poolKey] = Math.max(0, Number(shellAvatarPoolLoading[poolKey] || 0) - 1);
-        try{ if(poolImg.parentNode) poolImg.parentNode.removeChild(poolImg); }catch(removeErr){}
-        ensureShellAvatarBlobFallback(poolKey).then(function(blobSrc){
-          if(blobSrc){
-            repairShellAvatarImages();
-            repairAppFrameAvatarImages(document.getElementById('app-iframe'));
-          }
-        }).catch(function(){});
       };
-    })(img, key);
+    })(key);
     img.src = getShellAvatarRenderSrc(key);
   }
 }
@@ -1261,22 +1040,20 @@ function takeShellAvatarPoolImage(src){
   while(list.length){
     var img = list.shift();
     if(isShellAvatarPoolImageReady(img)){
-      if(!isShellPerformanceSensitiveMode()) prewarmShellAvatarImagePool(key, 3);
+      prewarmShellAvatarImagePool(key, 8);
       return img;
     }
   }
-  if(!isShellPerformanceSensitiveMode()) prewarmShellAvatarImagePool(key, 2);
+  prewarmShellAvatarImagePool(key, 8);
   return null;
 }
 
 function prewarmShellAvatarSourcesForApps(){
-  if(currentApp === 'chat') return;
   var sources = [];
   function push(src){
     var key = getShellAvatarPoolKey(src);
     if(key && sources.indexOf(key) === -1) sources.push(key);
   }
-  try{ seedShellAvatarPoolFromDocument(document); }catch(seedErr){}
   try{
     var active = getActiveCharacterData();
     if(active) push(getCharacterAvatarForBg(active));
@@ -1284,16 +1061,13 @@ function prewarmShellAvatarSourcesForApps(){
   try{
     collectShellAvatarDomSources(document, ['#wgt-avatar img', '#bond-char-avatar img', '#shell-voice-call-avatar img']).forEach(push);
   }catch(domErr){}
-  if(!isShellPerformanceSensitiveMode()){
-    try{
+  try{
     getStoredCharactersSnapshot().slice(0, 40).forEach(function(c){
       push(getShellCharacterAvatarCandidateSync(c));
     });
-    }catch(rosterErr){}
-  }
-  sources.slice(0, isShellPerformanceSensitiveMode() ? 4 : 18).forEach(function(src, idx){
-    prewarmShellAvatarImagePool(src, idx < 2 ? 2 : 1);
-    if(!isShellPerformanceSensitiveMode()) ensureShellAvatarBlobFallback(src).catch(function(){});
+  }catch(rosterErr){}
+  sources.slice(0, 48).forEach(function(src, idx){
+    prewarmShellAvatarImagePool(src, idx < 4 ? 14 : 4);
   });
 }
 
@@ -2343,15 +2117,7 @@ function refreshInstalledApp(evt){
   }
   var targetBuild = String(pendingRemoteAppFingerprint || shownHostedUpdateFingerprint || getLastSeenHostedRemoteBuild() || APP_BUILD_ID).trim() || APP_BUILD_ID;
   var totalRefreshFiles = FORCE_UPDATE_CORE_FILES.length;
-  var refreshFinished = false;
-  var refreshHardTimer = 0;
   var finishReload = function(){
-    if(refreshFinished) return;
-    refreshFinished = true;
-    if(refreshHardTimer){
-      clearTimeout(refreshHardTimer);
-      refreshHardTimer = 0;
-    }
     swControllerRefreshPending = false;
     hostedRefreshInFlight = false;
     hostedUpdateLockedOpen = false;
@@ -2377,10 +2143,6 @@ function refreshInstalledApp(evt){
       return;
     }catch(err){}
   };
-  refreshHardTimer = setTimeout(function(){
-    console.warn('[update-check] refresh hard fallback');
-    finishReload();
-  }, 6500);
   Promise.resolve()
     .then(function(){
       setHostedRefreshProgress('正在保存当前数据', 0, totalRefreshFiles, targetBuild);
@@ -2420,25 +2182,6 @@ function handleUpdateToastAction(evt){
   }
   refreshInstalledApp(evt);
 }
-
-function bindUpdateToastButton(){
-  if(updateToastActionBound) return;
-  updateToastActionBound = true;
-  var directBtn = document.getElementById('update-toast-btn');
-  if(directBtn){
-    ['click', 'pointerup', 'touchend'].forEach(function(type){
-      directBtn.addEventListener(type, handleUpdateToastAction, { passive:false });
-    });
-  }
-  ['click', 'pointerup', 'touchend'].forEach(function(type){
-    document.addEventListener(type, function(evt){
-      var target = evt && evt.target && evt.target.closest ? evt.target.closest('#update-toast-btn') : null;
-      if(!target) return;
-      handleUpdateToastAction(evt);
-    }, true);
-  });
-}
-
 window.refreshInstalledApp = refreshInstalledApp;
 window.refreshInstalledNoticeAndApp = refreshInstalledNoticeAndApp;
 window.handleUpdateToastAction = handleUpdateToastAction;
@@ -2615,6 +2358,10 @@ function slimChar(c){
     msgMin:c.msgMin, msgMax:c.msgMax,
     chatRenderPageSize:c.chatRenderPageSize,
     contextWindow:c.contextWindow,
+    summaryEvery:c.summaryEvery,
+    manualSummarySize:c.manualSummarySize,
+    memoryMergeThreshold:c.memoryMergeThreshold,
+    autoSummaryEnabled:c.autoSummaryEnabled,
     translationEnabled:!!c.translationEnabled,
     replyLanguage:String(c.replyLanguage||c.language||'zh'),
     translationMode:String(c.translationMode||'ondemand'),
@@ -7544,7 +7291,7 @@ function bindHomePager(){
 }
 
 function openPlaceholderMiniApp(idx){
-  if(Number(idx) === 1){
+  if(Number(idx) === 1 || Number(idx) === 2){
     var activeChat = getActiveCharacterData();
     if(activeChat && activeChat.id){
       persistShellActiveCharacter(activeChat);
@@ -7554,10 +7301,6 @@ function openPlaceholderMiniApp(idx){
     }else{
       openApp('qq');
     }
-    return;
-  }
-  if(Number(idx) === 2){
-    openApp('little_brain');
     return;
   }
   if(Number(idx) === 3){
@@ -8200,45 +7943,14 @@ function isSameShellAvatarImageSrc(img, src){
 
 function getShellFrameAvatarImgSource(img){
   if(!img) return '';
-  if(isShellAvatarFrameDecorationImage(img)) return '';
   var raw = '';
   try{ raw = String((img.getAttribute && (img.getAttribute('data-avatar-src') || img.getAttribute('src'))) || img.src || '').trim(); }catch(err){}
   raw = normalizeShellAssetSrc(raw);
   return isRenderableShellAvatarSrc(raw) ? raw : '';
 }
 
-function isKnownShellAvatarFrameSrc(src){
-  var text = normalizeShellAssetSrc(src || '');
-  if(!text) return false;
-  try{
-    if(typeof avatarFrames !== 'undefined' && Array.isArray(avatarFrames)){
-      return avatarFrames.some(function(frame){
-        return frame && normalizeShellAssetSrc(frame.url || '') === text;
-      });
-    }
-  }catch(err){}
-  return /^https?:\/\/i\.ibb\.co\/[^/]+\/D\d{3}\.gif(?:[?#].*)?$/i.test(text);
-}
-
-function isShellAvatarFrameDecorationImage(img){
-  if(!img) return false;
-  var src = '';
-  try{ src = String((img.getAttribute && (img.getAttribute('data-avatar-src') || img.getAttribute('src'))) || img.src || '').trim(); }catch(err){}
-  var bits = [];
-  try{
-    bits = [
-      img.className,
-      img.parentNode && img.parentNode.className,
-      img.closest && img.closest('.avatar-frame-stack,.avatar-frame-inline,.bond-avatar-frame,.slot-frame,.avatar-frame-fallback')
-    ];
-  }catch(classErr){}
-  if(/avatar-frame|bond-avatar-frame|slot-frame/i.test(bits.join(' '))) return true;
-  return isKnownShellAvatarFrameSrc(src);
-}
-
 function isShellFrameAvatarLikeImage(img){
   if(!img) return false;
-  if(isShellAvatarFrameDecorationImage(img)) return false;
   var bits = [];
   try{
     bits = [
@@ -8262,7 +7974,7 @@ function cloneShellAvatarAttributes(fromImg, toImg, source){
   }catch(clearErr){}
   try{
     Array.prototype.slice.call(fromImg.attributes || []).forEach(function(attr){
-      if(!attr || attr.name === 'src' || attr.name === 'style') return;
+      if(!attr || attr.name === 'src') return;
       try{ toImg.setAttribute(attr.name, attr.value); }catch(attrErr){}
     });
   }catch(err){}
@@ -8274,7 +7986,7 @@ function cloneShellAvatarAttributes(fromImg, toImg, source){
   return toImg;
 }
 
-function replaceShellAvatarWithPooledImage(img, src){
+function replaceFrameAvatarWithPooledImage(img, src){
   if(!img || !img.parentNode) return false;
   var pooled = takeShellAvatarPoolImage(src);
   if(!pooled) return false;
@@ -8289,102 +8001,25 @@ function replaceShellAvatarWithPooledImage(img, src){
   }
 }
 
-function replaceFrameAvatarWithPooledImage(img, src){
-  return replaceShellAvatarWithPooledImage(img, src);
-}
-
-function retryShellAvatarImageLoad(img, src){
-  var key = getShellAvatarPoolKey(src);
-  if(!img || !key) return false;
-  var now = Date.now();
-  var lastRetry = 0;
-  try{ lastRetry = Number(img.getAttribute('data-shell-avatar-retry-at') || 0) || 0; }catch(readErr){}
-  if(lastRetry && now - lastRetry < 2500) return false;
-  try{ img.removeAttribute('srcset'); }catch(srcsetErr){}
-  try{ img.setAttribute('data-avatar-src', key); }catch(dataErr){}
-  try{ img.setAttribute('data-shell-avatar-retry-at', String(now)); }catch(retryErr){}
-  try{ img.setAttribute('referrerpolicy', 'no-referrer'); }catch(refErr){}
-  try{ img.referrerPolicy = 'no-referrer'; }catch(policyErr){}
-  try{ img.decoding = 'async'; }catch(decErr){}
-  try{ img.loading = 'eager'; }catch(loadErr){}
-  try{ img.style.display = ''; }catch(styleErr){}
-  try{ img.src = getShellAvatarRetryRenderSrc(key); }catch(assignErr){ return false; }
-  return true;
-}
-
-function repairShellAvatarImageElement(img){
-  if(!isShellFrameAvatarLikeImage(img)) return false;
-  var src = getShellFrameAvatarImgSource(img);
-  if(!getShellAvatarPoolKey(src)) return false;
-  var broken = !img.complete || Number(img.naturalWidth || 0) <= 0;
-  if(!broken){
-    rememberLoadedShellAvatarImage(img, src);
-    return false;
-  }
-  if(shellAvatarBlobUrlCache[getShellAvatarBlobKey(src)] && applyShellAvatarBlobFallbackToImage(img, src)) return true;
-  if(replaceShellAvatarWithPooledImage(img, src)) return true;
-  if(!isShellPerformanceSensitiveMode() && applyShellAvatarBlobFallbackToImage(img, src)) return true;
-  if(retryShellAvatarImageLoad(img, src)) return true;
-  return false;
-}
-
-function repairAvatarImagesInDocument(doc){
-  if(!doc || !doc.querySelectorAll) return false;
-  var repaired = false;
-  var imgs = [];
-  try{ seedShellAvatarPoolFromDocument(document); }catch(shellSeedErr){}
-  if(doc !== document){
-    try{ seedShellAvatarPoolFromDocument(doc); }catch(frameSeedErr){}
-  }
-  try{ imgs = Array.prototype.slice.call(doc.querySelectorAll('img')); }catch(queryErr){}
-  imgs.forEach(function(img){
-    if(repairShellAvatarImageElement(img)) repaired = true;
-  });
-  return repaired;
-}
-
-function repairShellAvatarImages(){
-  return repairAvatarImagesInDocument(document);
-}
-
 function repairAppFrameAvatarImages(frame){
   frame = frame || document.getElementById('app-iframe');
   if(!frame) return false;
   var doc = null;
   try{ doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document); }catch(err){}
-  return repairAvatarImagesInDocument(doc);
-}
-
-function scheduleShellAvatarRepairs(){
-  shellAvatarHomeRepairTimers.forEach(function(timer){ clearTimeout(timer); });
-  shellAvatarHomeRepairTimers = [];
-  [0, 80, 220, 520, 1000, 1800, 3200, 6000].forEach(function(delay){
-    shellAvatarHomeRepairTimers.push(setTimeout(function(){
-      repairShellAvatarImages();
-    }, delay));
+  if(!doc || !doc.querySelectorAll) return false;
+  var repaired = false;
+  var imgs = [];
+  try{ imgs = Array.prototype.slice.call(doc.querySelectorAll('img')); }catch(queryErr){}
+  imgs.forEach(function(img){
+    if(!isShellFrameAvatarLikeImage(img)) return;
+    var src = getShellFrameAvatarImgSource(img);
+    if(!getShellAvatarPoolKey(src)) return;
+    prewarmShellAvatarImagePool(src, 8);
+    var broken = !img.complete || Number(img.naturalWidth || 0) <= 0;
+    if(!broken) return;
+    if(replaceFrameAvatarWithPooledImage(img, src)) repaired = true;
   });
-}
-
-function handleShellAvatarImageLoadEvent(evt){
-  var img = evt && evt.target;
-  if(!isShellFrameAvatarLikeImage(img)) return;
-  rememberLoadedShellAvatarImage(img);
-}
-
-function handleShellAvatarImageErrorEvent(evt){
-  var img = evt && evt.target;
-  if(!isShellFrameAvatarLikeImage(img)) return;
-  repairShellAvatarImageElement(img);
-}
-
-function bindShellAvatarRepairEvents(root){
-  var target = root || document;
-  if(!target || target.__shellAvatarRepairEventsBound) return;
-  try{
-    target.__shellAvatarRepairEventsBound = true;
-    target.addEventListener('load', handleShellAvatarImageLoadEvent, true);
-    target.addEventListener('error', handleShellAvatarImageErrorEvent, true);
-  }catch(err){}
+  return repaired;
 }
 
 function scheduleAppFrameAvatarRepairs(frame){
@@ -8392,18 +8027,13 @@ function scheduleAppFrameAvatarRepairs(frame){
   if(!frame) return;
   shellAvatarFrameRepairTimers.forEach(function(timer){ clearTimeout(timer); });
   shellAvatarFrameRepairTimers = [];
-  var lightMode = currentApp === 'chat' || isShellPerformanceSensitiveMode();
-  (lightMode ? [900, 2600] : [160, 520, 1400, 3200]).forEach(function(delay){
+  [80, 220, 520, 1000, 1800, 3200].forEach(function(delay){
     shellAvatarFrameRepairTimers.push(setTimeout(function(){
-      if(!lightMode) repairShellAvatarImages();
       repairAppFrameAvatarImages(frame);
     }, delay));
   });
-  if(lightMode) return;
   try{
     var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
-    bindShellAvatarRepairEvents(doc);
-    if(frame.contentWindow) bindShellAvatarRepairEvents(frame.contentWindow);
     if(doc && doc.body && !doc.__shellAvatarRepairObserver){
       doc.__shellAvatarRepairObserver = new MutationObserver(function(){
         if(doc.__shellAvatarRepairQueued) return;
@@ -8449,16 +8079,9 @@ function applyBondAvatarContent(role, src, fallback, charId){
   var previousFrameUrl = String(target.dataset.avatarFrameUrl || '');
   var previousFrameStyle = String(target.dataset.avatarFrameStyle || '');
   if(hasImage && existingImg && isSameShellAvatarImageSrc(existingImg, safeSrc) && previousFrameUrl === String(frameUrl || '') && previousFrameStyle === String(frameStyle || '')){
-    if(isShellAvatarPoolImageReady(existingImg)){
-      target.dataset.avatarFrameUrl = String(frameUrl || '');
-      target.dataset.avatarFrameStyle = String(frameStyle || '');
-      return;
-    }
-    if(replaceShellAvatarWithPooledImage(existingImg, safeSrc)){
-      target.dataset.avatarFrameUrl = String(frameUrl || '');
-      target.dataset.avatarFrameStyle = String(frameStyle || '');
-      return;
-    }
+    target.dataset.avatarFrameUrl = String(frameUrl || '');
+    target.dataset.avatarFrameStyle = String(frameStyle || '');
+    return;
   }
   var baseHtml = isRenderableShellAvatarSrc(safeSrc)
     ? '<span class="bond-avatar-base"><img src="' + escapeHtmlAttr(renderSrc) + '" data-avatar-src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" onerror="handleShellBondAvatarError(this,\'' + escapeHtmlAttr(safeRole) + '\')"></span>'
@@ -12177,35 +11800,10 @@ function consumePendingOfflineLaunchRecord(options){
 window.consumePendingOfflineLaunchRecord = consumePendingOfflineLaunchRecord;
 
 function runAppTransition(task){
-  appTransitionPromise = appTransitionPromise.then(function(){
-    return withShellTransitionTimeout(Promise.resolve().then(task), 'appTransition', 6500);
-  }).catch(function(err){
+  appTransitionPromise = appTransitionPromise.then(task).catch(function(err){
     console.error('app transition failed', err);
   });
   return appTransitionPromise;
-}
-
-function withShellTransitionTimeout(promise, label, ms){
-  var done = false;
-  return Promise.race([
-    Promise.resolve(promise).then(function(value){
-      done = true;
-      return value;
-    }, function(err){
-      done = true;
-      throw err;
-    }),
-    new Promise(function(resolve){
-      setTimeout(function(){
-        if(done) return;
-        console.warn('shell transition timeout:', label);
-        resolve(null);
-      }, Math.max(400, Number(ms || 0) || 1800));
-    })
-  ]).catch(function(err){
-    console.warn('shell transition step failed:', label, err);
-    return null;
-  });
 }
 
 async function flushCurrentAppState(){
@@ -12214,21 +11812,21 @@ async function flushCurrentAppState(){
     if(!f || !f.contentWindow) return;
     try{
       if(typeof f.contentWindow.waitForPendingChatSave === 'function'){
-        await withShellTransitionTimeout(f.contentWindow.waitForPendingChatSave(), 'waitForPendingChatSave', 1800);
+        await f.contentWindow.waitForPendingChatSave();
       }
     }catch(err){}
     try{
       if(typeof f.contentWindow.persistAppBeforeLeave === 'function'){
         var appPersistResult = f.contentWindow.persistAppBeforeLeave();
-        if(appPersistResult && typeof appPersistResult.then === 'function') await withShellTransitionTimeout(appPersistResult, 'persistAppBeforeLeave', 1800);
+        if(appPersistResult && typeof appPersistResult.then === 'function') await appPersistResult;
       }
     }catch(err){}
     try{
       if(typeof f.contentWindow.saveChat === 'function'){
-        await withShellTransitionTimeout(f.contentWindow.saveChat(true), 'saveChatBeforeLeave', 1800);
+        await f.contentWindow.saveChat(true);
       }else if(typeof f.contentWindow.persistChatBeforeLeave === 'function'){
         var result = f.contentWindow.persistChatBeforeLeave();
-        if(result && typeof result.then === 'function') await withShellTransitionTimeout(result, 'persistChatBeforeLeave', 1800);
+        if(result && typeof result.then === 'function') await result;
       }
     }catch(err){}
     try{
@@ -12274,13 +11872,10 @@ async function performCloseApp(){
     const c = foregroundChar && foregroundChar.id ? foregroundChar : getActiveCharacterData();
     if(c) setWidgetCharacter(c);
     renderBondWidget(c);
-    prewarmShellAvatarSourcesForApps();
-    scheduleShellAvatarRepairs();
   }catch(e){
     renderBondWidget(null);
   }
   ensureAvatarDebugWindows();
-  renderOfflineMiniLauncher();
   if(appFrameClearTimer){
     clearTimeout(appFrameClearTimer);
     appFrameClearTimer = 0;
@@ -12303,9 +11898,6 @@ function buildAppFrameUrl(src){
       if(pendingOpenChatNonce){
         url.searchParams.set('__chatNav', String(pendingOpenChatNonce || ''));
       }
-    }
-    if(/\/apps\/offline_mode\.html$/i.test(url.pathname || '')){
-      url.searchParams.set('__ts', String(Date.now()));
     }
     if(/\/apps\/offline_mode\.html$/i.test(url.pathname || '') && pendingOpenOfflineCharId){
       url.searchParams.set('char', String(pendingOpenOfflineCharId || '').trim());
@@ -12346,8 +11938,7 @@ function showShellLoadingOverlay(kind){
   var image = document.getElementById('shell-loading-image');
   var copy = document.getElementById('shell-loading-copy');
   if(!overlay || !image || !copy) return;
-  var safeKind = String(kind || '').trim();
-  overlay.classList.toggle('instant', currentApp === 'chat' || safeKind === 'chat');
+  overlay.classList.toggle('instant', currentApp === 'chat' || String(kind || '').trim() === 'chat');
   if(shellLoadingHideTimer){
     clearTimeout(shellLoadingHideTimer);
     shellLoadingHideTimer = 0;
@@ -12359,11 +11950,6 @@ function showShellLoadingOverlay(kind){
   image.src = 'apps/assets/loading-cat.png';
   shellLoadingShownAt = Date.now();
   overlay.classList.add('show');
-  if(safeKind === 'offline_mode'){
-    shellLoadingForceTimer = setTimeout(function(){
-      if(currentApp === 'offline_mode') hideShellLoadingOverlay(0);
-    }, 4200);
-  }
 }
 
 function hideShellLoadingOverlay(delay){
@@ -12485,14 +12071,7 @@ function armAppFrameLoadWatchdog(frame, appId, attempt){
 
 function renderApp(id){
   const a=APP_MAP[id]; if(!a) return;
-  bindShellAvatarRepairEvents(document);
-  if(id !== 'chat' && !isShellPerformanceSensitiveMode()){
-    runShellDeferredTask(function(){
-      if(currentApp !== id) return;
-      prewarmShellAvatarSourcesForApps();
-      scheduleShellAvatarRepairs();
-    }, 900);
-  }
+  prewarmShellAvatarSourcesForApps();
   if(appFrameClearTimer){
     clearTimeout(appFrameClearTimer);
     appFrameClearTimer = 0;
@@ -12541,7 +12120,7 @@ function renderApp(id){
       chatMeasuredKeyboardOpenSeen = false;
     }
   }
-  showShellLoadingOverlay(id === 'chat' ? 'chat' : id);
+  showShellLoadingOverlay('app');
   var appFrame = document.getElementById('app-iframe');
   bindAppFrameLoadHandlers();
   if(appFrame && appFrame.dataset){
@@ -12552,9 +12131,7 @@ function renderApp(id){
     appFrame.src = buildAppFrameUrl(a.src);
     armAppFrameLoadWatchdog(appFrame, id, 0);
     settleAlreadyLoadedAppFrame(appFrame, id);
-    if(id !== 'chat'){
-      scheduleAppFrameAvatarRepairs(appFrame);
-    }
+    scheduleAppFrameAvatarRepairs(appFrame);
   }
   if(id === 'chat'){
     pendingOpenChatCharId = '';
@@ -12563,22 +12140,6 @@ function renderApp(id){
   document.getElementById('app-container').classList.add('open');
   document.getElementById('home-screen').classList.add('hidden');
   ensureAvatarDebugWindows();
-  renderOfflineMiniLauncher();
-}
-
-function queueShellCharacterAvatarPrimeForApp(id, source){
-  var safeId = String(id || '').trim();
-  var label = String(source || 'open_' + safeId);
-  var safeCharId = safeId === 'offline_mode' ? pendingOpenOfflineCharId : '';
-  runShellDeferredTask(function(){
-    withShellTransitionTimeout(
-      primeShellCharacterAvatarFromChatSettings(safeCharId, label),
-      'prime_' + label,
-      safeId === 'offline_mode' ? 700 : 1000
-    ).catch(function(err){
-      console.warn('deferred shell avatar prime failed', label, err);
-    });
-  }, 0);
 }
 
 function setChatShellBackground(src){
@@ -12682,7 +12243,7 @@ function openApp(id) {
     if(currentApp){
       await flushCurrentAppState();
     }
-    queueShellCharacterAvatarPrimeForApp(id, 'open_' + id);
+    await primeShellCharacterAvatarFromChatSettings(id === 'offline_mode' ? pendingOpenOfflineCharId : '', 'open_' + id).catch(function(){ return null; });
     if(appStack[appStack.length-1]!==id) appStack.push(id);
     renderApp(id);
     markShellAppSeen(id);
@@ -12696,10 +12257,11 @@ function forceOpenApp(id){
     showHomeToast('蕾蕾在赶工^^');
     return;
   }
-  queueShellCharacterAvatarPrimeForApp(id, 'force_open_' + id);
-  if(appStack[appStack.length - 1] !== id) appStack.push(id);
-  renderApp(id);
-  markShellAppSeen(id);
+  primeShellCharacterAvatarFromChatSettings(id === 'offline_mode' ? pendingOpenOfflineCharId : '', 'force_open_' + id).catch(function(){ return null; }).then(function(){
+    if(appStack[appStack.length - 1] !== id) appStack.push(id);
+    renderApp(id);
+    markShellAppSeen(id);
+  });
 }
 window.forceOpenApp = forceOpenApp;
 
@@ -12744,7 +12306,7 @@ function replaceApp(id){
     for(var i = appStack.length - 2; i >= 0; i -= 1){
       if(appStack[i] === id) appStack.splice(i, 1);
     }
-    queueShellCharacterAvatarPrimeForApp(id, 'replace_' + id);
+    await primeShellCharacterAvatarFromChatSettings(id === 'offline_mode' ? pendingOpenOfflineCharId : '', 'replace_' + id).catch(function(){ return null; });
     currentApp = null;
     renderApp(id);
     markShellAppSeen(id);
@@ -12916,9 +12478,6 @@ window.addEventListener('message',(e)=>{
   };
   if(type==='OFFLINE_BUSY_STATE'){
     updateOfflineModeBusyState(payload || {});
-  }
-  if(type==='OFFLINE_FRAME_READY'){
-    if(currentApp === 'offline_mode') hideShellLoadingOverlay(0);
   }
 	  if(type==='SET_ACTIVE_CHARACTER'){
 	    const hydratedPayload = hydrateShellCharacterPayload(payload) || payload;
@@ -13120,9 +12679,7 @@ window.addEventListener('message',(e)=>{
   if(type==='OFFLINE_MINIMIZED'){
     if(shouldBlockOfflineModeShellExitMessage(type, payload)) return;
     setMinimizedOfflineCharId(payload && payload.charId ? payload.charId : '');
-    offlineModeBusy = false;
-    offlineModeBusyUntil = 0;
-    forceOpenApp('chat');
+    openApp('chat');
   }
   if(type==='OFFLINE_EXITED'){
     if(shouldBlockOfflineModeShellExitMessage(type, payload)) return;
@@ -13888,37 +13445,26 @@ function renderWidgetCharacterAvatarNode(target, src, fallback){
   var safeFallback = String(fallback || 'C').trim().slice(0, 2) || 'C';
   target.dataset.avatarSrc = isRenderableShellAvatarSrc(safeSrc) ? safeSrc : '';
   target.dataset.avatarFallback = safeFallback;
-  target.style.backgroundImage = '';
   if(isRenderableShellAvatarSrc(safeSrc)){
     prewarmShellAvatarImagePool(safeSrc, 14);
-    target.style.backgroundImage = 'url("' + renderSrc.replace(/"/g, '\\"') + '")';
-    target.style.backgroundSize = 'cover';
-    target.style.backgroundPosition = 'center';
     var existingImg = target.querySelector && target.querySelector('img');
     if(existingImg && isSameShellAvatarImageSrc(existingImg, safeSrc)){
-      if(isShellAvatarPoolImageReady(existingImg)) return;
-      if(replaceShellAvatarWithPooledImage(existingImg, safeSrc)) return;
+      return;
     }
-    target.innerHTML = '<img src="' + escapeHtmlAttr(renderSrc) + '" data-avatar-src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center" onload="handleShellWidgetAvatarLoad(this)" onerror="handleShellWidgetAvatarError(this)">';
+    target.innerHTML = '<img src="' + escapeHtmlAttr(renderSrc) + '" data-avatar-src="' + escapeHtmlAttr(safeSrc) + '" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.03);transform-origin:center" onerror="handleShellWidgetAvatarError(this)">';
   }else{
-    target.style.backgroundImage = '';
     target.textContent = safeFallback;
   }
-}
-function handleShellWidgetAvatarLoad(img){
-  rememberLoadedShellAvatarImage(img);
 }
 function handleShellWidgetAvatarError(img){
   try{
     if(!img || !img.parentNode) return;
     var target = img.parentNode;
-    var requestedSrc = normalizeShellAssetSrc(img.getAttribute('data-avatar-src') || target.dataset && target.dataset.avatarSrc || img.getAttribute('src') || img.src || '');
-    var failedSrc = normalizeShellAssetSrc(img.getAttribute('src') || img.src || requestedSrc || '');
+    var failedSrc = normalizeShellAssetSrc(img.getAttribute('src') || img.src || '');
     var charId = String(target.dataset && target.dataset.charId || '').trim();
     var fallback = String(target.dataset && target.dataset.avatarFallback || 'C').trim().slice(0, 2) || 'C';
-    if(requestedSrc && replaceShellAvatarWithPooledImage(img, requestedSrc)) return;
-    if(requestedSrc && applyShellAvatarBlobFallbackToImage(img, requestedSrc)) return;
-    if(requestedSrc && retryShellAvatarImageLoad(img, requestedSrc)) return;
+    target.textContent = fallback;
+    target.removeAttribute('data-avatar-src');
     if(!charId || target.dataset.avatarRetrying === failedSrc) return;
     target.dataset.avatarRetrying = failedSrc;
     loadCharacterAvatarForShell(charId).then(function(nextSrc){
@@ -13926,14 +13472,6 @@ function handleShellWidgetAvatarError(img){
       if(!isRenderableShellAvatarSrc(nextSrc) || nextSrc === failedSrc) return;
       renderWidgetCharacterAvatarNode(target, nextSrc, fallback);
     }).catch(function(){});
-    setTimeout(function(){
-      try{
-        var currentImg = target.querySelector && target.querySelector('img');
-        if(currentImg && (!currentImg.complete || Number(currentImg.naturalWidth || 0) <= 0)){
-          target.textContent = fallback;
-        }
-      }catch(lateErr){}
-    }, 2600);
   }catch(err){}
 }
 
@@ -14860,7 +14398,6 @@ function restoreState(){
   compactCharKey('pendingChatChar');
   bindAppFrameLoadHandlers();
   bindTextNormalization();
-  bindUpdateToastButton();
   renderOfflineMiniLauncher();
   bindHostedServiceWorker();
   clearStaleHostedCodeCaches();
@@ -14913,24 +14450,16 @@ function restoreState(){
   } else if(wp) setWallpaper(wp);
   hydrateShellActiveCharacterState().finally(function(){
     try{
-      bindShellAvatarRepairEvents(document);
       const c = getActiveCharacterData();
       if(c){ setWidgetCharacter(c); }
       renderBondWidget(c);
-      runShellDeferredTask(function(){
-        if(currentApp === 'chat' || isShellPerformanceSensitiveMode()) return;
-        prewarmShellAvatarSourcesForApps();
-        scheduleShellAvatarRepairs();
-      }, 900);
+      prewarmShellAvatarSourcesForApps();
     }catch(e){}
   });
   renderHomeDockBadges();
   renderHomePages(true);
   ensureAvatarDebugWindows();
-  runShellDeferredTask(function(){
-    if(currentApp === 'chat' || isShellPerformanceSensitiveMode()) return;
-    prewarmShellAvatarSourcesForApps();
-  }, 1200);
+  runShellDeferredTask(prewarmShellAvatarSourcesForApps, 450);
   setupAiBgScheduler();
   try{
     if(sessionStorage.getItem(REFRESH_RECALC_FLAG_KEY) === '1'){
@@ -15111,22 +14640,12 @@ restoreState();
 window.addEventListener('focus', ()=>{
   hydrateShellActiveCharacterState().finally(function(){
     renderBondWidget();
-    runShellDeferredTask(function(){
-      if(currentApp === 'chat' || isShellPerformanceSensitiveMode()) return;
-      prewarmShellAvatarSourcesForApps();
-      scheduleShellAvatarRepairs();
-    }, 900);
   });
 });
 document.addEventListener('visibilitychange', ()=>{
   if(!document.hidden){
     renderBondWidget();
     renderHomeDockBadges();
-    runShellDeferredTask(function(){
-      if(currentApp === 'chat' || isShellPerformanceSensitiveMode()) return;
-      prewarmShellAvatarSourcesForApps();
-      scheduleShellAvatarRepairs();
-    }, 900);
   }
 });
 window.addEventListener('resize', ()=>{
